@@ -8,3 +8,10 @@ __pycache__/
 .venv/
 duckdb_tmp/
 ~$*
+
+c?.csv
+d?.csv
+e?.csv
+full*.csv
+probe*.csv
+*.tmp
