@@ -192,7 +192,7 @@
             <div class="fld" style="grid-column:span 2"><label>Aircraft <span id="fleetNote" style="font-size:9.5px;color:var(--accent);font-weight:700"></span></label><select id="aircraft"></select></div>
             <div class="fld" style="grid-column:span 2"><label>Freq / week</label><input id="freq" type="number" min="1" max="35" value="7"></div>
             <div class="fld" style="grid-column:span 2"><label>Schedule</label>
-              <select id="season"><option value="year">Year-round</option><option value="summer">Summer (S)</option><option value="winter">Winter (W)</option></select></div>
+              <select id="season"><option value="annual">Year-round</option><option value="summer">Summer (S)</option><option value="winter">Winter (W)</option></select></div>
             <div class="fld" style="grid-column:span 4"><label>Output</label>
               <div class="seg" id="mode">
                 <button data-m="forecast" class="on">Forecast</button>
@@ -428,13 +428,14 @@ function recomputeEcon(){
   const gv=id=>+document.getElementById(id).value;
   Object.entries(STATE.fmts||{}).forEach(([sid,[bid,fn]])=>setTxt(bid,fn(gv(sid))));
   const freq=gv('s_freq'), plf=gv('s_plf'), ef=gv('s_ef'), bf=gv('s_bf'), fp=gv('s_fp'), ps=gv('s_ps'), mkt=gv('s_mkt');
-  const sel=(document.getElementById('season')||{}).value||'year';
-  const weeks=SEASON_WEEKS[sel]||52, demShare=seasonDemandShare(sel);
-  const dem=STATE.each_way*mkt*demShare;
+  const smeta=STATE.season||{weeks:52,share:1};
+  const sel=(document.getElementById('season')||{}).value||'annual';
+  const weeks=smeta.weeks||52;
+  const dem=STATE.each_way*mkt;   // server already scaled demand to the season share
   const [le,lb]=econLFs(cm,dem,ps,freq,plf,weeks), t=econTurn(cm,le,lb,ef,bf,fp);
   const annual=t.profit*freq*weeks, carried=Math.round(2*(cm.econ_seats*le+cm.bus_seats*lb)*freq*weeks);
   document.getElementById('ecards').innerHTML=
-    `<div class="ecard big"><div class="l">Annual operating profit</div><div class="v" style="color:${annual>=0?'#fff':'#F5B4B4'}">${money(annual)}</div><div class="s">margin ${(t.margin*100).toFixed(1)}% · ${carried.toLocaleString()} pax/yr carried${sel!=='year'?' · '+(sel==='summer'?'summer schedule':'winter schedule'):''}</div></div>`+
+    `<div class="ecard big"><div class="l">Annual operating profit</div><div class="v" style="color:${annual>=0?'#fff':'#F5B4B4'}">${money(annual)}</div><div class="s">margin ${(t.margin*100).toFixed(1)}% · ${carried.toLocaleString()} pax/yr carried${sel!=='annual'?' · '+(sel==='summer'?'summer schedule':'winter schedule'):''}</div></div>`+
     `<div class="ecard"><div class="l">Profit per rotation</div><div class="v" style="color:${t.profit>=0?'var(--navy)':'var(--red)'}">${money(t.profit)}</div><div class="s">out and back</div></div>`+
     `<div class="ecard"><div class="l">Breakeven load</div><div class="v">${Math.round(t.be*100)}%</div><div class="s">flying ${Math.round(le*100)}% / ${Math.round(lb*100)}%</div></div>`;
   document.getElementById('pnl').innerHTML=[
@@ -460,7 +461,7 @@ function seasonDemandShare(sel){
   }
   return 1;
 }
-{ const se=document.getElementById('season'); if(se) se.addEventListener('change',()=>{ if(STATE.cm) recomputeEcon(); }); }
+{ const se=document.getElementById('season'); if(se) se.addEventListener('change',()=>{ if(STATE.cm||!$("#results").classList.contains("hidden")) doForecast(); }); }
 document.querySelectorAll("#seasonSel button").forEach(b=>b.onclick=()=>{
   document.querySelectorAll("#seasonSel button").forEach(x=>x.classList.remove("on"));
   b.classList.add("on"); SEASON_P=b.dataset.p; renderSeason();
@@ -469,7 +470,8 @@ function renderSeason(){
   const cm=STATE.cm; if(!cm||!document.getElementById('seasonBars'))return;
   const gv=id=>{const e=document.getElementById(id);return e?+e.value:0;};
   const freq=gv('s_freq')||7, plf=gv('s_plf')||0.85, mkt=gv('s_mkt')||1;
-  const annual=(STATE.each_way||0)*mkt, seats=cm.econ_seats+cm.bus_seats;
+  const _shr=(STATE.season&&STATE.season.share)||1;   // each_way is season-scaled; recover the annual figure for the monthly shape
+  const annual=((STATE.each_way||0)/_shr)*mkt, seats=cm.econ_seats+cm.bus_seats;
   const prof=SEASON[SEASON_P]||SEASON.flat, totw=prof.reduce((a,b,i)=>a+b*MD[i],0)||1;
   const months=[]; let mx=plf;
   for(let m=0;m<12;m++){
@@ -542,7 +544,7 @@ function doForecast(){
   $("#err").classList.add("hidden"); $("#results").classList.add("hidden"); $("#routeFlag").classList.add("hidden");
   const q=new URLSearchParams({origin:$("#origin").value.trim(),dest:$("#dest").value.trim(),
     airline:$("#airline").value.trim(),carrier_type:$("#ctype").value,aircraft:$("#aircraft").value,
-    freq:$("#freq").value||7,econ:"true"});
+    freq:$("#freq").value||7,season:$("#season").value||"annual",econ:"true"});
   expertParams(q);
   fetch("/api/forecast?"+q).then(r=>r.json()).then(render).catch(e=>showErr(e.message||e))
     .finally(()=>{btn.disabled=false;btn.textContent="Run assessment";});
@@ -610,6 +612,8 @@ function render(d){
   $("#basis").textContent=`Demand from Sabre ${d.year} O&D and OAG schedules week ${d.week}. Steady-state estimate; the Expert view lets you project to a future start year.`;
   if(d.optimised){ const op=d.optimised; $("#basis").textContent="Optimised for maximum profit: "+(op.airline?op.airline+(op.airline_auto?" (auto-chosen)":""):"selected airline")+" · "+op.aircraft+" · "+op.freq+"x/week.  "+$("#basis").textContent; }
   const dem=d.demand, cap=d.capacity, ec=d.economics;
+  STATE.season=d.season||{mode:"annual",share:1,weeks:52};
+  const _seasonal=STATE.season.mode&&STATE.season.mode!=="annual";
   const profitable = ec && ec.margin>0;
   // Expert panel: reflect the values the engine actually used, so overrides start from the truth
   const setPH=(id,v)=>{const e=document.getElementById(id); if(e&&v!=null&&v!=="") e.placeholder=String(v);};
@@ -621,7 +625,7 @@ function render(d){
 
   const kpis=[
     ["Addressable market", fmt(dem.natural), d.dest.city+" trips / yr in catchment"],
-    ["Total forecast", fmt(dem.total), "each way per year, including feed"],
+    ["Total forecast", fmt(dem.total), _seasonal?("each way over the "+STATE.season.mode+", including feed"):"each way per year, including feed"],
     ["Connecting feed", fmt(dem.feed_total), dem.feed_total>0 ? "behind "+fmt(dem.feed_behind)+" · beyond "+fmt(dem.feed_beyond) : "point-to-point carrier"],
   ];
   if(MODE!=="forecast" && d.economics_ok)
@@ -680,7 +684,8 @@ function render(d){
 
   const spill = cap.spill>0.02*(dem.total||1);
   $("#cap").className="banner "+(spill?"warn":"ok");
-  $("#cap").textContent = (spill?"⚠ ":"✓ ")+(cap.recommendation||("Fits "+cap.freq+"x/week "+cap.aircraft+" at "+pct(cap.load)+" load."));
+  const _sm=STATE.season||{}; const _seasonTxt=(_sm.mode&&_sm.mode!=="annual")?("  ·  "+(_sm.mode==="summer"?"Summer":"Winter")+" service over "+_sm.weeks+" weeks, "+Math.round((_sm.share||0)*100)+"% of annual demand"):"";
+  $("#cap").textContent = (spill?"⚠ ":"✓ ")+(cap.recommendation||("Fits "+cap.freq+"x/week "+cap.aircraft+" at "+pct(cap.load)+" load."))+_seasonTxt;
   const af=d.airfield;
   if(af&&af.band){
     $("#airfield").classList.remove("hidden");
