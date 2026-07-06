@@ -294,12 +294,12 @@ def _live_ctx():
 
 
 def _econ_block(each_way, aircraft, freq, home, dest_airport, gcd, econ_share, plan_lf,
-                econ_fare, bus_fare, fuel_price, carrier_type):
+                econ_fare, bus_fare, fuel_price, carrier_type, weeks=52.0):
     try:
         import route_engine as RE
         from aircraft_economics import AIRCRAFT, RoutePnL, AnnualRoutePnL
         ac = AIRCRAFT[aircraft]
-        e_yr = ac["econ_seats"] * freq * 52; b_yr = ac["bus_seats"] * freq * 52
+        e_yr = ac["econ_seats"] * freq * weeks; b_yr = ac["bus_seats"] * freq * weeks
         e_lf = min((each_way * econ_share) / e_yr if e_yr else 0, plan_lf)
         b_lf = min((each_way * (1 - econ_share)) / b_yr if b_yr else 0, plan_lf)
         dist_nm = round(gcd / 1.852); bmin = round(RE.block_min(dist_nm))
@@ -310,7 +310,7 @@ def _econ_block(each_way, aircraft, freq, home, dest_airport, gcd, econ_share, p
                       econ_lf=e_lf, bus_lf=b_lf, econ_fare_ow=fare, bus_fare_ow=bus_fare,
                       airline_type=at, aircraft_age=2, origin_charges=RE.DEFAULT_CHARGES,
                       dest_charges=RE.DEFAULT_CHARGES, fuel_price_usd_kg=fp_used)
-        y = rp.compute(); annual = AnnualRoutePnL(rp, freq, 52).compute()
+        y = rp.compute(); annual = AnnualRoutePnL(rp, freq, weeks).compute()
         pk = "annual_profit" if "annual_profit" in annual else "profit"
         spilled = max(each_way - (e_lf * e_yr + b_lf * b_yr), 0.0)
         # cost model for the live slider panel: every rate the browser needs to recompute the P&L
@@ -499,7 +499,7 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
     }
     if with_econ:
         out.update(_econ_block(each_way, aircraft, freq, home, dest_airport, gcd, econ_share,
-                               plan_lf, econ_fare, bus_fare, fuel_price, ct))
+                               plan_lf, econ_fare, bus_fare, fuel_price, ct, weeks=season_weeks))
     return out
 
 
@@ -807,11 +807,14 @@ def _explain_infeasible(origin, dest, dist_km, plan_lf=0.85):
 
 @app.get("/api/optimise")
 def api_optimise(origin: str, dest: str, airline: str = "", carrier_type: str = "FSC",
-                 econ_share: float = 0.85, plan_lf: float = 0.85, bus_fare: float = 1400.0):
+                 econ_share: float = 0.85, plan_lf: float = 0.85, bus_fare: float = 1400.0,
+                 season: str = "annual"):
     """Blank inputs choose the best PATH. The operating airline changes the demand (its connecting
     feed), so the optimiser evaluates a shortlist of plausible airlines, computes each one's demand,
     then picks the airline + aircraft + weekly frequency that maximise annual profit. The aircraft is
-    always within the chosen airline's real fleet (so no Ryanair on a widebody)."""
+    always within the chosen airline's real fleet (so no Ryanair on a widebody). A seasonal service
+    (season=summer/winter) sizes the gauge on the season's demand over its operating weeks."""
+    season_weeks = 28.0 if season == "summer" else 24.0 if season == "winter" else 52.0
     al = (airline or "").strip().upper()
     dist_km = _route_distance_km(origin, dest)
     if not dist_km:
@@ -824,7 +827,7 @@ def api_optimise(origin: str, dest: str, airline: str = "", carrier_type: str = 
     best = None
     for cand in cands:
         fc = calibrated_forecast(origin, dest, airline=(cand or None), carrier_type=carrier_type,
-                                 aircraft="A21N", freq=7, with_econ=False)
+                                 aircraft="A21N", freq=7, with_econ=False, season=season)
         if not fc.get("ok"):
             continue
         demand = fc["demand"]["total"]
@@ -834,7 +837,7 @@ def api_optimise(origin: str, dest: str, airline: str = "", carrier_type: str = 
             try:
                 code, ranked = ASsel.select_aircraft(dist_nm, demand, freq, plan_lf=plan_lf,
                                 econ_share=econ_share, econ_fare_ow=fare, bus_fare_ow=bus_fare,
-                                airline_type=at, airline_iata=(cand or None))
+                                airline_type=at, airline_iata=(cand or None), weeks=season_weeks)
             except Exception:
                 continue
             prof = ranked[0]["annual_profit"]
@@ -845,7 +848,7 @@ def api_optimise(origin: str, dest: str, airline: str = "", carrier_type: str = 
         return JSONResponse({"ok": False, "error": _explain_infeasible(origin, dest, dist_km, plan_lf)})
     final = calibrated_forecast(origin, dest, airline=(best["airline"] or None), carrier_type=carrier_type,
                                 aircraft=best["aircraft"], freq=best["freq"], econ_share=econ_share,
-                                plan_lf=plan_lf, bus_fare=bus_fare, with_econ=True)
+                                plan_lf=plan_lf, bus_fare=bus_fare, with_econ=True, season=season)
     if isinstance(final, dict):
         final["optimised"] = {"airline": best["airline"], "airline_auto": (not al) and bool(best["airline"]),
                               "aircraft": best["aircraft"], "freq": best["freq"],
@@ -879,7 +882,7 @@ def _xlsx_to_csv_zip(xlsx_path, zip_path):
 def api_report(origin: str, dest: str, airline: str = "", carrier_type: str = "FSC",
                aircraft: str = "A21X", freq: int = 7, econ_share: float = 0.85, plan_lf: float = 0.85,
                econ_fare: float = 0.0, bus_fare: float = 1400.0, fuel_price: float = 0.0, growth_years: int = 0,
-               part: str = "both"):
+               part: str = "both", season: str = "annual"):
     """Forecast deliverables from the live forecast: part='deck' returns the Forecast Summary PPTX,
     part='xlsx' the Forecast Excel workbook, part='csv' the workbook's sheets as a zipped CSV
     bundle, part='both' a zip of deck + workbook."""
@@ -887,7 +890,8 @@ def api_report(origin: str, dest: str, airline: str = "", carrier_type: str = "F
     fc = calibrated_forecast(origin, dest, airline=(airline or None), carrier_type=carrier_type,
                              aircraft=aircraft, freq=freq, econ_share=econ_share, plan_lf=plan_lf,
                              econ_fare=(econ_fare or None), bus_fare=bus_fare,
-                             fuel_price=(fuel_price or None), growth_years=growth_years, with_econ=True)
+                             fuel_price=(fuel_price or None), growth_years=growth_years, with_econ=True,
+                             season=season)
     if not fc.get("ok"):
         return JSONResponse(fc, status_code=400)
     if not fc.get("economics_ok"):
@@ -995,7 +999,8 @@ def _run_pitch_job(job_id, p):
                                  carrier_type=p["carrier_type"], aircraft=p["aircraft"], freq=p["freq"],
                                  econ_share=p["econ_share"], plan_lf=p["plan_lf"],
                                  econ_fare=(p["econ_fare"] or None), bus_fare=p["bus_fare"],
-                                 fuel_price=(p["fuel_price"] or None), with_econ=True)
+                                 fuel_price=(p["fuel_price"] or None), with_econ=True,
+                                 season=p.get("season", "annual"))
         if not fc.get("ok"):
             PITCH_JOBS[job_id] = {"state": "error", "error": fc.get("error", "forecast failed")}; return
         o = fc["origin"]; d = fc["dest"]
@@ -1043,7 +1048,7 @@ def _run_pitch_job(job_id, p):
 def api_pitch_start(origin: str, dest: str, airline: str = "", carrier_type: str = "FSC",
                     aircraft: str = "A21X", freq: int = 7, econ_share: float = 0.85,
                     plan_lf: float = 0.85, econ_fare: float = 0.0, bus_fare: float = 1400.0,
-                    fuel_price: float = 0.0):
+                    fuel_price: float = 0.0, season: str = "annual"):
     """Kick off a researched airline pitch as a background job (it runs web research + verification,
     which takes minutes, longer than the tunnel's request timeout). Returns a job_id to poll."""
     import threading, uuid, time
@@ -1062,7 +1067,7 @@ def api_pitch_start(origin: str, dest: str, airline: str = "", carrier_type: str
     job_id = uuid.uuid4().hex[:12]
     params = dict(origin=origin, dest=dest, airline=airline, carrier_type=carrier_type, aircraft=aircraft,
                   freq=freq, econ_share=econ_share, plan_lf=plan_lf, econ_fare=econ_fare, bus_fare=bus_fare,
-                  fuel_price=fuel_price)
+                  fuel_price=fuel_price, season=season)
     PITCH_JOBS[job_id] = {"state": "running", "started": time.time(), "stage": "starting"}
     threading.Thread(target=_run_pitch_job, args=(job_id, params), daemon=True).start()
     return JSONResponse({"ok": True, "job_id": job_id})

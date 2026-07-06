@@ -47,13 +47,14 @@ def candidates(distance_km, fleet=None, airline_iata=None, margin=1.03):
 
 def evaluate(code, distance_nm, demand_each_way, freq, plan_lf=0.85, econ_share=0.85,
              econ_fare_ow=360.0, bus_fare_ow=1300.0, airspace=None, airline_type="FSC",
-             aircraft_age=5, block_min=None, fuel_price_usd_kg=None):
+             aircraft_age=5, block_min=None, fuel_price_usd_kg=None, weeks=52.0):
     """Run the validated economics for one aircraft on this route+demand. Returns the annual
-    profit and the fill detail, so the selector can rank by profit."""
+    profit and the fill detail, so the selector can rank by profit. weeks<52 = a seasonal service
+    (demand and supply both over the season's operating weeks)."""
     from aircraft_economics import AIRCRAFT, RoutePnL, AnnualRoutePnL
     ac = AIRCRAFT[code]
-    econ_seats_yr = ac["econ_seats"] * freq * 52
-    bus_seats_yr = ac["bus_seats"] * freq * 52
+    econ_seats_yr = ac["econ_seats"] * freq * weeks
+    bus_seats_yr = ac["bus_seats"] * freq * weeks
     econ_lf = (demand_each_way * econ_share) / econ_seats_yr if econ_seats_yr else 0.0
     bus_lf = (demand_each_way * (1 - econ_share)) / bus_seats_yr if bus_seats_yr else 0.0
     if ac["bus_seats"] == 0:   # single class: all demand into econ
@@ -71,7 +72,7 @@ def evaluate(code, distance_nm, demand_each_way, freq, plan_lf=0.85, econ_share=
                   airspace=dict(airspace or {}), airline_type=airline_type, aircraft_age=aircraft_age,
                   origin_charges=_chg, dest_charges=_chg, **fuel_kw)
     y = rp.compute()
-    annual = AnnualRoutePnL(rp, freq, 52).compute()
+    annual = AnnualRoutePnL(rp, freq, weeks).compute()
     ann_profit = annual.get("annual_profit", annual.get("profit", 0.0))
     return {"aircraft": code, "seats": _seats(ac), "range_km": ac["range_km"], "category": ac["category"],
             "econ_lf": plan_econ, "bus_lf": plan_bus, "total_lf": y.get("load_factor"),
@@ -88,7 +89,7 @@ def _block_min_for(distance_nm):
 def select_aircraft(distance_nm, demand_each_way, freq, plan_lf=0.85, econ_share=0.85,
                     econ_fare_ow=360.0, bus_fare_ow=1300.0, airspace=None, airline_type="FSC",
                     aircraft_age=5, block_min=None, fuel_price_usd_kg=None,
-                    fleet=None, airline_iata=None):
+                    fleet=None, airline_iata=None, weeks=52.0):
     """Pick the range-feasible aircraft that maximises annual profit on this route+demand.
     Returns (best_code, ranked_list). Tie-break (within 2% profit): smaller spill, then gauge
     closest to demand. Raises if nothing in the pool can fly the range."""
@@ -98,9 +99,10 @@ def select_aircraft(distance_nm, demand_each_way, freq, plan_lf=0.85, econ_share
         raise ValueError(f"no aircraft in the pool can fly {distance_km:,.0f} km "
                          f"(airline={airline_iata}, fleet={fleet})")
     rows = [evaluate(c, distance_nm, demand_each_way, freq, plan_lf, econ_share, econ_fare_ow,
-                     bus_fare_ow, airspace, airline_type, aircraft_age, block_min, fuel_price_usd_kg)
+                     bus_fare_ow, airspace, airline_type, aircraft_age, block_min, fuel_price_usd_kg,
+                     weeks=weeks)
             for c in pool]
-    target_seats = demand_each_way / (freq * 52 * plan_lf) if (freq and plan_lf) else 0
+    target_seats = demand_each_way / (freq * weeks * plan_lf) if (freq and plan_lf) else 0
     rows.sort(key=lambda r: (-r["annual_profit"], r["spilled_each_way"], abs(r["seats"] - target_seats)))
     return rows[0]["aircraft"], rows
 

@@ -555,7 +555,7 @@ function optimise(){
   if(!o||!d){ showErr("enter an origin and destination first"); return; }
   const btn=$("#optimise"); btn.disabled=true; btn.innerHTML='<span class="spinner"></span>Optimising airlines…';
   $("#err").classList.add("hidden"); $("#results").classList.add("hidden"); $("#routeFlag").classList.add("hidden");
-  const q=new URLSearchParams({origin:o,dest:d,airline:$("#airline").value.trim(),carrier_type:$("#ctype").value});
+  const q=new URLSearchParams({origin:o,dest:d,airline:$("#airline").value.trim(),carrier_type:$("#ctype").value,season:$("#season").value||"annual"});
   fetch("/api/optimise?"+q).then(r=>r.json()).then(async res=>{
     if(res && res.ok && res.optimised){
       const op=res.optimised;
@@ -570,7 +570,7 @@ function optimise(){
 function downloadReport(part){
   const q=new URLSearchParams({origin:$("#origin").value.trim(),dest:$("#dest").value.trim(),
     airline:$("#airline").value.trim(),carrier_type:$("#ctype").value,aircraft:$("#aircraft").value,
-    freq:$("#freq").value||7, part:part||"both"});
+    freq:$("#freq").value||7, part:part||"both", season:$("#season").value||"annual"});
   window.location="/api/report?"+q;
 }
 let PITCH_POLL=null;
@@ -578,7 +578,7 @@ function pitchGenerate(){
   const o=$("#origin").value.trim(), d=$("#dest").value.trim();
   if(!o||!d){ showErr("enter an origin and destination first"); return; }
   const q=new URLSearchParams({origin:o,dest:d,airline:$("#airline").value.trim(),
-    carrier_type:$("#ctype").value,aircraft:$("#aircraft").value,freq:$("#freq").value||7});
+    carrier_type:$("#ctype").value,aircraft:$("#aircraft").value,freq:$("#freq").value||7,season:$("#season").value||"annual"});
   const btn=$("#pitchBtn"); btn.disabled=true; const t0=Date.now();
   $("#pitchNote").textContent="Researching sources and verifying, this takes a few minutes…";
   btn.innerHTML='<span class="spinner"></span>Researching…';
