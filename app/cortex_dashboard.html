@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Avia Cortex: Route Forecasting</title>
+<style>
+  :root{
+    --navy:#1F3864; --navy-700:#16294A; --navy-900:#0E1B33;
+    --accent:#2F6BF0; --accent-soft:#EAF0FE;
+    --green:#0E9F6E; --green-soft:#E6F6EF; --amber:#C9781A; --amber-soft:#FBF0E0;
+    --red:#D84C4C; --red-soft:#FBEBEB;
+    --ink:#0F1C30; --body:#46566E; --muted:#8A97AB; --line:#E6EBF2;
+    --bg:#F4F7FB; --card:#FFFFFF;
+    --r:12px; --sh:0 1px 2px rgba(16,32,60,.04), 0 6px 20px rgba(16,32,60,.06);
+    --font:-apple-system,"Segoe UI",Roboto,system-ui,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font);background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;font-size:14px;line-height:1.45}
+  .app{display:grid;grid-template-columns:248px 1fr;min-height:100vh}
+  .side{background:var(--navy-900);color:#C8D3E6;display:flex;flex-direction:column;padding:22px 16px}
+  .brand{display:flex;align-items:center;gap:11px;padding:6px 8px 22px}
+  .brand .mark{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--accent),#5C8DF6);display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+  .brand .mark svg{width:18px;height:18px}
+  .brand .name{font-weight:700;letter-spacing:.3px;color:#fff;font-size:15px;line-height:1.1}
+  .brand .name small{display:block;font-weight:500;font-size:10.5px;letter-spacing:2px;color:#7E8FB0;margin-top:2px}
+  .navlbl{font-size:10.5px;letter-spacing:1.4px;text-transform:uppercase;color:#5F6F8E;margin:18px 8px 8px}
+  .nav a{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;color:#C8D3E6;text-decoration:none;font-size:13.5px;font-weight:500;cursor:pointer}
+  .nav a .ic{width:16px;height:16px;opacity:.85;flex:0 0 auto}
+  .nav a.active{background:rgba(47,107,240,.18);color:#fff}
+  .nav a.soft{color:#6C7C9B}
+  .nav a .soon{margin-left:auto;font-size:9.5px;letter-spacing:.6px;color:#6C7C9B;border:1px solid #2C3C5C;border-radius:20px;padding:1px 7px}
+  .side .foot{margin-top:auto;font-size:11px;color:#5F6F8E;padding:14px 8px 2px;border-top:1px solid #1C2A45}
+  .main{display:flex;flex-direction:column;min-width:0}
+  .top{height:62px;background:var(--card);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:16px;padding:0 28px}
+  .top .pill{margin-left:auto;font-size:12px;color:var(--body);background:var(--bg);border:1px solid var(--line);border-radius:20px;padding:6px 12px;font-weight:600}
+  .avatar{width:32px;height:32px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
+  .wrap{padding:26px 28px 40px;max-width:1240px;width:100%}
+  .head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:18px}
+  .head h1{font-size:25px;font-weight:700;letter-spacing:-.2px}
+  .head p{color:var(--body);font-size:13.5px;margin-top:4px}
+  .btn{background:var(--accent);color:#fff;border:none;border-radius:9px;padding:11px 18px;font-weight:600;font-size:13.5px;font-family:var(--font);cursor:pointer;box-shadow:0 2px 8px rgba(47,107,240,.28)}
+  .btn:disabled{opacity:.55;cursor:default}
+  .btn.ghost{background:#fff;color:var(--navy);border:1px solid var(--line);box-shadow:none}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh)}
+  .card .ch{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--line)}
+  .card .ch h3{font-size:15px;font-weight:700}
+  .card .ch .sub{font-size:12px;color:var(--muted)}
+  .cb{padding:18px}
+
+  .form{display:grid;grid-template-columns:repeat(12,1fr);gap:12px;align-items:end}
+  .fld{display:flex;flex-direction:column;gap:5px;position:relative}
+  .ac-menu{position:absolute;top:100%;left:0;right:0;z-index:40;background:#fff;border:1px solid var(--line);border-radius:8px;box-shadow:var(--sh);margin-top:4px;max-height:240px;overflow:auto}
+  .ac-menu .it{padding:8px 11px;font-size:13px;cursor:pointer;border-bottom:1px solid #F1F4F8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ac-menu .it:last-child{border-bottom:none}
+  .ac-menu .it.sel,.ac-menu .it:hover{background:var(--accent-soft);color:var(--navy)}
+  .fld label{font-size:10.5px;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);font-weight:700}
+  .fld input,.fld select{border:1px solid var(--line);border-radius:8px;padding:9px 11px;font-size:13.5px;font-family:var(--font);color:var(--ink);background:#fff;width:100%}
+  .fld input:focus,.fld select:focus{outline:none;border-color:var(--accent)}
+  .seg{display:inline-flex;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:3px;gap:2px}
+  .seg button{border:none;background:transparent;padding:8px 12px;border-radius:7px;font-size:12.5px;font-weight:600;color:var(--body);cursor:pointer;font-family:var(--font)}
+  .seg button.on{background:#fff;color:var(--navy);box-shadow:var(--sh)}
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  .xgrp{font-size:10.5px;letter-spacing:.6px;text-transform:uppercase;color:var(--accent);font-weight:700;margin-top:6px}
+  .exchip{font-size:12px;font-weight:600;color:var(--body);background:var(--bg);border:1px solid var(--line);border-radius:20px;padding:6px 12px;cursor:pointer}
+  .exchip:hover{border-color:var(--accent);color:var(--accent)}
+
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin:20px 0}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;box-shadow:var(--sh)}
+  .kpi .l{font-size:11px;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);font-weight:600}
+  .kpi .v{font-size:29px;font-weight:700;letter-spacing:-.5px;margin-top:7px}
+  .kpi .s{font-size:12px;color:var(--body);margin-top:5px}
+  .tag{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px}
+  .tag.up{background:var(--green-soft);color:var(--green)} .tag.am{background:var(--amber-soft);color:var(--amber)} .tag.dn{background:var(--red-soft);color:var(--red)}
+  .grid{display:grid;grid-template-columns:1.55fr 1fr;gap:16px}
+  .grid.mt{margin-top:16px}
+  .chip{font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;background:var(--green-soft);color:var(--green);display:inline-flex;align-items:center;gap:5px}
+  .chip.est{background:var(--amber-soft);color:var(--amber)}
+  .chip .dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+  .barrow{display:flex;align-items:center;gap:10px;margin:9px 0}
+  .barrow .nm{width:104px;font-size:12.5px;color:var(--body);text-align:right;flex:0 0 auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .track{flex:1;background:var(--bg);border-radius:6px;height:18px;overflow:hidden}
+  .fill{height:100%;border-radius:6px;background:var(--navy)}
+  .fill.home{background:var(--green)}
+  .barrow .pc{width:42px;font-size:12px;font-weight:700;color:var(--ink);flex:0 0 auto}
+  .funnel{display:flex;flex-direction:column;gap:9px}
+  .brow{display:flex;align-items:center;gap:10px;margin:11px 0}
+  .brow .bl{width:150px;font-size:12.5px;color:var(--body);flex:0 0 auto}
+  .brow .bt{flex:1;background:var(--bg);border-radius:6px;height:22px;position:relative}
+  .brow .bf{position:absolute;top:0;height:100%;border-radius:6px}
+  .brow .bv{width:70px;text-align:right;font-size:13px;font-weight:700;color:var(--ink);flex:0 0 auto}
+  .mbars{display:flex;align-items:flex-end;gap:6px;height:140px;padding-top:8px}
+  .mbar{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;height:100%;justify-content:flex-end}
+  .mbar .col{width:100%;background:var(--accent);border-radius:4px 4px 0 0;min-height:2px}
+  .mbar .col.peak{background:var(--amber)} .mbar .col.spill{background:var(--red)}
+  .mbar .ml{font-size:10px;color:var(--muted);font-weight:600}
+  .fstep{border-radius:9px;padding:11px 14px;color:#fff;display:flex;align-items:center;justify-content:space-between}
+  .fstep .fl{font-size:12.5px;font-weight:600;opacity:.95} .fstep .fv{font-size:16px;font-weight:700}
+  .fnote{font-size:11.5px;color:var(--muted);margin-top:8px}
+  .pdewrow{display:grid;grid-template-columns:1fr 54px;gap:10px;align-items:center;padding:8px 0;border-bottom:1px dashed var(--line);font-size:13px;max-width:340px}
+  .pdewrow:last-child{border-bottom:none}
+  .pdewrow .k{color:var(--body);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pdewrow .vv{font-weight:700;text-align:right;color:var(--ink)}
+  .pnl{display:flex;flex-direction:column}
+  .pl{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px dashed var(--line);font-size:13px}
+  .pl .k{color:var(--body)} .pl .vv{font-weight:600}
+  .pl.tot{border-bottom:none;border-top:2px solid var(--navy);margin-top:4px;padding-top:11px}
+  .pl.tot .k{font-weight:700;color:var(--ink)} .pl.tot .vv{font-weight:700}
+  .stat2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+  .st{background:var(--bg);border-radius:9px;padding:12px 14px}
+  .st .l{font-size:10.5px;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);font-weight:600}
+  .st .v{font-size:21px;font-weight:700;margin-top:4px}
+  .econgrid{display:grid;grid-template-columns:288px 1fr;gap:24px}
+  .controls .clab{font-size:10.5px;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:12px}
+  .controls .ctl{margin-bottom:13px}
+  .controls .ctl label{display:flex;justify-content:space-between;font-size:12.5px;color:var(--body);margin-bottom:5px}
+  .controls .ctl label b{color:var(--navy);font-weight:700}
+  .controls input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer}
+  .ecards{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:14px}
+  .ecard{background:var(--bg);border-radius:9px;padding:13px 15px}
+  .ecard.big{grid-column:span 2;background:var(--navy)}
+  .ecard .l{font-size:10.5px;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);font-weight:600}
+  .ecard.big .l{color:#9FB4C2}
+  .ecard .v{font-size:22px;font-weight:700;color:var(--navy);margin-top:3px}
+  .ecard.big .v{color:#fff;font-size:27px}
+  .ecard .s{font-size:11.5px;color:var(--muted);margin-top:3px}
+  .ecard.big .s{color:#9FB4C2}
+  @media(max-width:820px){.econgrid{grid-template-columns:1fr}}
+  .banner{margin-top:16px;border-radius:10px;padding:13px 16px;font-size:13px;font-weight:600;display:flex;gap:9px;align-items:center}
+  .banner.ok{background:var(--green-soft);color:var(--green)} .banner.warn{background:var(--amber-soft);color:var(--amber)}
+  .foot-note{margin-top:22px;font-size:11.5px;color:var(--muted);font-style:italic}
+  .spinner{display:inline-block;width:15px;height:15px;border:2.5px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;vertical-align:-2px;margin-right:6px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .hidden{display:none}
+  .err{background:var(--red-soft);color:var(--red);border-radius:10px;padding:13px 16px;font-size:13px;font-weight:600;margin-top:18px}
+  @media(max-width:960px){.grid{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,1fr)}.form{grid-template-columns:repeat(6,1fr)}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="brand">
+      <span class="mark"><svg viewBox="0 0 24 24" fill="none"><path d="M3 12c4 0 5-7 9-7s5 14 9 7" stroke="#fff" stroke-width="2.1" stroke-linecap="round"/></svg></span>
+      <span class="name">Avia&nbsp;Cortex<small>INTELLIGENCE PLATFORM</small></span>
+    </div>
+    <div class="navlbl">Route Forecasting</div>
+    <nav class="nav">
+      <a class="active" id="navDash"><span class="ic">▥</span> Dashboard</a>
+      <a id="navExpert"><span class="ic">✦</span> Expert mode</a>
+      <a href="/catchment"><span class="ic">◎</span> Catchment</a>
+      <a href="/economics"><span class="ic">▤</span> Economics</a>
+      <a href="/trackrecord" target="_blank" title="How the engine has performed against every launched route at an airport, graded on actual outturn"><span class="ic">◔</span> Track record</a>
+      <a href="/methodology" target="_blank" title="How a forecast is built, step by step, with a bridge chart of your last run"><span class="ic">▦</span> Methodology</a>
+      <a><span class="ic">⛁</span> Data &amp; schedules</a>
+      <a href="/help"><span class="ic">?</span> Help</a>
+    </nav>
+    <div class="navlbl">Cortex products</div>
+    <nav class="nav">
+      <a class="active"><span class="ic">✈</span> Route Forecasting</a>
+      <a class="soft"><span class="ic">⌖</span> Airport Forecasts <span class="soon">SOON</span></a>
+      <a class="soft"><span class="ic">◍</span> Global Forecasts <span class="soon">SOON</span></a>
+      <a class="soft"><span class="ic">◴</span> Design Day Schedule Forecasts <span class="soon">SOON</span></a>
+    </nav>
+    <div class="foot">Powered by Avia&nbsp;Cortex · prototype</div>
+  </aside>
+
+  <div class="main">
+    <div class="top">
+      <span class="pill" id="ctxpill">OAG week -</span>
+      <div class="avatar">JC</div>
+    </div>
+
+    <div class="wrap">
+      <div class="head">
+        <div>
+          <h1>Route Forecasting</h1>
+          <p>Catchment, demand and economics for any city pair, calibrated to live schedule and origin data.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="ch"><div><h3>New assessment</h3><div class="sub">Enter a city or airport for each end; the airline sets the connecting feed.</div></div></div>
+        <div class="cb">
+          <div class="form">
+            <div class="fld" style="grid-column:span 3"><label>Origin</label><input id="origin" placeholder="e.g. Genoa or GOA" value="Genoa"></div>
+            <div class="fld" style="grid-column:span 3"><label>Destination</label><input id="dest" placeholder="e.g. New York or JFK" value="New York"></div>
+            <div class="fld" style="grid-column:span 2"><label>Airline (IATA)</label><input id="airline" placeholder="e.g. BA" value=""></div>
+            <div class="fld" style="grid-column:span 2"><label>Carrier type</label>
+              <select id="ctype"><option value="FSC">Full service</option><option value="LCC">Low cost</option><option value="ULCC">Ultra low cost</option></select></div>
+            <div class="fld" style="grid-column:span 2"><label>Aircraft <span id="fleetNote" style="font-size:9.5px;color:var(--accent);font-weight:700"></span></label><select id="aircraft"></select></div>
+            <div class="fld" style="grid-column:span 2"><label>Freq / week</label><input id="freq" type="number" min="1" max="35" value="7"></div>
+            <div class="fld" style="grid-column:span 2"><label>Schedule</label>
+              <select id="season"><option value="year">Year-round</option><option value="summer">Summer (S)</option><option value="winter">Winter (W)</option></select></div>
+            <div class="fld" style="grid-column:span 4"><label>Output</label>
+              <div class="seg" id="mode">
+                <button data-m="forecast" class="on">Forecast</button>
+                <button data-m="econ">+ Economics</button>
+                <button data-m="report">Full Forecast Summary</button>
+              </div>
+            </div>
+            <div class="fld" style="grid-column:span 4;justify-content:flex-end">
+              <div style="display:flex;gap:8px">
+                <button class="btn ghost" id="optimise" style="flex:1" title="Leave airline, aircraft or frequency blank and let Cortex choose the best">Optimise</button>
+                <button class="btn" id="run" style="flex:1.4">Run assessment</button>
+              </div>
+            </div>
+          </div>
+          <div class="chips">
+            <span style="font-size:11.5px;color:var(--muted);align-self:center">Recent:</span>
+            <span id="recentChips" style="display:contents"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card hidden" id="expertPanel" style="margin-top:16px;border:1.5px solid var(--accent)">
+        <div class="ch"><div><h3>Expert overrides</h3><div class="sub">For QSI analysts. Each box shows its default and range; leave blank to use the calibrated value. After you Run, each box shows the value the engine actually used, so you can adjust from there. Overrides apply on Run.</div></div><span class="exchip" id="expClear">Clear all</span></div>
+        <div class="cb"><div class="form">
+          <div class="xgrp" style="grid-column:span 12">Demand and market capture</div>
+          <div class="fld" style="grid-column:span 4"><label>Catchment O&amp;D market, each way per year</label><input id="x_market" type="number" placeholder="measured Sabre O&amp;D"></div>
+          <div class="fld" style="grid-column:span 4"><label>Origin QSI capture share</label><input id="x_share" type="number" step="0.01" placeholder="modelled · 0.01 to 1.00"></div>
+          <div class="fld" style="grid-column:span 4"><label>GDS coverage gross-up factor</label><input id="x_cov" type="number" step="0.01" placeholder="auto · 0.5 to 2.5"></div>
+          <div class="fld" style="grid-column:span 4"><label>New-service stimulation factor</label><input id="x_stim" type="number" step="0.05" placeholder="1.15 FSC / 1.35 LCC / 1.80 ULCC"></div>
+          <div class="fld" style="grid-column:span 4"><label>Market growth, per cent per annum</label><input id="x_growth" type="number" step="0.5" placeholder="0 · 0 to 15"></div>
+          <div class="fld" style="grid-column:span 4"><label>Forecast start year</label><input id="x_year" type="number" step="1" placeholder="steady-state · e.g. 2027"></div>
+          <div class="xgrp" style="grid-column:span 12">Catchment model</div>
+          <div class="fld" style="grid-column:span 4"><label>Airport attractiveness (size-pull) exponent</label><input id="x_att" type="number" step="0.01" placeholder="0.50 leisure to 0.75 business · 0.40 to 0.90"></div>
+          <div class="fld" style="grid-column:span 4"><label>Catchment radius multiplier</label><input id="x_cmult" type="number" step="0.1" placeholder="1.0 · 0.5 to 2.0"></div>
+          <div class="xgrp" style="grid-column:span 12">Connecting feed</div>
+          <div class="fld" style="grid-column:span 4"><label>Feed capture rate, behind origin</label><input id="x_fbc" type="number" step="0.01" placeholder="0.10 · 0.02 to 0.30"></div>
+          <div class="fld" style="grid-column:span 4"><label>Hub-dominance feed gain</label><input id="x_fdg" type="number" step="0.1" placeholder="1.0 · 0 to 3"></div>
+          <div class="fld" style="grid-column:span 4"><label>Hub-dominance feed floor</label><input id="x_ff" type="number" step="0.1" placeholder="1.0 · 0.5 to 1.5"></div>
+          <div class="xgrp" style="grid-column:span 12">Connection modelling</div>
+          <div class="fld" style="grid-column:span 4"><label>Connection coefficient, online (own metal)</label><input id="x_con" type="number" step="0.05" placeholder="1.00 · 0 to 1"></div>
+          <div class="fld" style="grid-column:span 4"><label>Connection coefficient, same alliance</label><input id="x_cal" type="number" step="0.05" placeholder="0.615 · 0 to 1"></div>
+          <div class="fld" style="grid-column:span 4"><label>Connection coefficient, interline</label><input id="x_cin" type="number" step="0.05" placeholder="0.25 · 0 to 1"></div>
+          <div class="fld" style="grid-column:span 4"><label>Routing circuity limit</label><input id="x_circ" type="number" step="0.05" placeholder="1.35 · 1.1 to 1.6"></div>
+          <div class="fld" style="grid-column:span 4"><label>Direct-to-indirect market factor</label><input id="x_ind" type="number" step="0.01" placeholder="1.044 · 1.0 to 1.2"></div>
+          <div class="xgrp" style="grid-column:span 12">Cabin and capacity</div>
+          <div class="fld" style="grid-column:span 4"><label>Economy cabin share</label><input id="x_esh" type="number" step="0.01" placeholder="0.85 · 0.5 to 1.0"></div>
+          <div class="fld" style="grid-column:span 4"><label>Planning load-factor cap</label><input id="x_plf" type="number" step="0.01" placeholder="0.85 · 0.6 to 0.92"></div>
+        </div></div>
+      </div>
+      <div id="routeFlag" class="banner warn hidden"></div>
+      <div id="err" class="err hidden"></div>
+      <div id="results" class="hidden">
+        <div class="kpis" id="kpis"></div>
+        <div id="basis" class="foot-note" style="margin:-6px 0 16px"></div>
+        <div class="grid">
+          <div class="card">
+            <div class="ch"><div><h3>Where the catchment flies today</h3><div class="sub" id="catSub"></div></div><span id="fidChip" class="chip"><span class="dot"></span> Calibrated</span></div>
+            <div class="cb"><div id="bars"></div><div class="fnote" id="barNote"></div></div>
+          </div>
+          <div class="card">
+            <div class="ch"><div><h3>Total forecast breakdown</h3><div class="sub" id="funnelSub">each way / year</div></div></div>
+            <div class="cb"><div class="funnel" id="funnel"></div><div class="fnote" id="funnelNote"></div></div>
+          </div>
+        </div>
+
+        <div class="mt" id="econRow">
+          <div class="card">
+            <div class="ch"><div><h3>Route economics</h3><div class="sub">move a slider, every value is overridable</div></div><span class="sub" id="fareSub"></span></div>
+            <div class="cb"><div class="econgrid">
+              <div class="controls" id="controls"></div>
+              <div class="econout">
+                <div class="ecards" id="ecards"></div>
+                <div class="pnl" id="pnl"></div>
+              </div>
+            </div></div>
+          </div>
+          <div class="card" style="margin-top:16px">
+            <div class="ch"><div><h3>The workings</h3><div class="sub">every value the demand number is built from</div></div></div>
+            <div class="cb"><div class="pnl" id="workings"></div></div>
+          </div>
+          <div class="card" style="margin-top:16px" id="seasonRow">
+            <div class="ch"><div><h3>Seasonality</h3><div class="sub">monthly demand shape and peak-month load on the chosen schedule</div></div>
+              <div class="seg" id="seasonSel">
+                <button data-p="leisure" class="on">Leisure</button>
+                <button data-p="balanced">Balanced</button>
+                <button data-p="business">Business</button>
+                <button data-p="flat">Flat</button>
+              </div>
+            </div>
+            <div class="cb"><div id="seasonBars"></div><div class="fnote" id="seasonNote"></div></div>
+          </div>
+        </div>
+
+        <div class="card hidden" id="feedRow" style="margin-top:16px">
+          <div class="ch"><div><h3>Connecting feed detail</h3><div class="sub">passengers daily each way (PDEW), top connecting points for this airline</div></div><span class="sub" id="pdewTotal"></span></div>
+          <div class="cb"><div class="grid">
+            <div><div style="font-size:12px;font-weight:700;color:var(--ink);margin-bottom:8px">Behind the origin, feeding in</div><div class="pnl" id="behindTbl"></div></div>
+            <div><div style="font-size:12px;font-weight:700;color:var(--ink);margin-bottom:8px">Beyond the destination, carrying on</div><div class="pnl" id="beyondTbl"></div></div>
+          </div></div>
+        </div>
+        <div id="cap" class="banner ok"></div>
+        <div id="airfield" class="banner ok hidden"></div>
+        <div id="reportRow" class="hidden" style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn" onclick="downloadReport('xlsx')">Download Forecast Excel</button>
+          <button class="btn" onclick="downloadReport('csv')" title="The workbook's sheets as CSVs in a zip, for spreadsheet-restricted environments">Download CSV bundle</button>
+          <button class="btn" onclick="downloadReport('deck')">Download Forecast Summary</button>
+          <button class="btn ghost" id="pitchBtn" onclick="pitchGenerate()" title="Web-researched airline pitch deck; takes a few minutes">Generate airline pitch (researched)</button>
+          <span id="pitchNote" style="font-size:12px;color:var(--muted);align-self:center"></span>
+          <button class="btn ghost" onclick="window.print()">Print this page</button>
+        </div>
+        <div class="foot-note">Indicative, for directional guidance only. Calibrated central estimate; per-route precision varies. Genoa to New York is the validated benchmark; other pairs are first-cut estimates.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+let MODE = "forecast";
+const fmt = n => (n==null||isNaN(n)) ? "-" : Math.round(n).toLocaleString();
+const money = n => (n==null||isNaN(n)) ? "-" : "$"+Math.round(n).toLocaleString();
+const pct = n => (n==null||isNaN(n)) ? "-" : (n*100).toFixed(0)+"%";
+const pct1 = n => (n==null||isNaN(n)) ? "-" : (n*100).toFixed(1)+"%";
+
+let ALL_AIRCRAFT=[];
+const AC_NAMES={A319:"A319",A320:"A320",A20N:"A320neo",A321:"A321",A21N:"A321neo",A21X:"A321XLR (long range)",
+  B738:"737-800",B38M:"737 MAX 8",B752:"757-200",B763:"767-300",A333:"A330-300",A339:"A330-900neo",
+  B788:"787-8",B789:"787-9",A359:"A350-900",B77W:"777-300ER",E170:"E170",E190:"E190",E195:"E195",
+  CRJ900:"CRJ900",ATR72:"ATR 72",DH8D:"Dash 8-400",SF34:"Saab 340"};
+function populateAircraft(list, keep){
+  const sel=$("#aircraft"); const cur=keep||sel.value;
+  sel.innerHTML=(list||[]).map(a=>`<option value="${a}">${AC_NAMES[a]||a}</option>`).join("");
+  if(list && list.includes(cur)) sel.value=cur;
+}
+fetch("/api/aircraft").then(r=>r.json()).then(d=>{
+  ALL_AIRCRAFT=d.aircraft||[]; populateAircraft(ALL_AIRCRAFT,"A21X");
+}).catch(()=>{});
+function filterAircraftByAirline(){
+  const al=$("#airline").value.trim(); const note=$("#fleetNote");
+  if(!al){ populateAircraft(ALL_AIRCRAFT); if(note)note.textContent=""; return Promise.resolve(); }
+  return fetch(`/api/fleet?airline=${encodeURIComponent(al)}`).then(r=>r.json()).then(d=>{
+    if(d.known && d.fleet && d.fleet.length){ populateAircraft(d.fleet); if(note)note.textContent="· "+al.toUpperCase()+" fleet"; }
+    else { populateAircraft(ALL_AIRCRAFT); if(note)note.textContent=""; }
+  }).catch(()=>{});
+}
+$("#airline").addEventListener("change",filterAircraftByAirline);
+
+// ---- Expert mode: reveal the overrides panel and apply the set values on Run ----
+let EXPERT=false;
+$("#navExpert").onclick=()=>{ EXPERT=!EXPERT; $("#expertPanel").classList.toggle("hidden",!EXPERT);
+  $("#navExpert").classList.toggle("active",EXPERT); $("#navDash").classList.toggle("active",!EXPERT); };
+$("#navDash").onclick=()=>{ EXPERT=false; $("#expertPanel").classList.add("hidden");
+  $("#navExpert").classList.remove("active"); $("#navDash").classList.add("active"); };
+// Economics is now a dedicated page at /economics
+$("#expClear").onclick=()=>document.querySelectorAll("#expertPanel input").forEach(i=>i.value="");
+function expertParams(q){
+  if(!EXPERT) return;
+  const g=id=>{const v=(($("#"+id)||{}).value||"").trim(); return v===""?null:parseFloat(v);};
+  const map={x_market:"market_override",x_share:"share_override",x_cov:"coverage_override",
+    x_stim:"stimulation",x_att:"att_exponent",x_cmult:"catchment_mult",x_fbc:"feed_behind_cap",
+    x_fdg:"feed_dom_gain",x_ff:"feed_dom_floor",x_con:"cnx_online",x_cal:"cnx_alliance",
+    x_cin:"cnx_interline",x_circ:"circuity",x_ind:"factor_indirect",x_esh:"econ_share",x_plf:"plan_lf"};
+  for(const id in map){ const v=g(id); if(v!==null && !isNaN(v)) q.set(map[id], v); }
+  const gr=g("x_growth"); if(gr!==null && !isNaN(gr)) q.set("growth", gr/100);
+  const yr=g("x_year"); if(yr!==null && !isNaN(yr)) q.set("growth_years", Math.max(0, Math.round(yr-(STATE.sabreYear||2025))));
+}
+
+// airline / airport typeahead recognition
+function attachTypeahead(input, kind){
+  const menu=document.createElement("div"); menu.className="ac-menu"; menu.style.display="none";
+  input.parentElement.appendChild(menu);
+  let items=[], sel=-1, t=null;
+  const close=()=>{menu.style.display="none";sel=-1;};
+  const choose=i=>{ if(items[i]){ input.value=items[i].code; close(); input.dispatchEvent(new Event('change')); } };
+  function draw(){
+    menu.innerHTML=items.map((r,i)=>`<div class="it${i===sel?' sel':''}" data-i="${i}">${r.label}</div>`).join("");
+    menu.querySelectorAll(".it").forEach(el=>el.onmousedown=e=>{e.preventDefault();choose(+el.dataset.i);});
+    menu.style.display=items.length?"block":"none";
+  }
+  input.addEventListener("input",()=>{
+    const q=input.value.trim(); clearTimeout(t);
+    if(q.length<1){close();return;}
+    t=setTimeout(()=>fetch(`/api/lookup?kind=${kind}&q=${encodeURIComponent(q)}`).then(r=>r.json())
+      .then(d=>{items=d.results||[];sel=-1;draw();}).catch(close),160);
+  });
+  input.addEventListener("keydown",e=>{
+    if(menu.style.display==="none")return;
+    if(e.key==="ArrowDown"){sel=Math.min(sel+1,items.length-1);draw();e.preventDefault();}
+    else if(e.key==="ArrowUp"){sel=Math.max(sel-1,0);draw();e.preventDefault();}
+    else if(e.key==="Enter"&&sel>=0){choose(sel);e.preventDefault();}
+    else if(e.key==="Escape"){close();}
+  });
+  input.addEventListener("blur",()=>setTimeout(close,150));
+}
+attachTypeahead($("#origin"),"airport");
+attachTypeahead($("#dest"),"airport");
+attachTypeahead($("#airline"),"airline");
+
+// ---- live economics slider panel (recomputes in-browser from the cost model) ----
+let STATE={};
+const setTxt=(id,v)=>{const e=document.getElementById(id); if(e)e.textContent=v;};
+function econTurn(cm,le,lb,ef,bf,fp){
+  const eo=cm.econ_seats*le, bo=cm.bus_seats*lb, pax=2*(eo+bo);
+  const net=2*eo*ef+2*bo*bf+cm.cargo_rev, recovery=cm.recovery_per_pax*pax, gross=net+recovery;
+  const fuel=cm.fuel_kg_per_turn*fp, perpax=cm.per_pax_cost*pax, indirect=cm.indirect_rate*net;
+  const total=fuel+perpax+cm.fixed_per_turn+indirect, profit=gross-total;
+  const pax_var=perpax+indirect, fixed_costs=total-pax_var, denom=gross-pax_var;
+  const lam=denom?fixed_costs/denom:0, seats=cm.econ_seats+cm.bus_seats, cur=(eo+bo)/seats;
+  return {profit,margin:gross?profit/gross:0,be:cur*lam,gross,fuel,perpax,indirect,net};
+}
+function econLFs(cm,dem,ps,freq,plf,weeks){
+  weeks=weeks||52; const esy=cm.econ_seats*freq*weeks, bsy=cm.bus_seats*freq*weeks;
+  return [esy?Math.min(dem*(1-ps)/esy,plf):0, bsy?Math.min(dem*ps/bsy,plf):0];
+}
+function buildSliders(cm){
+  const rows=[
+    ['s_freq','Frequency (each way/week)','o_freq',3,35,1,cm.freq,v=>v],
+    ['s_plf','Planning load-factor cap','o_plf',0.70,0.92,0.01,cm.plan_lf,v=>Math.round(v*100)+'%'],
+    ['s_ef','Economy fare (one-way)','o_ef',80,900,5,cm.econ_fare,v=>'$'+v],
+    ['s_bf','Business fare (one-way)','o_bf',400,3000,50,cm.bus_fare,v=>'$'+(+v).toLocaleString()],
+    ['s_fp','Jet fuel price ($/kg)','o_fp',0.55,1.40,0.01,cm.ref_fuel_price,v=>'$'+(+v).toFixed(2)],
+    ['s_ps','Premium share of demand','o_ps',0,0.30,0.01, cm.bus_seats>0?0.15:0, v=>Math.round(v*100)+'%'],
+    ['s_mkt','Market adjustment','o_mkt',0.80,1.15,0.01,1.0,v=>v==1?'neutral':(v>1?'+':'')+Math.round((v-1)*100)+'%'],
+  ];
+  STATE.fmts={};
+  document.getElementById('controls').innerHTML='<div class="clab">Inputs</div>'+rows.map(s=>
+    `<div class="ctl"><label>${s[1]} <b id="${s[2]}"></b></label><input id="${s[0]}" type="range" min="${s[3]}" max="${s[4]}" step="${s[5]}" value="${s[6]}"></div>`).join("");
+  rows.forEach(s=>{STATE.fmts[s[0]]=[s[2],s[7]]; document.getElementById(s[0]).addEventListener('input',recomputeEcon);});
+  if(cm.bus_seats<=0){ const b=document.getElementById('s_bf'); if(b) b.closest('.ctl').style.opacity=.4; }
+}
+function recomputeEcon(){
+  const cm=STATE.cm; if(!cm) return;
+  const gv=id=>+document.getElementById(id).value;
+  Object.entries(STATE.fmts||{}).forEach(([sid,[bid,fn]])=>setTxt(bid,fn(gv(sid))));
+  const freq=gv('s_freq'), plf=gv('s_plf'), ef=gv('s_ef'), bf=gv('s_bf'), fp=gv('s_fp'), ps=gv('s_ps'), mkt=gv('s_mkt');
+  const sel=(document.getElementById('season')||{}).value||'year';
+  const weeks=SEASON_WEEKS[sel]||52, demShare=seasonDemandShare(sel);
+  const dem=STATE.each_way*mkt*demShare;
+  const [le,lb]=econLFs(cm,dem,ps,freq,plf,weeks), t=econTurn(cm,le,lb,ef,bf,fp);
+  const annual=t.profit*freq*weeks, carried=Math.round(2*(cm.econ_seats*le+cm.bus_seats*lb)*freq*weeks);
+  document.getElementById('ecards').innerHTML=
+    `<div class="ecard big"><div class="l">Annual operating profit</div><div class="v" style="color:${annual>=0?'#fff':'#F5B4B4'}">${money(annual)}</div><div class="s">margin ${(t.margin*100).toFixed(1)}% · ${carried.toLocaleString()} pax/yr carried${sel!=='year'?' · '+(sel==='summer'?'summer schedule':'winter schedule'):''}</div></div>`+
+    `<div class="ecard"><div class="l">Profit per rotation</div><div class="v" style="color:${t.profit>=0?'var(--navy)':'var(--red)'}">${money(t.profit)}</div><div class="s">out and back</div></div>`+
+    `<div class="ecard"><div class="l">Breakeven load</div><div class="v">${Math.round(t.be*100)}%</div><div class="s">flying ${Math.round(le*100)}% / ${Math.round(lb*100)}%</div></div>`;
+  document.getElementById('pnl').innerHTML=[
+    ["Revenue",money(t.gross)],["Fuel",money(-t.fuel)],
+    ["Fixed (maint, ownership, crew, charges)",money(-cm.fixed_per_turn)],
+    ["Per-passenger costs",money(-t.perpax)],["Overhead and sales",money(-t.indirect)]
+  ].map(r=>`<div class="pl"><span class="k">${r[0]}</span><span class="vv">${r[1]}</span></div>`).join("")
+   +`<div class="pl tot"><span class="k">Operating profit per rotation</span><span class="vv" style="color:${t.profit>=0?'var(--green)':'var(--red)'}">${money(t.profit)}</span></div>`;
+  renderSeason();
+}
+const SEASON={leisure:[0.6,0.6,0.7,0.85,1.05,1.3,1.5,1.5,1.2,0.95,0.7,1.05],
+  balanced:[0.85,0.85,0.95,1.0,1.05,1.1,1.15,1.15,1.05,1.0,0.9,0.95],
+  business:[1.05,1.05,1.1,1.05,1.05,1.0,0.85,0.8,1.05,1.1,1.05,0.85],
+  flat:[1,1,1,1,1,1,1,1,1,1,1,1]};
+const MO=["J","F","M","A","M","J","J","A","S","O","N","D"], MD=[31,28,31,30,31,30,31,31,30,31,30,31];
+let SEASON_P="leisure";
+const SEASON_WEEKS={year:52,summer:30,winter:22};
+function seasonDemandShare(sel){
+  if(sel==='summer'||sel==='winter'){
+    const prof=SEASON[SEASON_P]||SEASON.flat, tot=prof.reduce((a,b,i)=>a+b*MD[i],0)||1;
+    const months=sel==='summer'?[3,4,5,6,7,8,9]:[10,11,0,1,2];
+    return months.reduce((a,m)=>a+prof[m]*MD[m],0)/tot;
+  }
+  return 1;
+}
+{ const se=document.getElementById('season'); if(se) se.addEventListener('change',()=>{ if(STATE.cm) recomputeEcon(); }); }
+document.querySelectorAll("#seasonSel button").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll("#seasonSel button").forEach(x=>x.classList.remove("on"));
+  b.classList.add("on"); SEASON_P=b.dataset.p; renderSeason();
+});
+function renderSeason(){
+  const cm=STATE.cm; if(!cm||!document.getElementById('seasonBars'))return;
+  const gv=id=>{const e=document.getElementById(id);return e?+e.value:0;};
+  const freq=gv('s_freq')||7, plf=gv('s_plf')||0.85, mkt=gv('s_mkt')||1;
+  const annual=(STATE.each_way||0)*mkt, seats=cm.econ_seats+cm.bus_seats;
+  const prof=SEASON[SEASON_P]||SEASON.flat, totw=prof.reduce((a,b,i)=>a+b*MD[i],0)||1;
+  const months=[]; let mx=plf;
+  for(let m=0;m<12;m++){
+    const demM=annual*(prof[m]*MD[m]/totw), capM=seats*freq*MD[m]/7;
+    const load=capM?demM/capM:0; months.push(load); mx=Math.max(mx,load);
+  }
+  document.getElementById('seasonBars').innerHTML='<div class="mbars">'+months.map((ld,i)=>{
+    const h=Math.min(ld/mx,1)*100, cls=ld>=plf?'spill':(ld>=plf*0.9?'peak':'');
+    return `<div class="mbar"><div class="col ${cls}" style="height:${Math.max(h,3).toFixed(0)}%" title="${MO[i]}: ${Math.round(ld*100)}% load"></div><div class="ml">${MO[i]}</div></div>`;
+  }).join('')+'</div>';
+  const peak=Math.max(...months), trough=Math.min(...months);
+  setTxt('seasonNote', SEASON_P==='flat'?'Flat profile: demand even across the year.':
+    `Peaks at ${Math.round(peak*100)}% load and dips to ${Math.round(trough*100)}% on a flat ${freq}x/week schedule. `+
+    (peak>plf?'Peak months spill, so more summer frequency or a larger gauge in peak would carry them. ':'')+
+    (trough<0.55?'Winter falls below 55% load, where a reduced off-peak schedule protects the economics.':'Off-peak load stays workable.'));
+}
+
+document.querySelectorAll("#mode button").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll("#mode button").forEach(x=>x.classList.remove("on"));
+  b.classList.add("on"); MODE=b.dataset.m; applyMode();
+});
+function applyMode(){
+  $("#econRow").style.display = (MODE==="forecast") ? "none" : "block";
+  $("#reportRow").classList.toggle("hidden", MODE!=="report");
+}
+
+const DEFAULT_RECENT=[
+  {o:'Genoa',d:'New York',a:'',t:'FSC',ac:'A21X'},
+  {o:'Kraków',d:'London',a:'FR',t:'ULCC',ac:'B738'},
+  {o:'Frankfurt',d:'New York',a:'LH',t:'FSC',ac:'B789'}];
+function loadRecent(){ try{const r=JSON.parse(localStorage.getItem('avia_recent')||'null'); return (Array.isArray(r)&&r.length)?r:DEFAULT_RECENT;}catch(e){return DEFAULT_RECENT;} }
+function saveRecent(q){ let r=loadRecent().filter(x=>!(x.o===q.o&&x.d===q.d&&(x.a||'')===(q.a||'')&&x.ac===q.ac)); r.unshift(q); r=r.slice(0,5); try{localStorage.setItem('avia_recent',JSON.stringify(r));}catch(e){} renderRecent(); }
+async function applyRecent(x){ $("#origin").value=x.o; $("#dest").value=x.d; $("#airline").value=x.a||""; $("#ctype").value=x.t||"FSC";
+  await filterAircraftByAirline(); if(x.ac && [...$("#aircraft").options].some(o=>o.value===x.ac)) $("#aircraft").value=x.ac; doForecast(); }
+function renderRecent(){ const el=$("#recentChips"); if(!el)return; const r=loadRecent();
+  el.innerHTML=r.map((x,i)=>`<span class="exchip" data-i="${i}">${x.o} → ${x.d}${x.a?' · '+x.a.toUpperCase():''}</span>`).join("");
+  el.querySelectorAll(".exchip").forEach(c=>c.onclick=()=>applyRecent(loadRecent()[+c.dataset.i])); }
+renderRecent();
+(function(){const m=new URLSearchParams(location.search).get('mode');
+  if(m==='expert'){ const e=$("#navExpert"); if(e)e.click(); }
+  else if(m==='econ'){ const b=document.querySelector('#mode button[data-m="econ"]'); if(b)b.click(); } })();
+
+$("#run").onclick=run;
+function run(){
+  const o=$("#origin").value.trim(), d=$("#dest").value.trim(), al=$("#airline").value.trim();
+  if(!o||!d){ doForecast(); return; }
+  const btn=$("#run"); btn.disabled=true; btn.innerHTML='<span class="spinner"></span>Checking…';
+  fetch(`/api/route_status?origin=${encodeURIComponent(o)}&dest=${encodeURIComponent(d)}&airline=${encodeURIComponent(al)}`)
+    .then(r=>r.json()).then(s=>{
+      btn.disabled=false; btn.textContent="Run assessment";
+      if(s && s.ok && s.exists){ showRouteFlag(s); } else { doForecast(); }
+    }).catch(()=>{ btn.disabled=false; btn.textContent="Run assessment"; doForecast(); });
+}
+function showRouteFlag(s){
+  const cs=(s.carriers||[]).map(c=>c.carrier+" "+c.weekly+"/wk").join(", ");
+  const al=$("#airline").value.trim().toUpperCase();
+  $("#routeFlag").innerHTML=`<div><b>Heads up:</b> this route already operates about ${s.weekly_flights} flights/week`+
+    (cs?` (${cs})`:"")+`. `+(s.airline_operates?`${al} already flies it. `:``)+
+    `Cortex forecasts a new entrant. `+
+    `<button class="btn" id="flagGo" style="padding:6px 13px;margin-left:6px;box-shadow:none">Continue anyway</button> `+
+    `<button class="btn ghost" id="flagCancel" style="padding:6px 13px">Amend</button></div>`;
+  $("#routeFlag").classList.remove("hidden");
+  $("#flagGo").onclick=()=>{ $("#routeFlag").classList.add("hidden"); doForecast(); };
+  $("#flagCancel").onclick=()=>{ $("#routeFlag").classList.add("hidden"); };
+}
+function doForecast(){
+  const _cur={o:$("#origin").value.trim(),d:$("#dest").value.trim(),a:$("#airline").value.trim(),t:$("#ctype").value,ac:$("#aircraft").value};
+  if(_cur.o&&_cur.d) saveRecent(_cur);
+  const btn=$("#run"); btn.disabled=true; btn.innerHTML='<span class="spinner"></span>Forecasting…';
+  $("#err").classList.add("hidden"); $("#results").classList.add("hidden"); $("#routeFlag").classList.add("hidden");
+  const q=new URLSearchParams({origin:$("#origin").value.trim(),dest:$("#dest").value.trim(),
+    airline:$("#airline").value.trim(),carrier_type:$("#ctype").value,aircraft:$("#aircraft").value,
+    freq:$("#freq").value||7,econ:"true"});
+  expertParams(q);
+  fetch("/api/forecast?"+q).then(r=>r.json()).then(render).catch(e=>showErr(e.message||e))
+    .finally(()=>{btn.disabled=false;btn.textContent="Run assessment";});
+}
+$("#optimise").onclick=optimise;
+function optimise(){
+  const o=$("#origin").value.trim(), d=$("#dest").value.trim();
+  if(!o||!d){ showErr("enter an origin and destination first"); return; }
+  const btn=$("#optimise"); btn.disabled=true; btn.innerHTML='<span class="spinner"></span>Optimising airlines…';
+  $("#err").classList.add("hidden"); $("#results").classList.add("hidden"); $("#routeFlag").classList.add("hidden");
+  const q=new URLSearchParams({origin:o,dest:d,airline:$("#airline").value.trim(),carrier_type:$("#ctype").value});
+  fetch("/api/optimise?"+q).then(r=>r.json()).then(async res=>{
+    if(res && res.ok && res.optimised){
+      const op=res.optimised;
+      $("#airline").value=op.airline||"";
+      await filterAircraftByAirline();
+      if(op.aircraft && [...$("#aircraft").options].some(x=>x.value===op.aircraft)) $("#aircraft").value=op.aircraft;
+      $("#freq").value=op.freq;
+      render(res);
+    } else { showErr((res&&res.error)||"could not optimise this pair"); }
+  }).catch(e=>showErr(e.message||e)).finally(()=>{btn.disabled=false;btn.textContent="Optimise";});
+}
+function downloadReport(part){
+  const q=new URLSearchParams({origin:$("#origin").value.trim(),dest:$("#dest").value.trim(),
+    airline:$("#airline").value.trim(),carrier_type:$("#ctype").value,aircraft:$("#aircraft").value,
+    freq:$("#freq").value||7, part:part||"both"});
+  window.location="/api/report?"+q;
+}
+let PITCH_POLL=null;
+function pitchGenerate(){
+  const o=$("#origin").value.trim(), d=$("#dest").value.trim();
+  if(!o||!d){ showErr("enter an origin and destination first"); return; }
+  const q=new URLSearchParams({origin:o,dest:d,airline:$("#airline").value.trim(),
+    carrier_type:$("#ctype").value,aircraft:$("#aircraft").value,freq:$("#freq").value||7});
+  const btn=$("#pitchBtn"); btn.disabled=true; const t0=Date.now();
+  $("#pitchNote").textContent="Researching sources and verifying, this takes a few minutes…";
+  btn.innerHTML='<span class="spinner"></span>Researching…';
+  const reset=()=>{ btn.disabled=false; btn.textContent="Generate airline pitch (researched)"; };
+  fetch("/api/pitch/start?"+q).then(r=>r.json()).then(s=>{
+    if(!s.ok||!s.job_id){ throw new Error(s.error||"could not start pitch"); }
+    const jid=s.job_id;
+    PITCH_POLL=setInterval(()=>{
+      fetch("/api/pitch/status?job_id="+jid).then(r=>r.json()).then(st=>{
+        const secs=Math.round((Date.now()-t0)/1000);
+        if(st.state==="running"){
+          btn.innerHTML='<span class="spinner"></span>Working… '+secs+'s';
+          $("#pitchNote").textContent=(st.stage?st.stage.charAt(0).toUpperCase()+st.stage.slice(1):"Working")+"… ("+secs+"s; a researched pitch takes a few minutes)";
+          return; }
+        clearInterval(PITCH_POLL); reset();
+        if(st.state==="done"){ const bs="display:inline-block;background:var(--accent);color:#fff;padding:6px 12px;border-radius:8px;text-decoration:none;font-weight:600;margin:0 6px 0 0;font-size:12px";
+          $("#pitchNote").innerHTML="Done: "+(st.kept||0)+" findings across "+(st.blocks||0)+" sections. &nbsp;"+
+            "<a href='/api/pitch/html?job_id="+jid+"' style=\""+bs+"\">Download HTML</a>"+
+            "<a href='/api/pitch/file?job_id="+jid+"' style=\""+bs+";background:var(--navy)\">Download full pack (zip)</a>"; }
+        else { $("#pitchNote").textContent=""; showErr(st.error||"pitch generation failed"); }
+      }).catch(e=>{ clearInterval(PITCH_POLL); reset(); $("#pitchNote").textContent=""; showErr(e.message||e); });
+    }, 3000);
+  }).catch(e=>{ reset(); $("#pitchNote").textContent=""; showErr(e.message||e); });
+}
+function showErr(m){ $("#err").textContent="Could not forecast this pair: "+m; $("#err").classList.remove("hidden"); }
+
+function render(d){
+  if(!d || !d.ok){ showErr((d&&d.error)||"unknown error"); return; }
+  $("#ctxpill").textContent="OAG week "+(d.week||"-")+" · Sabre "+(d.year||"-");
+  STATE.sabreYear=d.year||STATE.sabreYear||2025;
+  $("#basis").textContent=`Demand from Sabre ${d.year} O&D and OAG schedules week ${d.week}. Steady-state estimate; the Expert view lets you project to a future start year.`;
+  if(d.optimised){ const op=d.optimised; $("#basis").textContent="Optimised for maximum profit: "+(op.airline?op.airline+(op.airline_auto?" (auto-chosen)":""):"selected airline")+" · "+op.aircraft+" · "+op.freq+"x/week.  "+$("#basis").textContent; }
+  const dem=d.demand, cap=d.capacity, ec=d.economics;
+  const profitable = ec && ec.margin>0;
+  // Expert panel: reflect the values the engine actually used, so overrides start from the truth
+  const setPH=(id,v)=>{const e=document.getElementById(id); if(e&&v!=null&&v!=="") e.placeholder=String(v);};
+  setPH("x_market", Math.round(dem.natural).toLocaleString());
+  setPH("x_share", dem.qsi_share!=null?dem.qsi_share.toFixed(3):null);
+  setPH("x_cov", dem.coverage_gross_up!=null?dem.coverage_gross_up.toFixed(2):null);
+  setPH("x_att", dem.att!=null?(+dem.att).toFixed(2):null);
+  setPH("x_stim", dem.stimulation!=null?(+dem.stimulation).toFixed(2):null);
+
+  const kpis=[
+    ["Addressable market", fmt(dem.natural), d.dest.city+" trips / yr in catchment"],
+    ["Total forecast", fmt(dem.total), "each way per year, including feed"],
+    ["Connecting feed", fmt(dem.feed_total), dem.feed_total>0 ? "behind "+fmt(dem.feed_behind)+" · beyond "+fmt(dem.feed_beyond) : "point-to-point carrier"],
+  ];
+  if(MODE!=="forecast" && d.economics_ok)
+    kpis.push(["Route margin", pct1(ec.margin), profitable?'<span class="tag up">▲ profitable</span> at these inputs':'<span class="tag dn">▼ loss</span> at these inputs']);
+  else
+    kpis.push(["Capture share", pct1(dem.qsi_share), "of the catchment market"]);
+  $("#kpis").innerHTML=kpis.map(k=>`<div class="kpi"><div class="l">${k[0]}</div><div class="v">${k[1]}</div><div class="s">${k[2]}</div></div>`).join("");
+
+  const est = d.title.indexOf("Genoa")<0;
+  $("#fidChip").className = est?"chip est":"chip";
+  $("#fidChip").innerHTML = '<span class="dot"></span> '+(est?"Estimate":"Validated");
+  $("#catSub").textContent = d.title+"  ·  "+cap.aircraft+" · "+$("#freq").value+"x/wk";
+
+  const sh=dem_shares(d); const mx=Math.max(...sh.map(s=>s.v),0.001);
+  $("#bars").innerHTML = sh.slice(0,6).map(s=>`<div class="barrow"><div class="nm">${s.n}</div><div class="track"><div class="fill${s.home?' home':''}" style="width:${Math.max(2,100*s.v/mx)}%"></div></div><div class="pc">${(s.v*100).toFixed(0)}%</div></div>`).join("") || '<div class="fnote">No observed split available for this pair.</div>';
+  const homeShare = (d.catchment.observed_share||{})[d.catchment.home]||0;
+  $("#barNote").textContent = homeShare>0 ? `${d.origin.city} carries ${(homeShare*100).toFixed(1)}% of its catchment’s demand today; the rest drives to larger airports.` : "";
+
+  const local=dem.captured||0, feedInc=Math.max((dem.total||0)-(dem.captured||0),0), total=dem.total||1;
+  const rows=[["Local demand captured",0,local,local,"var(--navy)"]];
+  if(feedInc>0) rows.push(["Connecting feed",local,feedInc,feedInc,"#2F6BF0"]);
+  rows.push(["Total forecast, each way",0,total,total,"var(--green)"]);
+  $("#funnel").innerHTML=rows.map(r=>`<div class="brow"><div class="bl">${r[0]}</div><div class="bt"><div class="bf" style="left:${(r[1]/total*100).toFixed(1)}%;width:${Math.max(r[2]/total*100,1.5).toFixed(1)}%;background:${r[4]}"></div></div><div class="bv">${fmt(r[3])}</div></div>`).join("");
+  setTxt("funnelSub", `captured from a ${fmt(dem.natural)} addressable market · each way / year`);
+  $("#funnelNote").textContent = cap.recommendation||"";
+
+  if(d.economics_ok && ec && ec.cost_model){
+    STATE.cm=ec.cost_model; STATE.each_way=dem.total;
+    $("#fareSub").textContent="live at these inputs";
+    buildSliders(ec.cost_model); recomputeEcon();
+  } else if(MODE!=="forecast"){
+    $("#controls").innerHTML=""; $("#ecards").innerHTML="";
+    $("#pnl").innerHTML='<div class="fnote">Economics unavailable: '+((d.economics_error)||"check the aircraft type")+'</div>';
+  }
+
+  $("#workings").innerHTML=[
+    ["Measured market (Sabre)",fmt(dem.natural)],
+    ["Coverage gross-up",(dem.coverage_gross_up||1).toFixed(2)+"×"],
+    ["Origin QSI / access share",pct1(dem.qsi_share)],
+    ["Destination-airport share",pct1(dem.dest_share)],
+    ["Premium-cabin share",pct1(dem.premium_share)],
+    ["Connecting feed, behind",fmt(dem.feed_behind)],
+    ["Connecting feed, beyond",fmt(dem.feed_beyond)],
+    ["Average fare (Sabre)",money(dem.avg_fare)],
+    ["Sector",d.distance_nm.toLocaleString()+" nm · "+d.block_min+" min block"]
+  ].map(r=>`<div class="pl"><span class="k">${r[0]}</span><span class="vv">${r[1]}</span></div>`).join("");
+
+  const fr=$("#feedRow");
+  if(dem.feed_total>0 && ((dem.behind_pdew||[]).length || (dem.beyond_pdew||[]).length)){
+    $("#pdewTotal").textContent="total "+fmt(dem.pdew_total)+" PDEW";
+    const tbl=list=>(list&&list.length)?list.map(x=>`<div class="pdewrow"><span class="k">${x.name} <span style="color:var(--muted);font-size:11px">${x.code}</span></span><span class="vv">${x.pdew.toLocaleString()}</span></div>`).join(""):'<div class="fnote">None on the way.</div>';
+    $("#behindTbl").innerHTML=tbl(dem.behind_pdew);
+    $("#beyondTbl").innerHTML=tbl(dem.beyond_pdew);
+    fr.classList.remove("hidden");
+  } else { fr.classList.add("hidden"); }
+
+  const spill = cap.spill>0.02*(dem.total||1);
+  $("#cap").className="banner "+(spill?"warn":"ok");
+  $("#cap").textContent = (spill?"⚠ ":"✓ ")+(cap.recommendation||("Fits "+cap.freq+"x/week "+cap.aircraft+" at "+pct(cap.load)+" load."));
+  const af=d.airfield;
+  if(af&&af.band){
+    $("#airfield").classList.remove("hidden");
+    const warn=af.band!=="OK";
+    $("#airfield").className="banner "+(warn?"warn":"ok");
+    $("#airfield").textContent=(warn?"⚠ Airfield ("+af.airport+"): ":"✓ Airfield ("+af.airport+"): ")+(af.note||af.band);
+  } else { $("#airfield").classList.add("hidden"); }
+
+  applyMode();
+  $("#results").classList.remove("hidden");
+}
+function dem_shares(d){
+  const s=d.catchment.observed_share||{}, nm=d.catchment.names||{}, home=d.catchment.home;
+  return Object.keys(s).map(c=>({n:nm[c]||c,v:s[c],home:c===home})).sort((a,b)=>b.v-a.v);
+}
+</script>
+</body>
+</html>

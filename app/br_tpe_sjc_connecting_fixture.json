@@ -1,0 +1,56 @@
+{
+  "_note": "CALIBRATION FIXTURE - EVA Air TPE-SJC (entry 0bdfcfcb, 7x weekly B77W 323, FY2025). Connecting = per-city demand x QSI capture, not stimulated. Overall beyond TPE 1.6% (72,681), behind SJC 0.5% (16,569); P2P 39.8% (92,000). Note NKG 34.4% / SZX 30.0% / HGH 20.2% (gateways) vs HKG 8.4% / SHA 4.1% (well-served) = the spread. Same city differs from the China Airlines deck (NKG 17.2% there) because the route assumptions differ - feed is route-specific. Demand absolute; capture decimal.",
+  "service": {"carrier": "BR", "hub": "TPE", "home": "SJC", "catchment": "SFO,SJC,OAK", "freq": 7, "seats": 323, "aircraft": "B77W", "fly_min": 825, "forecast_to": "2025"},
+  "p2p": {"capture": 0.398, "forecast": 92000},
+  "connecting_at_hub": {
+    "total": {"demand": 4520442, "capture": 0.016, "forecast": 72681},
+    "cities": [
+      {"code": "MNL", "demand": 485148, "capture": 0.055, "fc": 12174},
+      {"code": "SGN", "demand": 225252, "capture": 0.038, "fc": 8478},
+      {"code": "SIN", "demand": 261872, "capture": 0.088, "fc": 7975},
+      {"code": "BKK", "demand": 183940, "capture": 0.042, "fc": 7662},
+      {"code": "NKG", "demand": 21246, "capture": 0.344, "fc": 7304},
+      {"code": "SZX", "demand": 23717, "capture": 0.300, "fc": 7104},
+      {"code": "SHA", "demand": 377773, "capture": 0.041, "fc": 6000},
+      {"code": "HKG", "demand": 523007, "capture": 0.084, "fc": 4870},
+      {"code": "HGH", "demand": 19232, "capture": 0.202, "fc": 3893},
+      {"code": "CKG", "demand": 16181, "capture": 0.183, "fc": 2934},
+      {"code": "MFM", "demand": 4636, "capture": 0.187, "fc": 867},
+      {"code": "CNX", "demand": 14625, "capture": 0.051, "fc": 748},
+      {"code": "HAN", "demand": 41208, "capture": 0.016, "fc": 673},
+      {"code": "SEL", "demand": 423689, "capture": 0.014, "fc": 573},
+      {"code": "TAE", "demand": 1901, "capture": 0.173, "fc": 330},
+      {"code": "CEB", "demand": 43164, "capture": 0.005, "fc": 236},
+      {"code": "PUS", "demand": 13378, "capture": 0.015, "fc": 206},
+      {"code": "KUL", "demand": 40120, "capture": 0.005, "fc": 205},
+      {"code": "TAO", "demand": 23893, "capture": 0.016, "fc": 191},
+      {"code": "NCP", "demand": 16604, "capture": 0.008, "fc": 121},
+      {"code": "JKT", "demand": 45261, "capture": 0.002, "fc": 101},
+      {"code": "HIJ", "demand": 5016, "capture": 0.004, "fc": 19},
+      {"code": "BKI", "demand": 1337, "capture": 0.012, "fc": 16}
+    ]
+  },
+  "connecting_at_home": {
+    "total": {"demand": 3215646, "capture": 0.005, "forecast": 16569},
+    "cities": [
+      {"code": "LAX", "demand": 426364, "capture": 0.056, "fc": 4507},
+      {"code": "HOU", "demand": 64698, "capture": 0.222, "fc": 2840},
+      {"code": "SAN", "demand": 18005, "capture": 0.085, "fc": 1530},
+      {"code": "DEN", "demand": 17047, "capture": 0.083, "fc": 1415},
+      {"code": "PDX", "demand": 26706, "capture": 0.041, "fc": 1088},
+      {"code": "LAS", "demand": 23747, "capture": 0.046, "fc": 1087},
+      {"code": "PHX", "demand": 17270, "capture": 0.047, "fc": 815},
+      {"code": "DFW", "demand": 33886, "capture": 0.022, "fc": 750},
+      {"code": "SEA", "demand": 82767, "capture": 0.027, "fc": 706},
+      {"code": "BOI", "demand": 4082, "capture": 0.163, "fc": 667},
+      {"code": "AUS", "demand": 18538, "capture": 0.030, "fc": 563},
+      {"code": "SLC", "demand": 11634, "capture": 0.022, "fc": 250},
+      {"code": "BNA", "demand": 3565, "capture": 0.041, "fc": 145},
+      {"code": "CHI", "demand": 63435, "capture": 0.002, "fc": 68},
+      {"code": "ATL", "demand": 20820, "capture": 0.003, "fc": 59},
+      {"code": "GEG", "demand": 1073, "capture": 0.026, "fc": 27},
+      {"code": "MSP", "demand": 11838, "capture": 0.002, "fc": 21},
+      {"code": "ONT", "demand": 158373, "capture": 0.017, "fc": 9}
+    ]
+  }
+}

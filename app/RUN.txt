@@ -1,0 +1,15 @@
+QSI Auto - quick start
+======================
+1. Install Python 3.12, then from this folder:
+       python -m venv .venv
+       .venv\Scripts\activate        (Windows)   or   source .venv/bin/activate   (Mac/Linux)
+       pip install -r requirements.txt
+
+2. Launch the portal:
+       streamlit run avia_qsi_auto_v3.py
+   A browser tab opens at http://localhost:8501
+
+3. To reproduce the validated BA LHR-SJC result (129,162 pax) you must first place the
+   source Sabre/QSI workbooks in the /data folder (see HANDOVER.md, "Data the tool needs").
+   Without them, Path A and the regression test cannot run; Path B (new route) and the
+   upload-driven tabs still work.

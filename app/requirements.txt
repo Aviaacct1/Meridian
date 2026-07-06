@@ -1,0 +1,34 @@
+# Avia Cortex / QSI Auto - runtime dependencies (Python 3.12).
+#
+# PIN for the demo machine: this is the curated DIRECT dependency set. To lock exact versions for the
+# World Routes laptop, build the venv, install from here, confirm the demo runs, then freeze:
+#
+#     py -3.12 -m venv C:\AviaDemo\.venv
+#     C:\AviaDemo\.venv\Scripts\python -m pip install -r requirements.txt
+#     C:\AviaDemo\.venv\Scripts\python -m pip freeze > requirements.lock.txt
+#
+# Deploy from requirements.lock.txt so versions can't drift mid-demo. See DEPLOY_DEMO.md.
+
+# --- Cortex portal server + forecast engine (required to run cortex_app on :8010) ---
+fastapi
+uvicorn
+duckdb>=1.0
+airportsdata
+global-land-mask       # water-boundary catchment check; without it island catchments over-read
+
+# --- deliverable generators (report / workbook / deck endpoints) ---
+openpyxl>=3.1          # .xlsx business case, QSI workbooks, /api/report
+python-pptx>=0.6.23    # .pptx deck generation
+python-docx            # .docx packs
+xlrd>=2.0              # reads legacy .xls (MCT files, older Sabre extracts)
+
+# --- numeric helpers used in the catchment / drive-time layer ---
+numpy
+
+# --- researched airline pitch (Stage 2). Needs ANTHROPIC_API_KEY. NOT run live at the stand (D3);
+#     pre-generate the pack and open the HTML. Safe to install; the core demo does not require it. ---
+anthropic
+
+# --- legacy Streamlit tool (avia_qsi_auto_v3.py); not the demo server, kept for the older workflow ---
+streamlit>=1.33
+pandas>=2.1

@@ -1,0 +1,10 @@
+*.duckdb
+*.duckdb.*
+bt_*.csv
+backtest_*.csv
+_btclean.csv
+__pycache__/
+*.pyc
+.venv/
+duckdb_tmp/
+~$*

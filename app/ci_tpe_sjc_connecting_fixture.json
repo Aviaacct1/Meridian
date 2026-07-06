@@ -1,0 +1,57 @@
+{
+  "_note": "CALIBRATION FIXTURE recovered 28 June 2026 from 'China Airlines TPE-SJC Forecast 17Sep25.pptx' (Egnyte /07 Current Projects/San Jose - Route Development/Target Airlines/China Airlines/WR25), entry e4cd080e-2940-4ae4-99f6-a1f759409bd8. This is the PROVEN connecting-traffic method made explicit: per-city connecting demand x a QSI-derived CAPTURE rate, summed. The capture rates are SMALL (overall 1.5-1.6%, individual cities 0.1-19.9%) and vary with competition - the opposite of the 20-40% the current run_multihub_qsi produces, which over-credits the new service ~15x. Target: tune the QSI engine until it reproduces these per-city rates. Service spec = China Airlines TPE-SJC, 4x weekly, A350-900 (306 seats), forecast year-end June 2028. P2P = 35.0% capture x 209,400 grown demand (1.20 stim) = 73,300. Connecting NOT stimulated (existing direct services / alternative routings). Double connections (over both TPE and SJC) excluded. Demand columns are absolute annual passengers (the deck's '000s' header is mislabelled).",
+  "service": {"carrier": "CI", "hub": "TPE", "home": "SJC", "catchment": "SFO,SJC,OAK", "freq": 4, "seats": 306, "aircraft": "A359", "fly_min": 825, "forecast_to": "2028-06"},
+  "p2p": {"grown_demand": 209400, "stim": 1.20, "capture": 0.350, "forecast": 73300},
+  "connecting_at_hub": {
+    "_desc": "Bay Area <-> Asia-beyond-Taipei, connecting at TPE (the foreign hub)",
+    "total": {"demand": 1097630, "capture": 0.015, "forecast": 15969},
+    "cities": [
+      {"code": "MNL", "demand": 234164, "capture": 0.037, "fc": 8640},
+      {"code": "SHA", "demand": 114580, "capture": 0.015, "fc": 1669},
+      {"code": "HKG", "demand": 88434, "capture": 0.018, "fc": 1570},
+      {"code": "NKG", "demand": 7018, "capture": 0.172, "fc": 1209},
+      {"code": "SIN", "demand": 57993, "capture": 0.016, "fc": 923},
+      {"code": "SGN", "demand": 194322, "capture": 0.003, "fc": 604},
+      {"code": "WUH", "demand": 15730, "capture": 0.019, "fc": 291},
+      {"code": "BJS", "demand": 79204, "capture": 0.003, "fc": 270},
+      {"code": "SZX", "demand": 4232, "capture": 0.059, "fc": 252},
+      {"code": "BKK", "demand": 27543, "capture": 0.007, "fc": 185},
+      {"code": "OKA", "demand": 7194, "capture": 0.016, "fc": 116},
+      {"code": "MFM", "demand": 1139, "capture": 0.080, "fc": 91},
+      {"code": "JKT", "demand": 9407, "capture": 0.009, "fc": 85},
+      {"code": "ISG", "demand": 527, "capture": 0.052, "fc": 27},
+      {"code": "CEB", "demand": 24606, "capture": 0.001, "fc": 14},
+      {"code": "CKG", "demand": 5414, "capture": 0.002, "fc": 11},
+      {"code": "KUL", "demand": 5632, "capture": 0.001, "fc": 8},
+      {"code": "PQC", "demand": 3276, "capture": 0.001, "fc": 3}
+    ]
+  },
+  "connecting_at_home": {
+    "_desc": "US-beyond-SJC <-> Taipei, connecting at SJC (the home hub, US domestic feed)",
+    "total": {"demand": 1128513, "capture": 0.016, "forecast": 18609},
+    "cities": [
+      {"code": "PHX", "demand": 91169, "capture": 0.094, "fc": 8567},
+      {"code": "SAN", "demand": 21978, "capture": 0.087, "fc": 1919},
+      {"code": "AUS", "demand": 27062, "capture": 0.065, "fc": 1767},
+      {"code": "LAS", "demand": 28140, "capture": 0.055, "fc": 1550},
+      {"code": "LAX", "demand": 331368, "capture": 0.030, "fc": 1163},
+      {"code": "DFW", "demand": 45311, "capture": 0.017, "fc": 748},
+      {"code": "SLC", "demand": 13762, "capture": 0.045, "fc": 615},
+      {"code": "SNA", "demand": 5146, "capture": 0.097, "fc": 500},
+      {"code": "DEN", "demand": 23519, "capture": 0.020, "fc": 473},
+      {"code": "PDX", "demand": 23239, "capture": 0.018, "fc": 419},
+      {"code": "HOU", "demand": 62706, "capture": 0.010, "fc": 164},
+      {"code": "BOI", "demand": 8096, "capture": 0.020, "fc": 159},
+      {"code": "SEA", "demand": 178679, "capture": 0.023, "fc": 153},
+      {"code": "CHI", "demand": 61206, "capture": 0.005, "fc": 124},
+      {"code": "ONT", "demand": 135111, "capture": 0.046, "fc": 91},
+      {"code": "ATL", "demand": 19956, "capture": 0.004, "fc": 73},
+      {"code": "MSP", "demand": 13317, "capture": 0.004, "fc": 55},
+      {"code": "BUR", "demand": 249, "capture": 0.199, "fc": 50},
+      {"code": "EUG", "demand": 916, "capture": 0.012, "fc": 11},
+      {"code": "GEG", "demand": 1612, "capture": 0.003, "fc": 6},
+      {"code": "LGB", "demand": 29, "capture": 0.050, "fc": 2},
+      {"code": "SJD", "demand": 312, "capture": 0.002, "fc": 1}
+    ]
+  }
+}

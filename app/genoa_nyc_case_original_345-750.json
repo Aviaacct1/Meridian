@@ -1,0 +1,41 @@
+{
+  "population": 19536487.0,
+  "nyc_od_total": 553324.5400000003,
+  "propensity": 0.028322622178695703,
+  "avg_fare": 690.5496111229759,
+  "observed_split": {
+    "GOA": 7036.400000000001,
+    "MXP": 433667.77000000025,
+    "LIN": 55167.16999999999,
+    "BGY": 938.5500000000001,
+    "TRN": 12476.17,
+    "BLQ": 44038.48
+  },
+  "service_constants": {
+    "GOA": -147.73621535702665,
+    "MXP": 393.9397361528962,
+    "LIN": 107.79361268548773,
+    "BGY": -380.55057995891076,
+    "TRN": -60.494589026776715,
+    "BLQ": 87.04803550433013
+  },
+  "natural": 92542.15706271352,
+  "current": 7036.400000000001,
+  "capture": 0.65,
+  "repatriated": 55578.74209076379,
+  "directional_demand": 62615.142090763795,
+  "frequency": 7,
+  "econ_lf": 0.85,
+  "bus_lf": 0.85,
+  "_note": "ORIGINAL hand-built reference (econ $345 / bus $750 one-way), the validated chain at the close of the 27 June 2026 session: route profit 15,170 / 10.7% margin / 73.5% breakeven, annual 5,521,979. Preserved as the methodology anchor. The current genoa_nyc_case.json carries the firmed economics (bus fare $1,400 per John's entrant-yield judgement, 27 June 2026). Catchment and demand figures are identical between the two; only the fares and resulting P&L differ.",
+  "route_pnl": {
+    "gross_rev": 142113.52999999997,
+    "profit": 15170.272999040884,
+    "margin": 0.10674756301557556,
+    "breakeven_lf": 0.7354645134723946,
+    "total_cost": 126943.25700095909
+  },
+  "annual_pnl": {
+    "annual_profit": 5521979.371650882
+  }
+}

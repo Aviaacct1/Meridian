@@ -1,0 +1,15 @@
+{
+  "dest_name": "New York",
+  "dest_airports": ["JFK", "EWR", "LGA"],
+  "observed_split": {
+    "GOA": 9043.41,
+    "MXP": 703348.79,
+    "LIN": 48955.79,
+    "BGY": 2.0,
+    "TRN": 16222.52,
+    "BLQ": 51188.23
+  },
+  "total": 828760.74,
+  "avg_fare": 700.0,
+  "source": "Sabre MI Mar 2025-Feb 2026 (OD Italy 202503-202602.xlsx, Origin Airports + GOA routeing); avg_fare informational (case pins entrant yields)"
+}

@@ -1,0 +1,8 @@
+{
+  "dest_name": "Caribbean",
+  "dest_airports": ["PUJ", "CUN", "VRA", "HAV", "MBJ", "POP", "SDQ"],
+  "observed_split": {"GOA": 157.0, "MXP": 46452.0, "LIN": 8708.0, "BGY": 0.0, "TRN": 876.0, "BLQ": 6725.0},
+  "total": 62918.0,
+  "avg_fare": 618.31,
+  "source": "Sabre ODPOO 2024 via sabre_caribbean_check.py (real; directionality unfiltered)"
+}

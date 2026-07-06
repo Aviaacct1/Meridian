@@ -1,0 +1,188 @@
+<meta charset="utf-8">
+<style>
+  .avia { font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color:#1a1a1a; max-width:1080px; margin:0 auto; }
+  .avia * { box-sizing:border-box; }
+  .av-head { background:#002060; color:#fff; padding:18px 22px; border-radius:10px 10px 0 0; }
+  .av-head h1 { margin:0; font-size:20px; font-weight:600; }
+  .av-head p { margin:4px 0 0; font-size:13px; color:#b9c6e6; }
+  .av-body { display:grid; grid-template-columns:340px 1fr; gap:0; border:1px solid #d8dde8; border-top:none; border-radius:0 0 10px 10px; }
+  .av-controls { padding:18px; border-right:1px solid #e6e9f0; background:#f7f9fc; }
+  .av-results { padding:18px; }
+  .av-controls h2, .av-results h2 { font-size:13px; text-transform:uppercase; letter-spacing:.04em; color:#5a6b8c; margin:0 0 12px; font-weight:600; }
+  .ctl { margin-bottom:14px; }
+  .ctl label { display:flex; justify-content:space-between; font-size:13px; color:#33415c; margin-bottom:4px; }
+  .ctl label b { color:#002060; font-weight:600; }
+  .ctl input[type=range] { width:100%; accent-color:#002060; }
+  .cards { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-bottom:16px; }
+  .card { background:#f7f9fc; border-radius:8px; padding:12px 14px; }
+  .card .lab { font-size:12px; color:#5a6b8c; }
+  .card .val { font-size:24px; font-weight:600; color:#002060; margin-top:2px; }
+  .card .sub { font-size:12px; color:#7a869c; margin-top:2px; }
+  .card.big { grid-column:span 2; background:#002060; }
+  .card.big .lab { color:#b9c6e6; } .card.big .val { color:#fff; } .card.big .sub { color:#9fb0d6; }
+  .panel { border-top:1px solid #e6e9f0; padding-top:14px; margin-top:6px; }
+  .panel h3 { font-size:13px; color:#002060; margin:0 0 10px; font-weight:600; }
+  .srow { display:grid; grid-template-columns:160px 1fr 90px; align-items:center; gap:10px; margin-bottom:7px; font-size:13px; }
+  .bar { height:14px; background:#e6e9f0; border-radius:7px; overflow:hidden; }
+  .bar span { display:block; height:100%; background:#3f6ad8; }
+  .srow b { text-align:right; color:#002060; }
+  .fleet { font-size:13px; color:#33415c; line-height:1.9; }
+  .fleet b { color:#002060; }
+  .ladder { display:flex; gap:8px; margin-top:8px; }
+  .ladder div { flex:1; text-align:center; background:#f7f9fc; border-radius:8px; padding:8px; }
+  .ladder div .l { font-size:11px; color:#5a6b8c; } .ladder div .v { font-size:16px; font-weight:600; color:#002060; }
+  .disc { font-size:11px; color:#8893a8; padding:12px 22px 4px; line-height:1.5; }
+  @media (max-width:760px){ .av-body{grid-template-columns:1fr;} .av-controls{border-right:none;border-bottom:1px solid #e6e9f0;} }
+</style>
+
+<div class="avia">
+  <div class="av-head">
+    <h1>Avia route assessment &nbsp;&middot;&nbsp; Genoa &rarr; New York</h1>
+    <p>A321XLR &middot; catchment-to-profit model &middot; every key input overridable (move a slider)</p>
+  </div>
+  <div class="av-body">
+    <div class="av-controls">
+      <h2>Inputs</h2>
+      <div class="ctl"><label>Capture of leaked catchment <b id="o_cap">65%</b></label><input id="cap" type="range" min="0.30" max="0.85" step="0.01" value="0.65"></div>
+      <div class="ctl"><label>Frequency (each way/week) <b id="o_freq">7</b></label><input id="freq" type="range" min="3" max="14" step="1" value="7"></div>
+      <div class="ctl"><label>Planning load-factor cap <b id="o_plf">85%</b></label><input id="plf" type="range" min="0.70" max="0.92" step="0.01" value="0.85"></div>
+      <div class="ctl"><label>Economy fare (one-way) <b id="o_ef">$345</b></label><input id="ef" type="range" min="250" max="600" step="5" value="345"></div>
+      <div class="ctl"><label>Business fare (one-way) <b id="o_bf">$1,400</b></label><input id="bf" type="range" min="700" max="2500" step="50" value="1400"></div>
+      <div class="ctl"><label>Jet fuel price ($/kg) <b id="o_fp">$0.90</b></label><input id="fp" type="range" min="0.60" max="1.30" step="0.01" value="0.90"></div>
+      <div class="ctl"><label>Premium share of demand <b id="o_ps">20%</b></label><input id="ps" type="range" min="0.05" max="0.25" step="0.01" value="0.20"></div>
+      <div class="ctl"><label>Seasonality strength <b id="o_sea">100%</b></label><input id="sea" type="range" min="0" max="1" step="0.05" value="1.0"></div>
+      <div class="ctl"><label>Market adjustment <b id="o_mkt">neutral</b></label><input id="mkt" type="range" min="0.80" max="1.10" step="0.01" value="1.00"></div>
+    </div>
+    <div class="av-results">
+      <h2>Catchment, QSI &amp; demand</h2>
+      <div class="srow" style="grid-template-columns:1fr auto"><span>Genoa catchment population</span><b id="d_pop">19.5m</b></div>
+      <div class="srow" style="grid-template-columns:1fr auto"><span>New York O&amp;D market (Sabre 2024)</span><b id="d_od">553,000</b></div>
+      <div class="srow" style="grid-template-columns:1fr auto"><span>Genoa's natural NY catchment</span><b id="d_nat">92,500</b></div>
+      <div class="srow" style="grid-template-columns:1fr auto"><span>Carried by Genoa today</span><b id="d_cur">7,000</b></div>
+      <div class="srow" style="grid-template-columns:1fr auto"><span>Repatriated at the QSI capture</span><b id="d_rep">55,600</b></div>
+      <div class="srow" style="grid-template-columns:1fr auto"><span>Directional demand assumed (each way)</span><b id="d_dir">62,600</b></div>
+      <div class="srow" style="grid-template-columns:1fr auto"><span>Passengers assumed carried / year</span><b id="d_pax">112,600</b></div>
+
+      <h2 style="margin-top:18px">Route economics</h2>
+      <div class="cards">
+        <div class="card big"><div class="lab">Annual profit (flat daily, plan LF)</div><div class="val" id="r_annual">$9.1m</div><div class="sub" id="r_margin">margin 15.3%</div></div>
+        <div class="card"><div class="lab">Profit / turnaround</div><div class="val" id="r_turn">$25.1k</div><div class="sub">out + back</div></div>
+        <div class="card"><div class="lab">Breakeven load factor</div><div class="val" id="r_be">69%</div><div class="sub" id="r_lf">flying at 85% / 85%</div></div>
+      </div>
+
+      <div class="panel">
+        <h3>Seasonality (leisure profile, Aug/Feb demand <span id="r_ratio">2.5</span>x)</h3>
+        <div class="srow"><span>Nominal flat (plan LF)</span><div class="bar"><span id="b_a"></span></div><b id="v_a">$9.2m</b></div>
+        <div class="srow"><span>Flat daily, real demand</span><div class="bar"><span id="b_b"></span></div><b id="v_b">$4.8m</b></div>
+        <div class="srow"><span>Seasonal schedule</span><div class="bar"><span id="b_c"></span></div><b id="v_c">$8.0m</b></div>
+      </div>
+
+      <div class="panel">
+        <h3>Fleet &amp; redeployment</h3>
+        <div class="fleet">
+          Daily service needs <b id="f_ac">2</b> aircraft but generates <b id="f_frac">1.21</b> of flying &mdash;
+          <b id="f_util">60%</b> per-aircraft utilisation, leaving <b id="f_spare">239</b> spare rotations a year.
+          The headline charges ownership at the fully-utilised rate, so it is a network number:
+        </div>
+        <div class="ladder">
+          <div><div class="l">Standalone (Genoa-only fleet)</div><div class="v" id="f_standalone">$5.1m</div></div>
+          <div><div class="l">Network (fleet kept busy)</div><div class="v" id="f_network">$9.1m</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="disc">Indicative, for directional guidance only. Built on generic published assumptions, not any airline's actual LOPA, MTOW, contract terms or internal P&amp;L. Catchment, demand and fares anchored to the validated Genoa-New York case; actual results will differ.</div>
+</div>
+
+<script>
+(function(){
+  var POP=19536487,ODTOT=553325;
+  var NAT=92542.157,CUR=7036.4,ES=162,BS=20,SEATS=182,BURN=2500,BH=18,UTIL=5425,BLENDED_M=423967;
+  var MAINT=14740.385,OWN=16880.516,CREW=21600,INS=2156.682,LAND=4429,HAND=5871,NAV=1135,CARGO=7259.84;
+  var CAT_R=2.648,PAX_R=51.501,REC_R=46.351;
+  var DAYS=[31,28,31,30,31,30,31,31,30,31,30,31];
+  var BASE=[0.60,0.60,0.70,0.85,1.05,1.30,1.50,1.50,1.20,0.95,0.70,1.05];
+
+  function turn(lf_e,lf_b,ef,bf,fp){
+    var eo=ES*lf_e, bo=BS*lf_b, pax=2*(eo+bo);
+    var er=2*eo*ef, br=2*bo*bf, net=er+br+CARGO;
+    var rec=REC_R*pax, gross=net+rec;
+    var fuel=BURN*BH*fp, cat=CAT_R*pax, pp=PAX_R*pax;
+    var variable=fuel+MAINT+cat+LAND+pp+NAV+HAND;
+    var direct=OWN+INS+CREW, indirect=0.10*net;
+    var total=variable+direct+indirect, profit=gross-total;
+    var pax_var=cat+pp+indirect, fixed=total-pax_var, denom=gross-pax_var;
+    var lam=denom?fixed/denom:0, cur_lf=(eo+bo)/SEATS, be=cur_lf*lam;
+    return {profit:profit, margin:gross?profit/gross:0, be:be, gross:gross};
+  }
+  function lfs(directional, ps, freq, plf){
+    var esy=ES*freq*52, bsy=BS*freq*52;
+    var le=esy?Math.min(directional*(1-ps)/esy,plf):0;
+    var lb=bsy?Math.min(directional*ps/bsy,plf):0;
+    return [le,lb];
+  }
+  var fmtM=function(x){return '$'+(x/1e6).toFixed(1)+'m';};
+  var fmtK=function(x){return '$'+(x/1e3).toFixed(1)+'k';};
+  function g(id){return document.getElementById(id);}
+
+  function render(){
+    var cap=+g('cap').value, freq=+g('freq').value, plf=+g('plf').value;
+    var ef=+g('ef').value, bf=+g('bf').value, fp=+g('fp').value, ps=+g('ps').value, sea=+g('sea').value, mkt=+g('mkt').value;
+    g('o_cap').textContent=Math.round(cap*100)+'%'; g('o_freq').textContent=freq;
+    g('o_plf').textContent=Math.round(plf*100)+'%'; g('o_ef').textContent='$'+ef;
+    g('o_bf').textContent='$'+bf.toLocaleString(); g('o_fp').textContent='$'+fp.toFixed(2);
+    g('o_ps').textContent=Math.round(ps*100)+'%'; g('o_sea').textContent=Math.round(sea*100)+'%';
+    g('o_mkt').textContent = mkt===1 ? 'neutral' : (mkt>1?'+':'')+Math.round((mkt-1)*100)+'%';
+
+    var repat=(NAT-CUR)*cap;
+    var directional=(CUR+repat)*mkt;
+    g('d_pop').textContent=(POP/1e6).toFixed(1)+'m';
+    g('d_od').textContent=Math.round(ODTOT).toLocaleString();
+    g('d_nat').textContent=Math.round(NAT).toLocaleString();
+    g('d_cur').textContent=Math.round(CUR).toLocaleString();
+    g('d_rep').textContent=Math.round(repat*mkt).toLocaleString();
+    g('d_dir').textContent=Math.round(directional).toLocaleString();
+    var L=lfs(directional,ps,freq,plf), le=L[0], lb=L[1];
+    var t=turn(le,lb,ef,bf,fp);
+    var annual=t.profit*freq*52;
+    g('d_pax').textContent=Math.round(2*(ES*le+BS*lb)*freq*52).toLocaleString();
+    g('r_annual').textContent=fmtM(annual);
+    g('r_margin').textContent='margin '+(t.margin*100).toFixed(1)+'%';
+    g('r_turn').textContent=fmtK(t.profit);
+    g('r_be').textContent=Math.round(t.be*100)+'%';
+    g('r_lf').textContent='flying at '+Math.round(le*100)+'% / '+Math.round(lb*100)+'%';
+
+    var prof=BASE.map(function(b){return 1+sea*(b-1);});
+    var sp=prof.reduce(function(a,b){return a+b;},0); prof=prof.map(function(p){return p*12/sp;});
+    g('r_ratio').textContent=(prof[7]/prof[1]).toFixed(1);
+    var totD=DAYS.reduce(function(a,b){return a+b;},0);
+    var A=0,B=0,C=0;
+    for(var m=0;m<12;m++){
+      var dem=directional*(DAYS[m]/totD)*prof[m];
+      A += DAYS[m]*turn(plf,plf,ef,bf,fp).profit;
+      var lfB=Math.min(dem/(SEATS*DAYS[m]),plf);
+      B += DAYS[m]*turn(lfB,lfB,ef,bf,fp).profit;
+      var need=dem/(SEATS*plf), tC=Math.max(Math.min(DAYS[m],Math.ceil(need)),0.5*DAYS[m]);
+      var lfC=Math.min(dem/(SEATS*tC),plf);
+      C += tC*turn(lfC,lfC,ef,bf,fp).profit;
+    }
+    var mx=Math.max(A,B,C,1);
+    g('v_a').textContent=fmtM(A); g('v_b').textContent=fmtM(B); g('v_c').textContent=fmtM(C);
+    g('b_a').style.width=Math.max(0,A/mx*100)+'%';
+    g('b_b').style.width=Math.max(0,B/mx*100)+'%';
+    g('b_c').style.width=Math.max(0,C/mx*100)+'%';
+
+    var tot_bh=freq*52*BH, ceil=Math.max(1,Math.ceil(tot_bh/UTIL));
+    var frac=tot_bh/UTIL, per=tot_bh/ceil, spare=ceil*UTIL-tot_bh;
+    var mod_own=(OWN/BH)*tot_bh, ded=ceil*BLENDED_M*12, gap=ded-mod_own;
+    g('f_ac').textContent=ceil; g('f_frac').textContent=frac.toFixed(2);
+    g('f_util').textContent=Math.round(per/UTIL*100)+'%';
+    g('f_spare').textContent=Math.round(spare/BH).toLocaleString();
+    g('f_standalone').textContent=fmtM(annual-gap);
+    g('f_network').textContent=fmtM(annual);
+  }
+  var ids=['cap','freq','plf','ef','bf','fp','ps','sea','mkt'];
+  ids.forEach(function(id){ g(id).addEventListener('input',render); });
+  render();
+})();
+</script>

@@ -1,0 +1,44 @@
+{
+  "_note": "CALIBRATION FIXTURE - Air China PKX/PEK-SJC (entry 3e72521a, 7x weekly A359 280, FY2025, the 2024 re-attraction pitch). Connecting = per-city demand x QSI capture, not stimulated. Overall beyond Beijing 2.9% (39,495), behind SJC 0.5% (12,078); P2P 39.9% (114,000); headline route Year-1 165,599 at 81.2% seat factor. Guangzhou 28.9% (gateway over Beijing) vs Shanghai 1.6% (well-served) = the spread; Phoenix 31.7% / Portland 18% on the home side. Demand absolute; capture decimal.",
+  "service": {"carrier": "CA", "hub": "PEK", "home": "SJC", "catchment": "SFO,SJC,OAK", "freq": 7, "seats": 280, "aircraft": "A359", "fly_min": 720, "forecast_to": "2025"},
+  "p2p": {"capture": 0.399, "forecast": 114000},
+  "connecting_at_hub": {
+    "total": {"demand": 1356897, "capture": 0.029, "forecast": 39495},
+    "cities": [
+      {"code": "CAN", "demand": 82528, "capture": 0.289, "fc": 23852},
+      {"code": "MNL", "demand": 270860, "capture": 0.032, "fc": 8793},
+      {"code": "SHA", "demand": 142490, "capture": 0.016, "fc": 2331},
+      {"code": "BKK", "demand": 27594, "capture": 0.046, "fc": 1263},
+      {"code": "SIN", "demand": 59668, "capture": 0.019, "fc": 1108},
+      {"code": "SGN", "demand": 174885, "capture": 0.005, "fc": 948},
+      {"code": "JKT", "demand": 10491, "capture": 0.040, "fc": 417},
+      {"code": "HGH", "demand": 7226, "capture": 0.038, "fc": 273},
+      {"code": "CKG", "demand": 5343, "capture": 0.050, "fc": 268},
+      {"code": "MFM", "demand": 1640, "capture": 0.048, "fc": 79},
+      {"code": "KUL", "demand": 5443, "capture": 0.011, "fc": 59},
+      {"code": "CJU", "demand": 328, "capture": 0.123, "fc": 40},
+      {"code": "PUS", "demand": 5638, "capture": 0.005, "fc": 30},
+      {"code": "DPS", "demand": 13032, "capture": 0.002, "fc": 24},
+      {"code": "BKI", "demand": 203, "capture": 0.047, "fc": 10}
+    ]
+  },
+  "connecting_at_home": {
+    "total": {"demand": 2671530, "capture": 0.005, "forecast": 12078},
+    "cities": [
+      {"code": "PHX", "demand": 12396, "capture": 0.317, "fc": 3926},
+      {"code": "PDX", "demand": 15578, "capture": 0.180, "fc": 2808},
+      {"code": "LAX", "demand": 336445, "capture": 0.014, "fc": 1018},
+      {"code": "SEA", "demand": 57071, "capture": 0.026, "fc": 915},
+      {"code": "AUS", "demand": 7914, "capture": 0.097, "fc": 767},
+      {"code": "LAS", "demand": 37542, "capture": 0.015, "fc": 559},
+      {"code": "SLC", "demand": 10720, "capture": 0.049, "fc": 520},
+      {"code": "ATL", "demand": 19761, "capture": 0.024, "fc": 473},
+      {"code": "DFW", "demand": 26675, "capture": 0.038, "fc": 469},
+      {"code": "SAN", "demand": 12758, "capture": 0.019, "fc": 248},
+      {"code": "DEN", "demand": 15314, "capture": 0.012, "fc": 185},
+      {"code": "HOU", "demand": 25208, "capture": 0.004, "fc": 90},
+      {"code": "NYC", "demand": 364715, "capture": 0.001, "fc": 61},
+      {"code": "MSP", "demand": 10159, "capture": 0.004, "fc": 39}
+    ]
+  }
+}

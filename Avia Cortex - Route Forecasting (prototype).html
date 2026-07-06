@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Avia Cortex — Route Forecasting</title>
+<style>
+  :root{
+    --navy:#1F3864; --navy-700:#16294A; --navy-900:#0E1B33;
+    --accent:#2F6BF0; --accent-soft:#EAF0FE;
+    --green:#0E9F6E; --green-soft:#E6F6EF; --amber:#C9781A; --amber-soft:#FBF0E0;
+    --ink:#0F1C30; --body:#46566E; --muted:#8A97AB; --line:#E6EBF2;
+    --bg:#F4F7FB; --card:#FFFFFF;
+    --r:12px; --sh:0 1px 2px rgba(16,32,60,.04), 0 6px 20px rgba(16,32,60,.06);
+    --font:-apple-system,"Segoe UI",Roboto,system-ui,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font);background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;font-size:14px;line-height:1.45}
+  .app{display:grid;grid-template-columns:248px 1fr;min-height:100vh}
+
+  /* sidebar */
+  .side{background:var(--navy-900);color:#C8D3E6;display:flex;flex-direction:column;padding:22px 16px}
+  .brand{display:flex;align-items:center;gap:11px;padding:6px 8px 22px}
+  .brand .mark{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--accent),#5C8DF6);display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+  .brand .mark svg{width:18px;height:18px}
+  .brand .name{font-weight:700;letter-spacing:.3px;color:#fff;font-size:15px;line-height:1.1}
+  .brand .name small{display:block;font-weight:500;font-size:10.5px;letter-spacing:2px;color:#7E8FB0;margin-top:2px}
+  .navlbl{font-size:10.5px;letter-spacing:1.4px;text-transform:uppercase;color:#5F6F8E;margin:18px 8px 8px}
+  .nav a{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;color:#C8D3E6;text-decoration:none;font-size:13.5px;font-weight:500}
+  .nav a .ic{width:16px;height:16px;opacity:.85;flex:0 0 auto}
+  .nav a.active{background:rgba(47,107,240,.18);color:#fff}
+  .nav a.soft{color:#6C7C9B}
+  .nav a .soon{margin-left:auto;font-size:9.5px;letter-spacing:.6px;color:#6C7C9B;border:1px solid #2C3C5C;border-radius:20px;padding:1px 7px}
+  .side .foot{margin-top:auto;font-size:11px;color:#5F6F8E;padding:14px 8px 2px;border-top:1px solid #1C2A45}
+
+  /* topbar */
+  .main{display:flex;flex-direction:column;min-width:0}
+  .top{height:62px;background:var(--card);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:16px;padding:0 28px}
+  .search{flex:1;max-width:440px;display:flex;align-items:center;gap:9px;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:8px 12px;color:var(--muted);font-size:13px}
+  .top .pill{margin-left:auto;font-size:12px;color:var(--body);background:var(--bg);border:1px solid var(--line);border-radius:20px;padding:6px 12px;font-weight:600}
+  .avatar{width:32px;height:32px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
+
+  .wrap{padding:26px 28px 40px;max-width:1240px;width:100%}
+  .head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:22px}
+  .head h1{font-size:25px;font-weight:700;letter-spacing:-.2px}
+  .head p{color:var(--body);font-size:13.5px;margin-top:4px}
+  .btn{background:var(--accent);color:#fff;border:none;border-radius:9px;padding:11px 18px;font-weight:600;font-size:13.5px;font-family:var(--font);cursor:pointer;box-shadow:0 2px 8px rgba(47,107,240,.28)}
+  .btn.ghost{background:#fff;color:var(--navy);border:1px solid var(--line);box-shadow:none}
+
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;box-shadow:var(--sh)}
+  .kpi .l{font-size:11px;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);font-weight:600}
+  .kpi .v{font-size:30px;font-weight:700;letter-spacing:-.5px;margin-top:7px}
+  .kpi .s{font-size:12px;color:var(--body);margin-top:5px;display:flex;align-items:center;gap:6px}
+  .tag{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px}
+  .tag.up{background:var(--green-soft);color:var(--green)} .tag.am{background:var(--amber-soft);color:var(--amber)}
+
+  .grid{display:grid;grid-template-columns:1.55fr 1fr;gap:16px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh)}
+  .card .ch{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--line)}
+  .card .ch h3{font-size:15px;font-weight:700}
+  .card .ch .sub{font-size:12px;color:var(--muted)}
+  .chip{font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;background:var(--green-soft);color:var(--green);display:inline-flex;align-items:center;gap:5px}
+  .chip .dot{width:6px;height:6px;border-radius:50%;background:var(--green)}
+  .cb{padding:18px}
+
+  .barrow{display:flex;align-items:center;gap:10px;margin:9px 0}
+  .barrow .nm{width:96px;font-size:12.5px;color:var(--body);text-align:right;flex:0 0 auto}
+  .track{flex:1;background:var(--bg);border-radius:6px;height:18px;overflow:hidden}
+  .fill{height:100%;border-radius:6px;background:var(--navy)}
+  .fill.home{background:var(--green)}
+  .barrow .pc{width:42px;font-size:12px;font-weight:700;color:var(--ink);flex:0 0 auto}
+
+  .funnel{display:flex;flex-direction:column;gap:9px}
+  .fstep{border-radius:9px;padding:11px 14px;color:#fff;display:flex;align-items:center;justify-content:space-between}
+  .fstep .fl{font-size:12.5px;font-weight:600;opacity:.95} .fstep .fv{font-size:16px;font-weight:700}
+  .fnote{font-size:11.5px;color:var(--muted);margin-top:4px}
+
+  .pnl{display:flex;flex-direction:column;gap:0}
+  .pl{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px dashed var(--line);font-size:13px}
+  .pl .k{color:var(--body)} .pl .vv{font-weight:600}
+  .pl.tot{border-bottom:none;border-top:2px solid var(--navy);margin-top:4px;padding-top:11px}
+  .pl.tot .k{font-weight:700;color:var(--ink)} .pl.tot .vv{color:var(--green);font-weight:700}
+  .stat2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+  .st{background:var(--bg);border-radius:9px;padding:12px 14px}
+  .st .l{font-size:10.5px;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);font-weight:600}
+  .st .v{font-size:21px;font-weight:700;margin-top:4px}
+
+  table{width:100%;border-collapse:collapse}
+  thead th{font-size:10.5px;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);text-align:left;padding:10px 18px;font-weight:600;border-bottom:1px solid var(--line)}
+  tbody td{padding:13px 18px;border-bottom:1px solid var(--line);font-size:13.5px}
+  tbody tr:last-child td{border-bottom:none}
+  td .rt{font-weight:600;color:var(--ink)} td .mut{color:var(--muted);font-size:12px}
+  .badge{font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px}
+  .badge.val{background:var(--green-soft);color:var(--green)} .badge.draft{background:#EEF1F6;color:#7A879B} .badge.run{background:var(--accent-soft);color:var(--accent)}
+  .mini{display:inline-flex;gap:2px;align-items:flex-end;height:20px}
+  .mini i{width:4px;background:var(--accent);border-radius:1px;display:inline-block}
+  .secttl{font-size:13px;font-weight:700;color:var(--ink);margin:24px 2px 12px;letter-spacing:.2px}
+  .foot-note{margin-top:22px;font-size:11.5px;color:var(--muted);font-style:italic}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- sidebar -->
+  <aside class="side">
+    <div class="brand">
+      <span class="mark"><svg viewBox="0 0 24 24" fill="none"><path d="M3 12c4 0 5-7 9-7s5 14 9 7" stroke="#fff" stroke-width="2.1" stroke-linecap="round"/></svg></span>
+      <span class="name">Avia&nbsp;Cortex<small>INTELLIGENCE PLATFORM</small></span>
+    </div>
+    <div class="navlbl">Route Forecasting</div>
+    <nav class="nav">
+      <a class="active" href="#"><span class="ic">▥</span> Dashboard</a>
+      <a href="#"><span class="ic">✈</span> Route assessments</a>
+      <a href="#"><span class="ic">◎</span> Catchment</a>
+      <a href="#"><span class="ic">▤</span> Economics</a>
+      <a href="#"><span class="ic">⛁</span> Data &amp; schedules</a>
+    </nav>
+    <div class="navlbl">Cortex products</div>
+    <nav class="nav">
+      <a class="active" href="#"><span class="ic">✈</span> Route Forecasting</a>
+      <a class="soft" href="#"><span class="ic">$</span> Fleet Economics <span class="soon">SOON</span></a>
+      <a class="soft" href="#"><span class="ic">◍</span> Network Planning <span class="soon">SOON</span></a>
+      <a class="soft" href="#"><span class="ic">◴</span> Catchment Studio <span class="soon">SOON</span></a>
+    </nav>
+    <div class="foot">Powered by Avia&nbsp;Cortex · v0.9</div>
+  </aside>
+
+  <!-- main -->
+  <div class="main">
+    <div class="top">
+      <div class="search"><span>⌕</span> Search routes, airports, carriers…</div>
+      <span class="pill">FY2026 · OAG wc 25 May 26</span>
+      <div class="avatar">JC</div>
+    </div>
+
+    <div class="wrap">
+      <div class="head">
+        <div>
+          <h1>Route Forecasting</h1>
+          <p>Catchment, demand and economics for any city pair — calibrated to live schedule and origin data.</p>
+        </div>
+        <div style="display:flex;gap:10px">
+          <button class="btn ghost">Export deck</button>
+          <button class="btn">+ New assessment</button>
+        </div>
+      </div>
+
+      <!-- KPIs -->
+      <div class="kpis">
+        <div class="kpi"><div class="l">Catchment population</div><div class="v">3.3m</div><div class="s">within 2-hour drive of Genoa</div></div>
+        <div class="kpi"><div class="l">Addressable demand</div><div class="v">92,500</div><div class="s">New York trips / year in catchment</div></div>
+        <div class="kpi"><div class="l">Repatriable by nonstop</div><div class="v">55,600</div><div class="s"><span class="tag up">65% capture</span> each way</div></div>
+        <div class="kpi"><div class="l">Route operating margin</div><div class="v">10.7%</div><div class="s"><span class="tag up">▲ profitable</span> daily A321XLR</div></div>
+      </div>
+
+      <!-- featured assessment -->
+      <div class="grid">
+        <div class="card">
+          <div class="ch">
+            <div><h3>Genoa → New York</h3><div class="sub">A321XLR · daily · catchment 220 km</div></div>
+            <span class="chip"><span class="dot"></span> Validated</span>
+          </div>
+          <div class="cb">
+            <div style="font-size:12px;font-weight:700;color:var(--ink);margin-bottom:6px">Where the catchment flies to New York today</div>
+            <div class="barrow"><div class="nm">Milan MXP</div><div class="track"><div class="fill" style="width:78%"></div></div><div class="pc">78%</div></div>
+            <div class="barrow"><div class="nm">Milan Linate</div><div class="track"><div class="fill" style="width:10%"></div></div><div class="pc">10%</div></div>
+            <div class="barrow"><div class="nm">Bologna</div><div class="track"><div class="fill" style="width:8%"></div></div><div class="pc">8%</div></div>
+            <div class="barrow"><div class="nm">Turin</div><div class="track"><div class="fill" style="width:2.3%"></div></div><div class="pc">2%</div></div>
+            <div class="barrow"><div class="nm">Genoa</div><div class="track"><div class="fill home" style="width:1.3%"></div></div><div class="pc">1%</div></div>
+            <div class="fnote">Genoa carries just 1.3% of its own New York demand today — the rest drives to Milan.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="ch"><div><h3>Demand a nonstop wins</h3></div></div>
+          <div class="cb">
+            <div class="funnel">
+              <div class="fstep" style="background:var(--navy)"><span class="fl">Catchment NY demand</span><span class="fv">92,500</span></div>
+              <div class="fstep" style="background:#3A5C90;width:92%"><span class="fl">Leaking to Milan</span><span class="fv">85,500</span></div>
+              <div class="fstep" style="background:var(--green);width:78%"><span class="fl">Repatriated, each way</span><span class="fv">55,600</span></div>
+            </div>
+            <div class="fnote">Fills a daily A321XLR at 85% load, with ~6,300 / year spilled.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid" style="margin-top:16px">
+        <div class="card">
+          <div class="ch"><div><h3>Route P&amp;L</h3><div class="sub">per rotation, realistic premium case</div></div><span class="sub">one-way fare $345</span></div>
+          <div class="cb">
+            <div class="pnl">
+              <div class="pl"><span class="k">Revenue</span><span class="vv">$141,800</span></div>
+              <div class="pl"><span class="k">Fuel, maintenance, crew</span><span class="vv">−$72,200</span></div>
+              <div class="pl"><span class="k">Ownership &amp; insurance</span><span class="vv">−$30,000</span></div>
+              <div class="pl"><span class="k">Airport, nav &amp; other</span><span class="vv">−$24,400</span></div>
+              <div class="pl tot"><span class="k">Operating profit</span><span class="vv">$15,200</span></div>
+            </div>
+            <div class="stat2">
+              <div class="st"><div class="l">Operating margin</div><div class="v" style="color:var(--green)">10.7%</div></div>
+              <div class="st"><div class="l">Breakeven load</div><div class="v">74%</div></div>
+              <div class="st"><div class="l">Annual profit · daily</div><div class="v" style="color:var(--green)">$5.5m</div></div>
+              <div class="st"><div class="l">Planned load factor</div><div class="v">85%</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="ch"><div><h3>Inputs</h3><div class="sub">every value overridable</div></div></div>
+          <div class="cb">
+            <div class="pl"><span class="k">Aircraft</span><span class="vv">A321XLR</span></div>
+            <div class="pl"><span class="k">Sector</span><span class="vv">3,500 nm · 9h block</span></div>
+            <div class="pl"><span class="k">Capture rate</span><span class="vv">65%</span></div>
+            <div class="pl"><span class="k">Catchment basis</span><span class="vv">OSRM road times</span></div>
+            <div class="pl"><span class="k">Calibrated to</span><span class="vv">Sabre point-of-origin</span></div>
+            <div class="pl"><span class="k">Schedule data</span><span class="vv">OAG · 17 weeks</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- recent -->
+      <div class="secttl">Recent assessments</div>
+      <div class="card">
+        <table>
+          <thead><tr><th>Route</th><th>Aircraft</th><th>Addressable</th><th>Margin</th><th>Status</th><th>Demand</th></tr></thead>
+          <tbody>
+            <tr><td><span class="rt">Genoa → New York</span><div class="mut">GOA–JFK</div></td><td>A321XLR</td><td>92,500</td><td><b style="color:var(--green)">10.7%</b></td><td><span class="badge val">Validated</span></td><td><span class="mini"><i style="height:8px"></i><i style="height:12px"></i><i style="height:7px"></i><i style="height:16px"></i><i style="height:20px"></i></span></td></tr>
+            <tr><td><span class="rt">Bristol → New York</span><div class="mut">BRS–EWR</div></td><td>A321XLR</td><td class="mut">—</td><td class="mut">—</td><td><span class="badge run">Running</span></td><td><span class="mini"><i style="height:6px"></i><i style="height:10px"></i><i style="height:14px"></i><i style="height:9px"></i><i style="height:12px"></i></span></td></tr>
+            <tr><td><span class="rt">San José → Tokyo</span><div class="mut">SJC–HND</div></td><td>B789</td><td class="mut">—</td><td class="mut">—</td><td><span class="badge draft">Draft</span></td><td><span class="mini"><i style="height:10px"></i><i style="height:8px"></i><i style="height:13px"></i><i style="height:11px"></i><i style="height:7px"></i></span></td></tr>
+            <tr><td><span class="rt">Edinburgh → Boston</span><div class="mut">EDI–BOS</div></td><td>A21N</td><td class="mut">—</td><td class="mut">—</td><td><span class="badge draft">Draft</span></td><td><span class="mini"><i style="height:7px"></i><i style="height:9px"></i><i style="height:6px"></i><i style="height:12px"></i><i style="height:10px"></i></span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="foot-note">Prototype — Genoa–New York shows real validated figures; other rows are illustrative. Indicative, for directional guidance only.</div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

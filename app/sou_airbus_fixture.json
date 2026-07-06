@@ -1,0 +1,52 @@
+{
+  "description": "Airfield-capability layer VALIDATION FIXTURE - Airbus Consulting runway capability study for Southampton (RP2541272, draft 15 Dec 2025, Egnyte /Shared/Archive/2025/SOU - Aircraft Performance Analysis - 2025). The layer must reproduce these achievable-passenger figures before the approach is locked (John, 4 Jul 2026). Mechanism to replicate: the runway limits available take-off weight (not MTOW); payload then falls with distance via the fuel load. Acceptance: seats within ~5% per row, and the structure right (runway 20 > runway 02 by up to 4%; summer 3-5% below winter; payload falls with ESAD).",
+  "aircraft": {
+    "type": "A320neo",
+    "engines": "CFM LEAP-1A26",
+    "mtow_kg": 73500,
+    "mlw_kg": 66300,
+    "seats": 186,
+    "pax_weight_kg": 95,
+    "notes": "no ACT, no cargo containers, 100% LF no freight, JAR 5% contingency"
+  },
+  "airport": {
+    "iata": "SOU",
+    "tora_m": {"02": 1749, "20": 1814},
+    "runway_surface": "wet, standard (not grooved)",
+    "wind_kt": 0,
+    "landing": "MLW reached on wet RWY02; 950 kg landing weight penalty on RWY20 (non-grooved)"
+  },
+  "runway_limited_tow_kg": {
+    "winter_17C": {"02": 71400, "20": 72100},
+    "summer_28C": {"02": 70600, "20": 71300}
+  },
+  "missions": [
+    {"dest": "AYT", "season": "winter", "esad_nm": 1639, "pax_rwy02": 173, "pax_rwy20": 179},
+    {"dest": "DLM", "season": "winter", "esad_nm": 1596, "pax_rwy02": 178, "pax_rwy20": 183},
+    {"dest": "HER", "season": "winter", "esad_nm": 1578, "pax_rwy02": 179, "pax_rwy20": 185},
+    {"dest": "LPA", "season": "winter", "esad_nm": 1667, "pax_rwy02": 175, "pax_rwy20": 180},
+    {"dest": "PFO", "season": "winter", "esad_nm": 1784, "pax_rwy02": 170, "pax_rwy20": 176},
+    {"dest": "SSH", "season": "winter", "esad_nm": 2156, "pax_rwy02": 143, "pax_rwy20": 148},
+    {"dest": "TFS", "season": "winter", "esad_nm": 1772, "pax_rwy02": 170, "pax_rwy20": 176},
+    {"dest": "AYT", "season": "summer", "esad_nm": 1646, "pax_rwy02": 166, "pax_rwy20": 171},
+    {"dest": "DLM", "season": "summer", "esad_nm": 1601, "pax_rwy02": 170, "pax_rwy20": 176},
+    {"dest": "HER", "season": "summer", "esad_nm": 1578, "pax_rwy02": 172, "pax_rwy20": 178},
+    {"dest": "LPA", "season": "summer", "esad_nm": 1680, "pax_rwy02": 167, "pax_rwy20": 172},
+    {"dest": "PFO", "season": "summer", "esad_nm": 1792, "pax_rwy02": 162, "pax_rwy20": 168},
+    {"dest": "SSH", "season": "summer", "esad_nm": 2187, "pax_rwy02": 136, "pax_rwy20": 141},
+    {"dest": "TFS", "season": "summer", "esad_nm": 1778, "pax_rwy02": 162, "pax_rwy20": 168}
+  ],
+  "headline_findings": [
+    "runway length prevents MTOW but achievable payloads highly satisfactory",
+    "RWY20 departures up to 4% more payload than RWY02, both seasons",
+    "summer (28C) payload up to 5% below winter (17C)",
+    "DLM/HER/LPA always >90% LF; AYT/PFO/TFS 87-96%; SSH (furthest, 2,156-2,187nm ESAD) 73-80%",
+    "return legs always equal or better payload than outbound from SOU"
+  ],
+  "related_sources": [
+    "A320neo range circles preliminary report 16-09-2025 (same folder)",
+    "List of assumptions email chain Sep 2025",
+    "NavBlue Takeoff Performance & Route Analysis for Southampton (2022) - independent cross-check",
+    "AviaSolutions-Airbus SOU Aircraft Range Update deck 15 Dec 25 (sent)"
+  ]
+}

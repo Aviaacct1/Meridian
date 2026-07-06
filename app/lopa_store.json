@@ -1,0 +1,22 @@
+{
+  "_meta": {
+    "updated": "2026-06",
+    "refresh": "annual; parse airline fleet tables from Wikipedia/Wikidata (CC), cross-check aeroLOPA / FlightSeatmap for the carriers being pitched",
+    "note": "carrier-specific LOPAs (seats by First/Business/Premium-economy/Economy). A carrier+type may hold several named variants (different front cabins). Missing carrier+type falls back to lopa.AVERAGES.",
+    "seed": "BA 787 family from public fleet data, as the worked example; expand on the first annual refresh"
+  },
+  "airlines": {
+    "BA": {
+      "B788": {"first": 0, "business": 35, "premium_coach": 25, "coach": 154, "total": 214, "source": "BA 787-8 Club Suite"},
+      "B789": {
+        "default": "with_first",
+        "source": "BA 787-9",
+        "variants": {
+          "with_first":  {"first": 8, "business": 42, "premium_coach": 39, "coach": 127, "total": 216},
+          "no_first":    {"first": 0, "business": 48, "premium_coach": 40, "coach": 128, "total": 216}
+        }
+      },
+      "B78X": {"first": 0, "business": 48, "premium_coach": 35, "coach": 173, "total": 256, "source": "BA 787-10 Club Suite"}
+    }
+  }
+}

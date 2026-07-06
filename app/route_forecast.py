@@ -1,0 +1,470 @@
+#!/usr/bin/env python3
+"""
+Avia Solutions - route forecast as ONE connected loop (measured demand -> capture -> capacity).
+================================================================================================
+Rebuilt 30 June 2026 after the audit (John). The calibrated SJC/LHR method is
+forecast = base_demand x growth x stimulation x capture, where base_demand is the MEASURED Sabre
+O&D market by TRUE ORIGIN, never population x propensity. And the forecast is bounded by the
+recommended aircraft's capacity: demand above it is spill, not passengers carried.
+
+The loop:
+  1. CATCHMENT, by RESIDENCE. The origin's catchment = point-of-origin cities whose residents LIVE
+     near the origin airport (poo_city_name geocoded, within a radius). This is residence, not
+     departures: a Genoa resident who drives to Milan for New York is still Genoa demand. It is the
+     fix for both the visitor pollution (Londoners flying home from Genoa) and the long-haul case
+     (locals using the hub).
+  2. MEASURED MARKET. natural = the catchment's measured demand to the destination metro, by true
+     origin, whatever airport they use today. current = the part already departing the origin.
+  3. REPATRIATION. A new nonstop wins back a share of the leaked (natural - current).
+     captured = current + leaked x capture_rate.
+  4. STIMULATION x growth, then the CAPACITY BOUND: carried = min(captured, capacity x load).
+
+Runs on the machine with sabre.duckdb + oag.duckdb.
+"""
+import math, os, sys, unicodedata
+HERE = os.path.dirname(os.path.abspath(__file__))
+if HERE not in sys.path:
+    sys.path.insert(0, HERE)
+
+DUMP = os.path.join(HERE, "cities5000.txt")
+MAX_PLAN_LF = 0.85
+DEFAULT_CAPTURE_RATE = 0.65
+DEMAND_RADIUS_KM = 110.0          # the origin's OWN residence catchment (tight; the hub is a
+                                  # competitor it leaks to, not part of its demand)
+def _resolve_friction():
+    """Find the friction raster: AVIA_FRICTION env wins, else the known MAP filenames in C:\\Avia."""
+    if os.environ.get("AVIA_FRICTION"):
+        return os.environ["AVIA_FRICTION"]
+    for c in (r"C:\Avia\2020_motorized_friction_surface.geotiff",
+              r"C:\Avia\2020_motorized_friction_surface.tif",
+              r"C:\Avia\friction_2019.tif", r"C:\Avia\friction_2019.geotiff"):
+        if os.path.exists(c):
+            return c
+    return r"C:\Avia\friction_2019.tif"
+
+
+FRICTION_PATH = _resolve_friction()
+_DRIVE = None
+_DT_CACHE = {}                    # (origin, radius, airport, n_locs) -> [minutes]; drive times are
+                                  # att/logit-independent, so cache across calibration sweeps
+
+
+def _drive_engine():
+    """Lazy global friction-raster drive-time engine; None if the raster/libs are absent so the
+    catchment falls back to great-circle cleanly. Built once per process."""
+    global _DRIVE
+    if _DRIVE is None:
+        try:
+            from drive_times import DriveTimes
+            d = DriveTimes(FRICTION_PATH)
+            _DRIVE = d if d.available() else False
+        except Exception:
+            _DRIVE = False
+    return _DRIVE or None
+
+
+def _con(db):
+    # R3: reuse one read-only base connection per store path (cursor per call). See db_registry.
+    from db_registry import con_ro
+    return con_ro(db)
+
+
+def _norm(s):
+    if not s:
+        return ""
+    s = unicodedata.normalize("NFKD", s)
+    s = "".join(c for c in s if not unicodedata.combining(c))
+    return " ".join(s.lower().replace(".", " ").replace("-", " ").split())
+
+
+def _gc_km(a, b, c, d):
+    p1, p2 = math.radians(a), math.radians(c)
+    dp, dl = math.radians(c - a), math.radians(d - b)
+    x = math.sin(dp / 2) ** 2 + math.cos(p1) * math.cos(p2) * math.sin(dl / 2) ** 2
+    return 2 * 6371.0 * math.asin(math.sqrt(x))
+
+
+_NAME_IDX = None
+def _name_index(dump=DUMP):
+    """Geonames city name -> (lat, lon), most-populous match per name. Loaded once."""
+    global _NAME_IDX
+    if _NAME_IDX is None:
+        idx = {}
+        with open(dump, encoding="utf-8") as fh:
+            for line in fh:
+                f = line.rstrip("\n").split("\t")
+                if len(f) < 15:
+                    continue
+                try:
+                    lat, lon, pop = float(f[4]), float(f[5]), int(f[14] or 0)
+                except ValueError:
+                    continue
+                for nm in (f[1], f[2]):
+                    k = _norm(nm)
+                    if k and (k not in idx or pop > idx[k][2]):
+                        idx[k] = (lat, lon, pop)
+        _NAME_IDX = idx
+    return _NAME_IDX
+
+
+_AP = None
+def _origin_geo(code):
+    global _AP
+    if _AP is None:
+        import airportsdata
+        _AP = airportsdata.load("IATA")
+    r = _AP.get(code.upper())
+    return (r["lat"], r["lon"], r["country"]) if r and r["lat"] is not None else (None, None, None)
+
+
+def origin_catchment_poo(sabre_db, origin_airport, dest_codes, year=None, radius_km=DEMAND_RADIUS_KM,
+                         dump=DUMP, top=250):
+    """Point-of-origin cities whose RESIDENTS live within radius_km of the origin airport (geocoded
+    poo_city_name, same country as the origin), ranked by demand to the destination. Residence-based
+    so a resident who departs the hub is still counted; geographic so the hub's own city is excluded."""
+    olat, olon, octry = _origin_geo(origin_airport)
+    if olat is None:
+        return []
+    dc = ",".join("?" * len(dest_codes))
+    where = [f"destination_airport IN ({dc})", "poo_city IS NOT NULL", "TRIM(poo_city) <> ''"]
+    params = list(dest_codes)
+    if octry:
+        where.append("poo_country = ?"); params.append(octry)
+    if year is not None:
+        where.append("source_year = ?"); params.append(year)
+    # DETERMINISM: MIN(name) not ANY_VALUE (a stable display name -> stable geocode -> stable radius
+    # filter), and a poo_city tiebreaker on the top-N cut so ties at the LIMIT boundary resolve the
+    # same way every run. Without these the catchment membership jitters run-to-run (~0.2-0.4% on
+    # natural/propensity/captured), which is float-order-class noise, not a model signal.
+    sql = (f"SELECT poo_city, MIN(poo_city_name) nm, SUM(passengers) p FROM sabre "
+           f"WHERE {' AND '.join(where)} GROUP BY poo_city ORDER BY p DESC, poo_city LIMIT {int(top)}")
+    con = _con(sabre_db)
+    try:
+        rows = con.execute(sql, params).fetchall()
+    finally:
+        con.close()
+    idx = _name_index(dump)
+    keep = []
+    for code, name, _p in rows:
+        c = idx.get(_norm(name or ""))
+        if c and _gc_km(olat, olon, c[0], c[1]) <= radius_km:
+            keep.append(code)
+    return keep
+
+
+def market_and_current(sabre_db, poo_cities, dest_codes, origin_airport, year=None):
+    """natural = the catchment residents' measured demand to the destination metro by true origin
+    (any departure airport). current = the part already departing the origin. Plus the avg fare."""
+    if not poo_cities:
+        return 0.0, 0.0, 0.0
+    pc = ",".join("?" * len(poo_cities)); dc = ",".join("?" * len(dest_codes))
+    where = [f"poo_city IN ({pc})", f"destination_airport IN ({dc})"]
+    params = list(poo_cities) + list(dest_codes)
+    if year is not None:
+        where.append("source_year = ?"); params.append(year)
+    sql = (f"SELECT COALESCE(SUM(passengers),0), "
+           f"COALESCE(SUM(CASE WHEN origin_airport=? THEN passengers ELSE 0 END),0), "
+           f"COALESCE(SUM(passengers*avg_total_fare_usd)/NULLIF(SUM(passengers),0),0) "
+           f"FROM sabre WHERE {' AND '.join(where)}")
+    con = _con(sabre_db)
+    try:
+        r = con.execute(sql, params + [origin_airport]).fetchone()
+        return float(r[0] or 0), float(r[1] or 0), float(r[2] or 0)
+    finally:
+        con.close()
+
+
+def haul_radius_km(gcd_km):
+    """Catchment radius. NOTE (reverted 30 Jun 2026): a haul-SCALED radius (wide for long sectors) was
+    tried and backfired - a 400km circle round a hub merges distinct major metros (Boston/DC leak onto
+    JFK), inflating long-haul forecasts (2500-6000km band went 1.36 -> 1.55). Willingness-to-drive is
+    real for a SECONDARY airport but must not merge separate primary-metro markets. Held flat at 220km;
+    the short-under / long-over haul residual is a genuine effect needing a different lever than radius."""
+    return 220.0
+
+
+def qsi_capture_share(oag_db, week, origin, dest_codes, competing_airports,
+                      proposed_freq, proposed_block_min, mct_file=None, dump=DUMP,
+                      radius_km=220.0, qsi_scale=100.0, logit_scale=0.008, att_exponent=0.0,
+                      served_index=None):
+    # att_exponent default 0.0 (size pull OFF) until real drive-time access is wired: the domestic
+    # basket wants ~0.65 but that needs true road times or it collapses Genoa (3.5hr Apennine drive
+    # to Milan that great-circle reads as 1.5hr). Size pull + real drive times get calibrated together.
+    """The origin's ACCESS + QSI + SIZE share of the market via the catchment choice model: each
+    locale chooses an airport by drive-time access, the route's schedule quality (QSI service_value),
+    AND the airport's general SIZE pull (attractiveness = OAG size_m ** att_exponent). The size pull
+    is what the domestic basket proved necessary: a big hub draws traffic BEYOND its catchment and
+    beyond the specific route's frequency (network, fares, reliability, connections), so a Sacramento
+    resident uses San Francisco for New York far more than population or drive-time alone implies. The
+    old engine zeroed attractiveness when QSI was used (double-count worry); the data shows QSI and
+    size are NOT redundant, and dropping size over-credited the secondary ~1.9x. share =
+    catchment[origin] / total; propensity cancels, so it multiplies the MEASURED market cleanly."""
+    import geonames as G, catchment as C, route_qsi as RQ, oag_served as OAS
+    import airportsdata
+    ap = airportsdata.load("IATA")
+    qd = RQ.airport_qsi_to_dest(oag_db, week, dest_codes, competing_airports,
+                                proposed_origin=origin, proposed_freq=proposed_freq,
+                                proposed_block_min=proposed_block_min, mct_file=mct_file)
+    o = ap.get(origin)
+    if not o or o["lat"] is None:
+        tot = sum(v for v in qd.values() if v > 0)
+        return ((qd.get(origin, 0.0) / tot) if tot else 0.0), qd
+    sv = RQ.service_values_from_qsi(qd, scale=qsi_scale)
+    idx = served_index if served_index is not None else OAS.build_served_index(oag_db, week)
+    locs = G.near_point(dump, o["lat"], o["lon"], radius_km, min_pop=5000, propensity=1.0)
+    airports = [C.Airport(c, lat=ap[c]["lat"], lon=ap[c]["lon"],
+                          attractiveness=max(OAS.size_m(idx, c, 0.5), 1e-3),
+                          service_value=sv.get(c, 0.0))
+                for c in competing_airports if c in ap and ap[c]["lat"] is not None]
+    # REAL road drive times where the friction raster is present (Genoa->Milan 3.5hr, not great-
+    # circle's 1.5hr); run_catchment prefers Locale.drive_min over straight-line. One MCP per airport.
+    dt = _drive_engine()
+    if dt is not None and locs:
+        pts = [(l.lat, l.lon) for l in locs]
+        for a in airports:
+            key = (origin, round(radius_km, 1), a.code, len(locs))
+            times = _DT_CACHE.get(key)
+            if times is None:
+                times = dt.times_from(a.code, ap[a.code]["lat"], ap[a.code]["lon"], pts)
+                _DT_CACHE[key] = times
+            if times:
+                for l, t in zip(locs, times):
+                    l.drive_min[a.code] = t
+    params = C.CatchmentParams(method="gencost", logit_scale=logit_scale, value_of_time_per_hr=60.0,
+                               att_exponent=att_exponent)
+    res = C.run_catchment(locs, airports, params, home=origin)
+    cat = res.get("catchment", {}); tot = sum(cat.values())
+    return ((cat.get(origin, 0.0) / tot) if tot else 0.0), qd
+
+
+def dest_metro_share(oag_db, week, origin, dest_airport, dest_codes, freq, block_min, mct_file=None):
+    """The specific destination airport's QSI share of its metro for service from the origin - the
+    DESTINATION leg of the split. Without it, a route into a SECONDARY metro airport (Southend or
+    Luton for London, Bergamo for Milan, Vnukovo for Moscow) is wrongly credited the WHOLE metro's
+    market and over-reads many-fold. Symmetric to the origin share: the metro's airports 'compete'
+    for the origin's traffic, scored by QSI (frequency/service), origin and destination swapped in
+    the same scorer. Returns 1.0 for a single-airport metro or an unknown destination airport."""
+    if not dest_airport or len(dest_codes) <= 1 or dest_airport not in dest_codes:
+        return 1.0
+    import route_qsi as RQ
+    qd = RQ.airport_qsi_to_dest(oag_db, week, [origin], list(dest_codes),
+                                proposed_origin=dest_airport, proposed_freq=freq,
+                                proposed_block_min=block_min, mct_file=mct_file)
+    tot = sum(v for v in qd.values() if v > 0)
+    return (qd.get(dest_airport, 0.0) / tot) if tot else 1.0
+
+
+# Purpose-linked size pull (att_exponent), calibrated on measured outturn: leisure routes let a
+# secondary keep its catchment (att ~0.50, Hawaii/Cancun served set), business routes are hub-loyal
+# but only modestly (att ~0.55). The driver is trip purpose, not distance: 5hr Hawaii and 5hr
+# SF-NY split on it. Premium cabin share (Sabre F/J/W) is the measured proxy.
+# NOTE: business end cut 0.75 -> 0.55 after the feed-inclusive Y2 back-test - the steep exponent
+# over-credited the big hub airport's local capture (FSC-forecastable ran 2.21x hot, hub 1.46 vs
+# non-hub 0.84). 0.55 compresses that; re-calibrate here first if the hub/non-hub split persists.
+ATT_LEISURE, ATT_BUSINESS = 0.50, 0.55
+PREM_LO, PREM_HI = 0.05, 0.15      # premium share spans ~4% (leisure) to ~15% (business trunks);
+                                   # the New York transcons read 13-15%, Hawaii/Cancun ~5%
+
+
+def att_from_premium(prem):
+    """Map a route's premium-cabin share to the size-pull exponent (leisure 0.50 .. business 0.80)."""
+    if prem <= PREM_LO:
+        return ATT_LEISURE
+    if prem >= PREM_HI:
+        return ATT_BUSINESS
+    return ATT_LEISURE + (ATT_BUSINESS - ATT_LEISURE) * (prem - PREM_LO) / (PREM_HI - PREM_LO)
+
+
+def premium_share(sabre_db, airports, dest_codes, year=None):
+    """Measured premium-cabin share (business/first/premium-economy) of the market, from Sabre."""
+    ph_a = ",".join("?" * len(airports)); ph_d = ",".join("?" * len(dest_codes))
+    where = [f"origin_airport IN ({ph_a})", f"destination_airport IN ({ph_d})"]
+    params = list(airports) + list(dest_codes)
+    if year is not None:
+        where.append("source_year = ?"); params.append(year)
+    sql = ("SELECT COALESCE(SUM(CASE WHEN upper(cabin_class) LIKE '%BUSINESS%' "
+           "OR upper(cabin_class) LIKE '%FIRST%' OR upper(cabin_class) LIKE '%PREMIUM%' "
+           "THEN passengers ELSE 0 END),0), COALESCE(SUM(passengers),0) "
+           f"FROM sabre WHERE {' AND '.join(where)}")
+    con = _con(sabre_db)
+    try:
+        p, t = con.execute(sql, params).fetchone()
+        return (float(p) / float(t)) if t else 0.0
+    finally:
+        con.close()
+
+
+# Item 9 P2P level trim, TYPE-AWARE. Sized on the 6yr V2 hit-rate sweep (seasonal excluded, each type
+# separately), choosing the trim that MAXIMISES the share of routes within x1.2/x1.05 - not the one
+# that centres the median, because a trim that slides the already-right routes off their mark is a
+# loss even if the median improves. FSC/ULCC over-read is a broad ~1.2 shift and a trim to 0.85 lifts
+# the hit rate at every band (within-x1.05 rose 35->50 on FSC, so it does NOT cost the right routes).
+# LCC is near-balanced overall (small over, large UNDER), hit rate best near 1.0 - trimming would push
+# the already-under big LCC markets further under, so LCC is left essentially untrimmed. Leaning FULL
+# for the airport-pitch use. Size was a bucketing artefact, so each is a single flat bucket.
+MARKET_FACTOR_BY_TYPE = {
+    "FSC":      [(float("inf"), 0.85)],
+    "ULCC":     [(float("inf"), 0.85)],
+    "LCC":      [(float("inf"), 0.95)],
+    "Regional": [(float("inf"), 0.90)],
+}
+DEFAULT_MARKET_FACTOR = MARKET_FACTOR_BY_TYPE["FSC"]      # fallback for an unknown type
+
+
+def market_factor_for(airline_type):
+    """The trim table for an airline type (FSC / LCC / ULCC / Regional); FSC's if unknown."""
+    return MARKET_FACTOR_BY_TYPE.get(airline_type, DEFAULT_MARKET_FACTOR)
+
+
+def _market_size_mult(market, table):
+    """Multiplier for the captured P2P demand given the measured addressable market and a bucket table."""
+    if not table:
+        return 1.0
+    for edge, f in table:
+        if (market or 0) < edge:
+            return float(f)
+    return 1.0
+
+
+def forecast(sabre_db, oag_db, week, origin, dest_codes, competing_airports, *, year=None,
+             aircraft="A21X", freq=7, block_min=540, stimulation=1.15, growth=0.0, growth_years=0,
+             max_plan_lf=MAX_PLAN_LF, mct_file=None, annual_capacity=None, att_exponent=None,
+             dest_airport=None, airline=None, catchment_mult=1.0, feed_cfg=None,
+             coverage_override=None, market_override=None, share_override=None,
+             market_factor=None, season="annual", season_share=1.0, season_weeks=52.0, **_ignore):
+    """The connected loop, the calibrated way. The WIDE market = the whole service area's measured
+    O&D to the destination (Sabre, all competing airports - board-point, which is what Sabre gives).
+    The origin's forecast = that measured market x its QSI SHARE (its schedule quality vs the field,
+    which is small for a secondary airport because the hub dominates) x stimulation, then bounded by
+    the aircraft. NO population, NO propensity - the share, not a population apportionment, is the
+    splitter. annual_capacity overrides the computed capacity (e.g. the route's actual OAG capacity)."""
+    import sabre_catchment as SC
+    split, market, avg_fare = SC.destination_market_split(sabre_db, competing_airports, dest_codes,
+                                                          year=year)
+    market *= (1 + growth) ** growth_years
+    current = float(split.get(origin, 0.0)) * ((1 + growth) ** growth_years)
+    # SABRE COVERAGE GROSS-UP: the recorded market under-reads off-GDS bookings (LCC-country and
+    # short-haul), so gross the measured market up to true size BEFORE capture - the forecast is
+    # then a share of the real market, not the GDS fragment. P2P only for now; the feed carries its
+    # own coverage correction later. See coverage.py for the country/haul factors and provenance.
+    _cov = 1.0
+    try:
+        import coverage as COV, airportsdata as _APD
+        _ap = _APD.load("IATA")
+        _dref = dest_airport or (dest_codes[0] if dest_codes else "")
+        _o, _d = _ap.get(origin), _ap.get(_dref)
+        _oc = _o.get("country") if _o else None
+        _dc = _d.get("country") if _d else None
+        if _o and _d and _o.get("lat") is not None and _d.get("lat") is not None:
+            _gcd = _gc_km(_o["lat"], _o["lon"], _d["lat"], _d["lon"])
+        else:
+            _gcd = max((block_min - 20.0) * 7.0 * 1.852, 100.0)
+        _cov = COV.gross_up(_oc, _dc, _gcd)
+    except Exception:
+        _cov = 1.0
+    if coverage_override is not None:          # EXPERT override of the auto coverage factor
+        _cov = float(coverage_override)
+    market *= _cov
+    current *= _cov
+    if market_override is not None:            # EXPERT: custom catchment market (use their number)
+        market = float(market_override)
+    # purpose-linked size pull: measure the route's premium share, map to att, unless overridden
+    prem = premium_share(sabre_db, competing_airports, dest_codes, year=year)
+    att = att_from_premium(prem) if att_exponent is None else att_exponent
+    # catchment radius scaled to this sector's length (inverse of the block-time formula gcd_km ~
+    # (block-20)*7*1.852), so short sectors use a tight catchment and long ones a wide one
+    gcd_est = max((block_min - 20.0) * 7.0 * 1.852, 100.0)
+    # catchment_mult widens the catchment for price-driven traffic (LCC/ULCC pax drive further for a
+    # cheap fare than FSC pax will). Default 1.0 = unchanged; the caller sets it by the named airline's
+    # business model. Distinct from the reverted haul-scaling: this is purpose-driven, not distance.
+    radius = haul_radius_km(gcd_est) * catchment_mult
+    share, qd = qsi_capture_share(oag_db, week, origin, dest_codes, competing_airports,
+                                  freq, block_min, mct_file=mct_file, att_exponent=att, radius_km=radius)
+    if share_override is not None:             # EXPERT override of the origin's capture share (wins)
+        share = float(share_override)
+    else:                                      # measured airport capture truth (surveys / mobility data)
+        try:
+            import airport_capture as _ACAP
+            _apc = _ACAP.capture_for(origin)
+            if _apc is not None:
+                share = float(_apc)
+        except Exception:
+            pass
+    # DESTINATION leg: the specific destination airport takes only its QSI share of its metro, so a
+    # route into a secondary metro airport is not credited the whole metro market (1.0 if single-airport).
+    dshare = dest_metro_share(oag_db, week, origin, dest_airport, dest_codes, freq, block_min, mct_file)
+    captured = market * share * dshare * stimulation
+    # CONNECTING FEED (beyond the destination hub), alliance-weighted for the named airline - the other
+    # half of a QSI total. Grown with the market. 0 unless an airline is given (feed is carrier-specific).
+    feed_beyond = feed_behind = 0.0
+    beyond_pdew = behind_pdew = {}
+    beyond_detail = behind_detail = {}
+    if airline and dest_airport:
+        try:
+            import route_feed as RFEED
+            g = (1 + growth) ** growth_years
+            bt, beyond_pdew, beyond_detail = RFEED.feed_side(sabre_db, oag_db, week, competing_airports,
+                                              dest_airport, year, beyond=True, airline=airline,
+                                              feed_cfg=feed_cfg, detail=True)
+            # behind uses the SPECIFIC route origin (feeders physically connect there), not the wider
+            # catchment - else a route into a small airport wrongly inherits a big neighbour's feed bank.
+            ht, behind_pdew, behind_detail = RFEED.behind_feed(sabre_db, oag_db, week, [origin], [dest_airport],
+                                              year, airline=airline, feed_cfg=feed_cfg, detail=True)
+            feed_beyond, feed_behind = (bt or 0.0) * g, (ht or 0.0) * g
+            if g != 1.0:
+                for _dm in (beyond_detail, behind_detail):
+                    for _c in _dm.values():
+                        _c["base"] *= g; _c["captured"] *= g; _c["pdew"] *= g
+        except Exception:
+            feed_beyond = feed_behind = 0.0
+            beyond_pdew = behind_pdew = {}
+            beyond_detail = behind_detail = {}
+    # Item 9: capped market-size discount on the P2P capture, keyed off the MEASURED market (natural),
+    # so a thin-market over-read is trimmed while mid/large markets (already unbiased) are untouched.
+    # Applied to captured only (the P2P over-read); the feed carries its own calibration.
+    if market_factor:
+        captured *= _market_size_mult(market, market_factor)
+    # SEASONAL mode: scale the annual demand to the operating season's share of the year (from the
+    # monthly profile; caller supplies the SEASON's capacity via annual_capacity). season_share 1.0 =
+    # annual, unchanged. A summer service carries its summer share of the O&D, not half of it.
+    if season_share and season_share != 1.0:
+        captured *= season_share
+        feed_beyond *= season_share
+        feed_behind *= season_share
+    feed = feed_beyond + feed_behind
+    total_demand = captured + feed
+    natural, leaked, repatriated, capture_rate = market, max(market - current, 0.0), 0.0, share
+
+    if annual_capacity is None:
+        try:
+            from aircraft_economics import AIRCRAFT
+            ac = AIRCRAFT.get(aircraft, {})
+            seats = (ac.get("econ_seats", 0) + ac.get("bus_seats", 0)) or 180
+        except Exception:
+            seats = 180
+        annual_capacity = seats * freq * season_weeks * 2      # season_weeks<52 for a seasonal service
+    carried = min(total_demand, annual_capacity * max_plan_lf)      # P2P + feed compete for the seats
+    spill = max(total_demand - carried, 0.0)
+    load = (carried / annual_capacity) if annual_capacity else 0.0
+
+    rec = "demand fits the aircraft"
+    if spill > 0.02 * max(total_demand, 1):
+        need = math.ceil(total_demand / (annual_capacity * max_plan_lf / freq)) if annual_capacity else freq
+        rec = f"demand exceeds {freq}x/week {aircraft}: {spill:,.0f} spilled - upsize or ~{need}x/week"
+    return {
+        "origin": origin, "dest_metro": dest_codes, "competing_airports": len(competing_airports),
+        "natural_market": round(natural), "current_via_origin": round(current),
+        "leaked": round(leaked), "avg_fare": round(avg_fare, 2),
+        "qsi_share": round(share, 4), "dest_share": round(dshare, 4), "capture_rate": capture_rate,
+        "repatriated": round(repatriated), "premium_share": round(prem, 4), "att_exponent": round(att, 3),
+        "coverage_gross_up": round(_cov, 3),
+        "captured_demand": round(captured), "connecting_feed": round(feed),
+        "feed_beyond": round(feed_beyond), "feed_behind": round(feed_behind),
+        "total_demand": round(total_demand), "stimulation": stimulation,
+        "aircraft": aircraft, "frequency": freq, "annual_capacity": round(annual_capacity),
+        "carried_forecast": round(carried), "spill": round(spill),
+        "season": season, "season_share": round(season_share, 3),
+        "planned_load_factor": round(load, 3), "recommendation": rec,
+        "beyond_pdew": beyond_pdew, "behind_pdew": behind_pdew,
+        "beyond_detail": beyond_detail, "behind_detail": behind_detail,
+    }

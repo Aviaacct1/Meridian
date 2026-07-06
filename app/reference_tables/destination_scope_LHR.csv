@@ -1,0 +1,452 @@
+arr_airport,arr_country,arr_region,include
+ABV,Nigeria,Africa : Central/Western Africa,IN
+ABZ,United Kingdom,Europe : Western Europe,IN
+ACC,Ghana,Africa : Central/Western Africa,IN
+ADD,Ethiopia,Africa : Eastern Africa,IN
+AGP,Spain,Europe : Western Europe,IN
+ALA,Kazakhstan,Asia : Central Asia,OUT
+ALG,Algeria,Africa : North Africa,IN
+AMM,Jordan,Middle East,IN
+AMS,Netherlands,Europe : Western Europe,IN
+ARN,Sweden,Europe : Western Europe,IN
+ASB,Turkmenistan,Asia : Central Asia,IN
+ATH,Greece,Europe : Western Europe,IN
+ATL,USA,North America,OUT
+AUH,United Arab Emirates,Middle East,IN
+AUS,USA,North America,OUT
+BAH,Bahrain,Middle East,IN
+BCN,Spain,Europe : Western Europe,IN
+BEG,Serbia,Europe : Eastern/Central Europe,IN
+BEY,Lebanon,Middle East,IN
+BGO,Norway,Europe : Western Europe,IN
+BHD,United Kingdom,Europe : Western Europe,IN
+BIO,Spain,Europe : Western Europe,IN
+BKK,Thailand,Asia : South East Asia,OUT
+BLQ,Italy,Europe : Western Europe,IN
+BLR,India,Asia : South Asia,IN
+BOG,Colombia,Latin America : Upper South America,OUT
+BOM,India,Asia : South Asia,IN
+BOS,USA,North America,OUT
+BRU,Belgium,Europe : Western Europe,IN
+BSL,Switzerland,Europe : Western Europe,IN
+BUD,Hungary,Europe : Eastern/Central Europe,IN
+BWI,USA,North America,OUT
+CAI,Egypt,Africa : North Africa,IN
+CAN,China,Asia : North East Asia,OUT
+CDG,France,Europe : Western Europe,IN
+CFU,Greece,Europe : Western Europe,IN
+CGN,Germany,Europe : Western Europe,IN
+CLT,USA,North America,OUT
+CMB,Sri Lanka,Asia : South Asia,IN
+CMN,Morocco,Africa : North Africa,IN
+CPH,Denmark,Europe : Western Europe,IN
+CPT,South Africa,Africa : Southern Africa,IN
+CTU,China,Asia : North East Asia,OUT
+DEL,India,Asia : South Asia,IN
+DEN,USA,North America,OUT
+DFW,USA,North America,OUT
+DME,Russian Federation,Europe : Eastern/Central Europe,IN
+DOH,Qatar,Middle East,IN
+DTW,USA,North America,OUT
+DUB,Ireland Republic of,Europe : Western Europe,IN
+DUS,Germany,Europe : Western Europe,IN
+DXB,United Arab Emirates,Middle East,IN
+EBB,Uganda,Africa : Eastern Africa,IN
+EDI,United Kingdom,Europe : Western Europe,IN
+EWR,USA,North America,OUT
+EZE,Argentina,Latin America : Lower South America,OUT
+FAO,Portugal,Europe : Western Europe,IN
+FCO,Italy,Europe : Western Europe,IN
+FRA,Germany,Europe : Western Europe,IN
+GIB,Gibraltar,Europe : Western Europe,IN
+GIG,Brazil,Latin America : Lower South America,OUT
+GLA,United Kingdom,Europe : Western Europe,IN
+GOT,Sweden,Europe : Western Europe,IN
+GRU,Brazil,Latin America : Lower South America,OUT
+GVA,Switzerland,Europe : Western Europe,IN
+GYD,Azerbaijan,Europe : Eastern/Central Europe,IN
+HAJ,Germany,Europe : Western Europe,IN
+HAM,Germany,Europe : Western Europe,IN
+HAN,Viet Nam,Asia : South East Asia,OUT
+HEL,Finland,Europe : Western Europe,IN
+HKG,Hong Kong (sar) China,Asia : North East Asia,OUT
+HND,Japan,Asia : North East Asia,OUT
+HYD,India,Asia : South Asia,IN
+IAD,USA,North America,OUT
+IAH,USA,North America,OUT
+IBZ,Spain,Europe : Western Europe,IN
+ICN,Korea Republic of,Asia : North East Asia,OUT
+IKA,Iran Islamic Republic of,Middle East,IN
+ISB,Pakistan,Asia : South Asia,IN
+IST,Turkey,Europe : Western Europe,IN
+JED,Saudi Arabia,Middle East,IN
+JFK,USA,North America,OUT
+JMK,Greece,Europe : Western Europe,IN
+JNB,South Africa,Africa : Southern Africa,IN
+JTR,Greece,Europe : Western Europe,IN
+KBP,Ukraine,Europe : Eastern/Central Europe,IN
+KEF,Iceland,Europe : Western Europe,OUT
+KGS,Greece,Europe : Western Europe,IN
+KHI,Pakistan,Asia : South Asia,IN
+KRK,Poland,Europe : Eastern/Central Europe,IN
+KUL,Malaysia,Asia : South East Asia,OUT
+KWI,Kuwait,Middle East,IN
+LAD,Angola,Africa : Southern Africa,IN
+LAS,USA,North America,OUT
+LAX,USA,North America,OUT
+LBA,United Kingdom,Europe : Western Europe,IN
+LCA,Cyprus,Europe : Western Europe,IN
+LCG,Spain,Europe : Western Europe,IN
+LED,Russian Federation,Europe : Eastern/Central Europe,IN
+LHE,Pakistan,Asia : South Asia,IN
+LIN,Italy,Europe : Western Europe,IN
+LIS,Portugal,Europe : Western Europe,IN
+LOS,Nigeria,Africa : Central/Western Africa,IN
+LUX,Luxembourg,Europe : Western Europe,IN
+LXR,Egypt,Africa : North Africa,IN
+LYS,France,Europe : Western Europe,IN
+MAA,India,Asia : South Asia,IN
+MAD,Spain,Europe : Western Europe,IN
+MAN,United Kingdom,Europe : Western Europe,IN
+MCT,Oman,Middle East,IN
+MEX,Mexico,Latin America : Central America,OUT
+MIA,USA,North America,OUT
+MLA,Malta,Europe : Western Europe,IN
+MNL,Philippines,Asia : South East Asia,OUT
+MRS,France,Europe : Western Europe,IN
+MRU,Mauritius,Africa : Eastern Africa,IN
+MSP,USA,North America,OUT
+MUC,Germany,Europe : Western Europe,IN
+MXP,Italy,Europe : Western Europe,IN
+NAS,Bahamas,Latin America : Caribbean,OUT
+NBO,Kenya,Africa : Eastern Africa,IN
+NCE,France,Europe : Western Europe,IN
+NCL,United Kingdom,Europe : Western Europe,IN
+NRT,Japan,Asia : North East Asia,OUT
+OLB,Italy,Europe : Western Europe,IN
+OPO,Portugal,Europe : Western Europe,IN
+ORD,USA,North America,OUT
+ORK,Ireland Republic of,Europe : Western Europe,IN
+ORY,France,Europe : Western Europe,IN
+OSL,Norway,Europe : Western Europe,IN
+OTP,Romania,Europe : Eastern/Central Europe,IN
+PEK,China,Asia : North East Asia,OUT
+PHL,USA,North America,OUT
+PHX,USA,North America,OUT
+PMI,Spain,Europe : Western Europe,IN
+PRG,Czech Republic,Europe : Eastern/Central Europe,IN
+PSA,Italy,Europe : Western Europe,IN
+PVG,China,Asia : North East Asia,OUT
+RDU,USA,North America,OUT
+RJK,Croatia,Europe : Eastern/Central Europe,IN
+RUH,Saudi Arabia,Middle East,IN
+SAN,USA,North America,OUT
+SEA,USA,North America,OUT
+SFO,USA,North America,OUT
+SGN,Viet Nam,Asia : South East Asia,OUT
+SIN,Singapore,Asia : South East Asia,OUT
+SNN,Ireland Republic of,Europe : Western Europe,IN
+SOF,Bulgaria,Europe : Eastern/Central Europe,IN
+SPU,Croatia,Europe : Eastern/Central Europe,IN
+STR,Germany,Europe : Western Europe,IN
+SVG,Norway,Europe : Western Europe,IN
+SVO,Russian Federation,Europe : Eastern/Central Europe,IN
+TAS,Uzbekistan,Asia : Central Asia,IN
+TLS,France,Europe : Western Europe,IN
+TLV,Israel,Middle East,IN
+TSE,Kazakhstan,Asia : Central Asia,OUT
+TUN,Tunisia,Africa : North Africa,IN
+TXL,Germany,Europe : Western Europe,IN
+VCE,Italy,Europe : Western Europe,IN
+VIE,Austria,Europe : Western Europe,IN
+VKO,Russian Federation,Europe : Eastern/Central Europe,IN
+WAW,Poland,Europe : Eastern/Central Europe,IN
+YEG,Canada,North America,OUT
+YHZ,Canada,North America,OUT
+YOW,Canada,North America,OUT
+YUL,Canada,North America,OUT
+YVR,Canada,North America,OUT
+YYC,Canada,North America,OUT
+YYT,Canada,North America,OUT
+YYZ,Canada,North America,OUT
+ZAG,Croatia,Europe : Eastern/Central Europe,IN
+ZRH,Switzerland,Europe : Western Europe,IN
+ZYL,Bangladesh,Asia : South Asia,OUT
+OUR FULL AIRPORT NETWORK,,None,NONE
+City,Include,None,NONE
+ABV,Y,None,NONE
+ABZ,Y,None,NONE
+ACC,Y,None,NONE
+ADD,Y,None,NONE
+AGP,Y,None,NONE
+ALG,Y,None,NONE
+AMM,Y,None,NONE
+AMM,Y,None,NONE
+AMS,Y,None,NONE
+ASB,Y,None,NONE
+ATH,Y,None,NONE
+AUH,Y,None,NONE
+BAH,Y,None,NONE
+BAK,Y,None,NONE
+BCN,Y,None,NONE
+BEG,Y,None,NONE
+BER,Y,None,NONE
+BER,Y,None,NONE
+BEY,Y,None,NONE
+BFS,Y,None,NONE
+BFS,Y,None,NONE
+BGO,Y,None,NONE
+BIO,Y,None,NONE
+BLQ,Y,None,NONE
+BLR,Y,None,NONE
+BOM,Y,None,NONE
+BRU,Y,None,NONE
+BRU,Y,None,NONE
+BRU,Y,None,NONE
+BUD,Y,None,NONE
+BUH,Y,None,NONE
+BUH,Y,None,NONE
+CAI,Y,None,NONE
+CAS,Y,None,NONE
+CAS,Y,None,NONE
+CFU,Y,None,NONE
+CGN,Y,None,NONE
+CMB,Y,None,NONE
+CPH,Y,None,NONE
+CPH,Y,None,NONE
+CPT,Y,None,NONE
+DEL,Y,None,NONE
+DOH,Y,None,NONE
+DUB,Y,None,NONE
+DUS,Y,None,NONE
+DUS,Y,None,NONE
+DXB,Y,None,NONE
+EAP,Y,None,NONE
+EAP,Y,None,NONE
+EBB,Y,None,NONE
+EDI,Y,None,NONE
+FAO,Y,None,NONE
+FRA,Y,None,NONE
+FRA,Y,None,NONE
+GIB,Y,None,NONE
+GLA,Y,None,NONE
+GLA,Y,None,NONE
+GOT,Y,None,NONE
+GOT,Y,None,NONE
+GVA,Y,None,NONE
+HAJ,Y,None,NONE
+HAM,Y,None,NONE
+HAM,Y,None,NONE
+HEL,Y,None,NONE
+HYD,Y,None,NONE
+IBZ,Y,None,NONE
+IEV,Y,None,NONE
+IEV,Y,None,NONE
+ISB,Y,None,NONE
+IST,Y,None,NONE
+IST,Y,None,NONE
+JED,Y,None,NONE
+JMK,Y,None,NONE
+JNB,Y,None,NONE
+JNB,Y,None,NONE
+JTR,Y,None,NONE
+KGS,Y,None,NONE
+KHI,Y,None,NONE
+KRK,Y,None,NONE
+KWI,Y,None,NONE
+LAD,Y,None,NONE
+LBA,Y,None,NONE
+LCA,Y,None,NONE
+LCG,Y,None,NONE
+LED,Y,None,NONE
+LHE,Y,None,NONE
+LIS,Y,None,NONE
+LOS,Y,None,NONE
+LUX,Y,None,NONE
+LXR,Y,None,NONE
+LYS,Y,None,NONE
+LYS,Y,None,NONE
+MAA,Y,None,NONE
+MAD,Y,None,NONE
+MAN,Y,None,NONE
+MCT,Y,None,NONE
+MIL,Y,None,NONE
+MIL,Y,None,NONE
+MIL,Y,None,NONE
+MIL,Y,None,NONE
+MLA,Y,None,NONE
+MOW,Y,None,NONE
+MOW,Y,None,NONE
+MOW,Y,None,NONE
+MOW,Y,None,NONE
+MRS,Y,None,NONE
+MRU,Y,None,NONE
+MUC,Y,None,NONE
+MUC,Y,None,NONE
+NBO,Y,None,NONE
+NBO,Y,None,NONE
+NCE,Y,None,NONE
+NCL,Y,None,NONE
+OLB,Y,None,NONE
+OPO,Y,None,NONE
+ORK,Y,None,NONE
+OSL,Y,None,NONE
+OSL,Y,None,NONE
+OSL,Y,None,NONE
+PAR,Y,None,NONE
+PAR,Y,None,NONE
+PAR,Y,None,NONE
+PAR,Y,None,NONE
+PMI,Y,None,NONE
+PRG,Y,None,NONE
+PSA,Y,None,NONE
+RJK,Y,None,NONE
+ROM,Y,None,NONE
+ROM,Y,None,NONE
+RUH,Y,None,NONE
+SNN,Y,None,NONE
+SOF,Y,None,NONE
+SPU,Y,None,NONE
+STO,Y,None,NONE
+STO,Y,None,NONE
+STO,Y,None,NONE
+STO,Y,None,NONE
+STR,Y,None,NONE
+SVG,Y,None,NONE
+TAS,Y,None,NONE
+THR,Y,None,NONE
+THR,Y,None,NONE
+TLS,Y,None,NONE
+TLV,Y,None,NONE
+TLV,Y,None,NONE
+TUN,Y,None,NONE
+VCE,Y,None,NONE
+VCE,Y,None,NONE
+VIE,Y,None,NONE
+WAW,Y,None,NONE
+ZAG,Y,None,NONE
+ZRH,Y,None,NONE
+ConnectPoint1,,None,NONE
+LHR,,None,NONE
+FRA,,None,NONE
+DXB,,None,NONE
+CDG,,None,NONE
+JFK,,LHR,NONE
+AMS,,FRA,NONE
+EWR,,DXB,NONE
+HKG,,CDG,NONE
+MUC,,JFK,NONE
+PHL,,AMS,NONE
+ORD,,EWR,NONE
+ZRH,,HKG,NONE
+ATL,,MUC,NONE
+CPH,,PHL,NONE
+IAD,,ORD,NONE
+ICN,,ZRH,NONE
+LAX,,ATL,NONE
+YYZ,,CPH,NONE
+CLT,,IAD,NONE
+NRT,,LAX,NONE
+DFW,,CLT,NONE
+PEK,,DFW,NONE
+PVG,,LGW,NONE
+DTW,,None,NONE
+TPE,,None,NONE
+IAH,,None,NONE
+MSP,,None,NONE
+BOS,,None,NONE
+MIA,,None,NONE
+LAS,,None,NONE
+YUL,,None,NONE
+SEA,,None,NONE
+SLC,,None,NONE
+YVR,,None,NONE
+PDX,,None,NONE
+LGW,,None,NONE
+DEN,,None,NONE
+YYC,,None,NONE
+LCY,,None,NONE
+ORY,,None,NONE
+CVG,,None,NONE
+DUS,,None,NONE
+MCO,,None,NONE
+MEX,,None,NONE
+HND,,None,NONE
+DCA,,None,NONE
+SNA,,None,NONE
+BWI,,None,NONE
+SIN,,None,NONE
+MNL,,None,NONE
+CUN,,None,NONE
+LTN,,None,NONE
+STN,,None,NONE
+PHX,,None,NONE
+SYD,,None,NONE
+Grand Total,,None,NONE
+ArrAirport,ArrIATACtryName,ArrRegName,INCLUDE?
+ATL,USA,North America,#NAME?
+BOI,USA,North America,#NAME?
+BOS,USA,North America,#NAME?
+DEN,USA,North America,#NAME?
+DFW,USA,North America,#NAME?
+GDL,Mexico,Latin America : Central America,#NAME?
+HNL,USA,North America,#NAME?
+IAH,USA,North America,#NAME?
+JFK,USA,North America,#NAME?
+KOA,USA,North America,#NAME?
+LAX,USA,North America,#NAME?
+LIH,USA,North America,#NAME?
+MSP,USA,North America,#NAME?
+NRT,Japan,Asia : North East Asia,#NAME?
+OGG,USA,North America,#NAME?
+ORD,USA,North America,#NAME?
+PDX,USA,North America,#NAME?
+PHX,USA,North America,#NAME?
+RNO,USA,North America,#NAME?
+SEA,USA,North America,#NAME?
+SJD,Mexico,Latin America : Central America,#NAME?
+SLC,USA,North America,#NAME?
+PEK,China,Asia: North East Asia,#NAME?
+Airport,,None,NONE
+BOI,,None,NONE
+GDL,,None,NONE
+HNL,,None,NONE
+KOA,,None,NONE
+LAX,,None,NONE
+LIH,,None,NONE
+OGG,,None,NONE
+PDX,,None,NONE
+AZA,,None,NONE
+PHX,,None,NONE
+RNO,,None,NONE
+BFI,,None,NONE
+LKE,,None,NONE
+SEA,,None,NONE
+SJD,,None,NONE
+SLC,,None,NONE
+ConnectPoint1,,None,NONE
+LAX,,None,NONE
+ORD,,None,NONE
+MSP,,None,NONE
+SFO,,LAX,NONE
+JFK,,ORD,NONE
+YVR,,MSP,NONE
+DFW,,SFO,NONE
+ATL,,JFK,NONE
+IAH,,YVR,NONE
+PHL,,DFW,NONE
+DTW,,ATL,NONE
+IAD,,IAH,NONE
+KEF,,PHL,NONE
+YYZ,,DTW,NONE
+AMS,,IAD,NONE
+CLT,,KEF,NONE
+EWR,,YYZ,NONE
+CDG,,AMS,NONE
+YYC,,EWR,NONE
+LAS,,BOS,NONE
+SEA,,None,NONE
+BOS,,None,NONE
+MEX,,None,NONE
+FRA,,None,NONE
+YUL,,None,NONE
