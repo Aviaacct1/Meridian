@@ -494,6 +494,16 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
         _build.append({"year": ctx["year"] + _n, "offset": _n, "demand": round(_d),
                        "carried": round(_c), "load": round(_c / _capf, 3) if _capf else None,
                        "spill": round(max(_d - _c, 0.0))})
+    # CONFIDENCE BAND from the 6yr back-test: the forecast is the central estimate, and comparable
+    # launches landed in this range about two in three times. New-market (induced) routes are modelled
+    # from comparable launches rather than a measured market, so their band is wider. This honest range
+    # is the wedge against a competitor's false-precision single number.
+    _induced = bool(r.get("induced"))
+    _bl, _bh = (0.55, 1.60) if _induced else (0.65, 1.45)
+    confidence = {"central": round(each_way), "low": round(each_way * _bl), "high": round(each_way * _bh),
+                  "modelled": _induced, "coverage": "about 2 in 3 comparable launches",
+                  "basis": "new-market: modelled from comparable launches" if _induced
+                           else "measured-market forecast, calibrated on 6 years"}
     out = {
         "ok": True, "title": f'{o["city"]} → {d["city"]}', "engine": "route_forecast (calibrated)",
         "origin": {"iata": home, "city": o["city"], "country": o["country"], "metro": om["airports"]},
@@ -517,6 +527,7 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
         "season": {"mode": r.get("season", "annual"), "share": r.get("season_share", 1.0),
                    "weeks": round(season_weeks)},
         "projection": {"cagr": round(_cagr, 4), "base_year": ctx["year"], "horizon": 5, "build": _build},
+        "confidence": confidence,
         "schedule": _schedule_times(home, dest_airport, o, d, bmin),
         "distance_nm": round(gcd / 1.852), "block_min": bmin, "week": ctx["week"], "year": ctx["year"],
     }
@@ -991,6 +1002,7 @@ def api_report(origin: str, dest: str, airline: str = "", carrier_type: str = "F
     o = fc["origin"]; d = fc["dest"]
     _smode = (fc.get("season") or {}).get("mode", "annual")
     _stag = "" if _smode == "annual" else f" · {_smode} service"
+    _cf = fc.get("confidence") or {}
     sh = fc["catchment"]["observed_share"]; nm = fc["catchment"]["names"]; home = fc["catchment"]["home"]
     full_split = sorted([((nm.get(c) or c), v) for c, v in sh.items()], key=lambda t: -t[1])
     split = full_split[:7]
@@ -1020,6 +1032,10 @@ def api_report(origin: str, dest: str, airline: str = "", carrier_type: str = "F
             f'Carries {fmt(cap["carried"])} each way at {round((cap.get("load") or 0) * 100)}% load.',
             f'Coverage x{dem.get("coverage_gross_up", 1):.2f}; origin QSI share {dem.get("qsi_share", 0) * 100:.1f}%.',
             f'Feed: behind {fmt(dem.get("feed_behind"))}, beyond {fmt(dem.get("feed_beyond"))}.',
+            (f'New-market: modelled from comparable launches. Likely {fmt(_cf.get("low"))}-{fmt(_cf.get("high"))} each way.'
+             if _cf.get("modelled") else
+             f'Likely range {fmt(_cf.get("low"))}-{fmt(_cf.get("high"))} each way ({_cf.get("coverage","")}).')
+            if _cf else "",
         ],
     }
     pnl = dict(raw)
