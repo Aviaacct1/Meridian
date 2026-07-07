@@ -72,6 +72,15 @@ def build_workbook(out_path, fc, meta=None):
     home = fc["catchment"]["home"]; nm = fc["catchment"]["names"]; sh = fc["catchment"]["observed_share"]
     airline = meta.get("airline_name") or fc.get("airline") or "New entrant"
     n0 = lambda v: float(v or 0)
+    # SEASON labelling: volume figures (forecast, feed, carried, seats, pax, profit) are for the
+    # operating season; the addressable market stays annual. weeks = the season's operating weeks.
+    _season = fc.get("season") or {}
+    _smode = _season.get("mode", "annual")
+    weeks = float(_season.get("weeks") or 52)
+    _sshare = float(_season.get("share") or 1.0)      # 1.0 = annual; the season's share of the year
+    _seasonal = _smode in ("summer", "winter")
+    _pnoun = _smode if _seasonal else "year"          # "summer" / "winter" / "year"
+    _padj = _smode.capitalize() if _seasonal else "Annual"   # "Summer" / "Winter" / "Annual"
     wb = openpyxl.Workbook()
 
     # ---- 1. Cover -----------------------------------------------------------
@@ -110,16 +119,16 @@ def build_workbook(out_path, fc, meta=None):
 
     # ---- 2. Traffic forecast (Avia gold-standard layout) -------------------
     ws = wb.create_sheet("Forecast")
-    _title(ws, "Traffic forecast", "each way per year; connecting rows show the captured feed")
+    _title(ws, "Traffic forecast", f"each way per {_pnoun}; connecting rows show the captured feed")
     _hdr(ws, 4, ["Market", "Base demand (000s)", "Growth", "Grown demand (000s)", "Stimulation",
                  "Stimulated demand (000s)", "Capture rate", "Forecast (000s)", "PTEW"],
          [30, 13, 9, 13, 11, 15, 11, 12, 9])
     cap_share = n0(dem.get("qsi_share")); stim = n0(dem.get("stimulation")) or 1.0
-    natural = n0(dem.get("natural")); p2p = n0(dem.get("captured"))
+    natural = n0(dem.get("natural")) * _sshare; p2p = n0(dem.get("captured"))
     behind = n0(dem.get("feed_behind")); beyond = n0(dem.get("feed_beyond")); tot = n0(dem.get("total"))
     freq = n0(cap.get("freq")) or 7.0
     k = lambda x: round(x / 1000.0, 1)
-    ptew = lambda x: round(x / (freq * 52.0)) if freq else 0
+    ptew = lambda x: round(x / (freq * weeks)) if freq else 0
     r = 5
     _c(ws, r, 1, "Total point to point", font=BOLD, align=LFT)
     _c(ws, r, 2, k(natural), fmt="#,##0.0", align=RGT); _c(ws, r, 3, 0, fmt="0%", align=RGT)
@@ -127,8 +136,8 @@ def build_workbook(out_path, fc, meta=None):
     _c(ws, r, 6, k(natural * stim), fmt="#,##0.0", align=RGT); _c(ws, r, 7, cap_share, fmt="0.0%", align=RGT)
     _c(ws, r, 8, k(p2p), fmt="#,##0.0", align=RGT); _c(ws, r, 9, ptew(p2p), fmt="#,##0", align=RGT)
     r += 1
-    for label, val, cbase in [(f"Total connecting behind {home}", behind, n0(dem.get("feed_behind_base"))),
-                              (f"Total connecting beyond {d['iata']}", beyond, n0(dem.get("feed_beyond_base")))]:
+    for label, val, cbase in [(f"Total connecting behind {home}", behind, n0(dem.get("feed_behind_base")) * _sshare),
+                              (f"Total connecting beyond {d['iata']}", beyond, n0(dem.get("feed_beyond_base")) * _sshare)]:
         _c(ws, r, 1, label, font=BOLD, align=LFT)
         _c(ws, r, 2, k(cbase) if cbase else "-", fmt="#,##0.0", align=RGT)
         _c(ws, r, 3, 0, fmt="0%", align=RGT)
@@ -145,7 +154,9 @@ def build_workbook(out_path, fc, meta=None):
     _c(ws, r, 9, ptew(tot), font=TOTF_FONT, fill=TOTF, fmt="#,##0", align=RGT)
     _c(ws, r + 2, 1, "Base demand is the addressable each-way O&D market from Sabre in the origin catchment. "
                      "Point-to-point forecast = stimulated demand x capture rate, capacity-bounded. Connecting "
-                     "rows show the captured feed each way. PTEW = passengers per departure each way.",
+                     "rows show the captured feed each way. PTEW = passengers per departure each way."
+                     + (f"  Figures are for the {_pnoun} service (the season's share of the annual O&D)."
+                        if _seasonal else ""),
        font=NOTE, align=LFT, border=None)
 
     # ---- 3. Connecting feed detail (base demand, share, forecast, PDEW) -----
@@ -155,12 +166,12 @@ def build_workbook(out_path, fc, meta=None):
     for label, key in [(f"Connecting at {home} (behind the origin)", "behind_pdew"),
                        (f"Connecting at {d['iata']} (beyond the destination)", "beyond_pdew")]:
         _sec(ws, r, label, 8); r += 1
-        _hdr(ws, r, ["Nr", "Code", "City", "Country", "Annual demand", "Share", "Annual forecast", "PDEW"],
+        _hdr(ws, r, ["Nr", "Code", "City", "Country", "Market demand", "Share", f"{_padj} forecast", "PDEW"],
              [6, 10, 24, 20, 15, 10, 15, 9]); r += 1
         lst = dem.get(key) or []; sub_base = 0.0; sub_fc = 0.0
         for i, row in enumerate(lst, 1):
             base = n0(row.get("base")); shr = n0(row.get("share"))
-            fcv = n0(row.get("forecast")) or (n0(row.get("pdew")) * 365.0); pdv = n0(row.get("pdew"))
+            fcv = n0(row.get("forecast")) or (n0(row.get("pdew")) * weeks * 7.0); pdv = n0(row.get("pdew"))
             if fcv <= 0 and pdv <= 0:
                 continue
             sub_base += base; sub_fc += fcv
@@ -179,11 +190,11 @@ def build_workbook(out_path, fc, meta=None):
     # ---- 3b. Schedule and capacity ----------------------------------------
     ws = wb.create_sheet("Schedule")
     _title(ws, "Schedule and capacity", f'{cap.get("aircraft","")} at {int(freq)}x/week (indicative times)')
-    _hdr(ws, 4, ["Sector", "Dep", "Arr", "Op days/week", "Aircraft", "Seats", "Annual seats", "Annual pax", "Seat factor"],
+    _hdr(ws, 4, ["Sector", "Dep", "Arr", "Op days/week", "Aircraft", "Seats", f"{_padj} seats", f"{_padj} pax", "Seat factor"],
          [13, 9, 9, 13, 12, 9, 14, 13, 11])
     sched = fc.get("schedule") or {}
     seats = n0(ec.get("seats")); load = n0(cap.get("load"))
-    ann_seats_dir = seats * freq * 52.0
+    ann_seats_dir = seats * freq * weeks
     r = 5
     for leg in ("outbound", "inbound"):
         s = sched.get(leg) or {}
@@ -200,8 +211,9 @@ def build_workbook(out_path, fc, meta=None):
     _c(ws, r, 8, round(tot * 2), font=BOLD, fill=TOTF, fmt="#,##0", align=RGT)
     _c(ws, r, 9, load, font=BOLD, fill=TOTF, fmt="0.0%", align=RGT)
     _c(ws, r + 2, 1, "Departure and arrival are indicative local times derived from block time and timezone; "
-                     "not curfew- or slot-optimised. Annual seats = seats x frequency x 52, each direction; "
-                     "annual pax is the forecast each way; seat factor is the planned load.", font=NOTE, align=LFT, border=None)
+                     f"not curfew- or slot-optimised. {_padj} seats = seats x frequency x {int(weeks)}, each "
+                     f"direction; {_pnoun} pax is the forecast each way; seat factor is the planned load.",
+       font=NOTE, align=LFT, border=None)
 
     # ---- 4. Catchment split ------------------------------------------------
     ws = wb.create_sheet("Catchment")
@@ -241,7 +253,7 @@ def build_workbook(out_path, fc, meta=None):
     for k, v, fmt in [("Operating margin", n0(raw.get("margin")), "0.0%"),
                       ("Breakeven load factor", n0(raw.get("breakeven_lf")), "0.0%"),
                       ("Passengers per rotation", n0(raw.get("pax_turn")), "#,##0"),
-                      ("Annual profit", n0(ec.get("annual_profit")), "#,##0"),
+                      (f"{_padj} profit", n0(ec.get("annual_profit")), "#,##0"),
                       ("Aircraft required", ec.get("aircraft_required") or 0, "0.00")]:
         _c(ws, r, 1, k, font=BOLD, align=LFT); _c(ws, r, 2, v, fmt=fmt, align=RGT); r += 1
 
@@ -271,8 +283,8 @@ def build_workbook(out_path, fc, meta=None):
               "survey/mobility data overrides the model where held.  4. Stimulation: uplift for the new nonstop.  "
               "5. Connecting feed: onward O&D behind the origin and beyond the destination on the chosen "
               "airline, alliance-weighted and circuity-screened.  6. Capacity cap: demand bounded by the "
-              "aircraft and frequency at the planned load factor.  7. Economics: turnaround and annual P&L on "
-              "validated type costs.  Indicative central estimate, for directional guidance.")
+              "aircraft and frequency at the planned load factor.  7. Economics: turnaround and "
+              f"{_pnoun} P&L on validated type costs.  Indicative central estimate, for directional guidance.")
     _c(ws, r, 1, method, font=NORM, align=LFT); ws.merge_cells(start_row=r, start_column=1, end_row=r + 6, end_column=3)
     ws.row_dimensions[r].height = 120
 

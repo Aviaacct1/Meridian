@@ -59,6 +59,14 @@ def _money(v):
 def build_deck(out, forecast, pnl, meta):
     prs = Presentation(); prs.slide_width = Inches(13.333); prs.slide_height = Inches(7.5)
     SW, SH = prs.slide_width, prs.slide_height; blank = prs.slide_layouts[6]
+    # SEASON labelling: volume figures are for the operating season; the addressable market stays annual.
+    _season = meta.get("season") or {}
+    _smode = _season.get("mode", "annual")
+    _seasonal = _smode in ("summer", "winter")
+    _pnoun = _smode if _seasonal else "annual"        # "summer" / "winter" / "annual"
+    _padj = _smode.capitalize() if _seasonal else "Annual"
+    _weeks = float(_season.get("weeks") or 52)
+    _days = (_weeks * 7.0) if _seasonal else 365.0     # season operating days for pdew -> volume
 
     # 1) title
     s = prs.slides.add_slide(blank); _rect(s, 0, 0, SW, SH, NAVY)
@@ -103,7 +111,7 @@ def build_deck(out, forecast, pnl, meta):
     _stat(s, Inches(0.6), Inches(1.95), Inches(3.0), _money(pnl['profit']), "operating profit per rotation", vcolor=pos)
     _stat(s, Inches(3.7), Inches(1.95), Inches(3.0), f"{pnl['margin']:.1%}", "operating margin", vcolor=pos)
     _stat(s, Inches(6.8), Inches(1.95), Inches(3.0), f"{pnl['breakeven_lf']:.0%}", "breakeven load factor")
-    _stat(s, Inches(9.9), Inches(1.95), Inches(3.0), _money(meta['annual_profit']), f"annual profit ({meta['frequency']}x/week)", vcolor=pos)
+    _stat(s, Inches(9.9), Inches(1.95), Inches(3.0), _money(meta['annual_profit']), f"{_pnoun} profit ({meta['frequency']}x/week)", vcolor=pos)
     # cost stack table (left)
     _txt(s, Inches(0.6), Inches(3.3), Inches(5.7), Inches(0.4), "Per rotation (return)", 15, bold=True)
     rows = [("Revenue", pnl['gross_rev'], False),
@@ -156,14 +164,14 @@ def build_deck(out, forecast, pnl, meta):
             _rect(s, x, Inches(2.45), Inches(5.8), Inches(0.36), NAVY)
             _txt(s, x + Inches(0.1), Inches(2.45), Inches(2.6), Inches(0.36), "Market", 11.5, bold=True, color=WHITE, anchor=MSO_ANCHOR.MIDDLE)
             _txt(s, x + Inches(3.5), Inches(2.45), Inches(1.05), Inches(0.36), "PDEW", 11.5, bold=True, color=WHITE, align=PP_ALIGN.RIGHT, anchor=MSO_ANCHOR.MIDDLE)
-            _txt(s, x + Inches(4.6), Inches(2.45), Inches(1.1), Inches(0.36), "Annual", 11.5, bold=True, color=WHITE, align=PP_ALIGN.RIGHT, anchor=MSO_ANCHOR.MIDDLE)
+            _txt(s, x + Inches(4.6), Inches(2.45), Inches(1.1), Inches(0.36), _padj, 11.5, bold=True, color=WHITE, align=PP_ALIGN.RIGHT, anchor=MSO_ANCHOR.MIDDLE)
             yy = Inches(2.85)
             for i, row in enumerate(rows[:10]):
                 if i % 2 == 0:
                     _rect(s, x, yy, Inches(5.8), Inches(0.32), LIGHT)
                 _txt(s, x + Inches(0.1), yy, Inches(3.4), Inches(0.32), f"{row.get('name')} ({row.get('code')})", 11, color=NAVY, anchor=MSO_ANCHOR.MIDDLE)
                 _txt(s, x + Inches(3.4), yy, Inches(1.15), Inches(0.32), f"{row.get('pdew', 0):,.1f}", 11, color=NAVY, align=PP_ALIGN.RIGHT, anchor=MSO_ANCHOR.MIDDLE)
-                _txt(s, x + Inches(4.55), yy, Inches(1.15), Inches(0.32), f"{row.get('pdew', 0) * 365:,.0f}", 11, color=NAVY, align=PP_ALIGN.RIGHT, anchor=MSO_ANCHOR.MIDDLE)
+                _txt(s, x + Inches(4.55), yy, Inches(1.15), Inches(0.32), f"{row.get('pdew', 0) * _days:,.0f}", 11, color=NAVY, align=PP_ALIGN.RIGHT, anchor=MSO_ANCHOR.MIDDLE)
                 yy = yy + Inches(0.34)
         _feedtbl(Inches(0.6), f"Behind {meta['origin']}", forecast.get('behind_pdew') or [])
         _feedtbl(Inches(6.9), f"Beyond {meta['dest']}", forecast.get('beyond_pdew') or [])
@@ -207,7 +215,7 @@ def build_deck(out, forecast, pnl, meta):
                 "Stimulation: the demand a new nonstop creates over the indirect base.\n"
                 "Connecting feed: onward O&D behind the origin and beyond the destination on the chosen airline, alliance-weighted and circuity-screened.\n"
                 "Capacity cap: demand bounded by the aircraft, frequency and planned load factor.\n"
-                "Forecast and economics: the bounded total each way, then a turnaround and annual P&L on validated type costs.")
+                f"Forecast and economics: the bounded total each way, then a turnaround and {_pnoun} P&L on validated type costs.")
         _txt(s, Inches(0.6), Inches(3.4), Inches(12.1), Inches(3.3), expl, 13, color=NAVY)
         _txt(s, Inches(0.6), Inches(6.98), Inches(12.1), Inches(0.4), meta.get('disclaimer', ''), 9.5, color=GREY, italic=True)
 

@@ -431,6 +431,12 @@ def forecast(sabre_db, oag_db, week, origin, dest_codes, competing_airports, *, 
         captured *= season_share
         feed_beyond *= season_share
         feed_behind *= season_share
+        # scale the itemised feed volume too, so the per-market detail rows sum to the seasonal
+        # totals. base (the annual O&D market) and pdew (a per-departure intensity) are left as-is.
+        for _dm in (beyond_detail, behind_detail):
+            for _c in _dm.values():
+                if _c.get("captured") is not None:
+                    _c["captured"] *= season_share
     feed = feed_beyond + feed_behind
     total_demand = captured + feed
     natural, leaked, repatriated, capture_rate = market, max(market - current, 0.0), 0.0, share

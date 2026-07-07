@@ -898,6 +898,8 @@ def api_report(origin: str, dest: str, airline: str = "", carrier_type: str = "F
         return JSONResponse({"ok": False, "error": "economics unavailable for the deck"}, status_code=400)
     dem = fc["demand"]; cap = fc["capacity"]; ec = fc["economics"]; raw = ec.get("raw") or {}
     o = fc["origin"]; d = fc["dest"]
+    _smode = (fc.get("season") or {}).get("mode", "annual")
+    _stag = "" if _smode == "annual" else f" · {_smode} service"
     sh = fc["catchment"]["observed_share"]; nm = fc["catchment"]["names"]; home = fc["catchment"]["home"]
     full_split = sorted([((nm.get(c) or c), v) for c, v in sh.items()], key=lambda t: -t[1])
     split = full_split[:7]
@@ -919,7 +921,7 @@ def api_report(origin: str, dest: str, airline: str = "", carrier_type: str = "F
         "feed": fmt(dem["feed_total"]), "total": fmt(dem["total"]),
         "split": split, "catchment_rows": full_split, "home_label": (nm.get(home) or home),
         "behind_pdew": dem.get("behind_pdew") or [], "beyond_pdew": dem.get("beyond_pdew") or [],
-        "subtitle": f'{o["city"]} to {d["city"]}',
+        "subtitle": f'{o["city"]} to {d["city"]}' + _stag,
         "fit_lines": [
             (cap.get("recommendation") or f'Fits {cap["freq"]}x/week {cap["aircraft"]}.'),
             f'Carries {fmt(cap["carried"])} each way at {round((cap.get("load") or 0) * 100)}% load.',
@@ -930,7 +932,7 @@ def api_report(origin: str, dest: str, airline: str = "", carrier_type: str = "F
     pnl = dict(raw)
     meta = {
         "title": f'{o["city"]} to {d["city"]}',
-        "subtitle": f'{(airline or fc.get("airline") or "New entrant")} · {cap["aircraft"]} · {cap["freq"]}x/week',
+        "subtitle": f'{(airline or fc.get("airline") or "New entrant")} · {cap["aircraft"]} · {cap["freq"]}x/week' + _stag,
         "origin": o["iata"], "origin_name": o["city"], "dest": d["city"], "aircraft": cap["aircraft"],
         "annual_profit": ec.get("annual_profit", 0), "frequency": cap["freq"],
         "sector_nm": fc.get("distance_nm", 0), "fare_ow": ec.get("econ_fare", 0), "plan_lf": plan_lf,
@@ -938,6 +940,7 @@ def api_report(origin: str, dest: str, airline: str = "", carrier_type: str = "F
         "pnl_subtitle": f'Per-rotation economics on the {cap["aircraft"]}, indicative planning assumptions',
         "disclaimer": "Indicative, for directional guidance only. Calibrated central estimate; not any airline's actual costs.",
         "full_report": True, "catchment_text": catchment_text,
+        "season": fc.get("season", {"mode": "annual", "share": 1.0, "weeks": 52}),
     }
     base = f'AviaCortex_{o["iata"]}_{d.get("iata", d["city"])}'
     tmpd = tempfile.gettempdir()
