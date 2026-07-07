@@ -286,6 +286,15 @@
             <div class="ch"><div><h3>Catchment leakage &amp; recapture</h3><div class="sub" id="leakHead">where your catchment flies today, and what a nonstop wins back</div></div></div>
             <div class="cb"><div id="leakTbl"></div><div class="fnote" id="leakNote"></div></div>
           </div>
+          <div class="card hidden" style="margin-top:16px" id="mapRow">
+            <div class="ch"><div><h3>Catchment map</h3><div class="sub">the airports your catchment departs from today</div></div></div>
+            <div class="cb"><div id="mapSvg"></div><div class="fnote" id="mapNote"></div></div>
+          </div>
+          <div class="card hidden" style="margin-top:16px" id="hubRow">
+            <div class="ch"><div><h3>Hub connectivity</h3><div class="sub" id="hubSub">onward departure waves at the destination hub</div></div>
+              <button class="btn ghost" id="hubBtn" style="padding:6px 13px">Load hub banks</button></div>
+            <div class="cb"><div id="hubChart"></div><div class="fnote" id="hubNote"></div></div>
+          </div>
           <div class="card" style="margin-top:16px" id="seasonRow">
             <div class="ch"><div><h3>Seasonality</h3><div class="sub">monthly demand shape and peak-month load on the chosen schedule</div></div>
               <div class="seg" id="seasonSel">
@@ -733,8 +742,59 @@ function render(d){
 
   renderProjection(d);
   renderLeakage(d);
+  renderMap(d);
+  $("#hubChart").innerHTML=""; $("#hubNote").textContent=""; $("#hubRow").classList.remove("hidden");
   applyMode();
   $("#results").classList.remove("hidden");
+}
+$("#hubBtn").onclick=loadHubBanks;
+function loadHubBanks(){
+  const o=$("#origin").value.trim(), d=$("#dest").value.trim();
+  if(!o||!d){ showErr("run a forecast first"); return; }
+  const btn=$("#hubBtn"); btn.disabled=true; btn.innerHTML='<span class="spinner"></span>Loading…';
+  const q=new URLSearchParams({origin:o,dest:d,airline:$("#airline").value.trim()});
+  fetch("/api/hubbank?"+q).then(r=>r.json()).then(res=>{
+    if(!res||!res.ok){ showErr((res&&res.error)||"hub query failed"); return; }
+    renderHubBanks(res);
+  }).catch(e=>showErr(e.message||e)).finally(()=>{ btn.disabled=false; btn.textContent="Reload hub banks"; });
+}
+function renderHubBanks(res){
+  const banks=res.banks||[], mx=Math.max(...banks.map(b=>b.daily_deps),0.1);
+  setTxt("hubSub", (res.hub_city||res.hub)+" onward departures by time of day (OAG week "+res.week+") · "+res.total_daily_deps+"/day");
+  const bars=banks.map(b=>{
+    const h=Math.max(2,Math.round(b.daily_deps/mx*90)), peak=b.window===res.peak_window;
+    return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end">'
+      +'<div style="font-size:9px;color:var(--muted)">'+(b.daily_deps||"")+'</div>'
+      +'<div title="'+b.window+': '+b.daily_deps+'/day, '+b.dests+' destinations" style="width:70%;height:'+h+'px;background:'+(peak?'#1a9850':'#2F6BF0')+';border-radius:3px 3px 0 0"></div>'
+      +'<div style="font-size:9px;color:var(--muted);margin-top:3px">'+String(b.hour).padStart(2,"0")+'</div></div>';
+  }).join("");
+  $("#hubChart").innerHTML='<div style="display:flex;align-items:flex-end;gap:3px;height:120px">'+bars+'</div>';
+  setTxt("hubNote","The hub banks hardest around "+res.peak_window+" (green). Time the new route to arrive roughly an hour before a peak to feed the outbound wave.");
+}
+function renderMap(d){
+  const row=$("#mapRow"), c=d.catchment||{}, coords=c.coords||{}, shares=c.observed_share||{}, names=c.names||{}, home=c.home;
+  const codes=Object.keys(coords).filter(k=>coords[k]&&coords[k][0]!=null);
+  if(codes.length<2){ row.classList.add("hidden"); return; }
+  const lats=codes.map(k=>coords[k][0]), lons=codes.map(k=>coords[k][1]);
+  const laMin=Math.min(...lats), laMax=Math.max(...lats), loMin=Math.min(...lons), loMax=Math.max(...lons);
+  const W=480,H=310,pad=42;
+  const sx=lo=>pad+(loMax===loMin?0.5:(lo-loMin)/(loMax-loMin))*(W-2*pad);
+  const sy=la=>pad+(laMax===laMin?0.5:(laMax-la)/(laMax-laMin))*(H-2*pad);
+  const maxShare=Math.max(...codes.map(k=>shares[k]||0),0.01);
+  let svg='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;max-width:540px;background:#f4f7fb;border-radius:8px">';
+  const h=coords[home];
+  if(h){ codes.forEach(k=>{ if(k!==home&&(shares[k]||0)>0.02){ svg+='<line x1="'+sx(h[1]).toFixed(1)+'" y1="'+sy(h[0]).toFixed(1)+'" x2="'+sx(coords[k][1]).toFixed(1)+'" y2="'+sy(coords[k][0]).toFixed(1)+'" stroke="#c9d6e5" stroke-width="1"/>'; } }); }
+  const ordered=codes.slice().sort((a,b)=>(shares[a]||0)-(shares[b]||0));
+  ordered.forEach(k=>{
+    const x=sx(coords[k][1]), y=sy(coords[k][0]), sh=shares[k]||0;
+    const rr=4+Math.sqrt(sh/maxShare)*16, isH=k===home;
+    svg+='<circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="'+rr.toFixed(1)+'" fill="'+(isH?'#1a9850':'#2F6BF0')+'" fill-opacity="0.72" stroke="#fff" stroke-width="1.5"/>';
+    svg+='<text x="'+x.toFixed(1)+'" y="'+(y-rr-3).toFixed(1)+'" text-anchor="middle" font-size="10" fill="#2b3a4a" font-weight="'+(isH?'700':'400')+'">'+k+' '+Math.round(sh*100)+'%</text>';
+  });
+  svg+='</svg>';
+  $("#mapSvg").innerHTML=svg;
+  setTxt("mapNote",(names[home]||home)+" in green; circle size is each airport's share of the catchment's demand to "+d.dest.city+" today. Lines show the leakage a nonstop would target.");
+  row.classList.remove("hidden");
 }
 function renderLeakage(d){
   const row=$("#leakRow"), c=d.catchment||{}, dem=d.demand||{};

@@ -513,7 +513,10 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
         "origin": {"iata": home, "city": o["city"], "country": o["country"], "metro": om["airports"]},
         "dest": {"iata": dest_airport, "city": d["city"], "country": d["country"], "metro": dest_codes},
         "airline": airline, "carrier_type": ct,
-        "catchment": {"home": home, "observed_share": shares, "names": names},
+        "catchment": {"home": home, "observed_share": shares, "names": names,
+                      "coords": {c: [ap[c]["lat"], ap[c]["lon"]] for c in competing
+                                 if c in ap and ap[c].get("lat") is not None},
+                      "origin_ll": [o.get("lat"), o.get("lon")], "dest_ll": [d.get("lat"), d.get("lon")]},
         "demand": {"natural": r["natural_market"], "current": r["current_via_origin"],
                    "captured": r["captured_demand"], "qsi_share": r["qsi_share"], "dest_share": r["dest_share"],
                    "coverage_gross_up": r["coverage_gross_up"], "premium_share": r["premium_share"],
@@ -909,6 +912,52 @@ def api_opportunities(origin: str, limit: int = 25, radius_km: float = 220.0):
     rows = _group_metros(raw, ap)[:int(limit)]
     return JSONResponse({"ok": True, "origin": home, "origin_city": o.get("city") or home,
                          "year": ctx["year"], "catchment": competing, "opportunities": rows})
+
+
+@app.get("/api/hubbank")
+def api_hubbank(origin: str = "", dest: str = "", airline: str = ""):
+    """Hub-bank / connectivity view: the onward departure waves at the destination hub, binned into
+    two-hour windows, so an airport can see when the hub banks and time the new route's arrival to feed
+    them. Reads the OAG departure board at the hub via the wave-cache board reader."""
+    import geo_resolve as GEO
+    ctx = _live_ctx()
+    if not ctx.get("week") or not ctx.get("oag_db"):
+        return JSONResponse({"ok": False, "error": "OAG store not found."})
+    idx = ctx["served"]
+    try:
+        dm = GEO.resolve_metro(dest, served_index=idx, dump=DUMP, expand=True)
+    except Exception as e:
+        return JSONResponse({"ok": False, "error": f"could not resolve '{dest}': {e}"})
+    hub = dm["primary"]
+    try:
+        from wave_cache import OagBoards
+        wb = OagBoards(ctx["oag_db"])
+        try:
+            deps = wb.dep_rows(ctx["week"], hub)
+        finally:
+            wb.close()
+    except Exception as e:
+        return JSONResponse({"ok": False, "error": f"hub board query failed: {e}"})
+    banks = [{"window": f"{b*2:02d}:00-{b*2+2:02d}:00", "hour": b * 2, "daily_deps": 0.0,
+              "services": 0, "dests": {}} for b in range(12)]
+    for leg in deps:
+        dmn = leg.get("dep_mins")
+        if dmn is None:
+            continue
+        b = min(11, int(dmn // 120))
+        bk = banks[b]
+        bk["services"] += 1
+        bk["daily_deps"] += (leg.get("freq") or 1.0) / 7.0
+        a = leg.get("arr")
+        if a:
+            bk["dests"][a] = bk["dests"].get(a, 0) + 1
+    for bk in banks:
+        bk["daily_deps"] = round(bk["daily_deps"], 1)
+        bk["dests"] = len(bk["dests"])
+    peak = max(banks, key=lambda x: x["daily_deps"]) if banks else None
+    return JSONResponse({"ok": True, "hub": hub, "hub_city": (dm.get("city") or hub), "week": ctx["week"],
+                         "banks": banks, "peak_window": peak["window"] if peak else None,
+                         "total_daily_deps": round(sum(b["daily_deps"] for b in banks), 1)})
 
 
 @app.get("/api/optimise")
