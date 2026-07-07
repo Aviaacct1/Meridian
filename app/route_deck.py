@@ -104,6 +104,45 @@ def build_deck(out, forecast, pnl, meta):
          "Source: GeoNames population, OSRM road times, Sabre point-of-origin O&D; catchment calibrated to the observed airport split.",
          9.5, color=GREY, italic=True)
 
+    # 2b) five-year demand build (grown at the measured market trend)
+    pj = forecast.get('projection')
+    if pj and pj.get('build'):
+        RED = RGBColor(0xB0, 0x00, 0x00)
+        s = prs.slides.add_slide(blank)
+        _txt(s, Inches(0.6), Inches(0.45), Inches(12.1), Inches(0.7),
+             f"Five-year demand build: {meta['dest']} from {oname}", 32, bold=True)
+        _cg = pj.get('cagr', 0.0)
+        _txt(s, Inches(0.62), Inches(1.15), Inches(12.1), Inches(0.5),
+             f"Demand grown at the measured market trend of {_cg*100:+.1f}% a year; capacity held on the chosen schedule",
+             15, color=GREY)
+        y0 = Inches(2.15); TW = Inches(9.2)
+        _rect(s, Inches(0.6), y0, TW, Inches(0.42), NAVY)
+        _txt(s, Inches(0.75), y0, Inches(2.0), Inches(0.42), "Year", 12.5, bold=True, color=WHITE, anchor=MSO_ANCHOR.MIDDLE)
+        _txt(s, Inches(2.7), y0, Inches(2.6), Inches(0.42), "Demand (each way)", 12.5, bold=True, color=WHITE, align=PP_ALIGN.RIGHT, anchor=MSO_ANCHOR.MIDDLE)
+        _txt(s, Inches(5.5), y0, Inches(2.3), Inches(0.42), "Carried", 12.5, bold=True, color=WHITE, align=PP_ALIGN.RIGHT, anchor=MSO_ANCHOR.MIDDLE)
+        _txt(s, Inches(8.0), y0, Inches(1.6), Inches(0.42), "Load", 12.5, bold=True, color=WHITE, align=PP_ALIGN.RIGHT, anchor=MSO_ANCHOR.MIDDLE)
+        yy = Inches(2.62)
+        for i, x in enumerate(pj['build']):
+            if i % 2 == 0:
+                _rect(s, Inches(0.6), yy, TW, Inches(0.38), LIGHT)
+            _lbl = f"{x['year']} (base)" if x.get('offset') == 0 else str(x['year'])
+            _spill = (x.get('spill', 0) or 0) > 0.02 * max(x.get('demand', 1), 1)
+            _ld = f"{round((x.get('load') or 0)*100)}%" if x.get('load') is not None else "-"
+            _txt(s, Inches(0.75), yy, Inches(2.2), Inches(0.38), _lbl, 12.5, color=NAVY, anchor=MSO_ANCHOR.MIDDLE)
+            _txt(s, Inches(2.7), yy, Inches(2.6), Inches(0.38), f"{x['demand']:,}", 12.5, color=NAVY, align=PP_ALIGN.RIGHT, anchor=MSO_ANCHOR.MIDDLE)
+            _txt(s, Inches(5.5), yy, Inches(2.3), Inches(0.38), f"{x['carried']:,}", 12.5, color=NAVY, align=PP_ALIGN.RIGHT, anchor=MSO_ANCHOR.MIDDLE)
+            _txt(s, Inches(8.0), yy, Inches(1.6), Inches(0.38), _ld, 12.5, bold=_spill, color=(RED if _spill else NAVY), align=PP_ALIGN.RIGHT, anchor=MSO_ANCHOR.MIDDLE)
+            yy = yy + Inches(0.42)
+        _b = pj['build']; _full = next((r for r in _b if (r.get('spill', 0) or 0) > 0.02 * max(r.get('demand', 1), 1)), None)
+        _last = _b[-1]; _lastld = round((_last.get('load') or 0) * 100) if _last.get('load') is not None else None
+        _note = (f"Demand fills the aircraft by {_full['year']}; beyond that it spills, the case for added frequency or a larger gauge."
+                 if _full else f"Within the chosen schedule throughout, reaching {_lastld}% load by {_last['year']}." if _lastld is not None
+                 else f"Demand grows steadily to {_last['year']}.")
+        _txt(s, Inches(0.6), yy + Inches(0.25), Inches(9.2), Inches(0.7), _note, 13.5, color=NAVY)
+        _txt(s, Inches(0.6), Inches(6.95), Inches(12.1), Inches(0.4),
+             "Growth is the measured Sabre O&D trend for this market, clamped to a sustainable range; a launch-year figure, not the current year.",
+             9.5, color=GREY, italic=True)
+
     # 3) route P&L with the real cost stack
     s = prs.slides.add_slide(blank)
     _txt(s, Inches(0.6), Inches(0.45), Inches(12.1), Inches(0.7),

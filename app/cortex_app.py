@@ -520,13 +520,18 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
         "schedule": _schedule_times(home, dest_airport, o, d, bmin),
         "distance_nm": round(gcd / 1.852), "block_min": bmin, "week": ctx["week"], "year": ctx["year"],
     }
-    # INDUCED: the low stimulation fare that buys the fill travels into the P&L, so a filled cabin shows a
-    # thin yield rather than a fantasy profit. Override the fare unless the user set one explicitly.
+    # REVENUE LEG FARE, in priority: (1) a user-set fare always wins; (2) an induced route uses the low
+    # stimulation fare that buys the fill; (3) otherwise the MEASURED Sabre market fare/yield, not a
+    # distance proxy. This makes the P&L revenue reflect what the market actually pays.
     if r.get("induced") and r.get("induced_fare"):
         _ifare = r["induced_fare"]
         if not (econ_fare and econ_fare > 0):
             econ_fare = _ifare
         bus_fare = min(bus_fare, _ifare * 1.6)   # induced LCC/ULCC are low-yield; cap the premium fare
+    if not (econ_fare and econ_fare > 0):
+        _mkt_fare = r.get("avg_fare")            # measured Sabre one-way O&D fare for this market
+        if _mkt_fare and _mkt_fare > 0:
+            econ_fare = round(float(_mkt_fare), 2)
     if with_econ:
         out.update(_econ_block(each_way, aircraft, freq, home, dest_airport, gcd, econ_share,
                                plan_lf, econ_fare, bus_fare, fuel_price, ct, weeks=season_weeks))
@@ -835,6 +840,34 @@ def _explain_infeasible(origin, dest, dist_km, plan_lf=0.85):
         return "no airline with a range-feasible fleet for this sector"
 
 
+def _group_metros(rows, ap, radius_km=80.0):
+    """Cluster destination airports within ~radius_km into one metro market (JFK/EWR/LGA -> New York),
+    summing the demand and leakage, so the opportunity scan ranks city markets not split airports."""
+    import route_engine as RE
+    clusters = []
+    for r in rows:
+        a = ap.get(r["dest"], {}); la, lo = a.get("lat"), a.get("lon")
+        placed = False
+        if la is not None and lo is not None:
+            for cl in clusters:
+                if cl["lat"] is not None and RE.gc_km(la, lo, cl["lat"], cl["lon"]) <= radius_km:
+                    cl["rows"].append(r); placed = True; break
+        if not placed:
+            clusters.append({"lat": la, "lon": lo, "rows": [r]})
+    out = []
+    for cl in clusters:
+        rs = sorted(cl["rows"], key=lambda x: -x["pax"]); head = rs[0]; a = ap.get(head["dest"], {})
+        pax = sum(x["pax"] for x in rs); vh = sum(x["via_home"] for x in rs)
+        fw = sum(x["avg_fare"] * x["pax"] for x in rs)
+        out.append({"dest": head["dest"], "dest_city": a.get("city") or head["dest"],
+                    "dest_country": a.get("country") or "", "airports": [x["dest"] for x in rs],
+                    "pax": pax, "via_home": vh, "leakage": pax - vh,
+                    "home_share": round(vh / pax, 3) if pax else 0.0,
+                    "avg_fare": round(fw / pax, 2) if pax else 0.0})
+    out.sort(key=lambda x: -x["leakage"])
+    return out
+
+
 @app.get("/api/opportunities")
 def api_opportunities(origin: str, limit: int = 25, radius_km: float = 220.0):
     """Airport-led opportunity scan: rank the origin catchment's biggest destination markets by the
@@ -854,14 +887,11 @@ def api_opportunities(origin: str, limit: int = 25, radius_km: float = 220.0):
         return JSONResponse({"ok": False, "error": "airport resolution failed for the origin"})
     sset = OAS.served_set(idx) if idx else None
     competing = [r["iata"] for r in RE.competing_airports(o, radius_km, sset, True)] if o else [home]
-    try:
-        rows = SC.top_destinations(ctx["sabre_db"], competing, home, year=ctx["year"], top=int(limit))
+    try:   # pull extra airports so grouping still yields ~limit metro markets
+        raw = SC.top_destinations(ctx["sabre_db"], competing, home, year=ctx["year"], top=max(int(limit) * 2, 60))
     except Exception as e:
         return JSONResponse({"ok": False, "error": f"opportunity scan failed: {e}"})
-    for rr in rows:
-        dd = ap.get(rr["dest"], {})
-        rr["dest_city"] = dd.get("city") or rr["dest"]
-        rr["dest_country"] = dd.get("country") or ""
+    rows = _group_metros(raw, ap)[:int(limit)]
     return JSONResponse({"ok": True, "origin": home, "origin_city": o.get("city") or home,
                          "year": ctx["year"], "catchment": competing, "opportunities": rows})
 
