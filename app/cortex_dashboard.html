@@ -277,6 +277,10 @@
             <div class="ch"><div><h3>Five-year demand build</h3><div class="sub" id="projSub">demand grown at the measured market trend; capacity held on the chosen schedule</div></div></div>
             <div class="cb"><div id="projTbl"></div><div class="fnote" id="projNote"></div></div>
           </div>
+          <div class="card hidden" style="margin-top:16px" id="leakRow">
+            <div class="ch"><div><h3>Catchment leakage &amp; recapture</h3><div class="sub" id="leakHead">where your catchment flies today, and what a nonstop wins back</div></div></div>
+            <div class="cb"><div id="leakTbl"></div><div class="fnote" id="leakNote"></div></div>
+          </div>
           <div class="card" style="margin-top:16px" id="seasonRow">
             <div class="ch"><div><h3>Seasonality</h3><div class="sub">monthly demand shape and peak-month load on the chosen schedule</div></div>
               <div class="seg" id="seasonSel">
@@ -699,8 +703,28 @@ function render(d){
   } else { $("#airfield").classList.add("hidden"); }
 
   renderProjection(d);
+  renderLeakage(d);
   applyMode();
   $("#results").classList.remove("hidden");
+}
+function renderLeakage(d){
+  const row=$("#leakRow"), c=d.catchment||{}, dem=d.demand||{};
+  const shares=c.observed_share||{}, names=c.names||{}, home=c.home;
+  const nat=dem.natural||0;
+  if(!nat||!home||!Object.keys(shares).length){ row.classList.add("hidden"); return; }
+  const homeShare=shares[home]||0;
+  const leakTot=nat*(1-homeShare);
+  const recap=Math.max((dem.captured||0)-nat*homeShare,0);
+  setTxt("leakHead", fmt(nat)+" trips/yr each way from the "+d.origin.city+" catchment to "+d.dest.city+". "
+    +fmt(leakTot)+" ("+Math.round((1-homeShare)*100)+"%) leak to other airports today; a "+home+" nonstop wins back ~"
+    +fmt(recap)+" ("+Math.round((dem.qsi_share||0)*100)+"%).");
+  const rows=Object.entries(shares).filter(x=>x[1]>0&&x[0]!==home).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  const hdr='<div class="pl" style="font-weight:700"><span class="k">Airport (leakage today)</span><span class="vv" style="width:22%;text-align:right">Share</span><span class="vv" style="width:32%;text-align:right">Pax/yr (ew)</span></div>';
+  const body=rows.map(x=>'<div class="pl"><span class="k">'+(names[x[0]]||x[0])+'</span><span class="vv" style="width:22%;text-align:right">'+Math.round(x[1]*100)+'%</span><span class="vv" style="width:32%;text-align:right">'+fmt(nat*x[1])+'</span></div>').join("");
+  $("#leakTbl").innerHTML=hdr+(body||'<div class="fnote">No competing-airport split available.</div>');
+  setTxt("leakNote", homeShare>0.5 ? home+" already carries most of its catchment today; the leakage opportunity is limited."
+    : "Most of the catchment drives to larger airports today - that leakage is the recapture case a nonstop addresses.");
+  row.classList.remove("hidden");
 }
 function renderProjection(d){
   const p=d.projection, row=$("#projRow");
