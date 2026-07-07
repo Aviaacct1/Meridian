@@ -202,6 +202,7 @@
             </div>
             <div class="fld" style="grid-column:span 4;justify-content:flex-end">
               <div style="display:flex;gap:8px">
+                <button class="btn ghost" id="scan" style="flex:1" title="Scan the origin catchment's biggest destination markets and rank the recapture opportunities">Scan</button>
                 <button class="btn ghost" id="optimise" style="flex:1" title="Leave airline, aircraft or frequency blank and let Cortex choose the best">Optimise</button>
                 <button class="btn" id="run" style="flex:1.4">Run assessment</button>
               </div>
@@ -244,6 +245,10 @@
       </div>
       <div id="routeFlag" class="banner warn hidden"></div>
       <div id="err" class="err hidden"></div>
+      <div class="card hidden" id="oppRow" style="margin-top:16px">
+        <div class="ch"><div><h3>Route opportunities</h3><div class="sub" id="oppSub">the catchment's biggest destination markets, ranked by the leakage a nonstop could win back</div></div></div>
+        <div class="cb"><div id="oppTbl"></div><div class="fnote">Click a destination to run a full forecast on it.</div></div>
+      </div>
       <div id="results" class="hidden">
         <div class="kpis" id="kpis"></div>
         <div id="basis" class="foot-note" style="margin:-6px 0 16px"></div>
@@ -558,6 +563,26 @@ function doForecast(){
     .finally(()=>{btn.disabled=false;btn.textContent="Run assessment";});
 }
 $("#optimise").onclick=optimise;
+$("#scan").onclick=scanOpportunities;
+function scanOpportunities(){
+  const o=$("#origin").value.trim();
+  if(!o){ showErr("enter an origin first"); return; }
+  const btn=$("#scan"); btn.disabled=true; btn.innerHTML='<span class="spinner"></span>Scanning…';
+  $("#err").classList.add("hidden");
+  fetch("/api/opportunities?origin="+encodeURIComponent(o)).then(r=>r.json()).then(res=>{
+    if(!res||!res.ok){ showErr((res&&res.error)||"scan failed"); return; }
+    renderOpportunities(res);
+  }).catch(e=>showErr(e.message||e)).finally(()=>{ btn.disabled=false; btn.textContent="Scan"; });
+}
+function renderOpportunities(res){
+  const row=$("#oppRow"), ops=res.opportunities||[];
+  setTxt("oppSub",(res.origin_city||res.origin)+" catchment · "+ops.length+" destination markets, ranked by recapture leakage (Sabre "+res.year+")");
+  const hdr='<div class="pl" style="font-weight:700"><span class="k">Destination</span><span class="vv" style="width:20%;text-align:right">Market (ew)</span><span class="vv" style="width:16%;text-align:right">Via home</span><span class="vv" style="width:22%;text-align:right">Leakage</span></div>';
+  const body=ops.map(x=>'<div class="pl oppr" data-d="'+x.dest+'" style="cursor:pointer"><span class="k">'+x.dest_city+' <span style="color:var(--muted);font-size:11px">'+x.dest+'</span></span><span class="vv" style="width:20%;text-align:right">'+fmt(x.pax)+'</span><span class="vv" style="width:16%;text-align:right">'+Math.round((x.home_share||0)*100)+'%</span><span class="vv" style="width:22%;text-align:right">'+fmt(x.leakage)+'</span></div>').join("");
+  $("#oppTbl").innerHTML=hdr+(body||'<div class="fnote">No markets found for this origin.</div>');
+  row.querySelectorAll(".oppr").forEach(el=>el.onclick=()=>{ $("#dest").value=el.dataset.d; row.classList.add("hidden"); doForecast(); });
+  row.classList.remove("hidden");
+}
 function optimise(){
   const o=$("#origin").value.trim(), d=$("#dest").value.trim();
   if(!o||!d){ showErr("enter an origin and destination first"); return; }

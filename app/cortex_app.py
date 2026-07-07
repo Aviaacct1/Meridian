@@ -835,6 +835,37 @@ def _explain_infeasible(origin, dest, dist_km, plan_lf=0.85):
         return "no airline with a range-feasible fleet for this sector"
 
 
+@app.get("/api/opportunities")
+def api_opportunities(origin: str, limit: int = 25, radius_km: float = 220.0):
+    """Airport-led opportunity scan: rank the origin catchment's biggest destination markets by the
+    leakage a home nonstop could recapture. This is a fast screen (one aggregate query), not a full
+    forecast - the UI lets the user click a row to run the full forecast on it."""
+    import route_engine as RE, geo_resolve as GEO, oag_served as OAS, sabre_catchment as SC
+    ctx = _live_ctx()
+    if not ctx.get("week") or not ctx.get("year"):
+        return JSONResponse({"ok": False, "error": "OAG/Sabre databases not found."})
+    idx = ctx["served"]
+    try:
+        om = GEO.resolve_metro(origin, served_index=idx, dump=DUMP, expand=False)
+    except Exception as e:
+        return JSONResponse({"ok": False, "error": f"could not resolve '{origin}': {e}"})
+    home = om["primary"]; ap = RE._airports(); o = ap.get(home)
+    if not o:
+        return JSONResponse({"ok": False, "error": "airport resolution failed for the origin"})
+    sset = OAS.served_set(idx) if idx else None
+    competing = [r["iata"] for r in RE.competing_airports(o, radius_km, sset, True)] if o else [home]
+    try:
+        rows = SC.top_destinations(ctx["sabre_db"], competing, home, year=ctx["year"], top=int(limit))
+    except Exception as e:
+        return JSONResponse({"ok": False, "error": f"opportunity scan failed: {e}"})
+    for rr in rows:
+        dd = ap.get(rr["dest"], {})
+        rr["dest_city"] = dd.get("city") or rr["dest"]
+        rr["dest_country"] = dd.get("country") or ""
+    return JSONResponse({"ok": True, "origin": home, "origin_city": o.get("city") or home,
+                         "year": ctx["year"], "catchment": competing, "opportunities": rows})
+
+
 @app.get("/api/optimise")
 def api_optimise(origin: str, dest: str, airline: str = "", carrier_type: str = "FSC",
                  econ_share: float = 0.85, plan_lf: float = 0.85, bus_fare: float = 1400.0,

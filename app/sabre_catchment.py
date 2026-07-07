@@ -112,6 +112,46 @@ def destination_market_split(db, airports, dest_airports, poo_country=None, year
     return split, total, avg_fare
 
 
+def top_destinations(db, airports, home, year=None, top=25, min_pax=1000):
+    """Airport-led OPPORTUNITY scan: the catchment's biggest P2P destination markets, and how much of
+    each departs via the HOME airport today. origin_airport IN the catchment set (same basis as
+    destination_market_split). leakage = pax - via_home = the demand a home nonstop could recapture.
+    Returns a list ranked by leakage: {dest, pax, via_home, leakage, home_share, avg_fare}."""
+    import duckdb
+    if not os.path.exists(db):
+        raise FileNotFoundError(f"Sabre store not found: {db}")
+    aph = ",".join("?" * len(airports))
+    where = [f"origin_airport IN ({aph})",
+             "(connecting_airport1 IS NULL OR TRIM(connecting_airport1) = '')"]   # pure P2P
+    params = [home, *airports]        # home binds the SELECT CASE (first ?), then the IN list
+    if year is not None:
+        where.append("source_year = ?"); params.append(year)
+    sql = (f"SELECT destination_airport, SUM(passengers) AS pax, "
+           f"SUM(CASE WHEN origin_airport = ? THEN passengers ELSE 0 END) AS via_home, "
+           f"SUM(passengers * avg_total_fare_usd) AS farewt FROM sabre "
+           f"WHERE {' AND '.join(where)} GROUP BY destination_airport "
+           f"HAVING SUM(passengers) >= {float(min_pax)} ORDER BY pax DESC LIMIT {int(top)}")
+    con = duckdb.connect(db, read_only=True)
+    try:
+        from db_registry import apply_limits; apply_limits(con)
+    except Exception:
+        pass
+    try:
+        rows = con.execute(sql, params).fetchall()
+    finally:
+        con.close()
+    out = []
+    for dest, pax, via_home, farewt in rows:
+        pax = float(pax or 0); vh = float(via_home or 0)
+        if not dest or pax <= 0:
+            continue
+        out.append({"dest": dest, "pax": round(pax), "via_home": round(vh),
+                    "leakage": round(pax - vh), "home_share": round(vh / pax, 3) if pax else 0.0,
+                    "avg_fare": round(farewt / pax, 2) if pax else 0.0})
+    out.sort(key=lambda r: -r["leakage"])      # rank by the recapture prize
+    return out
+
+
 def catchment_poo_cities(db, airports, near_cities=None, poo_country="IT", year=None,
                          directionality="POO", top=40):
     """Helper to DISCOVER the point-of-origin city codes that feed the candidate airports,
