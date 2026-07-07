@@ -336,7 +336,7 @@ def _operated(oag, weeks, dep, arr):
 
 
 def asif_forecast(route, oag, sabre, served_cache, wby, stimulation=1.15, radius_km=220.0, outturn_offset=1,
-                  lcc_cat=1.0, feed_cfg=None, market_factor=None):
+                  lcc_cat=1.0, feed_cfg=None, market_factor=None, season_grade=False):
     """The tool's forecast, standing the year before launch, via the rebuilt connected loop
     (route_forecast): measured wide market (Y-1 Sabre) x QSI share (Y-1 OAG + the proposed nonstop)
     x stimulation, capped by the route's ACTUAL operated capacity (OAG launch year)."""
@@ -404,18 +404,30 @@ def asif_forecast(route, oag, sabre, served_cache, wby, stimulation=1.15, radius
     # market_factor True = resolve the trim table by airline type (FSC/ULCC 0.85, LCC 0.95); a table
     # passes through as-is; None/False = off.
     _mf = RF.market_factor_for(route.get("type")) if market_factor is True else market_factor
+    # C1 SEASON GRADE: a one-season route ('S'/'W' from the OAG service pattern) is forecast in its
+    # season, so the demand is the season's share of the annual O&D, matched to its season-only outturn.
+    # Capacity is already the operated seasonal cap (annual_cap), so season_weeks is not needed here.
+    graded_season = ""; season_share = 1.0
+    if season_grade and service in ("summer", "winter"):
+        import seasonality_engine as SE
+        graded_season = service       # _operated tags one-season routes "summer"/"winter"
+        _g = gcd or 0
+        _rt = "intra_european" if _g < 1500 else "transatlantic" if _g < 6000 else "europe_asia"
+        _ds = "leisure" if route.get("type") in ("LCC", "ULCC") else "mixed"
+        season_share = SE.season_share_for(graded_season, route_type=_rt, demand_split=_ds)
     r = RF.forecast(sabre, oag, asif_week, dep, dest_codes, competing, year=Y - 1, freq=freq,
                     block_min=block, stimulation=stim, dest_airport=arr, airline=route.get("carrier"),
                     growth=growth, growth_years=1 + outturn_offset,
                     annual_capacity=(annual_cap or None), catchment_mult=cmult, feed_cfg=feed_cfg,
-                    market_factor=_mf)
+                    market_factor=_mf, season=(graded_season or "annual"), season_share=season_share)
     hub = (served.get("airports", {}).get(arr, {}) or {}).get("dest_count", 0)
     return {"forecast_pax": r["carried_forecast"], "market": r["natural_market"],
             "share": r["qsi_share"], "captured": r["captured_demand"], "spill": r["spill"],
             "total_demand": r.get("total_demand", 0), "feed_beyond": r.get("feed_beyond", 0),
             "feed_behind": r.get("feed_behind", 0),
             "capacity": annual_cap or 0, "natural": r["natural_market"], "propensity": r["qsi_share"],
-            "propensity_basis": "qsi-share", "dest_count": hub, "gcd_km": gcd or 0, "service": service}
+            "propensity_basis": "qsi-share", "dest_count": hub, "gcd_km": gcd or 0, "service": service,
+            "graded_season": graded_season, "season_share": round(season_share, 3)}
 
 
 # ----------------------------------------------------------------------------- R2: parallel route pool
@@ -448,12 +460,13 @@ def _forecast_route(r):
             return None
         out = sector_traffic(c["sabre"], r["dep"], r["arr"], r["year"] + off)
         f = asif_forecast(r, c["oag"], c["sabre"], _SERVED_CACHE, c["wby"], c["stim"],
-                          c["radius_km"], off, c["lcc_cat"], c["feed_cfg"], c.get("market_factor"))
+                          c["radius_km"], off, c["lcc_cat"], c["feed_cfg"], c.get("market_factor"),
+                          c.get("season_grade"))
         graded = f["forecast_pax"]
         ratio = (graded / out) if out else None
         ratio_p2p = (f["captured"] / p2p) if p2p else None
         hub = bool((f.get("dest_count") or 0) >= c["hub_threshold"])
-        return {"route": f"{r['dep']}-{r['arr']}", "dep": r["dep"], "arr": r["arr"],
+        row = {"route": f"{r['dep']}-{r['arr']}", "dep": r["dep"], "arr": r["arr"],
                 "dep_country": _country(r["dep"]) or "", "arr_country": _country(r["arr"]) or "",
                 "type": r["type"], "year": r["year"],
                 "region": route_region(r["dep"], r["arr"]),
@@ -466,6 +479,10 @@ def _forecast_route(r):
                 "propensity_basis": f["propensity_basis"],
                 "gcd_km": round(f.get("gcd_km") or r.get("gcd_km") or 0),
                 "service": f.get("service", "")}
+        if c.get("season_grade"):     # extra columns only under --season-grade, so default runs are unchanged
+            row["graded_season"] = f.get("graded_season", "")
+            row["season_share"] = f.get("season_share", 1.0)
+        return row
     except Exception as e:
         return {"__error__": f"{r['dep']+'-'+r['arr']:12} {r.get('type',''):9} "
                              f"{r.get('year',''):>4} {'ERROR: '+str(e)[:48]}"}
@@ -627,6 +644,12 @@ def main():
                     help="crash-safe resume: rows are written to --out as each route finishes (not just at "
                          "the end), and on restart the routes already in --out are skipped. Use for any long "
                          "run so an interruption never restarts from scratch.")
+    ap.add_argument("--season-grade", action="store_true",
+                    help="C1: grade one-season routes fairly. A route the OAG shows as summer-only ('S') or "
+                         "winter-only ('W') is forecast in that SEASON (demand scaled to the season's share of "
+                         "the annual O&D), then graded against its outturn, which for a one-season route IS the "
+                         "season actual. Turns the seasonal over-read tail into a graded seasonal claim. Adds "
+                         "graded_season/season_share columns; annual routes are unchanged.")
     ap.add_argument("--qsi-k", type=float, default=0.06, help="QSI feed level k (calibrate to outturn)")
     ap.add_argument("--qsi-k-behind", type=float, default=None,
                     help="behind-side k (default = --qsi-k)")
@@ -753,7 +776,7 @@ def main():
            "offset": offset, "lcc_cat": a.lcc_cat, "feed_cfg": feed_cfg, "min_outturn": MIN_OUTTURN,
            "hub_threshold": HUB_THRESHOLD, "preagg": a.preagg,
            "summer_weeks": a.summer_weeks, "winter_weeks": a.winter_weeks,
-           "market_factor": market_factor}
+           "market_factor": market_factor, "season_grade": a.season_grade}
     rows = []
     done_keys = set()
     _resuming = bool(a.resume and os.path.exists(a.out))
@@ -847,6 +870,21 @@ def main():
         tot = [r["fc_over_out"] for r in clean if r["fc_over_out"] != ""]
         print(f"  {'ALL P2P':9} {len(cl):>4} {med(cl):>14.2f} {ov:>5} {un:>6}   "
               f"(within +/-20%: {within}/{len(cl)}; same routes median fc/TOTAL {med(tot):.2f})")
+
+    # SEASONAL COHORT (C1): one-season routes (OAG service "summer"/"winter"). --season-grade forecasts
+    # these IN-SEASON (demand scaled to the season). It CANNOT be validly graded on the annual stores:
+    # fc/p2p divides by the ANNUAL O&D market (year-round demand routes over off-season connections), and
+    # fc/out divides by onboard sector traffic (all connecting pax, so <1 even for annual routes). Neither
+    # is a season-scoped P2P truth. A validated seasonal grade needs the monthly Sabre O&D pull; until
+    # then the seasonal forecast is MODELLED, not back-tested. Counts shown for scope only, NOT a grade.
+    seas = [r for r in rows if r.get("service") in ("summer", "winter")]
+    if seas:
+        s_sum = sum(1 for r in seas if r.get("service") == "summer")
+        s_win = len(seas) - s_sum
+        print(f"\n  SEASONAL one-season routes: n={len(seas)} ({s_sum} summer, {s_win} winter), "
+              f"forecast {'IN-SEASON' if a.season_grade else 'full-year'}. NOT graded: the annual stores "
+              f"have no season-scoped P2P outturn (p2p is annual O&D; onboard includes connecting pax). "
+              f"A validated seasonal grade needs the monthly Sabre O&D pull.")
 
     # by REGION (non-hub clean P2P) - reads where Sabre coverage is complete vs not
     print(f"\n  by region (non-hub P2P):  {'region':8} {'n':>4} {'median':>7} {'over':>5} {'under':>6} {'+/-20%':>7}")
