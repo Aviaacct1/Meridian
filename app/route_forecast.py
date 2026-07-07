@@ -341,18 +341,18 @@ _INDUCED_HAUL_KM = (800.0, 2500.0, 6000.0)
 # achieved seat factor by [type][haul band: <800 / 800-2500 / 2500-6000 / >6000 km], from the 6yr launch
 # history (analyze_induced.py section C, type x haul medians on bt_v2_6yr_factored). Well-populated cells
 # at their median; two thin/noisy cells nudged (see notes) - adjust with domain judgement.
-INDUCED_LF = {
-    "LCC":  (0.74, 0.72, 0.74, 0.42),   # <800 n46, 800-2500 n155, 2500-6000 n100, >6000 n16 (tight)
-    "ULCC": (0.77, 0.82, 0.55, 0.45),   # <800 n54, 800-2500 n167; 2500-6000 median 0.46 (n39, wide
-                                         # IQR .39-.88) nudged up toward the haul norm; >6000 n6, unreliable
+INDUCED_LF = {   # 6yr run (bt_6yr_induced) section C, type x haul medians
+    "LCC":  (0.77, 0.72, 0.73, 0.42),   # <800 n42, 800-2500 n155, 2500-6000 n109, >6000 n16
+    "ULCC": (0.77, 0.82, 0.50, 0.45),   # <800 n48, 800-2500 n176; 2500-6000 median 0.46 (n41, wide IQR
+                                         # .39-.87, nudged to 0.50 - lower than LCC same haul, twice); >6000 n5 thin
 }
 # achieved ONE-WAY fare (USD) an induced route stimulates at, by [type][same haul bands]. This is the low
 # fare that BUYS the fill, applied in the economics so an induced route shows a full cabin at a thin yield.
-# LCC from analyze_induced.py section G (outturn-year P2P avg fare); ULCC ~0.7x LCC (thin ULCC sample,
-# refine from a full --induced-floor run). One overlapping cell confirmed ULCC below LCC ($116 vs $174).
+# 6yr run (bt_6yr_induced) section G, outturn-year P2P avg fare. ULCC sits below LCC on short/medium haul
+# (the cheaper model), as expected; both converge ~$475 on the rare >6000km cell.
 INDUCED_FARE = {
-    "LCC":  (108.0, 174.0, 244.0, 381.0),
-    "ULCC": (75.0,  116.0, 170.0, 300.0),
+    "LCC":  (114.0, 166.0, 244.0, 471.0),
+    "ULCC": (108.0, 139.0, 185.0, 481.0),
 }
 
 
