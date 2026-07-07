@@ -476,6 +476,24 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
     _feed_base = lambda dm: round(sum((v.get("base") or 0) for v in (dm or {}).values()))
     beyond_base = _feed_base(r.get("beyond_detail")); behind_base = _feed_base(r.get("behind_detail"))
     each_way = r["total_demand"]
+    # MULTI-YEAR BUILD: grow demand at the MEASURED market CAGR (dest market this year vs 2 years back),
+    # so a pitch forecasts to the launch year and out ~5 years, not just the current Sabre year. Same
+    # measure the back-test uses. Demand grows; capacity is fixed, so the build shows when a route fills
+    # and when it needs upsizing. Induced routes start at the comparable-launch fill and mature from there.
+    try:
+        _m2 = SC.destination_market_split(ctx["sabre_db"], competing, dest_codes, year=ctx["year"] - 2)[1] or 0.0
+        _cagr = ((float(_mkt) / _m2) ** 0.5 - 1.0) if (_mkt and _m2 > 0) else 0.03
+    except Exception:
+        _cagr = 0.03
+    _cagr = max(min(_cagr, 0.20), -0.05)          # clamp: a measured burst over 2yr isn't a sustained rate
+    _capf = float(r["annual_capacity"] or 0)
+    _build = []
+    for _n in range(0, 6):                        # base year + 5
+        _d = each_way * (1.0 + _cagr) ** _n
+        _c = min(_d, _capf * plan_lf) if _capf else _d
+        _build.append({"year": ctx["year"] + _n, "offset": _n, "demand": round(_d),
+                       "carried": round(_c), "load": round(_c / _capf, 3) if _capf else None,
+                       "spill": round(max(_d - _c, 0.0))})
     out = {
         "ok": True, "title": f'{o["city"]} → {d["city"]}', "engine": "route_forecast (calibrated)",
         "origin": {"iata": home, "city": o["city"], "country": o["country"], "metro": om["airports"]},
@@ -498,6 +516,7 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
                      "aircraft": aircraft, "freq": freq},
         "season": {"mode": r.get("season", "annual"), "share": r.get("season_share", 1.0),
                    "weeks": round(season_weeks)},
+        "projection": {"cagr": round(_cagr, 4), "base_year": ctx["year"], "horizon": 5, "build": _build},
         "schedule": _schedule_times(home, dest_airport, o, d, bmin),
         "distance_nm": round(gcd / 1.852), "block_min": bmin, "week": ctx["week"], "year": ctx["year"],
     }
@@ -931,6 +950,7 @@ def api_report(origin: str, dest: str, airline: str = "", carrier_type: str = "F
         "market": fmt(dem["natural"]), "captured": fmt(dem["captured"]),
         "feed": fmt(dem["feed_total"]), "total": fmt(dem["total"]),
         "market_2w": fmt(dem["natural"] * 2), "total_2w": fmt(dem["total"] * 2),   # both-directions annual
+        "projection": fc.get("projection"),   # 5-year demand build (each way)
         "split": split, "catchment_rows": full_split, "home_label": (nm.get(home) or home),
         "behind_pdew": dem.get("behind_pdew") or [], "beyond_pdew": dem.get("beyond_pdew") or [],
         "subtitle": f'{o["city"]} to {d["city"]}' + _stag,
