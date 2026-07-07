@@ -499,7 +499,11 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
     # from comparable launches rather than a measured market, so their band is wider. This honest range
     # is the wedge against a competitor's false-precision single number.
     _induced = bool(r.get("induced"))
-    _bl, _bh = (0.55, 1.60) if _induced else (0.65, 1.45)
+    # band multipliers = the middle 2-in-3 of forecast-vs-outturn across the 6yr back-test (calib_bands.py
+    # on bt_6yr_induced, n=1636 forecastable / 632 induced). Forecastable demand scatter is WIDE (P2P
+    # demand is genuinely uncertain); induced is tighter and downside-skewed (capacity-anchored, so it
+    # won't wildly exceed the aircraft, but carries the risk of not filling).
+    _bl, _bh = (0.55, 1.19) if _induced else (0.44, 2.19)
     confidence = {"central": round(each_way), "low": round(each_way * _bl), "high": round(each_way * _bh),
                   "modelled": _induced, "coverage": "about 2 in 3 comparable launches",
                   "basis": "new-market: modelled from comparable launches" if _induced
