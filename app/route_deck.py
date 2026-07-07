@@ -82,10 +82,12 @@ def build_deck(out, forecast, pnl, meta):
     _txt(s, Inches(0.6), Inches(0.45), Inches(12.1), Inches(0.7),
          f"Catchment and demand: {meta['dest']} from {oname}", 32, bold=True)
     _txt(s, Inches(0.62), Inches(1.15), Inches(12.1), Inches(0.5), forecast.get('subtitle', ''), 15, color=GREY)
-    _stat(s, Inches(0.6), Inches(1.95), Inches(3.0), forecast['market'], "addressable market, each way / yr")
+    _stat(s, Inches(0.6), Inches(1.95), Inches(3.0), forecast['market'],
+          f"addressable market, each way ({forecast.get('market_2w','')} both ways/yr)")
     _stat(s, Inches(3.7), Inches(1.95), Inches(3.0), forecast['captured'], "captured point-to-point")
     _stat(s, Inches(6.8), Inches(1.95), Inches(3.0), forecast['feed'], "connecting feed")
-    _stat(s, Inches(9.9), Inches(1.95), Inches(3.0), forecast['total'], "total forecast, each way", vcolor=GREEN)
+    _stat(s, Inches(9.9), Inches(1.95), Inches(3.0), forecast['total'],
+          f"total forecast, each way ({forecast.get('total_2w','')} both ways/yr)", vcolor=GREEN)
     _txt(s, Inches(0.6), Inches(3.35), Inches(6.2), Inches(0.4),
          f"Where the region's {meta['dest']} demand departs today", 15, bold=True)
     y = Inches(3.85); barL = Inches(2.4); maxW = 4.0

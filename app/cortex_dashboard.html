@@ -624,8 +624,8 @@ function render(d){
   setPH("x_stim", dem.stimulation!=null?(+dem.stimulation).toFixed(2):null);
 
   const kpis=[
-    ["Addressable market", fmt(dem.natural), d.dest.city+" trips / yr in catchment"],
-    ["Total forecast", fmt(dem.total), _seasonal?("each way over the "+STATE.season.mode+", including feed"):"each way per year, including feed"],
+    ["Addressable market", fmt(dem.natural), fmt(dem.natural*2)+" both ways · "+d.dest.city+" trips/yr in catchment"],
+    ["Total forecast", fmt(dem.total), (_seasonal?("each way over the "+STATE.season.mode):"each way per year")+"; "+fmt(dem.total*2)+" both ways, incl feed"],
     ["Connecting feed", fmt(dem.feed_total), dem.feed_total>0 ? "behind "+fmt(dem.feed_behind)+" · beyond "+fmt(dem.feed_beyond) : "point-to-point carrier"],
   ];
   if(MODE!=="forecast" && d.economics_ok)

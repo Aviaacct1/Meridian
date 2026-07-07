@@ -326,12 +326,49 @@ def _market_size_mult(market, table):
     return 1.0
 
 
+# --- INDUCED / new-market demand floor (LCC/ULCC only) --------------------------------------------
+# Fare-led stimulation is a low-cost phenomenon: an ultra-low fare fills a plane on a route with almost
+# no measured O&D. FSC serve existing demand, so this does NOT apply to them (their "induced" reads are a
+# coverage question, handled elsewhere). From the 6yr launch history (analyze_induced.py): induced
+# LCC/ULCC routes fill deployed capacity to a stable seat factor - higher for the cheaper ULCC model than
+# LCC, falling with haul - and a low measured-market/capacity ratio flags them before outturn is known
+# (induced routes sit <=0.18, forecastable >=0.73). For a flagged route we FLOOR demand at capacity times
+# the achieved load factor for its type and haul. The LOW fare that buys this is applied in the economics
+# (the caller), not here, so the P&L shows a full cabin at a thin yield rather than a fantasy profit.
+INDUCED_TYPES = ("LCC", "ULCC")
+INDUCED_MKT_CAP_MAX = 0.40          # measured-market/capacity below this = induced-likely
+_INDUCED_HAUL_KM = (800.0, 2500.0, 6000.0)
+# achieved seat factor by [type][haul band: <800 / 800-2500 / 2500-6000 / >6000 km], from the 6yr launch
+# history (analyze_induced.py section C, type x haul medians on bt_v2_6yr_factored). Well-populated cells
+# at their median; two thin/noisy cells nudged (see notes) - adjust with domain judgement.
+INDUCED_LF = {
+    "LCC":  (0.74, 0.72, 0.74, 0.42),   # <800 n46, 800-2500 n155, 2500-6000 n100, >6000 n16 (tight)
+    "ULCC": (0.77, 0.82, 0.55, 0.45),   # <800 n54, 800-2500 n167; 2500-6000 median 0.46 (n39, wide
+                                         # IQR .39-.88) nudged up toward the haul norm; >6000 n6, unreliable
+}
+
+
+def _induced_lf(gcd_km, airline_type):
+    """Achieved induced seat factor for a type and haul, or None if the type is not induced-modelled."""
+    tbl = INDUCED_LF.get((airline_type or "").upper())
+    if not tbl:
+        return None
+    g = gcd_km or 0.0
+    i = len(_INDUCED_HAUL_KM)
+    for k, edge in enumerate(_INDUCED_HAUL_KM):
+        if g < edge:
+            i = k
+            break
+    return tbl[i]
+
+
 def forecast(sabre_db, oag_db, week, origin, dest_codes, competing_airports, *, year=None,
              aircraft="A21X", freq=7, block_min=540, stimulation=1.15, growth=0.0, growth_years=0,
              max_plan_lf=MAX_PLAN_LF, mct_file=None, annual_capacity=None, att_exponent=None,
              dest_airport=None, airline=None, catchment_mult=1.0, feed_cfg=None,
              coverage_override=None, market_override=None, share_override=None,
-             market_factor=None, season="annual", season_share=1.0, season_weeks=52.0, **_ignore):
+             market_factor=None, season="annual", season_share=1.0, season_weeks=52.0,
+             airline_type=None, induced_floor=False, **_ignore):
     """The connected loop, the calibrated way. The WIDE market = the whole service area's measured
     O&D to the destination (Sabre, all competing airports - board-point, which is what Sabre gives).
     The origin's forecast = that measured market x its QSI SHARE (its schedule quality vs the field,
@@ -448,7 +485,26 @@ def forecast(sabre_db, oag_db, week, origin, dest_codes, competing_airports, *, 
             seats = (ac.get("econ_seats", 0) + ac.get("bus_seats", 0)) or 180
         except Exception:
             seats = 180
-        annual_capacity = seats * freq * season_weeks * 2      # season_weeks<52 for a seasonal service
+        annual_capacity = seats * freq * season_weeks          # EACH-WAY annual seats (demand is each-way;
+        # season_weeks<52 for a seasonal service). Matches the economics, aircraft_select and the backtest's
+        # operated capacity, which are all each-way. NB: was seats*freq*weeks*2 (both directions), which
+        # halved the reported load factor against each-way demand and doubled the induced-floor basis.
+    # INDUCED FLOOR: for a low-cost route whose measured market is far below the metal it is deploying,
+    # measured-market x share x stim cannot see the fare-stimulated demand. Floor total demand at the
+    # capacity times the seat factor comparable LCC/ULCC launches reached (INDUCED_LF). The low fare that
+    # buys this fill is applied in the economics by the caller, so the P&L stays honest.
+    induced = False
+    induced_lf_used = None
+    if induced_floor and annual_capacity and (airline_type or "").upper() in INDUCED_TYPES:
+        if (market / annual_capacity) < INDUCED_MKT_CAP_MAX:
+            _lf = _induced_lf(gcd_est, airline_type)
+            if _lf:
+                _floor = annual_capacity * _lf
+                if total_demand < _floor:
+                    induced = True
+                    induced_lf_used = _lf
+                    captured = max(captured, _floor - feed)   # uplift attributed to stimulated P2P
+                    total_demand = captured + feed
     carried = min(total_demand, annual_capacity * max_plan_lf)      # P2P + feed compete for the seats
     spill = max(total_demand - carried, 0.0)
     load = (carried / annual_capacity) if annual_capacity else 0.0
@@ -467,6 +523,7 @@ def forecast(sabre_db, oag_db, week, origin, dest_codes, competing_airports, *, 
         "captured_demand": round(captured), "connecting_feed": round(feed),
         "feed_beyond": round(feed_beyond), "feed_behind": round(feed_behind),
         "total_demand": round(total_demand), "stimulation": stimulation,
+        "induced": induced, "induced_lf": induced_lf_used,
         "aircraft": aircraft, "frequency": freq, "annual_capacity": round(annual_capacity),
         "carried_forecast": round(carried), "spill": round(spill),
         "season": season, "season_share": round(season_share, 3),

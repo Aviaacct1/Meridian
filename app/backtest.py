@@ -260,6 +260,22 @@ def p2p_traffic(db, a, b, year):
         con.close()
 
 
+def route_avg_fare(db, a, b, year):
+    """Passenger-weighted average PURE P2P fare (both directions) in a year - the achieved yield of a
+    launch, used to set the induced/stimulation fare in the economics. None if no P2P pax."""
+    con = _con(db)
+    try:
+        sql = (f"SELECT COALESCE(SUM(passengers*avg_total_fare_usd),0), COALESCE(SUM(passengers),0) "
+               f"FROM sabre WHERE source_year={int(year)} "
+               f"AND ((origin_airport='{a}' AND destination_airport='{b}') "
+               f"OR (origin_airport='{b}' AND destination_airport='{a}')) "
+               f"AND (connecting_airport1 IS NULL OR TRIM(connecting_airport1)='')")
+        rev, pax = con.execute(sql).fetchone()
+        return round(float(rev) / float(pax), 2) if pax else None
+    finally:
+        con.close()
+
+
 def _served_for_week(oag, week, cache):
     if week not in cache:
         import oag_served as OAS
@@ -336,7 +352,7 @@ def _operated(oag, weeks, dep, arr):
 
 
 def asif_forecast(route, oag, sabre, served_cache, wby, stimulation=1.15, radius_km=220.0, outturn_offset=1,
-                  lcc_cat=1.0, feed_cfg=None, market_factor=None, season_grade=False):
+                  lcc_cat=1.0, feed_cfg=None, market_factor=None, season_grade=False, induced_floor=False):
     """The tool's forecast, standing the year before launch, via the rebuilt connected loop
     (route_forecast): measured wide market (Y-1 Sabre) x QSI share (Y-1 OAG + the proposed nonstop)
     x stimulation, capped by the route's ACTUAL operated capacity (OAG launch year)."""
@@ -419,7 +435,8 @@ def asif_forecast(route, oag, sabre, served_cache, wby, stimulation=1.15, radius
                     block_min=block, stimulation=stim, dest_airport=arr, airline=route.get("carrier"),
                     growth=growth, growth_years=1 + outturn_offset,
                     annual_capacity=(annual_cap or None), catchment_mult=cmult, feed_cfg=feed_cfg,
-                    market_factor=_mf, season=(graded_season or "annual"), season_share=season_share)
+                    market_factor=_mf, season=(graded_season or "annual"), season_share=season_share,
+                    airline_type=route.get("type"), induced_floor=induced_floor)
     hub = (served.get("airports", {}).get(arr, {}) or {}).get("dest_count", 0)
     return {"forecast_pax": r["carried_forecast"], "market": r["natural_market"],
             "share": r["qsi_share"], "captured": r["captured_demand"], "spill": r["spill"],
@@ -427,7 +444,8 @@ def asif_forecast(route, oag, sabre, served_cache, wby, stimulation=1.15, radius
             "feed_behind": r.get("feed_behind", 0),
             "capacity": annual_cap or 0, "natural": r["natural_market"], "propensity": r["qsi_share"],
             "propensity_basis": "qsi-share", "dest_count": hub, "gcd_km": gcd or 0, "service": service,
-            "graded_season": graded_season, "season_share": round(season_share, 3)}
+            "graded_season": graded_season, "season_share": round(season_share, 3),
+            "induced": bool(r.get("induced")), "avg_fare": r.get("avg_fare")}
 
 
 # ----------------------------------------------------------------------------- R2: parallel route pool
@@ -461,7 +479,7 @@ def _forecast_route(r):
         out = sector_traffic(c["sabre"], r["dep"], r["arr"], r["year"] + off)
         f = asif_forecast(r, c["oag"], c["sabre"], _SERVED_CACHE, c["wby"], c["stim"],
                           c["radius_km"], off, c["lcc_cat"], c["feed_cfg"], c.get("market_factor"),
-                          c.get("season_grade"))
+                          c.get("season_grade"), c.get("induced_floor"))
         graded = f["forecast_pax"]
         ratio = (graded / out) if out else None
         ratio_p2p = (f["captured"] / p2p) if p2p else None
@@ -482,6 +500,10 @@ def _forecast_route(r):
         if c.get("season_grade"):     # extra columns only under --season-grade, so default runs are unchanged
             row["graded_season"] = f.get("graded_season", "")
             row["season_share"] = f.get("season_share", 1.0)
+        if c.get("induced_floor"):    # extra columns only under --induced-floor
+            row["induced"] = bool(f.get("induced"))
+            row["base_fare"] = f.get("avg_fare")   # measured pre-launch market fare
+            row["outturn_fare"] = route_avg_fare(c["sabre"], r["dep"], r["arr"], r["year"] + off)
         return row
     except Exception as e:
         return {"__error__": f"{r['dep']+'-'+r['arr']:12} {r.get('type',''):9} "
@@ -644,6 +666,12 @@ def main():
                     help="crash-safe resume: rows are written to --out as each route finishes (not just at "
                          "the end), and on restart the routes already in --out are skipped. Use for any long "
                          "run so an interruption never restarts from scratch.")
+    ap.add_argument("--induced-floor", action="store_true",
+                    help="INDUCED model (LCC/ULCC only): where the measured market is far below deployed "
+                         "capacity (a new market the low fare will stimulate), floor demand at capacity x "
+                         "the achieved seat factor comparable launches reached, instead of measured-market x "
+                         "stim. Adds induced/base_fare/outturn_fare columns; FSC and forecastable routes are "
+                         "unchanged. Use analyze_induced.py to read the result.")
     ap.add_argument("--season-grade", action="store_true",
                     help="C1: grade one-season routes fairly. A route the OAG shows as summer-only ('S') or "
                          "winter-only ('W') is forecast in that SEASON (demand scaled to the season's share of "
@@ -776,7 +804,8 @@ def main():
            "offset": offset, "lcc_cat": a.lcc_cat, "feed_cfg": feed_cfg, "min_outturn": MIN_OUTTURN,
            "hub_threshold": HUB_THRESHOLD, "preagg": a.preagg,
            "summer_weeks": a.summer_weeks, "winter_weeks": a.winter_weeks,
-           "market_factor": market_factor, "season_grade": a.season_grade}
+           "market_factor": market_factor, "season_grade": a.season_grade,
+           "induced_floor": a.induced_floor}
     rows = []
     done_keys = set()
     _resuming = bool(a.resume and os.path.exists(a.out))
@@ -885,6 +914,21 @@ def main():
               f"forecast {'IN-SEASON' if a.season_grade else 'full-year'}. NOT graded: the annual stores "
               f"have no season-scoped P2P outturn (p2p is annual O&D; onboard includes connecting pax). "
               f"A validated seasonal grade needs the monthly Sabre O&D pull.")
+
+    # INDUCED-FLOOR cohort: the LCC/ULCC routes the floor lifted. Graded on fc/OUT (carried vs onboard),
+    # since the floor is capacity-anchored, that is the like-for-like test for a filled-plane forecast.
+    if a.induced_floor:
+        fl = [r for r in rows if r.get("induced") and r.get("fc_over_out") not in ("", None)
+              and (r.get("outturn_pax") or 0) >= MIN_OUTTURN]
+        if fl:
+            fv = [float(r["fc_over_out"]) for r in fl]; ov, un = balance(fv)
+            w20 = sum(1 for x in fv if 0.8 <= x <= 1.2)
+            w40 = sum(1 for x in fv if 0.6 <= x <= 1.4)
+            print("\n  INDUCED-FLOOR cohort (LCC/ULCC floored to capacity x achieved LF; graded fc/OUT):")
+            print(f"    n={len(fv)}  median {med(fv):.2f}  over {ov} under {un}  "
+                  f"within +/-20% {w20}/{len(fv)}  within +/-40% {w40}/{len(fv)}")
+        else:
+            print("\n  INDUCED-FLOOR: no LCC/ULCC routes were floored (check the market/capacity threshold).")
 
     # by REGION (non-hub clean P2P) - reads where Sabre coverage is complete vs not
     print(f"\n  by region (non-hub P2P):  {'region':8} {'n':>4} {'median':>7} {'over':>5} {'under':>6} {'+/-20%':>7}")

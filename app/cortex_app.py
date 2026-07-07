@@ -386,7 +386,8 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
                         coverage_override=None, market_override=None, share_override=None,
                         feed_behind_cap=0.10, feed_dom_gain=1.0, feed_dom_floor=1.0,
                         cnx_online=1.0, cnx_alliance=0.615, cnx_interline=0.25,
-                        circuity=1.35, factor_indirect=1.044, mct_banking=False, season="annual"):
+                        circuity=1.35, factor_indirect=1.044, mct_banking=False, season="annual",
+                        induced_floor=False):
     """Any city pair through the CALIBRATED engine (route_forecast.forecast). season = annual (default)
     / summer / winter runs a seasonal service: demand scaled to the season's share of the year, capacity
     over the season's weeks."""
@@ -431,7 +432,8 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
                         coverage_override=coverage_override, market_override=market_override,
                         share_override=share_override, max_plan_lf=plan_lf,
                         market_factor=RF.market_factor_for(carrier_type),   # item-9 type-aware P2P trim
-                        season=season, season_share=season_share, season_weeks=season_weeks)
+                        season=season, season_share=season_share, season_weeks=season_weeks,
+                        airline_type=ct, induced_floor=induced_floor)
     except Exception as e:
         return {"ok": False, "error": f"forecast failed: {e}"}
     try:
@@ -487,7 +489,8 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
                    "feed_behind": r["feed_behind"], "feed_beyond_base": beyond_base, "feed_behind_base": behind_base,
                    "total": each_way, "avg_fare": r["avg_fare"],
                    "att": r.get("att_exponent"), "stimulation": r.get("stimulation"),
-                   "pdew_total": round(each_way / 365.0 / 2.0, 1),
+                   "induced": r.get("induced", False), "induced_lf": r.get("induced_lf"),
+                   "pdew_total": round(each_way / 365.0, 1),   # each_way is annual each-way pax; /365 = per day each way (the /2 double-counted direction)
                    "beyond_pdew": beyond_list, "behind_pdew": behind_list},
         "capacity": {"carried": r["carried_forecast"], "spill": r["spill"], "load": r["planned_load_factor"],
                      "annual_capacity": r["annual_capacity"], "recommendation": r["recommendation"],
@@ -919,6 +922,7 @@ def api_report(origin: str, dest: str, airline: str = "", carrier_type: str = "F
     forecast = {
         "market": fmt(dem["natural"]), "captured": fmt(dem["captured"]),
         "feed": fmt(dem["feed_total"]), "total": fmt(dem["total"]),
+        "market_2w": fmt(dem["natural"] * 2), "total_2w": fmt(dem["total"] * 2),   # both-directions annual
         "split": split, "catchment_rows": full_split, "home_label": (nm.get(home) or home),
         "behind_pdew": dem.get("behind_pdew") or [], "beyond_pdew": dem.get("beyond_pdew") or [],
         "subtitle": f'{o["city"]} to {d["city"]}' + _stag,
