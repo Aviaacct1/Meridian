@@ -17,6 +17,7 @@ Paste the two "band multipliers" lines back; they go into cortex_app calibrated_
 No store access; reads the CSV only.
 """
 import argparse, csv
+from collections import defaultdict
 
 
 def _f(x):
@@ -46,6 +47,7 @@ def main():
             r["_out"] = _f(r.get("outturn_pax")); r["_fp2p"] = _f(r.get("fc_over_p2p"))
             r["_fout"] = _f(r.get("fc_over_out"))
             r["_ind"] = str(r.get("induced")).strip().lower() == "true"
+            r["_hub"] = str(r.get("hub_dest")).strip().lower() == "true"
             rows.append(r)
 
     # forecastable = measured market >= what the route carried; test on fc/p2p
@@ -64,6 +66,59 @@ def main():
         hi = 1.0 / p17 if p17 else 0.0
         print(f"  {name}: n={len(xs)}  forecast/actual ratio  p17 {p17:.2f} / median {p50:.2f} / p83 {p83:.2f}")
         print(f"    -> band multipliers on the forecast ({key}): low {lo:.2f}, high {hi:.2f}   (middle 2 in 3)")
+
+    # --- CONDITIONAL bands: is the band tighter for bigger/denser markets? If so, a market-size-aware
+    #     band gives the routes airports actually pitch a much tighter number than the population average.
+    fr = [r for r in rows if r["_nat"] is not None and r["_p2p"] and r["_p2p"] >= a.min_outturn
+          and r["_nat"] >= r["_p2p"] and r["_fp2p"] and r["_fp2p"] > 0]
+    EDGES, LBL = [15000, 50000, 150000], ["<15k", "15-50k", "50-150k", ">150k"]
+
+    def _bkt(v):
+        for i, e in enumerate(EDGES):
+            if v < e:
+                return LBL[i]
+        return LBL[-1]
+
+    def _seg(title, groups):
+        print(f"\n  {title}")
+        for gk, xs in groups:
+            if len(xs) < 15:
+                continue
+            p17, p50, p83 = _pct(xs, 17), _pct(xs, 50), _pct(xs, 83)
+            w20 = sum(1 for x in xs if 0.8 <= x <= 1.2)
+            w40 = sum(1 for x in xs if 0.6 <= x <= 1.4)
+            print(f"    {gk:9} n={len(xs):<4} p17/med/p83 {p17:.2f}/{p50:.2f}/{p83:.2f}  "
+                  f"band {1/p83 if p83 else 0:.2f}-{1/p17 if p17 else 0:.2f}  "
+                  f"+/-20% {100*w20//len(xs):>3}%  +/-40% {100*w40//len(xs):>3}%")
+
+    bym = defaultdict(list)
+    for r in fr:
+        bym[_bkt(r["_nat"])].append(r["_fp2p"])
+    _seg("BAND BY MARKET SIZE (forecastable) - the conditional-band test:",
+         [(k, bym.get(k, [])) for k in LBL])
+    byh = defaultdict(list)
+    for r in fr:
+        byh["hub" if r["_hub"] else "non-hub"].append(r["_fp2p"])
+    _seg("BAND BY HUB (forecastable):", [(k, byh.get(k, [])) for k in ("hub", "non-hub")])
+
+    # --- what drives the WIDE high side? profile the over-forecast tail (fc/p2p > 1.8). Hypothesis:
+    #     connecting-heavy markets (big natural O&D, small P2P) over-forecast P2P, so their natural/p2p
+    #     ratio runs high. If so, discount the P2P capture where the market is connecting-heavy = tightens
+    #     the band AND improves accuracy, rather than just widening the interval.
+    tail = [r for r in fr if r["_fp2p"] > 1.8]
+    if tail:
+        def _ratio(rs):
+            v = [r["_nat"] / r["_p2p"] for r in rs if r["_p2p"]]
+            return _pct(v, 50) if v else 0.0
+        print(f"\n  OVER-FORECAST TAIL (fc/p2p > 1.8): n={len(tail)} of {len(fr)} ({100*len(tail)//len(fr)}%)")
+        print(f"    natural / P2P-outturn ratio (high = connecting-heavy market):")
+        print(f"      tail median {_ratio(tail):.1f}   vs all-forecastable {_ratio(fr):.1f}")
+        tt = defaultdict(int)
+        for r in tail:
+            tt[r.get("type") or "?"] += 1
+        print("    tail by type: " + ", ".join(f"{k} {v}" for k, v in sorted(tt.items(), key=lambda x: -x[1])))
+        print(f"    tail hub share: {100*sum(1 for r in tail if r['_hub'])//len(tail)}%  "
+              f"(all-forecastable {100*sum(1 for r in fr if r['_hub'])//len(fr)}%)")
 
 
 if __name__ == "__main__":
