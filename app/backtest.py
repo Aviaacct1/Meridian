@@ -806,6 +806,11 @@ def main():
            "summer_weeks": a.summer_weeks, "winter_weeks": a.winter_weeks,
            "market_factor": market_factor, "season_grade": a.season_grade,
            "induced_floor": a.induced_floor}
+    # make sure the --out directory exists, so a long run never dies at the final write (e.g. a fresh
+    # E:\Avia\QSI\backtests path). Created up front so --resume streaming also has somewhere to write.
+    _outdir = os.path.dirname(os.path.abspath(a.out))
+    if _outdir:
+        os.makedirs(_outdir, exist_ok=True)
     rows = []
     done_keys = set()
     _resuming = bool(a.resume and os.path.exists(a.out))

@@ -387,7 +387,7 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
                         feed_behind_cap=0.10, feed_dom_gain=1.0, feed_dom_floor=1.0,
                         cnx_online=1.0, cnx_alliance=0.615, cnx_interline=0.25,
                         circuity=1.35, factor_indirect=1.044, mct_banking=False, season="annual",
-                        induced_floor=False):
+                        induced_floor=True):
     """Any city pair through the CALIBRATED engine (route_forecast.forecast). season = annual (default)
     / summer / winter runs a seasonal service: demand scaled to the season's share of the year, capacity
     over the season's weeks."""
@@ -490,6 +490,7 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
                    "total": each_way, "avg_fare": r["avg_fare"],
                    "att": r.get("att_exponent"), "stimulation": r.get("stimulation"),
                    "induced": r.get("induced", False), "induced_lf": r.get("induced_lf"),
+                   "induced_fare": r.get("induced_fare"),
                    "pdew_total": round(each_way / 365.0, 1),   # each_way is annual each-way pax; /365 = per day each way (the /2 double-counted direction)
                    "beyond_pdew": beyond_list, "behind_pdew": behind_list},
         "capacity": {"carried": r["carried_forecast"], "spill": r["spill"], "load": r["planned_load_factor"],
@@ -500,6 +501,13 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
         "schedule": _schedule_times(home, dest_airport, o, d, bmin),
         "distance_nm": round(gcd / 1.852), "block_min": bmin, "week": ctx["week"], "year": ctx["year"],
     }
+    # INDUCED: the low stimulation fare that buys the fill travels into the P&L, so a filled cabin shows a
+    # thin yield rather than a fantasy profit. Override the fare unless the user set one explicitly.
+    if r.get("induced") and r.get("induced_fare"):
+        _ifare = r["induced_fare"]
+        if not (econ_fare and econ_fare > 0):
+            econ_fare = _ifare
+        bus_fare = min(bus_fare, _ifare * 1.6)   # induced LCC/ULCC are low-yield; cap the premium fare
     if with_econ:
         out.update(_econ_block(each_way, aircraft, freq, home, dest_airport, gcd, econ_share,
                                plan_lf, econ_fare, bus_fare, fuel_price, ct, weeks=season_weeks))

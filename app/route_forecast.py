@@ -346,20 +346,34 @@ INDUCED_LF = {
     "ULCC": (0.77, 0.82, 0.55, 0.45),   # <800 n54, 800-2500 n167; 2500-6000 median 0.46 (n39, wide
                                          # IQR .39-.88) nudged up toward the haul norm; >6000 n6, unreliable
 }
+# achieved ONE-WAY fare (USD) an induced route stimulates at, by [type][same haul bands]. This is the low
+# fare that BUYS the fill, applied in the economics so an induced route shows a full cabin at a thin yield.
+# LCC from analyze_induced.py section G (outturn-year P2P avg fare); ULCC ~0.7x LCC (thin ULCC sample,
+# refine from a full --induced-floor run). One overlapping cell confirmed ULCC below LCC ($116 vs $174).
+INDUCED_FARE = {
+    "LCC":  (108.0, 174.0, 244.0, 381.0),
+    "ULCC": (75.0,  116.0, 170.0, 300.0),
+}
+
+
+def _induced_haul_idx(gcd_km):
+    g = gcd_km or 0.0
+    for k, edge in enumerate(_INDUCED_HAUL_KM):
+        if g < edge:
+            return k
+    return len(_INDUCED_HAUL_KM)
 
 
 def _induced_lf(gcd_km, airline_type):
     """Achieved induced seat factor for a type and haul, or None if the type is not induced-modelled."""
     tbl = INDUCED_LF.get((airline_type or "").upper())
-    if not tbl:
-        return None
-    g = gcd_km or 0.0
-    i = len(_INDUCED_HAUL_KM)
-    for k, edge in enumerate(_INDUCED_HAUL_KM):
-        if g < edge:
-            i = k
-            break
-    return tbl[i]
+    return tbl[_induced_haul_idx(gcd_km)] if tbl else None
+
+
+def _induced_fare(gcd_km, airline_type):
+    """Stimulation one-way fare (USD) for an induced type and haul, or None if not induced-modelled."""
+    tbl = INDUCED_FARE.get((airline_type or "").upper())
+    return tbl[_induced_haul_idx(gcd_km)] if tbl else None
 
 
 def forecast(sabre_db, oag_db, week, origin, dest_codes, competing_airports, *, year=None,
@@ -495,6 +509,7 @@ def forecast(sabre_db, oag_db, week, origin, dest_codes, competing_airports, *, 
     # buys this fill is applied in the economics by the caller, so the P&L stays honest.
     induced = False
     induced_lf_used = None
+    induced_fare_used = None
     if induced_floor and annual_capacity and (airline_type or "").upper() in INDUCED_TYPES:
         if (market / annual_capacity) < INDUCED_MKT_CAP_MAX:
             _lf = _induced_lf(gcd_est, airline_type)
@@ -503,6 +518,7 @@ def forecast(sabre_db, oag_db, week, origin, dest_codes, competing_airports, *, 
                 if total_demand < _floor:
                     induced = True
                     induced_lf_used = _lf
+                    induced_fare_used = _induced_fare(gcd_est, airline_type)   # low fare for the economics
                     captured = max(captured, _floor - feed)   # uplift attributed to stimulated P2P
                     total_demand = captured + feed
     carried = min(total_demand, annual_capacity * max_plan_lf)      # P2P + feed compete for the seats
@@ -523,7 +539,7 @@ def forecast(sabre_db, oag_db, week, origin, dest_codes, competing_airports, *, 
         "captured_demand": round(captured), "connecting_feed": round(feed),
         "feed_beyond": round(feed_beyond), "feed_behind": round(feed_behind),
         "total_demand": round(total_demand), "stimulation": stimulation,
-        "induced": induced, "induced_lf": induced_lf_used,
+        "induced": induced, "induced_lf": induced_lf_used, "induced_fare": induced_fare_used,
         "aircraft": aircraft, "frequency": freq, "annual_capacity": round(annual_capacity),
         "carried_forecast": round(carried), "spill": round(spill),
         "season": season, "season_share": round(season_share, 3),
