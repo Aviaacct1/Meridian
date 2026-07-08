@@ -352,7 +352,8 @@ def _operated(oag, weeks, dep, arr):
 
 
 def asif_forecast(route, oag, sabre, served_cache, wby, stimulation=1.15, radius_km=220.0, outturn_offset=1,
-                  lcc_cat=1.0, feed_cfg=None, market_factor=None, season_grade=False, induced_floor=False):
+                  lcc_cat=1.0, feed_cfg=None, market_factor=None, season_grade=False, induced_floor=False,
+                  nonstop_share=False, decompose=False, airport_capture=1.0):
     """The tool's forecast, standing the year before launch, via the rebuilt connected loop
     (route_forecast): measured wide market (Y-1 Sabre) x QSI share (Y-1 OAG + the proposed nonstop)
     x stimulation, capped by the route's ACTUAL operated capacity (OAG launch year)."""
@@ -436,9 +437,37 @@ def asif_forecast(route, oag, sabre, served_cache, wby, stimulation=1.15, radius
                     growth=growth, growth_years=1 + outturn_offset,
                     annual_capacity=(annual_cap or None), catchment_mult=cmult, feed_cfg=feed_cfg,
                     market_factor=_mf, season=(graded_season or "annual"), season_share=season_share,
-                    airline_type=route.get("type"), induced_floor=induced_floor)
+                    airline_type=route.get("type"), induced_floor=induced_floor,
+                    airport_capture=airport_capture)
     hub = (served.get("airports", {}).get(arr, {}) or {}).get("dest_count", 0)
-    return {"forecast_pax": r["carried_forecast"], "market": r["natural_market"],
+    _p2p_share = None
+    if nonstop_share:   # forecast-time connecting-heaviness proxy (Y-1 nonstop O&D fraction)
+        try:
+            _p2p_share = round(SC.nonstop_share(sabre, competing, dest_codes, Y - 1)[0], 4)
+        except Exception:
+            _p2p_share = None
+    # T3 ERROR DECOMPOSITION: each multiplicative leg of the forecast, so the analysis can attribute the
+    # log-error variance (fc/actual) to market measurement, growth, share, stimulation, feed, capacity.
+    decomp = None
+    if decompose:
+        try:
+            _mkt_out = _mkt(Y + outturn_offset)
+        except Exception:
+            _mkt_out = None
+        decomp = {
+            "mkt_asif": round(m1),                                   # measured market, Y-1 (raw O&D)
+            "mkt_outturn": round(_mkt_out) if _mkt_out else None,    # measured market, outturn year (raw)
+            "growth_applied": round((1.0 + growth) ** (1 + outturn_offset), 4),
+            "stim": round(stim, 3),
+            "share": round(r.get("qsi_share") or 0, 4),
+            "dshare": round(r.get("dest_share") or 0, 4),
+            "coverage": round(r.get("coverage_gross_up") or 0, 3),
+            "captured": round(r.get("captured_demand") or 0),        # P2P forecast (pre-feed, pre-cap)
+            "feed_fc": round(r.get("connecting_feed") or 0),
+            "cap_bound": 1 if (r.get("spill") or 0) > 0 else 0,      # did the capacity cap bind?
+        }
+    return {"forecast_pax": r["carried_forecast"], "market": r["natural_market"], "p2p_share": _p2p_share,
+            "decomp": decomp,
             "share": r["qsi_share"], "captured": r["captured_demand"], "spill": r["spill"],
             "total_demand": r.get("total_demand", 0), "feed_beyond": r.get("feed_beyond", 0),
             "feed_behind": r.get("feed_behind", 0),
@@ -477,9 +506,11 @@ def _forecast_route(r):
         if p2p < c["min_outturn"]:
             return None
         out = sector_traffic(c["sabre"], r["dep"], r["arr"], r["year"] + off)
+        _apf = (c.get("airport_factors") or {}).get(r["dep"], 1.0)
         f = asif_forecast(r, c["oag"], c["sabre"], _SERVED_CACHE, c["wby"], c["stim"],
                           c["radius_km"], off, c["lcc_cat"], c["feed_cfg"], c.get("market_factor"),
-                          c.get("season_grade"), c.get("induced_floor"))
+                          c.get("season_grade"), c.get("induced_floor"), c.get("nonstop_share"),
+                          c.get("decompose"), _apf)
         graded = f["forecast_pax"]
         ratio = (graded / out) if out else None
         ratio_p2p = (f["captured"] / p2p) if p2p else None
@@ -504,6 +535,11 @@ def _forecast_route(r):
             row["induced"] = bool(f.get("induced"))
             row["base_fare"] = f.get("avg_fare")   # measured pre-launch market fare
             row["outturn_fare"] = route_avg_fare(c["sabre"], r["dep"], r["arr"], r["year"] + off)
+        if c.get("nonstop_share"):    # connecting-heaviness diagnostic
+            row["p2p_share"] = f.get("p2p_share")
+        if c.get("decompose") and f.get("decomp"):   # T3: per-route error legs
+            for _k, _v in f["decomp"].items():
+                row["d_" + _k] = _v
         return row
     except Exception as e:
         return {"__error__": f"{r['dep']+'-'+r['arr']:12} {r.get('type',''):9} "
@@ -617,6 +653,12 @@ def main():
     ap.add_argument("--mature", action="store_true",
                     help="grade against Y2 (second full year, less launch-ramp noise) instead of Y1")
     ap.add_argument("--y3", action="store_true", help="grade against Y3 (most matured)")
+    ap.add_argument("--offset", type=int, default=None,
+                    help="grade against launch year + OFFSET, overriding --mature/--y3. --offset 0 grades "
+                         "against the LAUNCH-YEAR outturn (as-if Y-1), so 2024/2025 launches are gradeable "
+                         "from 2023/2024/2025 Sabre despite the Covid gap - two held-out cohorts without "
+                         "2026 data. Launch-year outturn is immature (noisier); cross-check it agrees with "
+                         "the Y+1 read before trusting it.")
     ap.add_argument("--keep-thin", action="store_true",
                     help="keep thin-GDS domestic routes (China/India domestic etc); off by default")
     ap.add_argument("--regions", default=None,
@@ -672,6 +714,19 @@ def main():
                          "the achieved seat factor comparable launches reached, instead of measured-market x "
                          "stim. Adds induced/base_fare/outturn_fare columns; FSC and forecastable routes are "
                          "unchanged. Use analyze_induced.py to read the result.")
+    ap.add_argument("--airport-capture", default=None,
+                    help="T7: apply per-origin-airport capture factors from a build_airport_factors.py "
+                         "JSON. Learn on 2016-2018, run this on the held-out years (2019,2024) to validate: "
+                         "within-x1.2 share should rise without degrading the median.")
+    ap.add_argument("--decompose", action="store_true",
+                    help="T3 accuracy plan: write each graded route's multiplicative forecast legs "
+                         "(d_mkt_asif, d_mkt_outturn, d_growth_applied, d_share, d_dshare, d_stim, "
+                         "d_coverage, d_captured, d_feed_fc, d_cap_bound) so the variance can be attributed "
+                         "to legs by segment. Adds one Sabre query per route (the outturn-year market).")
+    ap.add_argument("--nonstop-share", action="store_true",
+                    help="diagnostic: add a p2p_share column = the Y-1 nonstop fraction of the catchment's "
+                         "O&D to the destination (connecting-heaviness proxy). Adds a Sabre query per route; "
+                         "use with calib_bands.py to test/fit the connecting-heavy over-read discount.")
     ap.add_argument("--season-grade", action="store_true",
                     help="C1: grade one-season routes fairly. A route the OAG shows as summer-only ('S') or "
                          "winter-only ('W') is forecast in that SEASON (demand scaled to the season's share of "
@@ -716,7 +771,7 @@ def main():
         if a.qsi_lambda != 1.0:
             feed_cfg["logit_lambda"] = a.qsi_lambda
     keep_regions = set(s.strip().upper() for s in a.regions.split(",")) if a.regions else None
-    offset = 3 if a.y3 else 2 if a.mature else 1     # grade against Y+offset (Y1 default, Y2/Y3 matured)
+    offset = a.offset if a.offset is not None else (3 if a.y3 else 2 if a.mature else 1)   # Y+offset
 
     if not os.path.exists(a.oag):
         print(f"OAG store not found: {a.oag}"); return
@@ -800,12 +855,21 @@ def main():
 
     HUB_THRESHOLD = 40       # dest serves >= this many nonstop destinations -> a hub (feed-heavy)
     MIN_OUTTURN = a.min_outturn   # ignore sub-material sectors in the ratio stats (default 3000)
+    _airport_factors = {}
+    if a.airport_capture:
+        try:
+            _af = json.load(open(a.airport_capture))
+            _airport_factors = _af.get("factors", _af)
+            print(f"Airport capture factors: {len(_airport_factors)} airports from {a.airport_capture}")
+        except Exception as _e:
+            print(f"WARNING: could not load --airport-capture {a.airport_capture}: {_e}")
     cfg = {"oag": a.oag, "sabre": a.sabre, "wby": wby, "stim": a.stim, "radius_km": a.radius_km,
            "offset": offset, "lcc_cat": a.lcc_cat, "feed_cfg": feed_cfg, "min_outturn": MIN_OUTTURN,
            "hub_threshold": HUB_THRESHOLD, "preagg": a.preagg,
            "summer_weeks": a.summer_weeks, "winter_weeks": a.winter_weeks,
            "market_factor": market_factor, "season_grade": a.season_grade,
-           "induced_floor": a.induced_floor}
+           "induced_floor": a.induced_floor, "nonstop_share": a.nonstop_share,
+           "decompose": a.decompose, "airport_factors": _airport_factors}
     # make sure the --out directory exists, so a long run never dies at the final write (e.g. a fresh
     # E:\Avia\QSI\backtests path). Created up front so --resume streaming also has somewhere to write.
     _outdir = os.path.dirname(os.path.abspath(a.out))
@@ -996,6 +1060,10 @@ def main():
         with open(a.out, "w", newline="") as fh:
             w = csv.DictWriter(fh, fieldnames=list(rows[0].keys())); w.writeheader(); w.writerows(rows)
         print(f"\nwrote {a.out}  ({len(rows)} routes, {time.time()-t0:.0f}s)")
+    else:
+        print(f"\nNO ROUTES GRADED - nothing written to {a.out}. Every route had outturn < {MIN_OUTTURN} "
+              f"(usually the outturn year has no Sabre O&D: e.g. 2026 not loaded, or the Covid gap). "
+              f"For --offset 0 the LAUNCH-year Sabre must exist.")
     if feed_cfg is not None and feed_cfg.get("qsi_feed"):
         print(f"QSI feed: {feed_cfg.get('_qsi_no_flown', 0)} routes without a flown schedule "
               f"(V1 fallback), {feed_cfg.get('_qsi_fallbacks', 0)} in-run fallbacks (errors)")

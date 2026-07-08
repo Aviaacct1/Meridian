@@ -120,6 +120,19 @@ def main():
         print(f"    tail hub share: {100*sum(1 for r in tail if r['_hub'])//len(tail)}%  "
               f"(all-forecastable {100*sum(1 for r in fr if r['_hub'])//len(fr)}%)")
 
+    # --- if the connecting-heaviness diagnostic is present (--nonstop-share run), test it directly:
+    #     do LOW nonstop-share (connecting-heavy) markets carry the over-read and the wide band?
+    fps = [r for r in fr if _f(r.get("p2p_share")) is not None]
+    if fps:
+        def _psb(v):
+            return "<20%" if v < 0.2 else "20-50%" if v < 0.5 else "50-80%" if v < 0.8 else ">=80%"
+        byp = defaultdict(list)
+        for r in fps:
+            byp[_psb(_f(r.get("p2p_share")))].append(r["_fp2p"])
+        _seg("BAND BY NONSTOP-SHARE (forecastable) - the connecting-heavy test "
+             "(low share should over-read + widen):", [(k, byp.get(k, []))
+             for k in ("<20%", "20-50%", "50-80%", ">=80%")])
+
 
 if __name__ == "__main__":
     main()

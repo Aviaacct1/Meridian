@@ -18,6 +18,22 @@ import re
 DEFAULT_MODEL = os.environ.get("AVIA_RESEARCH_MODEL", "claude-sonnet-4-6")
 ADJ_MODEL = os.environ.get("AVIA_ADJUDICATE_MODEL", "claude-haiku-4-5-20251001")
 
+
+def _load_api_key():
+    """Anthropic key (Avia Solutions): env ANTHROPIC_API_KEY first, else the first non-comment line of
+    anthropic_key.txt next to this file - so the researched-pitch key survives a server restart even when
+    the env var was not exported into that shell. The file is git-ignored (a secret)."""
+    k = (os.environ.get("ANTHROPIC_API_KEY") or "").strip()
+    if k:
+        return k
+    fp = os.path.join(os.path.dirname(os.path.abspath(__file__)), "anthropic_key.txt")
+    if os.path.exists(fp):
+        for line in open(fp, encoding="utf-8"):
+            s = line.strip()
+            if s and not s.startswith("#"):
+                return s
+    return ""
+
 # Authoritative sources are preferred; content farms and forums are discouraged at the search step.
 PREFERRED_DOMAINS = [
     "eurostat.ec.europa.eu", "ec.europa.eu", "oecd.org", "worldbank.org", "imf.org",
@@ -83,7 +99,7 @@ class AnthropicResearchProvider(ResearchProvider):
         self.model = model or DEFAULT_MODEL
         self.max_uses = max_uses
         self.timeout = timeout
-        self._key = os.environ.get("ANTHROPIC_API_KEY", "").strip()
+        self._key = _load_api_key()
         self._client = None
 
     def available(self):

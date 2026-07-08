@@ -112,6 +112,36 @@ def destination_market_split(db, airports, dest_airports, poo_country=None, year
     return split, total, avg_fare
 
 
+def nonstop_share(db, airports, dest_airports, year=None):
+    """Forecast-time connecting-heaviness proxy: of the catchment's O&D to the destination, the fraction
+    that flies NONSTOP today (connecting_airport1 empty). Low = the market routes mostly via connections,
+    so a new nonstop converts less of it to P2P and market x share over-forecasts P2P. Returns
+    (nonstop_share, total_od_pax)."""
+    import duckdb
+    if not os.path.exists(db):
+        raise FileNotFoundError(f"Sabre store not found: {db}")
+    aph = ",".join("?" * len(airports)); dph = ",".join("?" * len(dest_airports))
+    where = [f"origin_airport IN ({aph})", f"destination_airport IN ({dph})"]
+    params = [*airports, *dest_airports]
+    if year is not None:
+        where.append("source_year = ?"); params.append(year)
+    sql = ("SELECT COALESCE(SUM(passengers),0) AS tot, "
+           "COALESCE(SUM(CASE WHEN connecting_airport1 IS NULL OR TRIM(connecting_airport1)='' "
+           "THEN passengers ELSE 0 END),0) AS ns FROM sabre "
+           f"WHERE {' AND '.join(where)}")
+    con = duckdb.connect(db, read_only=True)
+    try:
+        from db_registry import apply_limits; apply_limits(con)
+    except Exception:
+        pass
+    try:
+        tot, ns = con.execute(sql, params).fetchone()
+    finally:
+        con.close()
+    tot = float(tot or 0); ns = float(ns or 0)
+    return (ns / tot if tot else 0.0), tot
+
+
 def top_destinations(db, airports, home, year=None, top=25, min_pax=1000):
     """Airport-led OPPORTUNITY scan: the catchment's biggest P2P destination markets, and how much of
     each departs via the HOME airport today. origin_airport IN the catchment set (same basis as

@@ -789,7 +789,9 @@ function renderMap(d){
     const x=sx(coords[k][1]), y=sy(coords[k][0]), sh=shares[k]||0;
     const rr=4+Math.sqrt(sh/maxShare)*16, isH=k===home;
     svg+='<circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="'+rr.toFixed(1)+'" fill="'+(isH?'#1a9850':'#2F6BF0')+'" fill-opacity="0.72" stroke="#fff" stroke-width="1.5"/>';
-    svg+='<text x="'+x.toFixed(1)+'" y="'+(y-rr-3).toFixed(1)+'" text-anchor="middle" font-size="10" fill="#2b3a4a" font-weight="'+(isH?'700':'400')+'">'+k+' '+Math.round(sh*100)+'%</text>';
+    if(isH||sh>=0.01){   // only label the home + meaningful-share airports, so tiny 0% dots don't clutter
+      svg+='<text x="'+x.toFixed(1)+'" y="'+(y-rr-3).toFixed(1)+'" text-anchor="middle" font-size="10" fill="#2b3a4a" font-weight="'+(isH?'700':'400')+'">'+k+' '+Math.round(sh*100)+'%</text>';
+    }
   });
   svg+='</svg>';
   $("#mapSvg").innerHTML=svg;
@@ -809,7 +811,8 @@ function renderLeakage(d){
     +fmt(recap)+" ("+Math.round((dem.qsi_share||0)*100)+"%).");
   const rows=Object.entries(shares).filter(x=>x[1]>0&&x[0]!==home).sort((a,b)=>b[1]-a[1]).slice(0,6);
   const hdr='<div class="pl" style="font-weight:700"><span class="k">Airport (leakage today)</span><span class="vv" style="width:22%;text-align:right">Share</span><span class="vv" style="width:32%;text-align:right">Pax/yr (ew)</span></div>';
-  const body=rows.map(x=>'<div class="pl"><span class="k">'+(names[x[0]]||x[0])+'</span><span class="vv" style="width:22%;text-align:right">'+Math.round(x[1]*100)+'%</span><span class="vv" style="width:32%;text-align:right">'+fmt(nat*x[1])+'</span></div>').join("");
+  const _pc=v=>v>0&&v<0.01?"<1%":Math.round(v*100)+"%";
+  const body=rows.map(x=>'<div class="pl"><span class="k">'+(names[x[0]]||x[0])+'</span><span class="vv" style="width:22%;text-align:right">'+_pc(x[1])+'</span><span class="vv" style="width:32%;text-align:right">'+fmt(nat*x[1])+'</span></div>').join("");
   $("#leakTbl").innerHTML=hdr+(body||'<div class="fnote">No competing-airport split available.</div>');
   setTxt("leakNote", homeShare>0.5 ? home+" already carries most of its catchment today; the leakage opportunity is limited."
     : "Most of the catchment drives to larger airports today - that leakage is the recapture case a nonstop addresses.");
@@ -819,17 +822,17 @@ function renderProjection(d){
   const p=d.projection, row=$("#projRow");
   if(!p||!p.build||!p.build.length){ row.classList.add("hidden"); return; }
   const cagr=p.cagr||0, b=p.build;
-  setTxt("projSub","demand grown at the measured market trend of "+(cagr>=0?"+":"")+(cagr*100).toFixed(1)+"%/yr; capacity held on the chosen schedule");
+  setTxt("projSub","demand grown at the measured market trend of "+(cagr>=0?"+":"")+(cagr*100).toFixed(1)+"%/yr (tapering to a long-run rate); capacity held on the chosen schedule");
   const hdr='<div class="pl" style="font-weight:700"><span class="k">Year</span><span class="vv" style="width:33%;text-align:right">Demand (ew)</span><span class="vv" style="width:33%;text-align:right">Carried</span><span class="vv" style="width:20%;text-align:right">Load</span></div>';
   const rows=b.map((x,i)=>{
     const spill=x.spill>0.02*(x.demand||1);
     const lbl=i===0?x.year+" (base)":x.year;
     const ld=x.load!=null?Math.round(x.load*100)+"%":"-";
-    return `<div class="pl"><span class="k">${lbl}</span><span class="vv" style="width:33%;text-align:right">${fmt(x.demand)}</span><span class="vv" style="width:33%;text-align:right">${fmt(x.carried)}</span><span class="vv" style="width:20%;text-align:right;color:${spill?'var(--red)':'inherit'}">${ld}</span></div>`;
+    return `<div class="pl"><span class="k">${lbl}</span><span class="vv" style="width:33%;text-align:right;color:${spill?'var(--red)':'inherit'}">${fmt(x.demand)}</span><span class="vv" style="width:33%;text-align:right">${fmt(x.carried)}</span><span class="vv" style="width:20%;text-align:right">${ld}</span></div>`;
   }).join("");
   $("#projTbl").innerHTML=hdr+rows;
   const last=b[b.length-1], full=b.find(x=>x.spill>0.02*(x.demand||1));
-  setTxt("projNote", full? `Fills the aircraft by ${full.year}; beyond that demand spills — the case for more frequency or a larger gauge.`
+  setTxt("projNote", full? `Fills the aircraft by ${full.year}; beyond that, demand (in red) outgrows the schedule, the case for more frequency or a larger gauge.`
     : `Still within the chosen schedule in ${last.year} at ${last.load!=null?Math.round(last.load*100)+'%':'-'} load.`);
   row.classList.remove("hidden");
 }

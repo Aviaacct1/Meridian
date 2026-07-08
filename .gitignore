@@ -15,3 +15,7 @@ e?.csv
 full*.csv
 probe*.csv
 *.tmp
+
+# secrets: never commit
+access_password.txt
+anthropic_key.txt
