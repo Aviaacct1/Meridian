@@ -654,7 +654,7 @@ function render(d){
   $("#basis").textContent=`Demand from Sabre ${d.year} O&D and OAG schedules week ${d.week}. Steady-state estimate; the Expert view lets you project to a future start year.`;
   if(d.confidence){ $("#basis").textContent += (d.confidence.modelled
     ? "  New-market route: forecast is modelled from comparable launches, not a measured market."
-    : "  Central estimate; comparable launches landed within the stated range "+d.confidence.coverage+".");
+    : "  Central estimate; "+d.confidence.coverage+" landed within the likely range shown.");
   }
   if(d.optimised){ const op=d.optimised; $("#basis").textContent="Optimised for maximum profit: "+(op.airline?op.airline+(op.airline_auto?" (auto-chosen)":""):"selected airline")+" · "+op.aircraft+" · "+op.freq+"x/week.  "+$("#basis").textContent; }
   const dem=d.demand, cap=d.capacity, ec=d.economics;

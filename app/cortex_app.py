@@ -497,11 +497,16 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
     # from comparable launches rather than a measured market, so their band is wider. This honest range
     # is the wedge against a competitor's false-precision single number.
     _induced = bool(r.get("induced"))
-    # band multipliers = the middle 2-in-3 of forecast-vs-outturn across the 6yr back-test (calib_bands.py
-    # on bt_6yr_induced, n=1636 forecastable / 632 induced). Forecastable demand scatter is WIDE (P2P
-    # demand is genuinely uncertain); induced is tighter and downside-skewed (capacity-anchored, so it
-    # won't wildly exceed the aircraft, but carries the risk of not filling).
-    _bl, _bh = (0.55, 1.19) if _induced else (0.44, 2.19)
+    # band multipliers = the middle 2-in-3 of forecast-vs-outturn. FORECASTABLE band (0.40-2.15) is now
+    # calibrated on the POST-SHIP size trim and validated out-of-sample (calib_interval.py: fit 2016-2018,
+    # held-out 2024/2025 coverage ~60-63%, so labelled "about 2 in 3"; pooled all-years band absorbs the
+    # slight held-out widening). A size-CONDITIONED band was tested and REJECTED - the per-market-size bands
+    # did not hold ~2/3 out of sample (thin-market tightness was fit-year luck), so one honest global band.
+    # The demand scatter is genuinely WIDE because +/-20% membership is not predictable at forecast time
+    # (the confidence-tier attempt failed, held-out AUC ~0.52-0.58); the width IS the honest uncertainty.
+    # Induced band (0.55-1.19) is tighter/downside-skewed (capacity-anchored); still on the old calib_bands
+    # figure, its own held-out calibration is pending.
+    _bl, _bh = (0.55, 1.19) if _induced else (0.40, 2.15)
     confidence = {"central": round(each_way), "low": round(each_way * _bl), "high": round(each_way * _bh),
                   "modelled": _induced, "coverage": "about 2 in 3 comparable launches",
                   "basis": "new-market: modelled from comparable launches" if _induced
