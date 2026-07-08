@@ -171,15 +171,17 @@ def main():
             if v:
                 q1, q3 = _iqr(v)
                 print(f"       {k:11}   n={len(v):<4} median {_med(v):.2f}   IQR {q1:.2f}-{q3:.2f}")
-        print("     LF by type x haul (LCC/ULCC = the engine table route_forecast.INDUCED_LF):")
-        for t in ("LCC", "ULCC"):
+        print("     LF by type x haul (LCC/ULCC = the engine table route_forecast.INDUCED_LF;")
+        print("       FSC/Regional shown to test extending the floor to hub-carrier induced launches):")
+        for t in ("FSC", "LCC", "ULCC", "Regional"):
             for k in HAUL_L:
                 xs = [r for r in ind if (r.get("type") or "") == t and _haul(r["_gcd"]) == k]
                 v = [(r["_out"] / r["_cap"]) for r in xs if r["_cap"]]
                 if v:
                     q1, q3 = _iqr(v)
-                    print(f"       {t:5} {k:11} n={len(v):<4} median {_med(v):.2f}  IQR {q1:.2f}-{q3:.2f}")
-        print("       -> a TIGHT IQR here means capacity x load-factor is a good induced demand floor.")
+                    print(f"       {t:8} {k:11} n={len(v):<4} median {_med(v):.2f}  IQR {q1:.2f}-{q3:.2f}")
+        print("       -> a TIGHT IQR here means capacity x load-factor is a good induced demand floor;")
+        print("          a WIDE FSC IQR means FSC induced fills unpredictably (feed-driven) and should NOT be floored blindly.")
 
     # --- D. which predicts induced outturn better: capacity or measured market -----------------
     sp_cap = _spearman([(r["_cap"], r["_out"]) for r in ind])

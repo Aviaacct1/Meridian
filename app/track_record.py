@@ -267,7 +267,11 @@ def render_html(t, source_name):
   <h1>{esc(name)} ({esc(a)})</h1>
   <div class="sub">Every new route launched at {esc(a)} in the graded sample, forecast the year
   before launch with no knowledge of the outcome, against the route's actual first-full-year
-  traffic. Launch years {yr_label}. <span class="badge">evidence file: {esc(source_name)}</span></div>
+  traffic. Launch years {yr_label}. Of the {t['n_here']} launches here, {t['n_fore_here']} are
+  <b>forecastable</b> (a market at least the route's size already existed) and {t['n_here']-t['n_fore_here']}
+  are <b>induced</b> (the route created a market history did not show); the headline below is the
+  forecastable set, the engine's real test, with induced listed separately lower down.
+  <span class="badge">evidence file: {esc(source_name)}</span></div>
 
   <div class="card">
     <h2 style="margin-top:0">The engine's real test: forecastable routes</h2>
@@ -294,7 +298,7 @@ def render_html(t, source_name):
   </div>
 
   <div class="card">
-    <h2 style="margin-top:0">Routes at {esc(a)} in the sample ({t['n_here']}, newest first)</h2>
+    <h2 style="margin-top:0">Routes at {esc(a)} in the sample ({t['n_here']}: {t['n_fore_here']} forecastable + {t['n_here']-t['n_fore_here']} induced, newest first)</h2>
     <table><tr><th>route</th><th>carrier</th><th>launched</th><th>class</th>
     <th style="text-align:right">forecast, year 1</th><th style="text-align:right">actually carried</th><th>how it landed</th></tr>
     {route_rows}</table>

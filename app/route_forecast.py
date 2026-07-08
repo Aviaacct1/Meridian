@@ -330,16 +330,20 @@ def _market_size_mult(market, table):
     return 1.0
 
 
-# --- INDUCED / new-market demand floor (LCC/ULCC only) --------------------------------------------
-# Fare-led stimulation is a low-cost phenomenon: an ultra-low fare fills a plane on a route with almost
-# no measured O&D. FSC serve existing demand, so this does NOT apply to them (their "induced" reads are a
-# coverage question, handled elsewhere). From the 6yr launch history (analyze_induced.py): induced
-# LCC/ULCC routes fill deployed capacity to a stable seat factor - higher for the cheaper ULCC model than
-# LCC, falling with haul - and a low measured-market/capacity ratio flags them before outturn is known
-# (induced routes sit <=0.18, forecastable >=0.73). For a flagged route we FLOOR demand at capacity times
-# the achieved load factor for its type and haul. The LOW fare that buys this is applied in the economics
-# (the caller), not here, so the P&L shows a full cabin at a thin yield rather than a fantasy profit.
-INDUCED_TYPES = ("LCC", "ULCC")
+# --- INDUCED / new-market demand floor (LCC/ULCC + FSC hub launches) ------------------------------
+# An induced route carries far more than its measured O&D: the market did not pre-exist. Two fill
+# mechanisms, one floor. LCC/ULCC: an ultra-low fare stimulates point-to-point demand on a thin route.
+# FSC: a hub carrier launches into a thin O&D and fills the aircraft from its NETWORK/alliance feed
+# (LOT over WAW, etc). Both fill deployed capacity to a stable seat factor, so a low measured-market/
+# capacity ratio flags them before outturn (induced <=0.18, forecastable >=0.73) and we FLOOR demand at
+# capacity x the achieved load factor for the type and haul. FSC ADDED 8 Jul: FSC induced is 62% of the
+# cohort (976/1568) and read ~0.17 of outturn un-floored; the floor lifts held-out 2024 from 1% to 45%
+# within +/-20% (compare_induced_fsc.py, fit 2016-2018). We do NOT feed-gate it: the engine's own feed
+# estimate is too low to identify the fed routes (that under-read is what we are fixing), and feed-thin
+# and feed-present FSC routes centre alike under the blanket floor (0.89 vs 0.88 held-out). The stimulation
+# FARE (below) is LCC/ULCC only - FSC fills at a normal fare via feed, so FSC keeps its measured market
+# fare in the economics (no INDUCED_FARE entry), and the floor is a MAX so it only ever lifts an under-read.
+INDUCED_TYPES = ("LCC", "ULCC", "FSC")
 INDUCED_MKT_CAP_MAX = 0.40          # measured-market/capacity below this = induced-likely
 _INDUCED_HAUL_KM = (800.0, 2500.0, 6000.0)
 # achieved seat factor by [type][haul band: <800 / 800-2500 / 2500-6000 / >6000 km], from the 6yr launch
@@ -349,6 +353,7 @@ INDUCED_LF = {   # 6yr run (bt_6yr_induced) section C, type x haul medians
     "LCC":  (0.77, 0.72, 0.73, 0.42),   # <800 n42, 800-2500 n155, 2500-6000 n109, >6000 n16
     "ULCC": (0.77, 0.82, 0.50, 0.45),   # <800 n48, 800-2500 n176; 2500-6000 median 0.46 (n41, wide IQR
                                          # .39-.87, nudged to 0.50 - lower than LCC same haul, twice); >6000 n5 thin
+    "FSC":  (0.69, 0.68, 0.43, 0.38),   # fit-year (2016-2018) medians, validated held-out (compare_induced_fsc.py)
 }
 # achieved ONE-WAY fare (USD) an induced route stimulates at, by [type][same haul bands]. This is the low
 # fare that BUYS the fill, applied in the economics so an induced route shows a full cabin at a thin yield.
