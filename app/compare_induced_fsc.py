@@ -81,54 +81,84 @@ def main():
     if not rows:
         print("No FSC induced rows (need type=FSC, natural<p2p, market/cap<0.40)."); return
 
-    # 1. fit FSC load factor by haul on the fit years (median achieved LF)
+    # 1. fit FSC load factor by haul on the fit years - two ways:
+    #    median  = centres the median fc/out at 1.0
+    #    hit-max = the LF that MAXIMISES within-+/-20% count on the fit routes (John's goal), tie-break to median
     labels = ["<800", "800-2500", "2500-6000", ">6000"]
-    lf = {}
-    print(f"FSC INDUCED FLOOR - held-out A/B ({a.csv})")
-    print(f"\n  FSC load factor fitted on {sorted(fit_years)} (median achieved LF by haul):")
-    for i, lbl in enumerate(labels):
-        v = [r["achlf"] for r in rows if r["hi"] == i and r["year"] in fit_years]
-        lf[i] = _median(v) if len(v) >= 8 else _median([r["achlf"] for r in rows if r["year"] in fit_years])
-        print(f"    {lbl:>11}  n={len(v):>4}  LF {lf[i]:.2f}")
+    fit_rows = [r for r in rows if r["year"] in fit_years]
+    lf_med, lf_hm = {}, {}
 
-    def _floored(r):
-        return max(r["fc"], r["cap"] * lf[r["hi"]])
+    def _hitmax_lf(haul_rows, med):
+        if len(haul_rows) < 8:
+            return med
+        best = None; x = 0.20
+        while x <= 0.95 + 1e-9:
+            hits = sum(1 for r in haul_rows if 0.8 <= max(r["fc"], r["cap"] * x) / r["out"] <= 1.2)
+            key = (hits, -abs(x - med))          # max hits, then nearest the median (least extreme)
+            if best is None or key > best[0]:
+                best = (key, x)
+            x += 0.01
+        return round(best[1], 2)
+
+    print(f"FSC INDUCED FLOOR - held-out A/B ({a.csv})")
+    print(f"\n  FSC load factor fitted on {sorted(fit_years)} by haul:")
+    print(f"    {'haul':>11}  {'n':>4}  {'median LF':>9}  {'hit-max LF':>10}")
+    allmed = _median([r["achlf"] for r in fit_rows])
+    for i, lbl in enumerate(labels):
+        hr = [r for r in fit_rows if r["hi"] == i]
+        med = _median([r["achlf"] for r in hr]) if len(hr) >= 8 else allmed
+        lf_med[i] = med
+        lf_hm[i] = _hitmax_lf(hr, med)
+        print(f"    {lbl:>11}  {len(hr):>4}  {med:>9.2f}  {lf_hm[i]:>10.2f}")
+
+    def _fl(r, tbl):
+        return max(r["fc"], r["cap"] * tbl[r["hi"]])
 
     def _grade(name, rs):
         if len(rs) < 10:
             print(f"  {name}: n={len(rs)} (too few)"); return
         wo = [r["fc"] / r["out"] for r in rs]
-        w = [_floored(r) / r["out"] for r in rs]
-        # feed-gated: only floor where the carrier has material alliance feed at the hub (John's point)
-        g = [(_floored(r) if r["feed_share"] >= a.feed_gate else r["fc"]) / r["out"] for r in rs]
+        wm = [_fl(r, lf_med) / r["out"] for r in rs]
+        wh = [_fl(r, lf_hm) / r["out"] for r in rs]
         print(f"\n  {name}: FSC induced n={len(rs)}")
         print(f"                          within +/-20%     median fc/out   over(>1.2)")
-        for lab, xs in [("no floor (now)", wo), ("blanket floor", w),
-                        (f"feed-gated floor (>= {a.feed_gate:.2f})", g)]:
+        for lab, xs in [("no floor (now)", wo), ("median-LF floor", wm), ("hit-max-LF floor", wh)]:
             over = sum(1 for x in xs if x > 1.2)
-            print(f"    {lab:>26}  {_w20(xs):>4}/{len(rs)} ({100*_w20(xs)//len(rs):>2}%)   "
+            print(f"    {lab:>24}  {_w20(xs):>4}/{len(rs)} ({100*_w20(xs)//len(rs):>2}%)   "
                   f"{_median(xs):>5.2f}      {100*over//len(rs):>2}%")
-        print(f"    blanket floor within +/-20%: {_w20(w)-_w20(wo):+d} ({100*(_w20(w)-_w20(wo))/len(rs):+.1f}pp)")
 
-    _grade("fit " + ",".join(sorted(fit_years)), [r for r in rows if r["year"] in fit_years])
+    _grade("fit " + ",".join(sorted(fit_years)), fit_rows)
     held = [r for r in rows if r["year"] not in fit_years]
     for y in sorted({r["year"] for r in held}):
         _grade("held-out " + y, [r for r in held if r["year"] == y])
+    print("\n  Take the LF table (median or hit-max) with the higher HELD-OUT +/-20%; that is the one to wire.")
 
-    # FEED SPLIT on held-out: does the blanket floor OVER-FLOW the feed-thin (no hub) FSC routes?
+    # GATE CEILING: an alliance/feed gate can only move a route INTO +/-20% where the blanket floor
+    # OVER-forecasts it AND the engine's UNFLOORED forecast was already in-band. Count that from the CSV -
+    # it's the most any gate (alliance or otherwise) could add, before we build the alliance flag + re-run.
     if held:
-        print(f"\n  HELD-OUT FEED SPLIT (does the floor over-flow feed-thin routes? blanket floor, graded fc/out):")
-        print(f"    {'group':>18}  {'n':>4}  {'median fc/out':>13}  {'over(>1.2)':>10}  {'+/-20%':>7}")
-        for lab, sub in [("feed present", [r for r in held if r["feed_share"] >= a.feed_gate]),
-                         ("feed thin (no hub)", [r for r in held if r["feed_share"] < a.feed_gate])]:
-            if len(sub) < 5:
-                print(f"    {lab:>18}  {len(sub):>4}   (too few)"); continue
-            w = [_floored(r) / r["out"] for r in sub]
-            over = sum(1 for x in w if x > 1.2)
-            print(f"    {lab:>18}  {len(sub):>4}  {_median(w):>13.2f}  {100*over//len(sub):>9}%  "
-                  f"{100*_w20(w)//len(sub):>6}%")
-        print("    -> if 'feed thin' shows a high median / high over-share, the floor is over-flowing feed-less\n"
-              "       routes and should be feed-GATED; if feed-thin is tiny or also centred, the blanket floor is safe.")
+        helps = hurts = 0
+        hurt_feed = []
+        for r in held:
+            u = r["fc"] / r["out"]; f = _fl(r, lf_med) / r["out"]
+            uin = 0.8 <= u <= 1.2; fin = 0.8 <= f <= 1.2
+            if fin and not uin:
+                helps += 1                     # floor rescued it (engine was out) -> must keep flooring
+            elif uin and not fin:
+                hurts += 1                     # engine was right, floor broke it -> a gate would recover it
+                hurt_feed.append(r["feed_share"])
+        base = _w20([_fl(r, lf_med) / r["out"] for r in held])
+        n = len(held)
+        print(f"\n  GATE CEILING (held-out, median floor, n={n}):")
+        print(f"    floor RESCUES (engine out-of-band, floored in): {helps}  -> these need the floor, a gate must keep them")
+        print(f"    floor BREAKS  (engine in-band, floored out):    {hurts}  -> the ONLY routes a gate could recover")
+        print(f"    current floored within +/-20%: {base}/{n} ({100*base//n}%);  a PERFECT gate ceiling: "
+              f"{base+hurts}/{n} ({100*(base+hurts)//n}%)")
+        if hurt_feed:
+            lo = sum(1 for x in hurt_feed if x < a.feed_gate)
+            print(f"    of the {hurts} recoverable, {lo} have feed < {a.feed_gate:.2f} (a feed/alliance gate could target these)")
+        print("    -> if 'floor BREAKS' is small, the blanket floor is already near the ceiling and a gate can't")
+        print("       add much; if it's large AND those routes are low-feed, an alliance gate is worth building.")
     print("\n  ships if within +/-20% is positive on the held-out year(s) and the median centres toward 1.0.")
 
 
