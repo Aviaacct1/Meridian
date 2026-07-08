@@ -130,6 +130,36 @@ def airport_track(rows, airport):
     }
 
 
+def total_track(rows):
+    """Whole-engine evidence across EVERY graded route (all airports): the combined book, split into
+    forecastable (the measured-market test) and induced (the new-market / stimulation layer, now floored),
+    plus a breakdown by carrier type and region. This is the engine-level scorecard, not an airport's."""
+    fore = [r for r in rows if r["forecastable"]]
+    indu = [r for r in rows if not r["forecastable"]]
+
+    def _grp(keyfn, order=None):
+        d = {}
+        for r in rows:
+            d.setdefault(keyfn(r) or "?", []).append(r)
+        keys = order or sorted(d, key=lambda k: -len(d[k]))
+        return [(k, _stats([r["ratio"] for r in d[k]])) for k in keys if k in d]
+
+    return {
+        "years": sorted({r["year"] for r in rows}),
+        "n_all": len(rows), "n_fore": len(fore), "n_indu": len(indu),
+        "n_carriers": len({r["carrier"] for r in rows if r["carrier"]}),
+        "n_origins": len({r["dep"] for r in rows}),
+        "stats_all": _stats([r["ratio"] for r in rows]),
+        "stats_fore": _stats([r["ratio"] for r in fore]),
+        "stats_indu": _stats([r["ratio"] for r in indu]),
+        "hist_all": _hist([r["ratio"] for r in rows]),
+        "hist_fore": _hist([r["ratio"] for r in fore]),
+        "hist_indu": _hist([r["ratio"] for r in indu]),
+        "bytype": _grp(lambda r: r["type"], ["FSC", "LCC", "ULCC", "Regional"]),
+        "byreg": _grp(lambda r: r["region"]),
+    }
+
+
 def _apt_name(code):
     try:
         import airportsdata
@@ -316,11 +346,79 @@ def render_html(t, source_name):
 </div></body></html>"""
 
 
+def render_total(t, source_name):
+    esc = _html.escape
+    yr = t["years"]
+    yr_label = f"{yr[0]}-{yr[-1]}" if yr else "the sample"
+
+    def _section(title, note, stats, hist):
+        if not stats:
+            return f'<div class="card"><h2 style="margin-top:0">{esc(title)}</h2><div class="note">no graded routes</div></div>'
+        counts, labels = hist
+        return (f'<div class="card"><h2 style="margin-top:0">{esc(title)}</h2>'
+                f'<div class="note">{esc(note)}</div>{_tiles(stats)}'
+                f'<div style="margin-top:14px">{_svg_hist(counts, labels)}</div></div>')
+
+    def _brk(title, rowslist):
+        body = "".join(_stat_row(esc(k), s) for k, s in rowslist if s)
+        return (f'<div class="card"><h2 style="margin-top:0">{esc(title)}</h2><table>'
+                f'<tr><th>set</th><th>n</th><th>median</th><th>over/under</th><th>half within</th>'
+                f'<th>80% within</th><th>&plusmn;10%</th><th>&plusmn;20%</th><th>&plusmn;30%</th></tr>'
+                f'{body}</table></div>')
+
+    return f"""<!doctype html><html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Track record - whole engine - Avia Cortex</title>
+<style>
+  body{{font-family:Segoe UI,system-ui,-apple-system,sans-serif;background:{BG};color:#17222e;margin:0}}
+  .wrap{{max-width:900px;margin:0 auto;padding:26px 18px 60px}}
+  h1{{color:{NAVY};font-size:24px;margin:6px 0 2px}} h2{{color:{NAVY};font-size:16px;margin:26px 0 8px}}
+  .sub{{color:{MUT};font-size:13px}} .note{{color:{MUT};font-size:12.5px;line-height:1.5}}
+  .card{{background:#fff;border:1px solid #e3e9f0;border-radius:12px;padding:18px;margin-top:14px}}
+  .tiles{{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}}
+  .tile{{flex:1;min-width:130px;background:#fff;border:1px solid #e3e9f0;border-radius:12px;padding:12px}}
+  .tv{{font-size:22px;font-weight:700;color:{NAVY}}} .tl{{font-size:11px;color:{MUT};margin-top:3px}}
+  table{{border-collapse:collapse;width:100%;font-size:12.5px}}
+  th{{text-align:left;color:{MUT};font-weight:600;padding:6px 8px;border-bottom:1.5px solid #e3e9f0}}
+  td{{padding:6px 8px;border-bottom:1px solid #eef2f6}}
+  .badge{{display:inline-block;background:{ACCENT}12;color:{ACCENT};border:1px solid {ACCENT}44;
+         border-radius:99px;padding:2px 10px;font-size:11px;font-weight:600}}
+  .topnav{{display:flex;gap:14px;align-items:center;margin-bottom:10px;font-size:12.5px}}
+  .topnav a{{color:{ACCENT};text-decoration:none;font-weight:600}}
+</style></head><body><div class="wrap">
+  <div class="topnav"><a href="/">&larr; Route Forecasting</a>
+    <a href="/trackrecord">Check one airport</a></div>
+  <div class="sub">Avia Cortex &middot; forecast track record</div>
+  <h1>Whole-engine track record</h1>
+  <div class="sub">Every new route in the graded sample, across all airports, forecast the year before
+  launch with no knowledge of the outcome and graded against actual first-full-year traffic. Launch years
+  {yr_label}. {t['n_all']:,} routes, {t['n_origins']} origin airports, {t['n_carriers']} carriers:
+  {t['n_fore']:,} forecastable (a market pre-existed) and {t['n_indu']:,} induced (the route created the
+  market). <span class="badge">evidence file: {esc(source_name)}</span></div>
+
+  {_section("All launches (the whole book)", "Forecastable and induced combined: every route the engine forecast, graded against what it carried.", t['stats_all'], t['hist_all'])}
+  {_section("Forecastable (the engine's core test)", "A market at least the route's size already existed in the booking data; the honest test of a measured-market forecast.", t['stats_fore'], t['hist_fore'])}
+  {_section("Induced (new-market / stimulation layer)", "The route created a market history did not show; forecast from the capacity-anchored floor, not a measured market.", t['stats_indu'], t['hist_indu'])}
+
+  {_brk("By carrier type (all launches)", t['bytype'])}
+  {_brk("By region (all launches)", t['byreg'])}
+
+  <div class="note" style="margin-top:14px">
+    Median forecast &divide; actual near 1.00 means unbiased; the within-bands and the &times;-factors show
+    the spread. Forecastable is the core engine test; induced is modelled from comparable launches, not a
+    measured market, and is shown so the whole book is visible. Indicative, for directional guidance;
+    per-route precision varies with market-data coverage.
+  </div>
+</div></body></html>"""
+
+
 def page(airport=None):
     """The portal entry point: form when no airport given, else the rendered evidence page."""
     src = _source_path()
     if not src:
         return "<h3>No back-test evidence file found (bt_v1_baseline.csv) on the server.</h3>"
+    if airport and airport.strip().upper() in ("ALL", "TOTAL", "ENGINE"):
+        return render_total(total_track(load_rows(src)), os.path.basename(src))
     if not airport:
         return f"""<!doctype html><html><head><meta charset="utf-8"><title>Track record - Avia Cortex</title>
 <style>body{{font-family:Segoe UI,system-ui,sans-serif;background:{BG};display:flex;justify-content:center;padding-top:80px}}
@@ -333,7 +431,8 @@ a.back{{display:block;margin-bottom:10px;color:{ACCENT};text-decoration:none;fon
 <h2>Track record</h2><p>How the forecast engine has performed against every new route launched
 at an airport, graded on actual outturn.</p>
 <form method="get"><input name="airport" placeholder="Airport IATA, e.g. LGW" autofocus>
-<button>Show the record</button></form></div></body></html>"""
+<button>Show the record</button></form>
+<p style="margin-top:14px">Or see the <a href="/trackrecord?airport=ALL" style="color:{ACCENT};font-weight:600;text-decoration:none">whole-engine record</a> across every airport, forecastable and induced.</p></div></body></html>"""
     rows = load_rows(src)
     t = airport_track(rows, airport)
     return render_html(t, os.path.basename(src))
