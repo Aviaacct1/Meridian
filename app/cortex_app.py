@@ -58,62 +58,52 @@ DIST_NM, BLOCK_MIN = 3500, 540
 app = FastAPI(title="Avia Cortex - Route Forecasting")
 S = {}
 
-# ---------------------------------------------------------------- password gate
-# A shared-password login in front of everything, so the tunnelled site is private. Set the password
-# with the AVIA_PASSWORD environment variable; the cookie token is derived from it, so changing the
-# password logs everyone out. This is belt-and-braces alongside Cloudflare Access at the edge.
-APP_PASSWORD = os.environ.get("AVIA_PASSWORD", "aviacortex2026")
-_AUTH_TOKEN = hashlib.sha256(("cortex-session::" + APP_PASSWORD).encode()).hexdigest()[:40]
-LOGIN_HTML = """<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="robots" content="noindex,nofollow"><title>Avia Cortex</title><style>
-body{margin:0;height:100vh;display:flex;align-items:center;justify-content:center;background:#0E1B33;
-font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
-.box{background:#fff;border-radius:14px;padding:34px 32px;width:340px;box-shadow:0 10px 40px rgba(0,0,0,.35)}
-.mark{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#2F6BF0,#5C8DF6);display:flex;
-align-items:center;justify-content:center;margin-bottom:16px}
-h1{font-size:18px;color:#16324F;margin:0 0 2px}p{font-size:13px;color:#6B7A85;margin:0 0 20px}
-input{width:100%;box-sizing:border-box;padding:11px 13px;border:1px solid #E6EBF2;border-radius:9px;font-size:14px;margin-bottom:12px}
-button{width:100%;padding:11px;background:#2F6BF0;color:#fff;border:none;border-radius:9px;font-weight:600;font-size:14px;cursor:pointer}
-.err{color:#D84C4C;font-size:12.5px;margin-bottom:10px;font-weight:600}</style></head>
-<body><form class="box" method="post" action="/login">
-<div class="mark"><svg viewBox="0 0 24 24" width="22" height="22" fill="none"><path d="M3 12c4 0 5-7 9-7s5 14 9 7" stroke="#fff" stroke-width="2.1" stroke-linecap="round"/></svg></div>
-<h1>Avia Cortex</h1><p>Route Forecasting &middot; private preview</p>{{ERR}}
-<input type="password" name="password" placeholder="Password" autofocus autocomplete="current-password">
-<button type="submit">Enter</button></form></body></html>"""
+# ---------------------------------------------------------------- password gate (Avia Solutions)
+# A single shared-password gate (HTTP Basic Auth) in front of EVERY route - pages, static files and all
+# /api endpoints - so the tool is protected at the ORIGIN (this server), not by Cloudflare. This lets a
+# Cloudflare Access "Bypass" cover *.aviacortex.com without leaving the tool open, and guests need no
+# Cloudflare account. Mirrors the Global Forecast tool exactly.
+#   Password source, in order: env QSI_PASSWORD, else the first non-comment line of access_password.txt
+#   next to this file. Any username is accepted; only the password is checked (constant-time compare).
+import base64
+import hmac
+from starlette.responses import Response as _Response
+_REALM = "Avia Cortex"
+
+
+def _load_password():
+    pw = (os.environ.get("QSI_PASSWORD") or "").strip()
+    if pw:
+        return pw
+    fp = os.path.join(os.path.dirname(os.path.abspath(__file__)), "access_password.txt")
+    if os.path.exists(fp):
+        for line in open(fp, encoding="utf-8"):
+            s = line.strip()
+            if s and not s.startswith("#"):
+                return s
+    return ""
+
+
+ACCESS_PASSWORD = _load_password()
+print("access: shared password ON (HTTP Basic Auth)." if ACCESS_PASSWORD
+      else "NO PASSWORD SET - server is OPEN.")
 
 
 @app.middleware("http")
-async def _auth_gate(request: Request, call_next):
-    path = request.url.path
-    if path in ("/login", "/logout", "/favicon.ico") or request.cookies.get("cortex_auth") == _AUTH_TOKEN:
-        return await call_next(request)
-    if path.startswith("/api/"):
-        return JSONResponse({"ok": False, "error": "unauthorised - please log in"}, status_code=401)
-    return RedirectResponse("/login")
-
-
-@app.get("/login", response_class=HTMLResponse)
-def _login_form(bad: int = 0):
-    return LOGIN_HTML.replace("{{ERR}}", '<div class="err">Wrong password.</div>' if bad else "")
-
-
-@app.post("/login")
-async def _login_submit(request: Request):
-    from urllib.parse import parse_qs
-    body = (await request.body()).decode("utf-8", "ignore")
-    pw = parse_qs(body).get("password", [""])[0]
-    if pw.strip() == APP_PASSWORD.strip():
-        resp = RedirectResponse("/", status_code=303)
-        resp.set_cookie("cortex_auth", _AUTH_TOKEN, httponly=True, samesite="lax", max_age=60 * 60 * 24 * 14)
-        return resp
-    return RedirectResponse("/login?bad=1", status_code=303)
-
-
-@app.get("/logout")
-def _logout():
-    resp = RedirectResponse("/login")
-    resp.delete_cookie("cortex_auth")
-    return resp
+async def _basic_auth(request: Request, call_next):
+    if ACCESS_PASSWORD:
+        hdr = request.headers.get("authorization", "")
+        ok = False
+        if hdr.startswith("Basic "):
+            try:
+                raw = base64.b64decode(hdr[6:].strip()).decode("utf-8", "replace")
+                ok = hmac.compare_digest(raw.partition(":")[2], ACCESS_PASSWORD)
+            except Exception:
+                ok = False
+        if not ok:
+            return _Response(status_code=401,
+                             headers={"WWW-Authenticate": f'Basic realm="{_REALM}"'})
+    return await call_next(request)
 
 
 @app.on_event("startup")
@@ -431,7 +421,7 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
                         att_exponent=att_exponent, catchment_mult=catchment_mult,
                         coverage_override=coverage_override, market_override=market_override,
                         share_override=share_override, max_plan_lf=plan_lf,
-                        market_factor=RF.market_factor_for(carrier_type),   # item-9 type-aware P2P trim
+                        market_factor=RF.market_factor_for(carrier_type),   # market-size-keyed P2P trim
                         season=season, season_share=season_share, season_weeks=season_weeks,
                         airline_type=ct, induced_floor=induced_floor)
     except Exception as e:
@@ -488,8 +478,16 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
     _cagr = max(min(_cagr, 0.20), -0.05)          # clamp: a measured burst over 2yr isn't a sustained rate
     _capf = float(r["annual_capacity"] or 0)
     _build = []
+    # TAPER the growth beyond ~2 years toward a long-run trend: a hot short-term CAGR compounded flat over
+    # 5 years over-projects badly (the maturity back-test showed this). Full rate for yr 1-2, decaying to
+    # ~3%/yr by yr 5.
+    _LONG_RUN = 0.03
+    _cum = 1.0
     for _n in range(0, 6):                        # base year + 5
-        _d = each_way * (1.0 + _cagr) ** _n
+        if _n > 0:
+            _rate = _cagr if _n <= 2 else max(_LONG_RUN, _cagr - (_cagr - _LONG_RUN) * (_n - 2) / 3.0)
+            _cum *= (1.0 + _rate)
+        _d = each_way * _cum
         _c = min(_d, _capf * plan_lf) if _capf else _d
         _build.append({"year": ctx["year"] + _n, "offset": _n, "demand": round(_d),
                        "carried": round(_c), "load": round(_c / _capf, 3) if _capf else None,

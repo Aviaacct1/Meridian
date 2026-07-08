@@ -294,19 +294,23 @@ def premium_share(sabre_db, airports, dest_codes, year=None):
         con.close()
 
 
-# Item 9 P2P level trim, TYPE-AWARE. Sized on the 6yr V2 hit-rate sweep (seasonal excluded, each type
-# separately), choosing the trim that MAXIMISES the share of routes within x1.2/x1.05 - not the one
-# that centres the median, because a trim that slides the already-right routes off their mark is a
-# loss even if the median improves. FSC/ULCC over-read is a broad ~1.2 shift and a trim to 0.85 lifts
-# the hit rate at every band (within-x1.05 rose 35->50 on FSC, so it does NOT cost the right routes).
-# LCC is near-balanced overall (small over, large UNDER), hit rate best near 1.0 - trimming would push
-# the already-under big LCC markets further under, so LCC is left essentially untrimmed. Leaning FULL
-# for the airport-pitch use. Size was a bucketing artefact, so each is a single flat bucket.
+# P2P level trim, MARKET-SIZE-KEYED (supersedes the Item 9 flat per-type trim, 8 Jul 2026). The offset-0
+# held-out grade (val24_o0/val25_o0) showed the engine over-forecasts forecastable P2P ~1.5x UNIFORM across
+# type (FSC/LCC/ULCC all ~1.5 - type does not discriminate), so the trim is keyed on the MEASURED market
+# (known at forecast time), not type. Fitted on 2016-2018 ONLY (calib_market_trim.py), each size bucket
+# taking the multiplier that MAXIMISES the share within +/-20% of outturn, floored so no bucket's trimmed
+# median falls below 0.92 (stops a wide right-skewed bucket being over-trimmed into a big-market
+# UNDER-forecast). Validated held-out with the isolated A/B (compare_market_trim.py) vs the old flat trim:
+# +/-20% +1.4pp (2024) / +1.3pp (2025), median de-biased and |log err| lower on BOTH years - clears the
+# ship gate. Applied to every type (type does not discriminate; induced LCC/ULCC handled by the demand
+# floor, not here). The remaining error is capture SPREAD not level - the confidence tier (T9) scopes the
+# 2/3-within-20% claim, a trim cannot reach it. Edit both numbers and re-validate to change.
+_SIZE_TRIM = [(15000.0, 0.765), (50000.0, 0.821), (150000.0, 0.809), (float("inf"), 0.745)]
 MARKET_FACTOR_BY_TYPE = {
-    "FSC":      [(float("inf"), 0.85)],
-    "ULCC":     [(float("inf"), 0.85)],
-    "LCC":      [(float("inf"), 0.95)],
-    "Regional": [(float("inf"), 0.90)],
+    "FSC":      _SIZE_TRIM,
+    "ULCC":     _SIZE_TRIM,
+    "LCC":      _SIZE_TRIM,
+    "Regional": _SIZE_TRIM,
 }
 DEFAULT_MARKET_FACTOR = MARKET_FACTOR_BY_TYPE["FSC"]      # fallback for an unknown type
 
@@ -382,7 +386,7 @@ def forecast(sabre_db, oag_db, week, origin, dest_codes, competing_airports, *, 
              dest_airport=None, airline=None, catchment_mult=1.0, feed_cfg=None,
              coverage_override=None, market_override=None, share_override=None,
              market_factor=None, season="annual", season_share=1.0, season_weeks=52.0,
-             airline_type=None, induced_floor=False, **_ignore):
+             airline_type=None, induced_floor=False, airport_capture=1.0, **_ignore):
     """The connected loop, the calibrated way. The WIDE market = the whole service area's measured
     O&D to the destination (Sabre, all competing airports - board-point, which is what Sabre gives).
     The origin's forecast = that measured market x its QSI SHARE (its schedule quality vs the field,
@@ -475,6 +479,10 @@ def forecast(sabre_db, oag_db, week, origin, dest_codes, competing_airports, *, 
     # Applied to captured only (the P2P over-read); the feed carries its own calibration.
     if market_factor:
         captured *= _market_size_mult(market, market_factor)
+    # PER-AIRPORT CAPTURE CALIBRATION (T7): an origin that consistently captures more/less than the
+    # general catchment model gets a factor learned from its own past launches (build_airport_factors.py).
+    if airport_capture and airport_capture != 1.0:
+        captured *= float(airport_capture)
     # SEASONAL mode: scale the annual demand to the operating season's share of the year (from the
     # monthly profile; caller supplies the SEASON's capacity via annual_capacity). season_share 1.0 =
     # annual, unchanged. A summer service carries its summer share of the O&D, not half of it.
