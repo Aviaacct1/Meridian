@@ -525,6 +525,8 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
                    "coverage_gross_up": r["coverage_gross_up"], "premium_share": r["premium_share"],
                    "feed_total": r["connecting_feed"], "feed_beyond": r["feed_beyond"],
                    "feed_behind": r["feed_behind"], "feed_beyond_base": beyond_base, "feed_behind_base": behind_base,
+                   "p2p_carried": r.get("p2p_carried"), "connecting_carried": r.get("connecting_carried"),
+                   "p2p_share": r.get("p2p_share"),
                    "total": each_way, "avg_fare": r["avg_fare"],
                    "att": r.get("att_exponent"), "stimulation": r.get("stimulation"),
                    "induced": r.get("induced", False), "induced_lf": r.get("induced_lf"),

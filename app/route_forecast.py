@@ -538,6 +538,32 @@ def forecast(sabre_db, oag_db, week, origin, dest_codes, competing_airports, *, 
     spill = max(total_demand - carried, 0.0)
     load = (carried / annual_capacity) if annual_capacity else 0.0
 
+    # TOTAL-PRESERVING P2P/CONNECTING RE-SPLIT (split_share): the engine's leg split over-credits P2P on
+    # connecting-heavy routes (a route into DOH/ATL/IST is mostly transfer, not local). Re-split the CARRIED
+    # total by each endpoint's connectivity so the reported P2P/connecting, the PDEW connecting magnitude and
+    # the economics read correctly - WITHOUT changing the total (so +/-20% on the total is untouched). Inert
+    # until hub_localness.json exists (falls back to global localness ~= no re-split). Feed detail is scaled
+    # to the corrected connecting magnitude, keeping its per-city shape.
+    _rawtot = max(total_demand, 1.0)                     # default: keep the raw engine legs, scaled to carried
+    p2p_share_v = captured / _rawtot
+    p2p_carried = carried * p2p_share_v
+    conn_carried = carried - p2p_carried
+    try:
+        import split_share as _SS
+        if _SS.available():                              # only re-split when a real connectivity table is loaded
+            _dref = dest_airport or (dest_codes[0] if dest_codes else "")
+            p2p_share_v = _SS.p2p_share(origin, _dref)
+            p2p_carried = carried * p2p_share_v
+            conn_carried = max(0.0, carried - p2p_carried)
+            if feed > 1.0:                               # scale the PDEW connecting detail to the corrected magnitude
+                _sc = conn_carried / feed
+                for _dm in (beyond_detail, behind_detail):
+                    for _c in _dm.values():
+                        if _c.get("captured") is not None:
+                            _c["captured"] *= _sc
+    except Exception:
+        pass
+
     rec = "demand fits the aircraft"
     if spill > 0.02 * max(total_demand, 1):
         need = math.ceil(total_demand / (annual_capacity * max_plan_lf / freq)) if annual_capacity else freq
@@ -550,6 +576,8 @@ def forecast(sabre_db, oag_db, week, origin, dest_codes, competing_airports, *, 
         "repatriated": round(repatriated), "premium_share": round(prem, 4), "att_exponent": round(att, 3),
         "coverage_gross_up": round(_cov, 3),
         "captured_demand": round(captured), "connecting_feed": round(feed),
+        "p2p_carried": round(p2p_carried), "connecting_carried": round(conn_carried),
+        "p2p_share": round(p2p_share_v, 3),
         "feed_beyond": round(feed_beyond), "feed_behind": round(feed_behind),
         "total_demand": round(total_demand), "stimulation": stimulation,
         "induced": induced, "induced_lf": induced_lf_used, "induced_fare": induced_fare_used,
