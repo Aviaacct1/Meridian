@@ -552,15 +552,25 @@ def forecast(sabre_db, oag_db, week, origin, dest_codes, competing_airports, *, 
         import split_share as _SS
         if _SS.available():                              # only re-split when a real connectivity table is loaded
             _dref = dest_airport or (dest_codes[0] if dest_codes else "")
-            p2p_share_v = _SS.p2p_share(origin, _dref)
-            p2p_carried = carried * p2p_share_v
-            conn_carried = max(0.0, carried - p2p_carried)
-            if feed > 1.0:                               # scale the PDEW connecting detail to the corrected magnitude
+            _sh = _SS.p2p_share(origin, _dref)
+            _engine_conn = carried * (feed / _rawtot)    # the engine's own connecting, scaled to carried
+            _resplit_conn = carried * (1.0 - _sh)        # what connectivity implies
+            # ONLY LIFT connecting, never cut it: the engine's known failure is UNDER-crediting connecting, so a
+            # re-split that says LESS means the hub is under-scored in Sabre (esp. non-US hubs like TPE/HKG/ICN
+            # where the US GDS misses Asian transfer traffic). Floor at the engine's estimate so it can't regress.
+            conn_carried = max(_engine_conn, _resplit_conn)
+            p2p_carried = max(0.0, carried - conn_carried)
+            p2p_share_v = (p2p_carried / carried) if carried else _sh
+            if feed > 1.0:                               # scale the connecting aggregates + PDEW detail to match
                 _sc = conn_carried / feed
+                feed_beyond *= _sc                       # behind/beyond breakdown reconciles to conn_carried
+                feed_behind *= _sc
                 for _dm in (beyond_detail, behind_detail):
                     for _c in _dm.values():
                         if _c.get("captured") is not None:
                             _c["captured"] *= _sc
+                        if _c.get("pdew") is not None:
+                            _c["pdew"] *= _sc
     except Exception:
         pass
 

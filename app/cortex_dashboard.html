@@ -672,7 +672,7 @@ function render(d){
   const kpis=[
     ["Addressable market", fmt(dem.natural), fmt(dem.natural*2)+" both ways · "+d.dest.city+" trips/yr in catchment"],
     ["Total forecast", fmt(dem.total), (d.confidence?("likely "+fmt(d.confidence.low)+"-"+fmt(d.confidence.high)+" ew · "):"")+(_seasonal?("over the "+STATE.season.mode):"each way")+"; "+fmt(dem.total*2)+" both ways"],
-    ["Connecting feed", fmt(dem.feed_total), dem.feed_total>0 ? "behind "+fmt(dem.feed_behind)+" · beyond "+fmt(dem.feed_beyond) : "point-to-point carrier"],
+    ["Connecting feed", fmt(dem.connecting_carried??dem.feed_total), (dem.connecting_carried??dem.feed_total)>0 ? "behind "+fmt(dem.feed_behind)+" · beyond "+fmt(dem.feed_beyond)+(dem.p2p_share!=null?" · "+Math.round((1-dem.p2p_share)*100)+"% of onboard connects":"") : "point-to-point carrier"],
   ];
   if(MODE!=="forecast" && d.economics_ok)
     kpis.push(["Route margin", pct1(ec.margin), profitable?'<span class="tag up">▲ profitable</span> at these inputs':'<span class="tag dn">▼ loss</span> at these inputs']);
@@ -690,7 +690,7 @@ function render(d){
   const homeShare = (d.catchment.observed_share||{})[d.catchment.home]||0;
   $("#barNote").textContent = homeShare>0 ? `${d.origin.city} carries ${(homeShare*100).toFixed(1)}% of its catchment’s demand today; the rest drives to larger airports.` : "";
 
-  const local=dem.captured||0, feedInc=Math.max((dem.total||0)-(dem.captured||0),0), total=dem.total||1;
+  const local=(dem.p2p_carried!=null?dem.p2p_carried:(dem.captured||0)), feedInc=(dem.connecting_carried!=null?dem.connecting_carried:Math.max((dem.total||0)-(dem.captured||0),0)), total=dem.total||1;
   const rows=[["Local demand captured",0,local,local,"var(--navy)"]];
   if(feedInc>0) rows.push(["Connecting feed",local,feedInc,feedInc,"#2F6BF0"]);
   rows.push(["Total forecast, each way",0,total,total,"var(--green)"]);
@@ -720,7 +720,7 @@ function render(d){
   ].map(r=>`<div class="pl"><span class="k">${r[0]}</span><span class="vv">${r[1]}</span></div>`).join("");
 
   const fr=$("#feedRow");
-  if(dem.feed_total>0 && ((dem.behind_pdew||[]).length || (dem.beyond_pdew||[]).length)){
+  if((dem.connecting_carried!=null?dem.connecting_carried:dem.feed_total)>0 && ((dem.behind_pdew||[]).length || (dem.beyond_pdew||[]).length)){
     $("#pdewTotal").textContent="total "+fmt(dem.pdew_total)+" PDEW";
     const tbl=list=>(list&&list.length)?list.map(x=>`<div class="pdewrow"><span class="k">${x.name} <span style="color:var(--muted);font-size:11px">${x.code}</span></span><span class="vv">${x.pdew.toLocaleString()}</span></div>`).join(""):'<div class="fnote">None on the way.</div>';
     $("#behindTbl").innerHTML=tbl(dem.behind_pdew);

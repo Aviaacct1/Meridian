@@ -284,7 +284,7 @@ def _live_ctx():
 
 
 def _econ_block(each_way, aircraft, freq, home, dest_airport, gcd, econ_share, plan_lf,
-                econ_fare, bus_fare, fuel_price, carrier_type, weeks=52.0):
+                econ_fare, bus_fare, fuel_price, carrier_type, weeks=52.0, p2p_share=1.0, prorate=0.67):
     try:
         import route_engine as RE
         from aircraft_economics import AIRCRAFT, RoutePnL, AnnualRoutePnL
@@ -294,6 +294,15 @@ def _econ_block(each_way, aircraft, freq, home, dest_airport, gcd, econ_share, p
         b_lf = min((each_way * (1 - econ_share)) / b_yr if b_yr else 0, plan_lf)
         dist_nm = round(gcd / 1.852); bmin = round(RE.block_min(dist_nm))
         fare = econ_fare if (econ_fare and econ_fare > 0) else max(180, round(dist_nm * 0.11))
+        # PRORATE the connecting share: a connecting pax contributes LESS to THIS segment than a local one
+        # (the through fare is prorated across both legs and connecting itineraries are discounted). So value
+        # the connecting share at a fraction of the local fare, matching how an FSC books the flight. Default
+        # 0.67; alliances prorate differently, so it's exposed for adjustment. p2p_share=1 -> no change.
+        _psh = p2p_share if (p2p_share is not None) else 1.0
+        _mkt_fare, _mkt_bus = fare, bus_fare
+        _blend = _psh + (1.0 - _psh) * prorate
+        fare = fare * _blend
+        bus_fare = (bus_fare * _blend) if (bus_fare and bus_fare > 0) else bus_fare
         at = carrier_type if carrier_type in ("FSC", "LCC", "ULCC") else "LCC"
         fp_used = fuel_price if (fuel_price and fuel_price > 0) else 0.90
         rp = RoutePnL("New entrant", aircraft, home, dest_airport, dist_nm, bmin,
@@ -319,7 +328,9 @@ def _econ_block(each_way, aircraft, freq, home, dest_airport, gcd, econ_share, p
             "econ_fare": fare, "bus_fare": bus_fare, "freq": freq, "each_way": each_way,
         }
         return {"economics_ok": True, "economics": {
-            "econ_fare": fare, "econ_lf": round(e_lf, 3), "bus_lf": round(b_lf, 3), "spilled": round(spilled),
+            "econ_fare": fare, "market_fare": _mkt_fare, "effective_fare": round(fare),
+            "connecting_share": round(1.0 - _psh, 3), "prorate": prorate,
+            "econ_lf": round(e_lf, 3), "bus_lf": round(b_lf, 3), "spilled": round(spilled),
             "seats": ac["econ_seats"] + ac["bus_seats"], "revenue": y["gross_rev"],
             "fuel": y["fuel"], "maintenance": y["maintenance"], "crew": y["crew"],
             "ownership": y["ownership"] + y["insurance"],
@@ -557,7 +568,8 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
             econ_fare = round(float(_mkt_fare), 2)
     if with_econ:
         out.update(_econ_block(each_way, aircraft, freq, home, dest_airport, gcd, econ_share,
-                               plan_lf, econ_fare, bus_fare, fuel_price, ct, weeks=season_weeks))
+                               plan_lf, econ_fare, bus_fare, fuel_price, ct, weeks=season_weeks,
+                               p2p_share=r.get("p2p_share")))
     return out
 
 

@@ -265,7 +265,7 @@ def render_html(t, source_name):
 
     route_rows = "".join(
         f"<tr><td>{esc(r['route'])}</td><td>{esc(r['carrier'])}</td><td>{r['year']}</td>"
-        f"<td>{'forecastable' if r['forecastable'] else 'induced'}</td>"
+        f"<td>{'existing market' if r['forecastable'] else 'new market'}</td>"
         f"<td style='text-align:right'>{r['forecast']:,.0f}</td>"
         f"<td style='text-align:right'>{r['outturn']:,.0f}</td>"
         f"<td>{_verdict(r['ratio'])}</td></tr>"
