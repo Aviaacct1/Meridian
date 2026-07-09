@@ -244,13 +244,13 @@ def render_html(t, source_name):
     yrs = t["years"]
     yr_label = f"{min(yrs)}-{max(yrs)}" if yrs else "-"
     basis_note = {
-        "airport": f"Statistics are for the {t['basis_n']} forecastable routes at {a} itself.",
-        "peer": (f"{a} has {t['n_fore_here']} forecastable launches in the sample - too few for "
+        "airport": f"Statistics are for the {t['basis_n']} existing-market routes at {a} itself.",
+        "peer": (f"{a} has {t['n_fore_here']} existing-market launches in the sample - too few for "
                  f"a distribution of its own - so the headline statistics use the {t['basis_n']} "
-                 f"forecastable routes in its peer group ({', '.join(t['regions']) or 'same region'}). "
+                 f"existing-market routes in its peer group ({', '.join(t['regions']) or 'same region'}). "
                  f"{a}'s own routes are shown separately below."),
-        "global": (f"{a} has {t['n_fore_here']} forecastable launches in the sample - too few for "
-                   f"a distribution - so the headline statistics use the full forecastable sample. "
+        "global": (f"{a} has {t['n_fore_here']} existing-market launches in the sample - too few for "
+                   f"a distribution - so the headline statistics use the full existing-market sample. "
                    f"{a}'s own routes are shown separately below."),
     }[t["basis"]]
     counts, labels = t["hist"]
@@ -297,14 +297,14 @@ def render_html(t, source_name):
   <h1>{esc(name)} ({esc(a)})</h1>
   <div class="sub">Every new route launched at {esc(a)} in the graded sample, forecast the year
   before launch with no knowledge of the outcome, against the route's actual first-full-year
-  traffic. Launch years {yr_label}. Of the {t['n_here']} launches here, {t['n_fore_here']} are
-  <b>forecastable</b> (a market at least the route's size already existed) and {t['n_here']-t['n_fore_here']}
-  are <b>induced</b> (the route created a market history did not show); the headline below is the
-  forecastable set, the engine's real test, with induced listed separately lower down.
+  traffic. Launch years {yr_label}. Of the {t['n_here']} launches here, {t['n_fore_here']} were into
+  <b>existing markets</b> (the demand was already there before the route) and {t['n_here']-t['n_fore_here']}
+  into <b>brand-new markets</b> (the route created demand that didn't show before); the headline below is the
+  existing-market set, the engine's real test, with new-market routes listed separately lower down.
   <span class="badge">evidence file: {esc(source_name)}</span></div>
 
   <div class="card">
-    <h2 style="margin-top:0">The engine's real test: forecastable routes</h2>
+    <h2 style="margin-top:0">The engine's real test: routes into existing markets</h2>
     <div class="note">{esc(basis_note)}</div>
     {_tiles(t['stats_basis'])}
     <div style="margin-top:14px">{_svg_hist(counts, labels)}</div>
@@ -315,20 +315,20 @@ def render_html(t, source_name):
     <table>
       <tr><th>set</th><th>n</th><th>median</th><th>over/under</th><th>half within</th>
           <th>80% within</th><th>&plusmn;10%</th><th>&plusmn;20%</th><th>&plusmn;30%</th></tr>
-      {_stat_row(f"forecastable ({'this airport' if t['basis']=='airport' else 'peer group' if t['basis']=='peer' else 'all airports'})", t['stats_basis'])}
-      {_stat_row(f"forecastable at {esc(a)} only", t['stats_here']) if t['basis'] != 'airport' else ''}
-      {_stat_row(f"induced at {esc(a)} (route created the market)", t['stats_induced'])}
+      {_stat_row(f"existing markets ({'this airport' if t['basis']=='airport' else 'peer group' if t['basis']=='peer' else 'all airports'})", t['stats_basis'])}
+      {_stat_row(f"existing markets at {esc(a)} only", t['stats_here']) if t['basis'] != 'airport' else ''}
+      {_stat_row(f"new markets at {esc(a)} (route created the demand)", t['stats_induced'])}
     </table>
     <div class="note" style="margin-top:10px">
-      Forecastable = a market at least the route's eventual size already existed in booking data;
-      this is the honest test of a data-driven forecast. Induced = the route created a market
-      history did not show; forecasting those is the stimulation and judgement layer, shown
-      separately and not blended into the headline. Ratios are graded against the aircraft and
+      Existing market = demand at least the route's eventual size was already flying (mostly via connections
+      or nearby airports) before the route launched; this is the honest test of a data-driven forecast. New
+      market = the route created demand that wasn't visible before; forecasting those relies more on judgement,
+      so they're shown separately and not blended into the headline. Ratios are graded against the aircraft and
       frequency actually flown.</div>
   </div>
 
   <div class="card">
-    <h2 style="margin-top:0">Routes at {esc(a)} in the sample ({t['n_here']}: {t['n_fore_here']} forecastable + {t['n_here']-t['n_fore_here']} induced, newest first)</h2>
+    <h2 style="margin-top:0">Routes at {esc(a)} in the sample ({t['n_here']}: {t['n_fore_here']} existing-market + {t['n_here']-t['n_fore_here']} new-market, newest first)</h2>
     <table><tr><th>route</th><th>carrier</th><th>launched</th><th>class</th>
     <th style="text-align:right">forecast, year 1</th><th style="text-align:right">actually carried</th><th>how it landed</th></tr>
     {route_rows}</table>
@@ -393,20 +393,20 @@ def render_total(t, source_name):
   <div class="sub">Every new route in the graded sample, across all airports, forecast the year before
   launch with no knowledge of the outcome and graded against actual first-full-year traffic. Launch years
   {yr_label}. {t['n_all']:,} routes, {t['n_origins']} origin airports, {t['n_carriers']} carriers:
-  {t['n_fore']:,} forecastable (a market pre-existed) and {t['n_indu']:,} induced (the route created the
-  market). <span class="badge">evidence file: {esc(source_name)}</span></div>
+  {t['n_fore']:,} into existing markets (demand pre-existed) and {t['n_indu']:,} into new markets (the route
+  created the demand). <span class="badge">evidence file: {esc(source_name)}</span></div>
 
-  {_section("All launches (the whole book)", "Forecastable and induced combined: every route the engine forecast, graded against what it carried.", t['stats_all'], t['hist_all'])}
-  {_section("Forecastable (the engine's core test)", "A market at least the route's size already existed in the booking data; the honest test of a measured-market forecast.", t['stats_fore'], t['hist_fore'])}
-  {_section("Induced (new-market / stimulation layer)", "The route created a market history did not show; forecast from the capacity-anchored floor, not a measured market.", t['stats_indu'], t['hist_indu'])}
+  {_section("All launches (the whole book)", "Existing and new markets combined: every route the engine forecast, graded against what it carried.", t['stats_all'], t['hist_all'])}
+  {_section("Existing markets (the engine's core test)", "Demand at least the route's size was already flying before the route; the honest test of a data-driven forecast.", t['stats_fore'], t['hist_fore'])}
+  {_section("New markets (created by the route)", "The route created demand that wasn't visible before; forecast from the capacity-anchored floor, not a measured market.", t['stats_indu'], t['hist_indu'])}
 
   {_brk("By carrier type (all launches)", t['bytype'])}
   {_brk("By region (all launches)", t['byreg'])}
 
   <div class="note" style="margin-top:14px">
     Median forecast &divide; actual near 1.00 means unbiased; the within-bands and the &times;-factors show
-    the spread. Forecastable is the core engine test; induced is modelled from comparable launches, not a
-    measured market, and is shown so the whole book is visible. Indicative, for directional guidance;
+    the spread. Existing markets are the core engine test; new markets are modelled from comparable launches,
+    not a measured market, and are shown so the whole book is visible. Indicative, for directional guidance;
     per-route precision varies with market-data coverage.
   </div>
 </div></body></html>"""
@@ -432,7 +432,7 @@ a.back{{display:block;margin-bottom:10px;color:{ACCENT};text-decoration:none;fon
 at an airport, graded on actual outturn.</p>
 <form method="get"><input name="airport" placeholder="Airport IATA, e.g. LGW" autofocus>
 <button>Show the record</button></form>
-<p style="margin-top:14px">Or see the <a href="/trackrecord?airport=ALL" style="color:{ACCENT};font-weight:600;text-decoration:none">whole-engine record</a> across every airport, forecastable and induced.</p></div></body></html>"""
+<p style="margin-top:14px">Or see the <a href="/trackrecord?airport=ALL" style="color:{ACCENT};font-weight:600;text-decoration:none">whole-engine record</a> across every airport, existing and new markets.</p></div></body></html>"""
     rows = load_rows(src)
     t = airport_track(rows, airport)
     return render_html(t, os.path.basename(src))
