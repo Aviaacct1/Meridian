@@ -19,3 +19,13 @@ probe*.csv
 # secrets: never commit
 access_password.txt
 anthropic_key.txt
+
+# large regenerable data artefacts (kept on disk, out of git)
+*.joblib
+*_by_year.csv
+master_backtest*.csv
+bt_v3_routes.txt
+
+# runtime state / scratch previews (mutate every run)
+entry_counter.txt
+*_PREVIEW.html

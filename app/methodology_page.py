@@ -14,8 +14,18 @@ Offline test:  py -3.12 methodology_page.py > methodology_preview.html
 """
 import html as _html
 
-NAVY, ACCENT, MUT, BG = "#0b2545", "#1f6feb", "#5b6b7c", "#f5f7fa"
-GREEN, RED = "#1a7f4b", "#b3423a"
+# ---- The Observatory palette (restyle) ----
+INK, BRASS, BRASSD, SIGNAL = "#0F1B28", "#D4A249", "#A97C33", "#CE3B2A"
+PAPER, SCREEN, LINE = "#F6F3EC", "#FAF8F3", "#E2DCCC"
+BODY, INKTX = "#3A444E", "#26313B"
+NAVY, ACCENT, MUT, BG = INK, BRASS, "#6E6A5E", SCREEN
+GREEN, RED = "#5F8D7A", "#A9553F"   # waterfall: up = verdigris (adds), down = oxblood (reduces)
+SERIF, SANS, MONO = "'Newsreader',Georgia,serif", "'Inter',system-ui,sans-serif", "'IBM Plex Mono',monospace"
+FONT_LINK = ('<link rel="preconnect" href="https://fonts.googleapis.com">'
+  '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
+  '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?'
+  'family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;1,6..72,400'
+  '&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">')
 
 STEPS = [
     ("1", "Measure the whole market",
@@ -70,27 +80,31 @@ def _bridge_svg(bars):
     top = max(hi for _lo, hi in levels) or 1.0
     sy = (H - padt - padb) / top
     y = lambda v: H - padb - v * sy
-    out = [f'<svg viewBox="0 0 {W} {H}" style="width:100%;max-width:{W}px" '
-           f'font-family="Segoe UI,system-ui,sans-serif">']
-    out.append(f'<line x1="{padl}" y1="{y(0)}" x2="{W-padr}" y2="{y(0)}" stroke="#d7dee7"/>')
+    L0, R0, T0, B0 = padl, W - padr, padt, H - padb
+    out = [f'<svg viewBox="0 0 {W} {H}" style="width:100%;max-width:{W}px" font-family="{SANS}">']
+    # registration corner ticks (Observatory signature)
+    out.append(f'<g stroke="{INK}" stroke-width="1" fill="none">'
+               f'<path d="M{L0} {T0} h10 M{L0} {T0} v10"/><path d="M{R0} {T0} h-10 M{R0} {T0} v10"/>'
+               f'<path d="M{L0} {B0} h10 M{L0} {B0} v-10"/><path d="M{R0} {B0} h-10 M{R0} {B0} v-10"/></g>')
+    out.append(f'<line x1="{padl}" y1="{y(0)}" x2="{W-padr}" y2="{y(0)}" stroke="{INK}" stroke-width="1.2"/>')
     prev_end = None
     for i, ((label, sub, v, kind), (lo, hi)) in enumerate(zip(bars, levels)):
         x = padl + i * bw + 6
         w = bw - 12
-        col = {"start": NAVY, "total": ACCENT, "up": GREEN, "down": RED}[kind]
+        col = {"start": INK, "total": BRASS, "up": GREEN, "down": RED}[kind]
         out.append(f'<rect x="{x:.0f}" y="{y(hi):.0f}" width="{w:.0f}" '
-                   f'height="{max(2, (hi-lo)*sy):.0f}" rx="4" fill="{col}" opacity="0.9"/>')
+                   f'height="{max(2, (hi-lo)*sy):.0f}" fill="{col}"/>')
         if prev_end is not None:                          # connector
             out.append(f'<line x1="{x-6:.0f}" y1="{y(prev_end):.0f}" x2="{x:.0f}" '
-                       f'y2="{y(prev_end):.0f}" stroke="{MUT}" stroke-dasharray="3 3" opacity="0.6"/>')
+                       f'y2="{y(prev_end):.0f}" stroke="{MUT}" stroke-dasharray="3 3" opacity="0.7"/>')
         prev_end = hi if kind in ("start", "up", "total") else lo
         val = hi if kind in ("start", "total") else abs(v)
         sign = "" if kind in ("start", "total") else ("+" if kind == "up" else "−")
-        out.append(f'<text x="{x+w/2:.0f}" y="{y(hi)-6:.0f}" text-anchor="middle" font-size="12" '
-                   f'font-weight="700" fill="{NAVY}">{sign}{_fmt(val)}</text>')
-        out.append(f'<text x="{x+w/2:.0f}" y="{H-padb+18}" text-anchor="middle" font-size="11.5" '
-                   f'font-weight="600" fill="{NAVY}">{label}</text>')
-        out.append(f'<text x="{x+w/2:.0f}" y="{H-padb+33}" text-anchor="middle" font-size="10" '
+        out.append(f'<text x="{x+w/2:.0f}" y="{y(hi)-7:.0f}" text-anchor="middle" font-size="12.5" '
+                   f'font-family="{SERIF}" fill="{INK}">{sign}{_fmt(val)}</text>')
+        out.append(f'<text x="{x+w/2:.0f}" y="{H-padb+18}" text-anchor="middle" font-size="10.5" '
+                   f'font-weight="600" letter-spacing="0.04em" fill="{INK}">{label}</text>')
+        out.append(f'<text x="{x+w/2:.0f}" y="{H-padb+33}" text-anchor="middle" font-size="9.5" '
                    f'fill="{MUT}">{sub}</text>')
     out.append("</svg>")
     return "".join(out)
@@ -247,37 +261,43 @@ def render(last=None):
 
     return f"""<!doctype html><html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Methodology - Avia Cortex</title>
+<title>Methodology &middot; The Observatory · Meridian</title>
+{FONT_LINK}
 <style>
-  body{{font-family:Segoe UI,system-ui,-apple-system,sans-serif;background:{BG};color:#17222e;margin:0}}
-  .wrap{{max-width:1000px;margin:0 auto;padding:26px 18px 60px}}
-  h1{{color:{NAVY};font-size:24px;margin:6px 0 2px}} h2{{color:{NAVY};font-size:16px;margin:0 0 10px}}
-  .sub{{color:{MUT};font-size:13px}} .note{{color:{MUT};font-size:12.5px;line-height:1.5}}
-  .topnav{{display:flex;gap:14px;margin-bottom:10px;font-size:12.5px}}
-  .topnav a{{color:{ACCENT};text-decoration:none;font-weight:600}}
-  .card{{background:#fff;border:1px solid #e3e9f0;border-radius:12px;padding:20px;margin-top:14px}}
-  .step{{display:flex;gap:14px;padding:11px 0;border-bottom:1px solid #eef2f6}}
+  *{{box-sizing:border-box}}
+  body{{font-family:{SERIF};background:{SCREEN};color:{INKTX};margin:0;font-size:14.5px;line-height:1.6}}
+  .wrap{{max-width:1120px;margin:0 auto;padding:30px 28px 64px}}
+  h1{{font-family:{SERIF};font-weight:300;color:{INK};font-size:28px;margin:8px 0 4px}}
+  h2{{font-family:{SERIF};font-weight:500;color:{INK};font-size:18px;margin:0 0 10px}}
+  .sub{{font-family:{SERIF};color:{BODY};font-size:14px;line-height:1.55}}
+  .note{{font-family:{SERIF};color:{BODY};font-size:13px;line-height:1.6}}
+  .topnav{{display:flex;gap:18px;margin-bottom:14px;font-family:{SANS};font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:600}}
+  .topnav a{{color:{INK};text-decoration:none;border-bottom:1px solid {BRASS};padding-bottom:2px}}
+  .kicker{{font-family:{SANS};font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:{MUT};font-weight:600}}
+  .card{{background:{PAPER};border:1px solid {LINE};border-radius:2px;padding:22px;margin-top:16px}}
+  .step{{display:flex;gap:16px;padding:12px 0;border-bottom:1px solid {LINE}}}
   .step:last-child{{border-bottom:none}}
-  .n{{flex:0 0 30px;height:30px;border-radius:50%;background:{NAVY};color:#fff;display:flex;
-      align-items:center;justify-content:center;font-weight:700;font-size:13px}}
-  .st{{font-weight:700;color:{NAVY};font-size:13.5px}} .sd{{color:#3d4a58;font-size:12.5px;line-height:1.55;margin-top:2px}}
-  .legend{{display:flex;gap:16px;font-size:11px;color:{MUT};margin-top:6px;flex-wrap:wrap}}
-  .sw{{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}}
-  details summary{{cursor:pointer;font-size:14px;color:{NAVY}}}
-  .xstage{{margin-top:14px}} .xh{{font-weight:700;color:{NAVY};font-size:12.5px;margin-bottom:4px}}
-  .xtab{{border-collapse:collapse;width:100%;font-size:12px}}
-  .xtab th{{text-align:left;color:{MUT};font-weight:600;padding:4px 8px;border-bottom:1.5px solid #e3e9f0}}
-  .xtab td{{padding:4px 8px;border-bottom:1px solid #eef2f6;vertical-align:top}}
-  .xtab td.v{{font-weight:700;color:{NAVY};white-space:nowrap}} .xtab td.nt{{color:{MUT}}}
-  .tag{{display:inline-block;border-radius:99px;padding:1px 8px;font-size:10px;font-weight:700}}
-  .tag.measured{{background:#e8f1fd;color:{ACCENT}}} .tag.calibrated{{background:#eaf6ef;color:{GREEN}}}
-  .tag.physics{{background:#f4ecec;color:{RED}}} .tag.user{{background:#f0eefa;color:#6d5bd0}}
+  .n{{flex:0 0 30px;height:30px;background:{INK};color:{PAPER};display:flex;
+      align-items:center;justify-content:center;font-family:{SANS};font-weight:600;font-size:12px}}
+  .st{{font-family:{SERIF};font-weight:600;color:{INK};font-size:15px}} .sd{{font-family:{SERIF};color:{BODY};font-size:13.5px;line-height:1.6;margin-top:3px}}
+  .legend{{display:flex;gap:18px;font-family:{SANS};font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:{MUT};margin-top:10px;flex-wrap:wrap}}
+  .sw{{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}}
+  details summary{{cursor:pointer;font-family:{SERIF};font-size:15px;color:{INK}}}
+  .xstage{{margin-top:16px}} .xh{{font-family:{SANS};font-weight:600;color:{MUT};font-size:10px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px}}
+  .xtab{{border-collapse:collapse;width:100%;font-family:{SERIF};font-size:12.5px}}
+  .xtab th{{text-align:left;font-family:{SANS};font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:{MUT};font-weight:600;padding:6px 8px;border-bottom:1px solid {INK}}}
+  .xtab td{{padding:6px 8px;border-bottom:1px solid {LINE};vertical-align:top;color:{BODY}}}
+  .xtab td.v{{font-weight:500;color:{INK};white-space:nowrap;font-variant-numeric:tabular-nums lining-nums}} .xtab td.nt{{color:{MUT}}}
+  .tag{{display:inline-block;border:1px solid {LINE};border-radius:2px;padding:1px 8px;font-family:{SANS};font-size:9px;letter-spacing:.06em;text-transform:uppercase;font-weight:600}}
+  .tag.measured{{color:#3D6A88;border-color:#3D6A88}} .tag.calibrated{{color:#5F8D7A;border-color:#5F8D7A}}
+  .tag.physics{{color:#A9553F;border-color:#A9553F}} .tag.user{{color:#7B617F;border-color:#7B617F}}
+  :focus-visible{{outline:2px solid {BRASS};outline-offset:2px}}
 </style></head><body><div class="wrap">
   <div class="topnav"><a href="/">&larr; Route Forecasting</a>
-    <a href="/trackrecord">Track record</a></div>
-  <div class="sub">Avia Cortex &middot; how a forecast is built</div>
+    <a href="/trackrecord">Track Record</a></div>
+  <div class="kicker">The Observatory &middot; Meridian &middot; How a forecast is built</div>
   <h1>Methodology</h1>
-  <div class="sub">Every number in a Cortex forecast is either measured, calibrated against
+  <div class="sub">Every number in a Meridian forecast is either measured, calibrated against
   launched-route outcomes, or capped by physics - and each step below is visible in the output,
   so a client can challenge any of them. How well this process performs is published per airport
   on the <a href="/trackrecord">Track record</a> page.</div>

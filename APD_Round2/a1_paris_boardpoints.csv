@@ -1,0 +1,9 @@
+metro,board_point,ni_origin_departures_2025_pax,ni_bound_arrivals_2025_pax,nonstop_departures_2025_pax,connecting_departures_2025_pax,nonstop_share_pct,dublin_origin_departures_2025_pax
+Paris,CDG,64602,64645,60498,4103,93.6,238940
+Paris,BVA,7793,7038,6981,811,89.6,154295
+Paris,ORY,175,163,0,175,0.0,82175
+Paris,ALL,72571,71848,67479,5089,93.0,475410
+Barcelona,BCN,19987,19995,11904,8082,59.6,332172
+Barcelona,REU,32167,34029,32092,75,99.8,88543
+Barcelona,GRO,15172,15731,15028,143,99.1,38813
+Barcelona,ALL,67326,69755,59024,8300,87.7,459528

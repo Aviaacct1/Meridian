@@ -1,0 +1,11 @@
+route,aircraft,airline_type,econ_seats,load_factor,outbound_pax,one_way_base_fare_usd,duty_gbp,duty_usd,duty_capture_per_turn_usd,duty_as_pct_of_fare,basis
+BFS-CDG,A320,LCC,180,0.9,162,110.0,13.0,16.9,2464,15.4,one-way departures; duty on UK departure only
+BFS-CDG,A320,LCC,180,0.9,162,110.0,15.0,19.5,2843,17.7,one-way departures; duty on UK departure only
+BFS-CDG,A319,LCC,144,0.9,130,110.0,13.0,16.9,1971,15.4,one-way departures; duty on UK departure only
+BFS-CDG,A319,LCC,144,0.9,130,110.0,15.0,19.5,2274,17.7,one-way departures; duty on UK departure only
+BFS-CDG,B738,ULCC,189,0.94,178,110.0,13.0,16.9,2702,15.4,one-way departures; duty on UK departure only
+BFS-CDG,B738,ULCC,189,0.94,178,110.0,15.0,19.5,3118,17.7,one-way departures; duty on UK departure only
+BFS-BCN,A319,LCC,144,0.9,130,174.0,13.0,16.9,1971,9.7,one-way departures; duty on UK departure only
+BFS-BCN,A319,LCC,144,0.9,130,174.0,15.0,19.5,2274,11.2,one-way departures; duty on UK departure only
+BFS-BCN,B738,ULCC,189,0.94,178,174.0,13.0,16.9,2702,9.7,one-way departures; duty on UK departure only
+BFS-BCN,B738,ULCC,189,0.94,178,174.0,15.0,19.5,3118,11.2,one-way departures; duty on UK departure only

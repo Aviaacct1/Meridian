@@ -334,6 +334,14 @@ class RoutePnL:
     airline_type: str = "FSC"               # ULCC / LCC / FSC / Regional / Charter -> utilisation
     aircraft_age: float = 0.0               # years; scales lease/value down its age curve
     lease_share: float = OWNED_LEASE_SHARE  # share of fleet leased (rest owned); tunable
+    # --- airline-specific FIXED-COST overrides (Expert view): set the actual carrier's numbers instead of the
+    # carrier-type defaults. Any left None fall back to the modelled/type value, so this is purely additive.
+    ownership_per_bh_override: Optional[float] = None   # $/block-hour ownership or lease, replaces the model
+    crew_per_bh_override: Optional[float] = None        # $/block-hour crew, replaces the type baseline x mult
+    annual_util_bh_override: Optional[float] = None     # annual block hours, drives the insurance/ownership util
+    # --- Form 41 cost calibration (optional): anchor generic cost to the carrier's filed CASM ---
+    casm_benchmark_c: Optional[float] = None      # carrier system CASM, US cents/ASK (Form 41 + T1)
+    carrier_avg_stage_km: Optional[float] = None  # carrier avg stage length km, for the stage adjustment
 
     def _charges(self, code, override):
         """Resolved airport charges: override (current-year, e.g. RDC) wins;
@@ -403,29 +411,51 @@ class RoutePnL:
         # ownership: value/lease-based cost of capital, blended owned+leased, by airline-type
         # util and aircraft age (covered types); else the type's hand-set $/block-hour anchor.
         sector_bh_leg = self.block_min_oneway / 60.0      # block hours per leg -> sector util
-        own_per_bh, own_util = ownership_per_bh(self.aircraft, self.airline_type,
-                                                self.aircraft_age, sector_bh_leg, self.lease_share)
-        if own_per_bh is not None:
-            ownership = own_per_bh * bh
-            eff_util = own_util            # sector-driven util, used for the insurance line too
-            own_basis = (f"appraiser lease/value, {self.airline_type} util {own_util:,.0f} BH/yr "
-                         f"@ {sector_bh_leg:.1f}h sector, age {self.aircraft_age:.0f}, "
-                         f"{self.lease_share:.0%} leased = {own_per_bh:,.0f} $/BH")
+        if self.ownership_per_bh_override is not None:     # AIRLINE OVERRIDE wins
+            ownership = self.ownership_per_bh_override * bh
+            eff_util = self.annual_util_bh_override or ac["annual_util_bh"]
+            own_basis = f"airline override: {self.ownership_per_bh_override:,.0f} $/BH"
         else:
-            ownership = ac["ownership_per_bh"] * bh
-            eff_util = ac["annual_util_bh"]
-            own_basis = f"hand-set anchor: {ac['ownership_per_bh']:.0f} $/BH"
+            own_per_bh, own_util = ownership_per_bh(self.aircraft, self.airline_type,
+                                                    self.aircraft_age, sector_bh_leg, self.lease_share)
+            if own_per_bh is not None:
+                ownership = own_per_bh * bh
+                eff_util = self.annual_util_bh_override or own_util   # sector util, or the airline's override
+                own_basis = (f"appraiser lease/value, {self.airline_type} util {own_util:,.0f} BH/yr "
+                             f"@ {sector_bh_leg:.1f}h sector, age {self.aircraft_age:.0f}, "
+                             f"{self.lease_share:.0%} leased = {own_per_bh:,.0f} $/BH")
+            else:
+                ownership = ac["ownership_per_bh"] * bh
+                eff_util = self.annual_util_bh_override or ac["annual_util_bh"]
+                own_basis = f"hand-set anchor: {ac['ownership_per_bh']:.0f} $/BH"
         insurance = 0.01 * ac["price_usd"] * (bh / eff_util)
-        crew_mult = CREW_AIRLINE_MULT.get(self.airline_type, 1.0)
-        crew = ac["crew_per_bh"] * crew_mult * bh
-        crew_basis = (f"{ac['crew_per_bh']:.0f} $/BH FSC baseline x {crew_mult:.2f} "
-                      f"({self.airline_type}) = {ac['crew_per_bh'] * crew_mult:.0f} $/BH")
+        if self.crew_per_bh_override is not None:          # AIRLINE OVERRIDE wins
+            crew = self.crew_per_bh_override * bh
+            crew_basis = f"airline override: {self.crew_per_bh_override:,.0f} $/BH"
+        else:
+            crew_mult = CREW_AIRLINE_MULT.get(self.airline_type, 1.0)
+            crew = ac["crew_per_bh"] * crew_mult * bh
+            crew_basis = (f"{ac['crew_per_bh']:.0f} $/BH FSC baseline x {crew_mult:.2f} "
+                          f"({self.airline_type}) = {ac['crew_per_bh'] * crew_mult:.0f} $/BH")
         direct_fixed = ownership + insurance + crew
         # indirect fixed
         admin = self.overhead_pct * net_rev
         sales = self.sales_pct * net_rev
         indirect_fixed = admin + sales
         total_cost_standalone = variable + direct_fixed + indirect_fixed
+        # Form 41 calibration (optional): scale the generic cost to the carrier's FILED system CASM,
+        # adjusted to this route's stage length (CASM rises on shorter sectors, so a system average
+        # is stretched up on a short route and down on a long one). Inactive unless a benchmark is
+        # supplied, so default behaviour is unchanged.
+        casm_calibration = None; casm_target_c = None
+        _ask0 = (ac["econ_seats"] + ac["bus_seats"]) * self.distance_nm * NM_TO_KM * 2
+        if self.casm_benchmark_c and self.carrier_avg_stage_km and _ask0 > 0:
+            _rk = max(self.distance_nm * NM_TO_KM, 50.0)
+            casm_target_c = self.casm_benchmark_c * (self.carrier_avg_stage_km / _rk) ** 0.35
+            _model_c = total_cost_standalone / _ask0 * 100.0
+            if _model_c > 0:
+                casm_calibration = casm_target_c / _model_c
+                total_cost_standalone *= casm_calibration
         support = inc.support_per_turn if inc else 0.0
         incentive_value = waiver_value + support          # what the airport contributes
         # standalone = route on its own; with-incentive = airline's actual P&L given support
@@ -446,6 +476,7 @@ class RoutePnL:
                     variable=variable, ownership=ownership, insurance=insurance, crew=crew,
                     direct_fixed=direct_fixed, admin=admin, sales=sales, indirect_fixed=indirect_fixed,
                     total_cost=total_cost_standalone, profit=profit_standalone, margin=profit_standalone/gross_rev,
+                    casm_calibration=casm_calibration, casm_target_c=casm_target_c,
                     incentive_value=incentive_value, profit_with_incentive=profit_with_incentive,
                     margin_with_incentive=profit_with_incentive/gross_rev,
                     cost_per_seat=total_cost_standalone/seats, cask=cask, pax_turn=pax_turn,
@@ -492,6 +523,17 @@ def route_pnl_from_config(cfg, results=None, *, econ_fare_ow, bus_fare_ow,
     comes from cfg.flight_time_hrs (+ taxi); load factor defaults to the forecast LF."""
     lf = results.get('load_factor') if isinstance(results, dict) else None
     block = (getattr(cfg, 'flight_time_hrs', 0) or 0) * 60 + 15.0     # flight + taxi -> block
+    # optional: anchor cost to the carrier's Form 41 CASM (set AVIA_ECON_FORM41=1)
+    import os as _os
+    if _os.environ.get("AVIA_ECON_FORM41", "").strip().lower() in ("1", "true", "on", "yes"):
+        try:
+            import econ_benchmark
+            _bm = econ_benchmark.carrier_casm(getattr(cfg, 'airline_code', None)
+                                              or getattr(cfg, 'airline_name', None))
+            if _bm:
+                kw.setdefault('casm_benchmark_c', _bm[0]); kw.setdefault('carrier_avg_stage_km', _bm[1])
+        except Exception:
+            pass
     return RoutePnL(
         airline=getattr(cfg, 'airline_name', '') or getattr(cfg, 'airline_code', ''),
         aircraft=map_aircraft_code(aircraft or getattr(cfg, 'aircraft_type', '')),

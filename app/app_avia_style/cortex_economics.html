@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Avia Cortex: Economics</title>
+<style>
+  :root{
+    --navy:#1F3864; --navy-700:#16294A; --navy-900:#0E1B33;
+    --accent:#2F6BF0; --accent-soft:#EAF0FE;
+    --green:#0E9F6E; --green-soft:#E6F6EF; --amber:#C9781A; --amber-soft:#FBF0E0;
+    --red:#D84C4C; --red-soft:#FBEBEB;
+    --ink:#0F1C30; --body:#46566E; --muted:#8A97AB; --line:#E6EBF2;
+    --bg:#F4F7FB; --card:#FFFFFF;
+    --r:12px; --sh:0 1px 2px rgba(16,32,60,.04), 0 6px 20px rgba(16,32,60,.06);
+    --font:-apple-system,"Segoe UI",Roboto,system-ui,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font);background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;font-size:14px;line-height:1.45}
+  .app{display:grid;grid-template-columns:248px 1fr;min-height:100vh}
+  .side{background:var(--navy-900);color:#C8D3E6;display:flex;flex-direction:column;padding:22px 16px}
+  .brand{display:flex;align-items:center;gap:11px;padding:6px 8px 22px}
+  .brand .mark{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--accent),#5C8DF6);display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+  .brand .mark svg{width:18px;height:18px}
+  .brand .name{font-weight:700;letter-spacing:.3px;color:#fff;font-size:15px;line-height:1.1}
+  .brand .name small{display:block;font-weight:500;font-size:10.5px;letter-spacing:2px;color:#7E8FB0;margin-top:2px}
+  .navlbl{font-size:10.5px;letter-spacing:1.4px;text-transform:uppercase;color:#5F6F8E;margin:18px 8px 8px}
+  .nav a{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;color:#C8D3E6;text-decoration:none;font-size:13.5px;font-weight:500;cursor:pointer}
+  .nav a .ic{width:16px;height:16px;opacity:.85;flex:0 0 auto}
+  .nav a.active{background:rgba(47,107,240,.18);color:#fff}
+  .nav a.soft{color:#6C7C9B}
+  .nav a .soon{margin-left:auto;font-size:9.5px;letter-spacing:.6px;color:#6C7C9B;border:1px solid #2C3C5C;border-radius:20px;padding:1px 7px}
+  .side .foot{margin-top:auto;font-size:11px;color:#5F6F8E;padding:14px 8px 2px;border-top:1px solid #1C2A45}
+  .main{display:flex;flex-direction:column;min-width:0}
+  .top{height:62px;background:var(--card);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:16px;padding:0 28px}
+  .top .pill{margin-left:auto;font-size:12px;color:var(--body);background:var(--bg);border:1px solid var(--line);border-radius:20px;padding:6px 12px;font-weight:600}
+  .avatar{width:32px;height:32px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
+  .wrap{padding:26px 28px 44px;max-width:1240px;width:100%}
+  .head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:18px}
+  .head h1{font-size:25px;font-weight:700;letter-spacing:-.2px}
+  .head p{color:var(--body);font-size:13.5px;margin-top:4px}
+  .btn{background:var(--accent);color:#fff;border:none;border-radius:9px;padding:11px 18px;font-weight:600;font-size:13.5px;font-family:var(--font);cursor:pointer;box-shadow:0 2px 8px rgba(47,107,240,.28)}
+  .btn:disabled{opacity:.55;cursor:default}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh)}
+  .card .ch{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--line)}
+  .card .ch h3{font-size:15px;font-weight:700}
+  .card .ch .sub{font-size:12px;color:var(--muted)}
+  .cb{padding:18px}
+  .form{display:grid;grid-template-columns:repeat(12,1fr);gap:12px;align-items:end}
+  .fld{display:flex;flex-direction:column;gap:5px}
+  .fld label{font-size:10.5px;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);font-weight:700}
+  .fld input,.fld select{border:1px solid var(--line);border-radius:8px;padding:9px 11px;font-size:13.5px;font-family:var(--font);color:var(--ink);background:#fff;width:100%}
+  .fld input:focus,.fld select:focus{outline:none;border-color:var(--accent)}
+  .kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin:20px 0}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:15px 16px;box-shadow:var(--sh)}
+  .kpi .l{font-size:10.5px;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);font-weight:600}
+  .kpi .v{font-size:24px;font-weight:700;letter-spacing:-.5px;margin-top:6px}
+  .kpi .s{font-size:11.5px;color:var(--body);margin-top:4px}
+  .grid{display:grid;grid-template-columns:1.25fr 1fr;gap:16px}
+  .pl{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line);font-size:13px}
+  .pl .k{color:var(--body)} .pl .vv{font-weight:600;color:var(--ink)}
+  .pl.sec{margin-top:6px} .pl.sec .k{font-weight:700;color:var(--navy);text-transform:uppercase;font-size:11px;letter-spacing:.5px}
+  .pl.sub .k{font-weight:700;color:var(--ink)} .pl.sub .vv{font-weight:700}
+  .pl.tot{border-top:2px solid var(--navy);border-bottom:none;margin-top:4px;padding-top:9px}
+  .pl.tot .k{font-weight:700;color:var(--ink)} .pl.tot .vv{font-weight:800;font-size:15px}
+  .neg .vv{color:var(--red)}
+  .brow{display:flex;align-items:center;gap:10px;margin:9px 0}
+  .brow .bl{width:150px;font-size:12px;color:var(--body);flex:0 0 auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .brow .bt{flex:1;background:var(--bg);border-radius:6px;height:18px;overflow:hidden}
+  .brow .bf{height:100%;border-radius:6px;background:var(--navy)}
+  .brow .bv{width:74px;font-size:11.5px;font-weight:700;color:var(--ink);flex:0 0 auto;text-align:right}
+  .mini{display:grid;grid-template-columns:1fr 1fr;gap:8px 18px;margin-top:4px}
+  .mini .r{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line);font-size:12.5px}
+  .mini .r .k{color:var(--body)} .mini .r .v{font-weight:700;color:var(--ink)}
+  .fnote{font-size:12px;color:var(--body);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-top:16px;line-height:1.5}
+  .spinner{width:14px;height:14px;border:2px solid rgba(255,255,255,.5);border-top-color:#fff;border-radius:50%;display:inline-block;animation:sp .7s linear infinite;margin-right:7px;vertical-align:-2px}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .hidden{display:none!important}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="brand">
+      <span class="mark"><svg viewBox="0 0 24 24" fill="none"><path d="M3 12c4 0 5-7 9-7s5 14 9 7" stroke="#fff" stroke-width="2.1" stroke-linecap="round"/></svg></span>
+      <span class="name">Avia&nbsp;Cortex<small>INTELLIGENCE PLATFORM</small></span>
+    </div>
+    <div class="navlbl">Route Forecasting</div>
+    <nav class="nav">
+      <a href="/"><span class="ic">▥</span> Dashboard</a>
+      <a href="/?mode=expert"><span class="ic">✦</span> Expert mode</a>
+      <a href="/catchment"><span class="ic">◎</span> Catchment</a>
+      <a class="active" href="/economics"><span class="ic">▤</span> Economics</a>
+      <a class="soft"><span class="ic">⛁</span> Data &amp; schedules</a>
+      <a href="/help"><span class="ic">?</span> Help</a>
+    </nav>
+    <div class="navlbl">Cortex products</div>
+    <nav class="nav">
+      <a class="active" href="/"><span class="ic">✈</span> Route Forecasting</a>
+      <a class="soft"><span class="ic">⌖</span> Airport Forecasts <span class="soon">SOON</span></a>
+      <a class="soft"><span class="ic">◍</span> Global Forecasts <span class="soon">SOON</span></a>
+      <a class="soft"><span class="ic">◴</span> Design Day Schedule Forecasts <span class="soon">SOON</span></a>
+    </nav>
+    <div class="foot">Powered by Avia&nbsp;Cortex · prototype</div>
+  </aside>
+
+  <div class="main">
+    <div class="top">
+      <span class="pill">Route economics in detail</span>
+      <div class="avatar">JC</div>
+    </div>
+
+    <div class="wrap">
+      <div class="head">
+        <div>
+          <h1>Economics</h1>
+          <p>The full turnaround profit and loss, annual view and cost stack for a route, at the calibrated demand.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="ch"><div><h3>Route</h3><div class="sub">Set the service; economics run at the forecast demand and default fares.</div></div></div>
+        <div class="cb">
+          <div class="form">
+            <div class="fld" style="grid-column:span 3"><label>Origin</label><input id="origin" placeholder="e.g. Genoa or GOA" value="Genoa"></div>
+            <div class="fld" style="grid-column:span 3"><label>Destination</label><input id="dest" placeholder="e.g. New York or JFK" value="New York"></div>
+            <div class="fld" style="grid-column:span 2"><label>Airline (IATA)</label><input id="airline" placeholder="e.g. BA" value=""></div>
+            <div class="fld" style="grid-column:span 2"><label>Carrier type</label>
+              <select id="ctype"><option value="FSC">Full service</option><option value="LCC">Low cost</option><option value="ULCC">Ultra low cost</option></select></div>
+            <div class="fld" style="grid-column:span 2"><label>Freq / week</label><input id="freq" type="number" min="1" max="35" value="7"></div>
+            <div class="fld" style="grid-column:span 3"><label>Aircraft</label><select id="aircraft"></select></div>
+            <div class="fld" style="grid-column:span 9;justify-content:flex-end"><button class="btn" id="run">Run economics</button></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="err" class="fnote hidden" style="border-color:var(--red);color:var(--red)"></div>
+
+      <div id="results" class="hidden">
+        <div class="kpis">
+          <div class="kpi"><div class="l">Profit / rotation</div><div class="v" id="k_prot">-</div><div class="s">out and back</div></div>
+          <div class="kpi"><div class="l">Operating margin</div><div class="v" id="k_marg">-</div><div class="s" id="k_marg_s"></div></div>
+          <div class="kpi"><div class="l">Breakeven load</div><div class="v" id="k_be">-</div><div class="s" id="k_be_s"></div></div>
+          <div class="kpi"><div class="l">Annual profit</div><div class="v" id="k_ann">-</div><div class="s" id="k_ann_s"></div></div>
+          <div class="kpi"><div class="l">Aircraft required</div><div class="v" id="k_ac">-</div><div class="s">frames of flying</div></div>
+        </div>
+
+        <div class="grid">
+          <div class="card">
+            <div class="ch"><div><h3>Turnaround profit and loss</h3><div class="sub" id="plSub">per rotation, out and back</div></div></div>
+            <div class="cb"><div id="pl"></div></div>
+          </div>
+          <div>
+            <div class="card">
+              <div class="ch"><div><h3>Cost stack</h3><div class="sub">share of total operating cost</div></div></div>
+              <div class="cb"><div id="stack"></div></div>
+            </div>
+            <div class="card" style="margin-top:16px">
+              <div class="ch"><div><h3>Load, yield and fleet</h3></div></div>
+              <div class="cb"><div class="mini" id="mini"></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="fnote" id="foot"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const $=s=>document.querySelector(s);
+function money(n){const v=Math.round(n||0);return (v<0?'-$':'$')+Math.abs(v).toLocaleString('en-GB');}
+function fmtN(n){return Math.round(n||0).toLocaleString('en-GB');}
+
+fetch('/api/aircraft').then(r=>r.json()).then(d=>{
+  const sel=$('#aircraft'); const list=(d&&d.aircraft)||d||[];
+  const arr=Array.isArray(list)?list:Object.keys(list);
+  sel.innerHTML=arr.map(a=>{const code=(typeof a==='string')?a:(a.code||a.value);
+    const name=(typeof a==='string')?a:(a.name||a.label||a.code); return `<option value="${code}">${name}</option>`;}).join('');
+  if([...sel.options].some(o=>o.value==='A21X')) sel.value='A21X';
+}).catch(()=>{ $('#aircraft').innerHTML='<option value="A21X">A321 (long range)</option>'; });
+
+function render(d){
+  if(!d||!d.ok){ $('#err').textContent=(d&&(d.error||d.economics_error))||'forecast failed'; $('#err').classList.remove('hidden'); $('#results').classList.add('hidden'); return; }
+  if(!d.economics_ok||!d.economics){ $('#err').textContent='Economics unavailable: '+(d.economics_error||'check the aircraft type'); $('#err').classList.remove('hidden'); $('#results').classList.add('hidden'); return; }
+  $('#err').classList.add('hidden');
+  const e=d.economics, y=e.raw||{}, cap=d.capacity||{}, dem=d.demand||{};
+  const freq=cap.freq||e.cost_model.freq||7;
+  const prof=e.profit||y.profit||0;
+  $('#k_prot').textContent=money(prof); $('#k_prot').style.color=prof>=0?'var(--navy)':'var(--red)';
+  $('#k_marg').textContent=((e.margin||0)*100).toFixed(1)+'%';
+  $('#k_marg_s').textContent=money(e.revenue||y.gross_rev)+' revenue / rotation';
+  $('#k_be').textContent=Math.round((e.breakeven_lf||0)*100)+'%';
+  const load=cap.load!=null?Math.round(cap.load*100):null;
+  $('#k_be_s').textContent=load!=null?('planned load '+load+'%'):'';
+  const ann=e.annual_profit||0;
+  $('#k_ann').textContent=money(ann); $('#k_ann').style.color=ann>=0?'var(--navy)':'var(--red)';
+  $('#k_ann_s').textContent=freq+'x/week, both ways';
+  $('#k_ac').textContent=(e.aircraft_required!=null)?(Math.round(e.aircraft_required*100)/100):'-';
+
+  // full turnaround P&L from raw line items
+  const rev=[['Passenger revenue (net)', y.net_rev],['Cargo', y.cargo_rev],['Charges recovery', y.charges_recovery]];
+  const cost=[['Fuel', y.fuel],['Maintenance', y.maintenance],['Crew', y.crew],['Ownership', y.ownership],
+    ['Insurance', y.insurance],['Landing', y.landing],['Passenger charges', y.per_pax],['Ground handling', y.handling],
+    ['En-route navigation', y.nav],['Catering', y.catering],['Admin', y.admin],['Sales', y.sales]];
+  let h='<div class="pl sec"><span class="k">Revenue</span><span class="vv"></span></div>';
+  rev.forEach(r=>{ if(r[1]!=null) h+=`<div class="pl"><span class="k">${r[0]}</span><span class="vv">${money(r[1])}</span></div>`; });
+  h+=`<div class="pl sub"><span class="k">Gross revenue</span><span class="vv">${money(y.gross_rev||e.revenue)}</span></div>`;
+  h+='<div class="pl sec"><span class="k">Operating cost</span><span class="vv"></span></div>';
+  cost.forEach(r=>{ if(r[1]!=null) h+=`<div class="pl neg"><span class="k">${r[0]}</span><span class="vv">${money(-Math.abs(r[1]))}</span></div>`; });
+  h+=`<div class="pl sub neg"><span class="k">Total operating cost</span><span class="vv">${money(-Math.abs(y.total_cost||e.total_cost))}</span></div>`;
+  h+=`<div class="pl tot"><span class="k">Operating profit per rotation</span><span class="vv" style="color:${prof>=0?'var(--green)':'var(--red)'}">${money(prof)}</span></div>`;
+  $('#pl').innerHTML=h;
+
+  // cost stack, grouped
+  const groups=[['Fuel', y.fuel],['Maintenance', y.maintenance],['Crew', y.crew],
+    ['Ownership & insurance', (y.ownership||0)+(y.insurance||0)],
+    ['Airport & en-route', (y.landing||0)+(y.per_pax||0)+(y.handling||0)+(y.nav||0)],
+    ['Catering', y.catering],['Overhead & sales', (y.admin||0)+(y.sales||0)]];
+  const tc=y.total_cost||e.total_cost||groups.reduce((s,g)=>s+(g[1]||0),0)||1;
+  const mx=Math.max(...groups.map(g=>g[1]||0))||1;
+  $('#stack').innerHTML=groups.filter(g=>g[1]).sort((a,b)=>b[1]-a[1]).map(g=>{
+    const w=Math.round((g[1]/mx)*100), pc=Math.round((g[1]/tc)*100);
+    return `<div class="brow"><div class="bl">${g[0]}</div><div class="bt"><div class="bf" style="width:${w}%"></div></div><div class="bv">${pc}% · ${money(g[1])}</div></div>`;
+  }).join('');
+
+  // load, yield, fleet
+  const pax=y.pax_turn||0, seats=e.seats||0;
+  const overall=seats?Math.round((pax/(2*seats))*100):null;
+  const revpax=pax?(e.revenue||y.gross_rev)/pax:0;
+  const mini=[['Passengers / rotation', fmtN(pax)],['Seats (both cabins)', fmtN(seats)],
+    ['Overall load factor', overall!=null?overall+'%':'-'],['Economy load', Math.round((e.econ_lf||0)*100)+'%'],
+    ['Business load', Math.round((e.bus_lf||0)*100)+'%'],['Spilled demand / yr', fmtN(e.spilled)],
+    ['Economy fare (one-way)', money(e.econ_fare)],['Revenue per passenger', money(revpax)],
+    ['Total forecast, each way', fmtN(dem.total)],['Carried each way', fmtN(cap.carried)]];
+  $('#mini').innerHTML=mini.map(r=>`<div class="r"><span class="k">${r[0]}</span><span class="v">${r[1]}</span></div>`).join('');
+
+  $('#foot').innerHTML=`Economics for <b>${(d.origin&&d.origin.city)||''} to ${(d.dest&&d.dest.city)||''}</b> on <b>${cap.aircraft||''}</b> at ${freq}x/week, `+
+    `run at the calibrated forecast of ${fmtN(dem.total)} each way. Maintenance is sector-aware from validated Airbus reserves; ownership is a blended owned and leased cost of capital by airline type and age. Indicative, directional guidance.`;
+  $('#results').classList.remove('hidden');
+}
+
+function run(){
+  const o=$('#origin').value.trim(), dd=$('#dest').value.trim();
+  if(!o||!dd){ $('#err').textContent='enter an origin and destination'; $('#err').classList.remove('hidden'); return; }
+  const btn=$('#run'); btn.disabled=true; btn.innerHTML='<span class="spinner"></span>Running…';
+  const q=new URLSearchParams({origin:o,dest:dd,airline:$('#airline').value.trim(),
+    carrier_type:$('#ctype').value,aircraft:$('#aircraft').value,freq:$('#freq').value||7,econ:'true'});
+  fetch('/api/forecast?'+q).then(r=>r.json()).then(render).catch(e=>{ $('#err').textContent=String(e.message||e); $('#err').classList.remove('hidden'); })
+  .finally(()=>{ btn.disabled=false; btn.textContent='Run economics'; });
+}
+$('#run').onclick=run;
+$('#origin').addEventListener('keydown',e=>{if(e.key==='Enter')run();});
+$('#dest').addEventListener('keydown',e=>{if(e.key==='Enter')run();});
+setTimeout(run, 400);
+</script>
+</body>
+</html>

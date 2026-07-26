@@ -1,0 +1,9 @@
+metric,uk,ireland,unit,source
+resident_departures_to_north_america_2025,6007901,1074191,one-way departures,Sabre
+population_2025,69487000,5458600,persons,ONS mid-2025 provisional / CSO April 2025
+departures_per_head,0.0865,0.1968,departures per head per year,derived
+ratio_ireland_to_uk,,2.28,x,derived
+resident_na_departing_dublin_2025,1862,894682,one-way departures,Sabre
+share_of_resident_na_via_dublin_pct,0.03,83.3,percent,derived
+implied_at_uk_equivalent_propensity,,472169,one-way departures,derived
+excess_over_uk_equivalent_propensity,,602022,one-way departures,derived (upper bound only)

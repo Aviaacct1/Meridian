@@ -42,7 +42,15 @@ def candidates(distance_km, fleet=None, airline_iata=None, margin=1.03):
     explicit fleet -> airline fleet -> all in-range. margin keeps a small range cushion."""
     from aircraft_economics import AIRCRAFT
     pool = fleet or (FLEET_BY_AIRLINE.get((airline_iata or "").upper()) if airline_iata else None) or list(AIRCRAFT)
-    return [c for c in pool if c in AIRCRAFT and AIRCRAFT[c]["range_km"] >= distance_km * margin]
+    inrange = [c for c in pool if c in AIRCRAFT and AIRCRAFT[c]["range_km"] >= distance_km * margin]
+    # SECTOR REALISM: a widebody has no commercial place on a short/medium sector a narrowbody can fly, however
+    # much profit a profit-max search claims from big demand (a 777 on San Jose-Boston is not a real option).
+    # Only offer widebodies on genuine long-haul (>~6500 km), or when nothing narrower is range-feasible.
+    if distance_km < 6500:
+        narrow = [c for c in inrange if "Widebody" not in (AIRCRAFT[c].get("category") or "")]
+        if narrow:
+            return narrow
+    return inrange
 
 
 def evaluate(code, distance_nm, demand_each_way, freq, plan_lf=0.85, econ_share=0.85,
