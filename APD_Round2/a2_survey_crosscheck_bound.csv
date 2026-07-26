@@ -1,0 +1,7 @@
+component,value_2025,note
+sabre_gb_resident_air_arrivals_ireland,4144695,Sabre; air only
+cso_gb_overnight_visitors,2411200,CSO Passenger Survey; air AND sea; excludes NI residents
+cso_transfers_all_nationalities,866200,CSO; same-day transfer passengers; not GB-specific
+cso_other_same_day_all_nationalities,249000,CSO; same-day non-transfer; not GB-specific
+maximum_cso_attributable_to_gb,3526400,overnight + ALL transfers + ALL other same-day allocated to GB (over-allocation)
+unexplained_residual_lower_bound,618295,Sabre air arrivals less the maximum CSO-attributable figure

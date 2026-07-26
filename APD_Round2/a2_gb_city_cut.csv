@@ -1,0 +1,23 @@
+level,region_or_airport,airports,gb_resident_total_outbound_2025,to_dublin_nonstop_2025,dublin_rate_pct,us_canada_total_2025,us_canada_nonstop_2025,us_direct_share_pct,basis
+region,London,"LHR,LGW,STN,LTN,LCY,SEN",52634929,1312136,2.49,4107873,3176649,77.3,one-way departures
+region,North West,"MAN,LPL",14875293,559082,3.76,611599,333479,54.5,one-way departures
+region,Scotland,"EDI,GLA,ABZ,INV,PIK",10813845,470213,4.35,503562,133990,26.6,one-way departures
+region,Midlands,"BHX,EMA",6430266,334869,5.21,52423,6084,11.6,one-way departures
+region,South West and Wales,"BRS,CWL,SOU",4735661,230754,4.87,37714,29,0.08,one-way departures
+region,Yorkshire and North East,"LBA,NCL",3999809,229322,5.73,93856,6734,7.2,one-way departures
+airport,London Heathrow,LHR,19207091,391430,2.04,3506008,2655209,75.7,one-way departures
+airport,London Gatwick,LGW,14915851,343797,2.30,579025,520857,90.0,one-way departures
+airport,Manchester,MAN,12672591,372651,2.94,607485,333434,54.9,one-way departures
+airport,London Stansted,STN,10015409,342346,3.42,3876,532,13.7,one-way departures
+airport,London Luton,LTN,6875267,153343,2.23,86,51,59.0,one-way departures
+airport,Edinburgh,EDI,6170828,275037,4.46,301994,109711,36.3,one-way departures
+airport,Birmingham,BHX,5084188,276541,5.44,52418,6084,11.6,one-way departures
+airport,Bristol,BRS,4095537,172015,4.20,16014,18,0.1,one-way departures
+airport,Glasgow,GLA,3158144,174338,5.52,135822,24267,17.9,one-way departures
+airport,Liverpool,LPL,2202702,186431,8.46,4114,45,1.1,one-way departures
+airport,Newcastle,NCL,2179819,83293,3.82,78489,6687,8.5,one-way departures
+airport,Leeds Bradford,LBA,1819990,146029,8.02,15367,47,0.3,one-way departures
+airport,London City,LCY,1310280,81220,6.20,18878,0,0.0,one-way departures
+airport,Aberdeen,ABZ,825810,20838,2.52,47484,2,0.0,one-way departures
+airport,Southampton,SOU,390313,26279,6.73,13349,3,0.0,one-way departures
+airport,Cardiff,CWL,249811,32460,12.99,8351,8,0.1,one-way departures

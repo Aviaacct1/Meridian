@@ -357,7 +357,7 @@ def asif_forecast(route, oag, sabre, served_cache, wby, stimulation=1.15, radius
     """The tool's forecast, standing the year before launch, via the rebuilt connected loop
     (route_forecast): measured wide market (Y-1 Sabre) x QSI share (Y-1 OAG + the proposed nonstop)
     x stimulation, capped by the route's ACTUAL operated capacity (OAG launch year)."""
-    import route_forecast as RF, geo_resolve as GEO, route_engine as RE, oag_served as OAS
+    import route_forecast as RF, geo_resolve as GEO, route_engine as RE, oag_served as OAS, od_source
     import sabre_catchment as SC
     Y = route["year"]; dep = route["dep"]; arr = route["arr"]
     asif_week = sorted(wby.get(Y - 1) or wby.get(Y))[0]
@@ -410,7 +410,7 @@ def asif_forecast(route, oag, sabre, served_cache, wby, stimulation=1.15, radius
     # otherwise; a real forecast projects growth, we just weren't feeding the term.
     def _mkt(yr):
         try:
-            return SC.destination_market_split(sabre, competing, dest_codes, year=yr)[1] or 0.0
+            return od_source.market_split(sabre, competing, dest_codes, year=yr)[1] or 0.0
         except Exception:
             return 0.0
     m1, m3 = _mkt(Y - 1), _mkt(Y - 3)
@@ -494,6 +494,26 @@ def _worker_init(cfg):
         _SUMMER_WEEKS = cfg["summer_weeks"]
     if cfg.get("winter_weeks") is not None:
         _WINTER_WEEKS = cfg["winter_weeks"]
+    if cfg.get("fy_capacity"):
+        # per-process swap of the capacity + served-index readers to the full-year monthly provider,
+        # so both the serial path and every pool worker read true operated capacity. Additive; only
+        # active under --fy-capacity. See fy_capacity.py / FY_CAPACITY_WIRING.md.
+        import fy_capacity as FY
+        global _operated, _served_for_week
+        _mby = cfg.get("wby") or {}
+
+        def _served_for_week(oag, week, cache):          # noqa: F811  (fy override)
+            y = int(str(week)[:4])
+            if y not in cache:
+                cache[y] = FY.build_served_index_fy(oag, y, _mby.get(y) or [])
+            return cache[y]
+
+        def _operated(oag, weeks, dep, arr):             # noqa: F811  (fy override)
+            y = int(str(weeks[0])[:4]) if weeks else None
+            if not y:
+                return 0.0, 0.0, 0.0, "na"
+            c = FY.route_capacity_fy(oag, dep, arr, y, weeks)
+            return c["annual_cap"], c["freq"], c["gcd"], c["service"]
 
 
 def _forecast_route(r):
@@ -708,6 +728,11 @@ def main():
                     help="crash-safe resume: rows are written to --out as each route finishes (not just at "
                          "the end), and on restart the routes already in --out are skipped. Use for any long "
                          "run so an interruption never restarts from scratch.")
+    ap.add_argument("--fy-capacity", action="store_true",
+                    help="full-year operated capacity from monthly OAG (fy_capacity module) instead of the "
+                         "two-week snapshot annualisation: sum of monthly seats_total, no x52, no "
+                         "seats_total*frequency double-count. Clean set = Europe/Asia 2015-18 + all 2019 H1. "
+                         "Additive and gated; off = shipped behaviour.")
     ap.add_argument("--induced-floor", action="store_true",
                     help="INDUCED model (LCC/ULCC only): where the measured market is far below deployed "
                          "capacity (a new market the low fare will stimulate), floor demand at capacity x "
@@ -778,6 +803,14 @@ def main():
     if not os.path.exists(a.sabre):
         print(f"Sabre store not found: {a.sabre}"); return
 
+    if a.fy_capacity:
+        # swap the period source to monthly labels so discovery, the survival filter and asif_forecast
+        # all read full-year operated capacity (see fy_capacity, FY_CAPACITY_WIRING.md). Global swap so
+        # discover_new_routes' internal weeks_by_year() call picks it up too. _operated / _served_for_week
+        # are swapped per process in _worker_init.
+        import fy_capacity as FY
+        globals()["weeks_by_year"] = FY.months_by_year
+        print("FY-CAPACITY ON: monthly operated capacity (no x52, no double-count)")
     wby = weeks_by_year(a.oag)
     print(f"OAG years: {sorted(wby)}")
     # PIN by storing the filtered route records and BYPASSING discovery when the pin exists. Route
@@ -869,7 +902,8 @@ def main():
            "summer_weeks": a.summer_weeks, "winter_weeks": a.winter_weeks,
            "market_factor": market_factor, "season_grade": a.season_grade,
            "induced_floor": a.induced_floor, "nonstop_share": a.nonstop_share,
-           "decompose": a.decompose, "airport_factors": _airport_factors}
+           "decompose": a.decompose, "airport_factors": _airport_factors,
+           "fy_capacity": a.fy_capacity}
     # make sure the --out directory exists, so a long run never dies at the final write (e.g. a fresh
     # E:\Avia\QSI\backtests path). Created up front so --resume streaming also has somewhere to write.
     _outdir = os.path.dirname(os.path.abspath(a.out))

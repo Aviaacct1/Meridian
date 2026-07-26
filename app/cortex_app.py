@@ -68,7 +68,7 @@ S = {}
 import base64
 import hmac
 from starlette.responses import Response as _Response
-_REALM = "Avia Cortex"
+_REALM = "The Observatory · Meridian"
 
 
 def _load_password():
@@ -87,23 +87,140 @@ def _load_password():
 ACCESS_PASSWORD = _load_password()
 print("access: shared password ON (HTTP Basic Auth)." if ACCESS_PASSWORD
       else "NO PASSWORD SET - server is OPEN.")
+# DEMO ENTRY: when on (default), the branded sign-in is a look-and-feel facade - any visitor proceeds through to the
+# app, even if a shared password is configured, so testers get the entry experience. Set QSI_DEMO_ENTRY=0 to make the
+# sign-in enforce the real password instead. (Origin access control for a public deployment is Cloudflare's job.)
+DEMO_ENTRY = os.environ.get("QSI_DEMO_ENTRY", "1").strip().lower() not in ("0", "false", "off", "no")
+print(f"entry: DEMO sign-in {'ON (any details proceed)' if DEMO_ENTRY else 'OFF (password required)'}.")
+
+
+_ENTRY_PATHS = {"/signin", "/signout", "/loading", "/error", "/favicon.ico"}
+
+
+def _session_token():
+    return hmac.new(ACCESS_PASSWORD.encode(), b"obs-meridian-session", "sha256").hexdigest() if ACCESS_PASSWORD else ""
+
+
+def _valid_session(tok):
+    return bool(ACCESS_PASSWORD) and bool(tok) and hmac.compare_digest(tok, _session_token())
 
 
 @app.middleware("http")
-async def _basic_auth(request: Request, call_next):
-    if ACCESS_PASSWORD:
-        hdr = request.headers.get("authorization", "")
-        ok = False
-        if hdr.startswith("Basic "):
-            try:
-                raw = base64.b64decode(hdr[6:].strip()).decode("utf-8", "replace")
-                ok = hmac.compare_digest(raw.partition(":")[2], ACCESS_PASSWORD)
-            except Exception:
-                ok = False
-        if not ok:
-            return _Response(status_code=401,
-                             headers={"WWW-Authenticate": f'Basic realm="{_REALM}"'})
+async def _gate(request: Request, call_next):
+    path = request.url.path
+    open_path = path in _ENTRY_PATHS or path.startswith("/static/entry/")   # the entry screens + their photography
+    is_html_get = request.method == "GET" and "text/html" in request.headers.get("accept", "")
+    # 1) SECURITY gate - only bites when a shared password is configured. Session cookie OR Basic Auth (fallback).
+    if ACCESS_PASSWORD and not open_path:
+        if not _valid_session(request.cookies.get("obs_session", "")):
+            ok = False
+            hdr = request.headers.get("authorization", "")
+            if hdr.startswith("Basic "):
+                try:
+                    raw = base64.b64decode(hdr[6:].strip()).decode("utf-8", "replace")
+                    ok = hmac.compare_digest(raw.partition(":")[2], ACCESS_PASSWORD)
+                except Exception:
+                    ok = False
+            if not ok:
+                if is_html_get:
+                    return RedirectResponse("/signin", status_code=302)
+                return _Response(status_code=401, headers={"WWW-Authenticate": f'Basic realm="{_REALM}"'})
+    # 2) PRESENTATION gate - ALWAYS on, even with no password. The first HTML app page a visitor hits shows the
+    #    branded sign-in, so demo testers get the look and feel and click through to the app (see /signin POST).
+    if not open_path and is_html_get and not request.cookies.get("obs_entered"):
+        return RedirectResponse("/signin", status_code=302)
     return await call_next(request)
+
+
+# ---- Meridian branded entry screens (sign-in / welcome / loading / error), wired to real state ----
+import cortex_entry as ENTRY
+from collections import deque
+_ENTRY_COUNTER = os.path.join(os.path.dirname(os.path.abspath(__file__)), "entry_counter.txt")
+RECENT_RUNS = deque(maxlen=6)
+
+
+def _forecast_count():
+    try:
+        return int((open(_ENTRY_COUNTER).read().strip() or "0"))
+    except Exception:
+        return 0
+
+
+def _record_run(origin, dest, season="annual", status="COMPLETE"):
+    try:
+        open(_ENTRY_COUNTER, "w").write(str(_forecast_count() + 1))
+    except Exception:
+        pass
+    try:
+        meta = {"annual": "YEAR-ROUND", "summer": "SUMMER 2026", "winter": "WINTER 2026/27"}.get(season, "YEAR-ROUND")
+        RECENT_RUNS.appendleft({"route": f"{(origin or '').upper()} → {(dest or '').upper()}", "meta": meta, "status": status})
+    except Exception:
+        pass
+
+
+def _entry_stats():
+    return {"forecasts_run": f"{_forecast_count():,}", "recents": list(RECENT_RUNS)}
+
+
+@app.get("/signin", response_class=HTMLResponse)
+def signin_page(next: str = "/welcome", err: int = 0):
+    return HTMLResponse(ENTRY.signin(forecasts_run=_entry_stats()["forecasts_run"],
+                                     error=("That password was not recognised." if err else ""),
+                                     next_url=next, demo=DEMO_ENTRY))
+
+
+@app.post("/signin")
+async def signin_post(request: Request):
+    from urllib.parse import parse_qs
+    raw = (await request.body()).decode("utf-8", "replace")            # parse the urlencoded form ourselves,
+    form = {k: (v[0] if v else "") for k, v in parse_qs(raw, keep_blank_values=True).items()}  # so no python-multipart dependency
+    pw = (form.get("password") or "").strip()
+    nxt = form.get("next") or "/welcome"
+    email = (form.get("email") or "").strip()
+    # Real security only when a password is configured, and then it must match. With NO password set (the demo case),
+    # the sign-in is a presentation layer: anyone proceeds so testers get the full look and feel through to the app.
+    if not DEMO_ENTRY and ACCESS_PASSWORD and not hmac.compare_digest(pw, ACCESS_PASSWORD):
+        return RedirectResponse(f"/signin?err=1&next={nxt}", status_code=303)
+    resp = RedirectResponse(nxt if nxt.startswith("/") else "/welcome", status_code=303)
+    # SESSION cookies (no max-age): they clear when the browser closes, so every new browser session shows the
+    # branded sign-in again - what we want for demos. Swap to a max_age later for persistent "stay signed in".
+    resp.set_cookie("obs_entered", "1", samesite="lax", path="/")
+    if ACCESS_PASSWORD:
+        resp.set_cookie("obs_session", _session_token(), httponly=True, samesite="lax", path="/")
+    if email:
+        resp.set_cookie("obs_user", email.split("@")[0][:40], samesite="lax", path="/")
+    return resp
+
+
+@app.get("/welcome", response_class=HTMLResponse)
+def welcome_page(request: Request):
+    u = (request.cookies.get("obs_user") or "there").replace(".", " ").replace("_", " ").strip().title() or "there"
+    s = _entry_stats()
+    return HTMLResponse(ENTRY.welcome(user_name=u, forecasts_run=s["forecasts_run"], recents=s["recents"]))
+
+
+@app.get("/loading", response_class=HTMLResponse)
+def loading_page(ctx: str = "LHR → JFK · SUMMER 2026", done: str = "/"):
+    return HTMLResponse(ENTRY.loading(context=ctx, done_url=done))
+
+
+@app.get("/error", response_class=HTMLResponse)
+def error_page(ctx: str = "LHR → JFK · SUMMER 2026", ref: str = "MER-1102"):
+    return HTMLResponse(ENTRY.error(context=ctx, err_ref=ref))
+
+
+@app.get("/signout")
+def signout_page():
+    resp = RedirectResponse("/signin", status_code=303)
+    resp.delete_cookie("obs_session", path="/")
+    return resp
+
+
+# branded entry photography (public prefix, so the sign-in page loads its image before auth)
+from fastapi.staticfiles import StaticFiles as _StaticFiles
+_STATIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
+if os.path.isdir(_STATIC_DIR):
+    app.mount("/static", _StaticFiles(directory=_STATIC_DIR), name="static")
 
 
 @app.on_event("startup")
@@ -134,7 +251,7 @@ def _load():
 def home():
     if os.path.exists(DASH):
         return open(DASH, encoding="utf-8").read()
-    return "<h1>Avia Cortex</h1><p>cortex_dashboard.html not found.</p>"
+    return "<h1>The Observatory · Meridian</h1><p>cortex_dashboard.html not found.</p>"
 
 
 @app.get("/api/assess")
@@ -284,7 +401,8 @@ def _live_ctx():
 
 
 def _econ_block(each_way, aircraft, freq, home, dest_airport, gcd, econ_share, plan_lf,
-                econ_fare, bus_fare, fuel_price, carrier_type, weeks=52.0, p2p_share=1.0, prorate=0.67):
+                econ_fare, bus_fare, fuel_price, carrier_type, weeks=52.0, p2p_share=1.0, prorate=0.67,
+                fixed_overrides=None):
     try:
         import route_engine as RE
         from aircraft_economics import AIRCRAFT, RoutePnL, AnnualRoutePnL
@@ -305,10 +423,14 @@ def _econ_block(each_way, aircraft, freq, home, dest_airport, gcd, econ_share, p
         bus_fare = (bus_fare * _blend) if (bus_fare and bus_fare > 0) else bus_fare
         at = carrier_type if carrier_type in ("FSC", "LCC", "ULCC") else "LCC"
         fp_used = fuel_price if (fuel_price and fuel_price > 0) else 0.90
+        _fo = fixed_overrides or {}
         rp = RoutePnL("New entrant", aircraft, home, dest_airport, dist_nm, bmin,
                       econ_lf=e_lf, bus_lf=b_lf, econ_fare_ow=fare, bus_fare_ow=bus_fare,
                       airline_type=at, aircraft_age=2, origin_charges=RE.DEFAULT_CHARGES,
-                      dest_charges=RE.DEFAULT_CHARGES, fuel_price_usd_kg=fp_used)
+                      dest_charges=RE.DEFAULT_CHARGES, fuel_price_usd_kg=fp_used,
+                      ownership_per_bh_override=_fo.get("own_bh"),
+                      crew_per_bh_override=_fo.get("crew_bh"),
+                      annual_util_bh_override=_fo.get("util_bh"))
         y = rp.compute(); annual = AnnualRoutePnL(rp, freq, weeks).compute()
         pk = "annual_profit" if "annual_profit" in annual else "profit"
         spilled = max(each_way - (e_lf * e_yr + b_lf * b_yr), 0.0)
@@ -388,7 +510,7 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
                         feed_behind_cap=0.10, feed_dom_gain=1.0, feed_dom_floor=1.0,
                         cnx_online=1.0, cnx_alliance=0.615, cnx_interline=0.25,
                         circuity=1.35, factor_indirect=1.044, mct_banking=False, season="annual",
-                        induced_floor=True):
+                        induced_floor=True, fixed_overrides=None):
     """Any city pair through the CALIBRATED engine (route_forecast.forecast). season = annual (default)
     / summer / winter runs a seasonal service: demand scaled to the season's share of the year, capacity
     over the season's weeks."""
@@ -434,7 +556,8 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
                         share_override=share_override, max_plan_lf=plan_lf,
                         market_factor=RF.market_factor_for(carrier_type),   # market-size-keyed P2P trim
                         season=season, season_share=season_share, season_weeks=season_weeks,
-                        airline_type=ct, induced_floor=induced_floor)
+                        airline_type=ct, induced_floor=induced_floor,
+                        airport_capture=__import__("airport_capture").factor_for(home))   # origin correction (dest thin-lift applied inside forecast, market-conditioned)
     except Exception as e:
         return {"ok": False, "error": f"forecast failed: {e}"}
     try:
@@ -476,7 +599,8 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
     behind_list = _feed_list(r.get("behind_detail"), r.get("behind_pdew"))
     _feed_base = lambda dm: round(sum((v.get("base") or 0) for v in (dm or {}).values()))
     beyond_base = _feed_base(r.get("beyond_detail")); behind_base = _feed_base(r.get("behind_detail"))
-    each_way = r["total_demand"]
+    each_way = r["total_demand"]               # unconstrained market demand: drives the multi-year build + spill
+    carried_ew = r["carried_forecast"]         # capacity-bound forecast: the headline total, economics, PDEW, band
     # MULTI-YEAR BUILD: grow demand at the MEASURED market CAGR (dest market this year vs 2 years back),
     # so a pitch forecasts to the launch year and out ~5 years, not just the current Sabre year. Same
     # measure the back-test uses. Demand grows; capacity is fixed, so the build shows when a route fills
@@ -518,7 +642,7 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
     # Induced band (0.55-1.19) is tighter/downside-skewed (capacity-anchored); still on the old calib_bands
     # figure, its own held-out calibration is pending.
     _bl, _bh = (0.55, 1.19) if _induced else (0.40, 2.15)
-    confidence = {"central": round(each_way), "low": round(each_way * _bl), "high": round(each_way * _bh),
+    confidence = {"central": round(carried_ew), "low": round(carried_ew * _bl), "high": round(carried_ew * _bh),
                   "modelled": _induced, "coverage": "about 2 in 3 comparable launches",
                   "basis": "new-market: modelled from comparable launches" if _induced
                            else "measured-market forecast, calibrated on 6 years"}
@@ -538,11 +662,11 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
                    "feed_behind": r["feed_behind"], "feed_beyond_base": beyond_base, "feed_behind_base": behind_base,
                    "p2p_carried": r.get("p2p_carried"), "connecting_carried": r.get("connecting_carried"),
                    "p2p_share": r.get("p2p_share"),
-                   "total": each_way, "avg_fare": r["avg_fare"],
+                   "total": carried_ew, "total_demand": each_way, "avg_fare": r["avg_fare"],
                    "att": r.get("att_exponent"), "stimulation": r.get("stimulation"),
                    "induced": r.get("induced", False), "induced_lf": r.get("induced_lf"),
                    "induced_fare": r.get("induced_fare"),
-                   "pdew_total": round(each_way / 365.0, 1),   # each_way is annual each-way pax; /365 = per day each way (the /2 double-counted direction)
+                   "pdew_total": round(carried_ew / 365.0, 1),   # carried annual each-way pax / 365 = PDEW carried per day each way
                    "beyond_pdew": beyond_list, "behind_pdew": behind_list},
         "capacity": {"carried": r["carried_forecast"], "spill": r["spill"], "load": r["planned_load_factor"],
                      "annual_capacity": r["annual_capacity"], "recommendation": r["recommendation"],
@@ -567,9 +691,9 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
         if _mkt_fare and _mkt_fare > 0:
             econ_fare = round(float(_mkt_fare), 2)
     if with_econ:
-        out.update(_econ_block(each_way, aircraft, freq, home, dest_airport, gcd, econ_share,
+        out.update(_econ_block(carried_ew, aircraft, freq, home, dest_airport, gcd, econ_share,
                                plan_lf, econ_fare, bus_fare, fuel_price, ct, weeks=season_weeks,
-                               p2p_share=r.get("p2p_share")))
+                               p2p_share=r.get("p2p_share"), fixed_overrides=fixed_overrides))
     return out
 
 
@@ -627,9 +751,33 @@ def api_forecast(origin: str, dest: str, airline: str = "", carrier_type: str = 
                  feed_behind_cap: float = 0.10, feed_dom_gain: float = 1.0, feed_dom_floor: float = 1.0,
                  cnx_online: float = 1.0, cnx_alliance: float = 0.615, cnx_interline: float = 0.25,
                  circuity: float = 1.35, factor_indirect: float = 1.044, mct_banking: int = 0,
-                 season: str = "annual"):
+                 season: str = "annual", own_bh: float = 0.0, crew_bh: float = 0.0, util_bh: float = 0.0):
     """The CALIBRATED any-city-pair forecast (coverage + feed + alliance). ~10s per call. The
-    override args (default sentinels = off) are the Expert hooks: adjust any stage of the engine."""
+    override args (default sentinels = off) are the Expert hooks: adjust any stage of the engine.
+    own_bh/crew_bh/util_bh are the airline-specific fixed-cost overrides ($/block-hour, $/block-hour, BH/yr)."""
+    _fixed = {k: v for k, v in (("own_bh", own_bh), ("crew_bh", crew_bh), ("util_bh", util_bh)) if v and v > 0}
+    # AUTO GAUGE: a blank / "AUTO" / "Unselected" aircraft sizes the metal to MEASURED demand at this frequency
+    # (demand first, then the gauge), so an over-large aircraft can never be handed to the engine to fill. Optimise
+    # then refines airline and type on top. This is the default assessment path.
+    _auto_ac = None
+    if (aircraft or "").strip().upper() in ("", "AUTO", "UNSELECTED"):
+        try:
+            import aircraft_select as ASsel
+            _dnm = (_route_distance_km(origin, dest) or 0.0) / 1.852
+            _sz = calibrated_forecast(origin, dest, airline=airline, carrier_type=carrier_type,
+                                      aircraft="A21X", freq=freq, with_econ=False, induced_floor=False, season=season)
+            _dem = (_sz.get("demand", {}) or {}).get("total_demand") if _sz.get("ok") else None
+            if _dem and _dnm > 0:
+                _at = carrier_type if carrier_type in ("FSC", "LCC", "ULCC") else "FSC"
+                _wk = 28.0 if season == "summer" else 24.0 if season == "winter" else 52.0
+                aircraft, _ = ASsel.select_aircraft(_dnm, _dem, freq, plan_lf=plan_lf, econ_share=econ_share,
+                                econ_fare_ow=max(180, round(_dnm * 0.11)), bus_fare_ow=bus_fare,
+                                airline_type=_at, airline_iata=(airline or None), weeks=_wk)
+                _auto_ac = aircraft
+        except Exception:
+            pass
+        if not _auto_ac:
+            aircraft = "A21X"
     fc = calibrated_forecast(
         origin, dest, airline=airline, carrier_type=carrier_type, aircraft=aircraft, freq=freq,
         econ_share=econ_share, plan_lf=plan_lf, econ_fare=(econ_fare or None), bus_fare=bus_fare,
@@ -642,8 +790,11 @@ def api_forecast(origin: str, dest: str, airline: str = "", carrier_type: str = 
         feed_behind_cap=feed_behind_cap, feed_dom_gain=feed_dom_gain, feed_dom_floor=feed_dom_floor,
         cnx_online=cnx_online, cnx_alliance=cnx_alliance, cnx_interline=cnx_interline,
         circuity=circuity, factor_indirect=factor_indirect, mct_banking=bool(mct_banking),
-        season=season)
+        season=season, fixed_overrides=(_fixed or None))
     if isinstance(fc, dict) and fc.get("ok"):
+        if _auto_ac:
+            fc["auto_aircraft"] = _auto_ac      # UI shows which gauge the demand sized to
+        _record_run(origin, dest, season)       # feeds the welcome-screen counter + recent runs
         # ADVISORY airfield check (John, 4 Jul: advisory first, filtering later once trusted):
         # can the chosen aircraft actually use both fields on this mission? Never blocks the
         # forecast; UNKNOWN stays silent. The dashboard shows the binding end's verdict.
@@ -980,13 +1131,14 @@ def api_hubbank(origin: str = "", dest: str = "", airline: str = ""):
 @app.get("/api/optimise")
 def api_optimise(origin: str, dest: str, airline: str = "", carrier_type: str = "FSC",
                  econ_share: float = 0.85, plan_lf: float = 0.85, bus_fare: float = 1400.0,
-                 season: str = "annual"):
+                 season: str = "annual", aircraft: str = "", freq: int = 0):
+    # CONSTRAINED OPTIMISE: any field the client fills is honoured, any left blank is optimised. A fixed aircraft
+    # restricts the gauge; a fixed freq restricts the frequency; a fixed airline restricts the operator (handled below).
     """Blank inputs choose the best PATH. The operating airline changes the demand (its connecting
     feed), so the optimiser evaluates a shortlist of plausible airlines, computes each one's demand,
     then picks the airline + aircraft + weekly frequency that maximise annual profit. The aircraft is
     always within the chosen airline's real fleet (so no Ryanair on a widebody). A seasonal service
     (season=summer/winter) sizes the gauge on the season's demand over its operating weeks."""
-    season_weeks = 28.0 if season == "summer" else 24.0 if season == "winter" else 52.0
     al = (airline or "").strip().upper()
     dist_km = _route_distance_km(origin, dest)
     if not dist_km:
@@ -994,37 +1146,56 @@ def api_optimise(origin: str, dest: str, airline: str = "", carrier_type: str = 
     dist_nm = dist_km / 1.852
     cands = [al] if al else (_candidate_airlines(origin, dest, dist_km) or [None])
     import aircraft_select as ASsel
-    at = carrier_type if carrier_type in ("FSC", "LCC", "ULCC") else "FSC"
     fare = max(180, round(dist_nm * 0.11))
-    best = None
+    _fixed_ac = (aircraft or "").strip().upper()
+    _fixed_ac = _fixed_ac if _fixed_ac not in ("", "AUTO", "UNSELECTED") else None   # client-fixed gauge, else search
+    _freqs = [int(freq)] if (freq and int(freq) > 0) else [3, 4, 5, 6, 7, 10, 14]     # client-fixed freq, else sweep
+    _types = [carrier_type if carrier_type in ("FSC", "LCC", "ULCC") else "FSC"]   # type follows the operator, not swept (can't fly AA as a ULCC)
+    _seasons = [season] if season in ("annual", "summer", "winter") else ["annual", "summer", "winter"]  # unselected = sweep schedule
+    best = None; best_any = None
+    MIN_OPT_LF = 0.55          # right-size: prefer the tightest gauge that still runs at a healthy load factor
     for cand in cands:
-        fc = calibrated_forecast(origin, dest, airline=(cand or None), carrier_type=carrier_type,
-                                 aircraft="A21N", freq=7, with_econ=False, season=season)
-        if not fc.get("ok"):
-            continue
-        demand = fc["demand"]["total"]
-        if demand <= 0:
-            continue
-        for freq in [3, 4, 5, 6, 7, 10, 14]:
-            try:
-                code, ranked = ASsel.select_aircraft(dist_nm, demand, freq, plan_lf=plan_lf,
-                                econ_share=econ_share, econ_fare_ow=fare, bus_fare_ow=bus_fare,
-                                airline_type=at, airline_iata=(cand or None), weeks=season_weeks)
-            except Exception:
-                continue
-            prof = ranked[0]["annual_profit"]
-            if best is None or prof > best["annual_profit"]:
-                best = {"airline": cand, "aircraft": code, "freq": freq,
-                        "annual_profit": prof, "demand": demand}
+        for ct_i in _types:
+            for sea_i in _seasons:
+                sea_weeks = 28.0 if sea_i == "summer" else 24.0 if sea_i == "winter" else 52.0
+                fc = calibrated_forecast(origin, dest, airline=(cand or None), carrier_type=ct_i,
+                                         aircraft="A21N", freq=7, with_econ=False, season=sea_i,
+                                         induced_floor=False)   # measured demand for this operator + model + schedule
+                if not fc.get("ok"):
+                    continue
+                demand = fc["demand"].get("total_demand") or fc["demand"]["total"]   # TRUE demand, not the capacity-bound total
+                if demand <= 0:
+                    continue
+                for f in _freqs:
+                    try:
+                        code, ranked = ASsel.select_aircraft(dist_nm, demand, f, plan_lf=plan_lf,
+                                        econ_share=econ_share, econ_fare_ow=fare, bus_fare_ow=bus_fare,
+                                        airline_type=ct_i, weeks=sea_weeks,
+                                        airline_iata=(None if _fixed_ac else (cand or None)),
+                                        fleet=([_fixed_ac] if _fixed_ac else None))   # honour a client-fixed gauge, else search
+                    except Exception:
+                        continue
+                    prof = ranked[0]["annual_profit"]; lf = ranked[0].get("total_lf") or 0.0
+                    row = {"airline": cand, "aircraft": code, "freq": f, "ctype": ct_i, "season": sea_i,
+                           "annual_profit": prof, "demand": demand}
+                    if best_any is None or prof > best_any["annual_profit"]:
+                        best_any = row                           # profit-max regardless of fill (fallback)
+                    if lf >= MIN_OPT_LF and (best is None or prof > best["annual_profit"]):
+                        best = row                               # profit-max among gauges that fill to >= MIN_OPT_LF
+    if best is None:
+        best = best_any                                          # very thin route: nothing cleared the LF floor, take profit-max
     if best is None:
         return JSONResponse({"ok": False, "error": _explain_infeasible(origin, dest, dist_km, plan_lf)})
-    final = calibrated_forecast(origin, dest, airline=(best["airline"] or None), carrier_type=carrier_type,
+    final = calibrated_forecast(origin, dest, airline=(best["airline"] or None), carrier_type=best.get("ctype", carrier_type),
                                 aircraft=best["aircraft"], freq=best["freq"], econ_share=econ_share,
-                                plan_lf=plan_lf, bus_fare=bus_fare, with_econ=True, season=season)
+                                plan_lf=plan_lf, bus_fare=bus_fare, with_econ=True, season=best.get("season", "annual"))
     if isinstance(final, dict):
         final["optimised"] = {"airline": best["airline"], "airline_auto": (not al) and bool(best["airline"]),
                               "aircraft": best["aircraft"], "freq": best["freq"],
+                              "carrier_type": best.get("ctype"), "carrier_type_auto": carrier_type not in ("FSC", "LCC", "ULCC"),
+                              "season": best.get("season"), "season_auto": season not in ("annual", "summer", "winter"),
                               "annual_profit": round(best["annual_profit"])}
+    _record_run(origin, dest, best.get("season") or "annual")   # feeds the welcome-screen counter + recent runs
     return JSONResponse(final)
 
 

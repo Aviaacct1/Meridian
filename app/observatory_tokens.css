@@ -1,0 +1,56 @@
+/* ============================================================================
+   THE OBSERVATORY — design tokens (canonical)
+   Product: Meridian (route forecasting). QSI is the methodology name only.
+   Source of truth for the restyle. Each standalone page inlines this block in
+   its own <style> (the pages are served as static files, so there is no shared
+   stylesheet route). Change a value here, then propagate to each page.
+   Ref: Observatory Brand Guidelines v1.1, brief sections 1-6.
+   ============================================================================ */
+:root{
+  /* ground + surface */
+  --ink:#0F1B28;          /* app chrome, dark surfaces */
+  --ink-900:#0B141D;      /* button hover */
+  --brass:#D4A249;        /* the ONLY accent: observed series, single emphasis */
+  --brass-deep:#A97C33;   /* brass text on paper, hover */
+  --brass-soft:#F1E6CD;   /* selection, ramp start */
+  --paper:#F6F3EC;        /* warm white for print/long-form */
+  --screen:#FAF8F3;       /* the UI page surface — never #FFFFFF */
+  --card:#FBF9F3;         /* panels: a hair off the page, hairline framed */
+  --grey:#C4CDD6;         /* graticule strokes, secondary text on ink */
+
+  /* line + text */
+  --line:#E2DCCC;         /* hairline on paper */
+  --line-ink:#24313F;     /* hairline on ink */
+  --text:#26313B;         /* body ink */
+  --body:#3A444E;         /* secondary body */
+  --muted:#8A8577;        /* metadata labels, captions */
+  --muted-ink:#8FA0B0;    /* muted text on ink */
+
+  /* data-viz — assign s1..s7 in fixed order, never reorder chart-to-chart */
+  --signal:#CE3B2A;       /* averages, targets, thresholds, alerts — RESERVED */
+  --s1:#D4A249;           /* brass — always the observed series */
+  --s2:#3D6A88;  --s3:#5F8D7A;  --s4:#A9553F;
+  --s5:#8793A0;  --s6:#7B617F;  --s7:#9C8A4E;
+
+  /* type roles */
+  --serif:'Newsreader',Georgia,'Times New Roman',serif;   /* display/body/numbers/tables */
+  --sans:'Inter',-apple-system,'Segoe UI',Roboto,system-ui,sans-serif; /* labels + metadata, tracked */
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;    /* machine strings only: dates, IDs, versions */
+
+  --r:2px;                /* hairline structure, not rounded pills */
+
+  /* motion (brief section 6) */
+  --dur-instant:120ms; --dur-read:240ms; --dur-trans:420ms; --dur-draw:720ms;
+  --ease:cubic-bezier(.4,0,.2,1);
+  --ease-enter:cubic-bezier(.2,0,0,1);
+}
+/* Google Fonts to load in each <head>:
+   <link rel="preconnect" href="https://fonts.googleapis.com">
+   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,300;0,400;0,500;1,400&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+
+   Numerals: --serif with font-variant-numeric: tabular-nums lining-nums for all data/tables/KPIs.
+   Metadata rule (v1.1): labels are Inter, tracked ~.12em, uppercase — NOT monospace.
+   Monospace only for genuine machine strings (a date, a run ID, a version).
+   Focus ring: 2px solid var(--brass), offset 2px, on every interactive element.
+*/

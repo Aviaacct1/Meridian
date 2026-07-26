@@ -343,7 +343,9 @@ def _market_size_mult(market, table):
 # and feed-present FSC routes centre alike under the blanket floor (0.89 vs 0.88 held-out). The stimulation
 # FARE (below) is LCC/ULCC only - FSC fills at a normal fare via feed, so FSC keeps its measured market
 # fare in the economics (no INDUCED_FARE entry), and the floor is a MAX so it only ever lifts an under-read.
-INDUCED_TYPES = ("LCC", "ULCC", "FSC")
+INDUCED_TYPES = ("LCC", "ULCC", "FSC")   # FSC kept (preserves the LOT@WAW fortress-hub fill). The LGA-FWA over-read is
+                                         # prevented upstream instead: auto-gauge sizes metal to demand so the floor is
+                                         # never handed oversized capacity to fill (cortex_app api_forecast / api_optimise).
 INDUCED_MKT_CAP_MAX = 0.40          # measured-market/capacity below this = induced-likely
 _INDUCED_HAUL_KM = (800.0, 2500.0, 6000.0)
 # achieved seat factor by [type][haul band: <800 / 800-2500 / 2500-6000 / >6000 km], from the 6yr launch
@@ -399,8 +401,10 @@ def forecast(sabre_db, oag_db, week, origin, dest_codes, competing_airports, *, 
     the aircraft. NO population, NO propensity - the share, not a population apportionment, is the
     splitter. annual_capacity overrides the computed capacity (e.g. the route's actual OAG capacity)."""
     import sabre_catchment as SC
-    split, market, avg_fare = SC.destination_market_split(sabre_db, competing_airports, dest_codes,
-                                                          year=year)
+    import od_source
+    # O&D source selector (DB1B vs Sabre). Default AVIA_OD_SOURCE=sabre -> byte-identical to Sabre.
+    split, market, avg_fare, od_src = od_source.market_split(sabre_db, competing_airports, dest_codes,
+                                                             year=year)
     market *= (1 + growth) ** growth_years
     current = float(split.get(origin, 0.0)) * ((1 + growth) ** growth_years)
     # SABRE COVERAGE GROSS-UP: the recorded market under-reads off-GDS bookings (LCC-country and
@@ -422,6 +426,8 @@ def forecast(sabre_db, oag_db, week, origin, dest_codes, competing_airports, *, 
         _cov = COV.gross_up(_oc, _dc, _gcd)
     except Exception:
         _cov = 1.0
+    if od_src == od_source.DB1B:
+        _cov = 1.0   # DB1B is the full-market actual; the GDS coverage gross-up is Sabre-only
     if coverage_override is not None:          # EXPERT override of the auto coverage factor
         _cov = float(coverage_override)
     market *= _cov
@@ -445,7 +451,7 @@ def forecast(sabre_db, oag_db, week, origin, dest_codes, competing_airports, *, 
     else:                                      # measured airport capture truth (surveys / mobility data)
         try:
             import airport_capture as _ACAP
-            _apc = _ACAP.capture_for(origin)
+            _apc = _ACAP.capture_for(origin, market)   # tapered on very large markets a secondary can't supply
             if _apc is not None:
                 share = float(_apc)
         except Exception:
@@ -488,6 +494,26 @@ def forecast(sabre_db, oag_db, week, origin, dest_codes, competing_airports, *, 
     # general catchment model gets a factor learned from its own past launches (build_airport_factors.py).
     if airport_capture and airport_capture != 1.0:
         captured *= float(airport_capture)
+    # DESTINATION thin-market lift: a genuine secondary (SJC) has its INBOUND demand under-allocated by the
+    # catchment model, but ONLY where the O&D is thin/catchment-fed; a big directly-measured market (LHR-SJC)
+    # needs no help. Conditioned on the measured market so it can't over-forecast a mature large route.
+    if dest_airport:
+        try:
+            captured *= __import__("airport_capture").dest_thin_factor(dest_airport, market)
+        except Exception:
+            pass
+    # HAUL trim (opt-in, default OFF): the P2P capture over-reads on long, thin sectors (backtest:
+    # 2500-6000km ran hot, <800km ~1.0 with over/under even). Scale captured down as distance rises
+    # beyond a floor; short-haul untouched. AVIA_HAUL_TRIM=1 enables; AVIA_HAUL_TRIM_BETA (0.35) and
+    # AVIA_HAUL_TRIM_FLOOR (800 km) tune the curve on the backtest. Uses gcd_est (always defined).
+    haul_trim = 1.0
+    if os.environ.get("AVIA_HAUL_TRIM", "").strip().lower() in ("1", "true", "on", "yes"):
+        _hk = gcd_est if (gcd_est and gcd_est > 0) else max((block_min - 20.0) * 7.0 * 1.852, 100.0)
+        _hfloor = float(os.environ.get("AVIA_HAUL_TRIM_FLOOR", "800"))
+        _hbeta = float(os.environ.get("AVIA_HAUL_TRIM_BETA", "0.35"))
+        if _hk > _hfloor:
+            haul_trim = (_hfloor / _hk) ** _hbeta
+            captured *= haul_trim
     # SEASONAL mode: scale the annual demand to the operating season's share of the year (from the
     # monthly profile; caller supplies the SEASON's capacity via annual_capacity). season_share 1.0 =
     # annual, unchanged. A summer service carries its summer share of the O&D, not half of it.
@@ -534,6 +560,20 @@ def forecast(sabre_db, oag_db, week, origin, dest_codes, competing_airports, *, 
                     induced_fare_used = _induced_fare(gcd_est, airline_type)   # low fare for the economics
                     captured = max(captured, _floor - feed)   # uplift attributed to stimulated P2P
                     total_demand = captured + feed
+    # ALL-DATA BUCKET CALIBRATION (bucket_model.json): nudge total demand by the airport-bucket factor fitted on
+    # the whole launch history (the all-data calibration). Bounded; flows through the cap, split and economics.
+    try:
+        import bucket_correct as _BC
+        _bf = _BC.forecast_factor(origin, dest_airport, market, gcd_est)
+        if _bf and _bf != 1.0:
+            captured *= _bf; feed *= _bf; feed_beyond *= _bf; feed_behind *= _bf
+            total_demand = captured + feed
+            for _dm in (beyond_detail, behind_detail):
+                for _c in _dm.values():
+                    if _c.get("captured") is not None: _c["captured"] *= _bf
+                    if _c.get("pdew") is not None: _c["pdew"] *= _bf
+    except Exception:
+        pass
     carried = min(total_demand, annual_capacity * max_plan_lf)      # P2P + feed compete for the seats
     spill = max(total_demand - carried, 0.0)
     load = (carried / annual_capacity) if annual_capacity else 0.0
@@ -584,7 +624,7 @@ def forecast(sabre_db, oag_db, week, origin, dest_codes, competing_airports, *, 
         "leaked": round(leaked), "avg_fare": round(avg_fare, 2),
         "qsi_share": round(share, 4), "dest_share": round(dshare, 4), "capture_rate": capture_rate,
         "repatriated": round(repatriated), "premium_share": round(prem, 4), "att_exponent": round(att, 3),
-        "coverage_gross_up": round(_cov, 3),
+        "coverage_gross_up": round(_cov, 3), "od_source": od_src, "haul_trim": round(haul_trim, 3),
         "captured_demand": round(captured), "connecting_feed": round(feed),
         "p2p_carried": round(p2p_carried), "connecting_carried": round(conn_carried),
         "p2p_share": round(p2p_share_v, 3),

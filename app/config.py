@@ -114,6 +114,12 @@ DATA_STORE_SNAPSHOT_DIR = _env_path("AVIA_DATA_STORE_SNAPSHOT_DIR", PROJECT_HOME
 LOCAL_CACHE = _env_path("AVIA_LOCAL_CACHE", Path.home() / ".avia_qsi" / "data_store")
 SABRE_DUCKDB = _env_path("AVIA_SABRE_DUCKDB", LOCAL_CACHE / "sabre.duckdb")
 OAG_DUCKDB = _env_path("AVIA_OAG_DUCKDB", LOCAL_CACHE / "oag.duckdb")
+# US DOT stores (built from the DOT extracts; see build_db1b_store.py / load_t100.py / load_p12.py).
+# Aggregated, so small; live next to sabre.duckdb.
+DB1B_DUCKDB = _env_path("AVIA_DB1B_DUCKDB", LOCAL_CACHE / "db1b.duckdb")      # US domestic O&D (od_market)
+T100_DUCKDB = _env_path("AVIA_T100_DUCKDB", LOCAL_CACHE / "t100.duckdb")      # US capacity/seats/LF (seg)
+FORM41_DUCKDB = _env_path("AVIA_FORM41_DUCKDB", LOCAL_CACHE / "form41_p12.duckdb")  # carrier P&L / CASM
+CASM_BENCHMARK = _env_path("AVIA_CASM_BENCHMARK", LOCAL_CACHE / "casm_benchmark.duckdb")  # carrier CASM/RASM + stage
 
 # ----------------------------------------------------------------------------
 # Shared master data (18 Products/Data) - read in place, never copied
@@ -153,6 +159,10 @@ ALL_PATHS = {
     "LOCAL_CACHE": LOCAL_CACHE,
     "SABRE_DUCKDB": SABRE_DUCKDB,
     "OAG_DUCKDB": OAG_DUCKDB,
+    "DB1B_DUCKDB": DB1B_DUCKDB,
+    "T100_DUCKDB": T100_DUCKDB,
+    "FORM41_DUCKDB": FORM41_DUCKDB,
+    "CASM_BENCHMARK": CASM_BENCHMARK,
     "SABRE_RAW_DIR": SABRE_RAW_DIR,
     "OAG_RAW_DIR": OAG_RAW_DIR,
     "AIRPORT_DB": AIRPORT_DB,

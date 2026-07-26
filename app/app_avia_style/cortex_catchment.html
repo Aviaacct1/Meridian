@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Avia Cortex: Catchment</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+  :root{
+    --navy:#1F3864; --navy-700:#16294A; --navy-900:#0E1B33;
+    --accent:#2F6BF0; --accent-soft:#EAF0FE;
+    --green:#0E9F6E; --green-soft:#E6F6EF; --amber:#C9781A; --amber-soft:#FBF0E0;
+    --red:#D84C4C; --red-soft:#FBEBEB;
+    --ink:#0F1C30; --body:#46566E; --muted:#8A97AB; --line:#E6EBF2;
+    --bg:#F4F7FB; --card:#FFFFFF;
+    --r:12px; --sh:0 1px 2px rgba(16,32,60,.04), 0 6px 20px rgba(16,32,60,.06);
+    --font:-apple-system,"Segoe UI",Roboto,system-ui,Helvetica,Arial,sans-serif;
+    --b30:#0E9F6E; --b60:#5BB56B; --b90:#C9781A; --b120:#E08A2B; --bout:#98A6BC;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font);background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;font-size:14px;line-height:1.45}
+  .app{display:grid;grid-template-columns:248px 1fr;min-height:100vh}
+  .side{background:var(--navy-900);color:#C8D3E6;display:flex;flex-direction:column;padding:22px 16px}
+  .brand{display:flex;align-items:center;gap:11px;padding:6px 8px 22px}
+  .brand .mark{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--accent),#5C8DF6);display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+  .brand .mark svg{width:18px;height:18px}
+  .brand .name{font-weight:700;letter-spacing:.3px;color:#fff;font-size:15px;line-height:1.1}
+  .brand .name small{display:block;font-weight:500;font-size:10.5px;letter-spacing:2px;color:#7E8FB0;margin-top:2px}
+  .navlbl{font-size:10.5px;letter-spacing:1.4px;text-transform:uppercase;color:#5F6F8E;margin:18px 8px 8px}
+  .nav a{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;color:#C8D3E6;text-decoration:none;font-size:13.5px;font-weight:500;cursor:pointer}
+  .nav a .ic{width:16px;height:16px;opacity:.85;flex:0 0 auto}
+  .nav a.active{background:rgba(47,107,240,.18);color:#fff}
+  .nav a.soft{color:#6C7C9B}
+  .nav a .soon{margin-left:auto;font-size:9.5px;letter-spacing:.6px;color:#6C7C9B;border:1px solid #2C3C5C;border-radius:20px;padding:1px 7px}
+  .side .foot{margin-top:auto;font-size:11px;color:#5F6F8E;padding:14px 8px 2px;border-top:1px solid #1C2A45}
+  .main{display:flex;flex-direction:column;min-width:0}
+  .top{height:62px;background:var(--card);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:16px;padding:0 28px}
+  .top .pill{margin-left:auto;font-size:12px;color:var(--body);background:var(--bg);border:1px solid var(--line);border-radius:20px;padding:6px 12px;font-weight:600}
+  .avatar{width:32px;height:32px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
+  .wrap{padding:26px 28px 40px;max-width:1240px;width:100%}
+  .head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:18px}
+  .head h1{font-size:25px;font-weight:700;letter-spacing:-.2px}
+  .head p{color:var(--body);font-size:13.5px;margin-top:4px}
+  .btn{background:var(--accent);color:#fff;border:none;border-radius:9px;padding:11px 18px;font-weight:600;font-size:13.5px;font-family:var(--font);cursor:pointer;box-shadow:0 2px 8px rgba(47,107,240,.28)}
+  .btn:disabled{opacity:.55;cursor:default}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh)}
+  .card .ch{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--line)}
+  .card .ch h3{font-size:15px;font-weight:700}
+  .card .ch .sub{font-size:12px;color:var(--muted)}
+  .cb{padding:18px}
+  .fld{display:flex;flex-direction:column;gap:5px;position:relative}
+  .fld label{font-size:10.5px;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);font-weight:700}
+  .fld input{border:1px solid var(--line);border-radius:8px;padding:9px 11px;font-size:13.5px;font-family:var(--font);color:var(--ink);background:#fff;width:100%}
+  .fld input:focus{outline:none;border-color:var(--accent)}
+  .searchrow{display:flex;gap:12px;align-items:end}
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;align-items:center}
+  .exchip{font-size:12px;font-weight:600;color:var(--body);background:var(--bg);border:1px solid var(--line);border-radius:20px;padding:6px 12px;cursor:pointer}
+  .exchip:hover{border-color:var(--accent);color:var(--accent)}
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin:20px 0}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;box-shadow:var(--sh)}
+  .kpi .l{font-size:11px;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);font-weight:600}
+  .kpi .v{font-size:29px;font-weight:700;letter-spacing:-.5px;margin-top:7px}
+  .kpi .s{font-size:12px;color:var(--body);margin-top:5px}
+  .grid{display:grid;grid-template-columns:1.7fr 1fr;gap:16px}
+  #map{height:520px;width:100%;border-radius:0 0 var(--r) var(--r);z-index:1}
+  .legend{background:#fff;padding:9px 11px;border-radius:8px;box-shadow:var(--sh);font-size:12px;line-height:1.9}
+  .legend .sw{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:7px;vertical-align:-1px}
+  .brow{display:flex;align-items:center;gap:10px;margin:12px 0}
+  .brow .bl{width:96px;font-size:12.5px;color:var(--body);flex:0 0 auto;display:flex;align-items:center;gap:7px}
+  .brow .bl .sw{width:11px;height:11px;border-radius:3px;flex:0 0 auto}
+  .brow .bt{flex:1;background:var(--bg);border-radius:6px;height:20px;overflow:hidden}
+  .brow .bf{height:100%;border-radius:6px}
+  .brow .bv{width:118px;font-size:12px;font-weight:700;color:var(--ink);flex:0 0 auto;text-align:right}
+  .fnote{font-size:12px;color:var(--body);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-top:6px;line-height:1.5}
+  .spinner{width:14px;height:14px;border:2px solid rgba(255,255,255,.5);border-top-color:#fff;border-radius:50%;display:inline-block;animation:sp .7s linear infinite;margin-right:7px;vertical-align:-2px}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .hidden{display:none!important}
+  .capbig{font-size:15px}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="brand">
+      <span class="mark"><svg viewBox="0 0 24 24" fill="none"><path d="M3 12c4 0 5-7 9-7s5 14 9 7" stroke="#fff" stroke-width="2.1" stroke-linecap="round"/></svg></span>
+      <span class="name">Avia&nbsp;Cortex<small>INTELLIGENCE PLATFORM</small></span>
+    </div>
+    <div class="navlbl">Route Forecasting</div>
+    <nav class="nav">
+      <a href="/"><span class="ic">▥</span> Dashboard</a>
+      <a href="/?mode=expert"><span class="ic">✦</span> Expert mode</a>
+      <a class="active" href="/catchment"><span class="ic">◎</span> Catchment</a>
+      <a href="/economics"><span class="ic">▤</span> Economics</a>
+      <a class="soft"><span class="ic">⛁</span> Data &amp; schedules</a>
+      <a href="/help"><span class="ic">?</span> Help</a>
+    </nav>
+    <div class="navlbl">Cortex products</div>
+    <nav class="nav">
+      <a class="active" href="/"><span class="ic">✈</span> Route Forecasting</a>
+      <a class="soft"><span class="ic">⌖</span> Airport Forecasts <span class="soon">SOON</span></a>
+      <a class="soft"><span class="ic">◍</span> Global Forecasts <span class="soon">SOON</span></a>
+      <a class="soft"><span class="ic">◴</span> Design Day Schedule Forecasts <span class="soon">SOON</span></a>
+    </nav>
+    <div class="foot">Powered by Avia&nbsp;Cortex · prototype</div>
+  </aside>
+
+  <div class="main">
+    <div class="top">
+      <span class="pill" id="ctxpill">Drive-time catchment</span>
+      <div class="avatar">JC</div>
+    </div>
+
+    <div class="wrap">
+      <div class="head">
+        <div>
+          <h1>Catchment</h1>
+          <p>Who an airport can actually reach: the resident population within drive time, and the share Cortex assumes it captures.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="ch"><div><h3>Airport catchment</h3><div class="sub">Enter an airport or city; the map shows the population banded by least-cost drive time.</div></div></div>
+        <div class="cb">
+          <div class="searchrow">
+            <div class="fld" style="flex:1"><label>Airport or city</label><input id="ap" placeholder="e.g. SJC or San Jose" value="SJC"></div>
+            <button class="btn" id="go" style="flex:0 0 auto">Show catchment</button>
+          </div>
+          <div class="chips">
+            <span style="font-size:11.5px;color:var(--muted)">Try:</span>
+            <span class="exchip" data-a="SJC">SJC</span>
+            <span class="exchip" data-a="SFO">SFO</span>
+            <span class="exchip" data-a="London">London</span>
+            <span class="exchip" data-a="Geneva">Geneva</span>
+            <span class="exchip" data-a="Genoa">Genoa</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="err" class="fnote hidden" style="border-color:var(--red);color:var(--red)"></div>
+
+      <div id="results" class="hidden">
+        <div class="kpis">
+          <div class="kpi"><div class="l">Catchment population</div><div class="v" id="k_total">-</div><div class="s" id="k_total_s">within 220 km</div></div>
+          <div class="kpi"><div class="l">Within 120-min drive</div><div class="v" id="k_reach">-</div><div class="s">the practical catchment</div></div>
+          <div class="kpi"><div class="l">Assumed capture rate</div><div class="v capbig" id="k_cap">-</div><div class="s" id="k_cap_s">share taken with own nonstop</div></div>
+          <div class="kpi"><div class="l">Populated places</div><div class="v" id="k_places">-</div><div class="s">towns and cities in reach</div></div>
+        </div>
+
+        <div class="grid">
+          <div class="card">
+            <div class="ch"><div><h3 id="mapTitle">Drive-time catchment</h3><div class="sub" id="mapSub"></div></div></div>
+            <div id="map"></div>
+          </div>
+          <div class="card">
+            <div class="ch"><div><h3>Population by drive time</h3><div class="sub">each band, and its share of the catchment</div></div></div>
+            <div class="cb">
+              <div id="bands"></div>
+              <div class="fnote" id="capNote"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+const $=s=>document.querySelector(s);
+const BANDCOL={30:getComputedStyle(document.documentElement).getPropertyValue('--b30').trim()||'#0E9F6E',
+  60:'#5BB56B',90:'#C9781A',120:'#E08A2B',999:'#98A6BC'};
+const BANDLBL={30:'0-30 min',60:'30-60 min',90:'60-90 min',120:'90-120 min',999:'120 min +'};
+function fmtM(n){ if(n>=1e6) return (n/1e6).toFixed(n>=1e7?0:1)+'m'; if(n>=1e3) return Math.round(n/1e3)+'k'; return String(Math.round(n)); }
+function fmtN(n){ return Math.round(n).toLocaleString('en-GB'); }
+function hav(la1,lo1,la2,lo2){const R=6371,r=Math.PI/180;const dp=(la2-la1)*r,dl=(lo2-lo1)*r;
+  const a=Math.sin(dp/2)**2+Math.cos(la1*r)*Math.cos(la2*r)*Math.sin(dl/2)**2;return 2*R*Math.asin(Math.sqrt(a));}
+// distance-band fallback (km) if the drive raster is unavailable
+function distBand(km){ return km<=35?30:km<=75?60:km<=120?90:km<=175?120:999; }
+
+let MAP=null, LAYER=null;
+function ensureMap(lat,lon){
+  if(!MAP){
+    MAP=L.map('map',{scrollWheelZoom:true}).setView([lat,lon],8);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+      {maxZoom:12,attribution:'&copy; OpenStreetMap'}).addTo(MAP);
+    const lg=L.control({position:'bottomright'});
+    lg.onAdd=function(){const d=L.DomUtil.create('div','legend');
+      d.innerHTML=[30,60,90,120,999].map(b=>`<div><span class="sw" style="background:${BANDCOL[b]}"></span>${BANDLBL[b]}</div>`).join('')
+        +`<div style="margin-top:4px"><span class="sw" style="background:#fff;border:2px solid #1F3864;border-radius:50%"></span>airport</div>`;
+      return d;};
+    lg.addTo(MAP);
+  }
+  if(LAYER){ MAP.removeLayer(LAYER); }
+  LAYER=L.layerGroup().addTo(MAP);
+  MAP.setView([lat,lon],8);
+}
+
+// Andrew's monotone-chain convex hull on [ [lat,lon], ... ]
+function hull(pts){
+  if(pts.length<3) return pts.slice();
+  const p=pts.slice().sort((a,b)=>a[1]-b[1]||a[0]-b[0]);
+  const cross=(o,a,b)=>(a[1]-o[1])*(b[0]-o[0])-(a[0]-o[0])*(b[1]-o[1]);
+  const lo=[],up=[];
+  for(const q of p){ while(lo.length>=2&&cross(lo[lo.length-2],lo[lo.length-1],q)<=0)lo.pop(); lo.push(q);}
+  for(let i=p.length-1;i>=0;i--){const q=p[i]; while(up.length>=2&&cross(up[up.length-2],up[up.length-1],q)<=0)up.pop(); up.push(q);}
+  lo.pop();up.pop();return lo.concat(up);
+}
+
+function draw(d){
+  const a=d.airport;
+  ensureMap(a.lat,a.lon);
+  const raster=d.drive_available;
+  // assign an effective band to each locale (drive if we have it, else distance fallback)
+  const locs=d.locales.map(l=>{
+    let band=999, drv=l.drive;
+    if(raster && drv!=null){ band = drv<=30?30:drv<=60?60:drv<=90?90:drv<=120?120:999; }
+    else { band = distBand(hav(a.lat,a.lon,l.lat,l.lon)); }
+    return {...l, band};
+  });
+  // nested isochrone-style hull fills, widest band first (drawn underneath)
+  const order=[120,90,60,30];
+  const fillOp={30:.20,60:.15,90:.12,120:.09};
+  for(const b of order){
+    const inside=locs.filter(l=>l.band<=b).map(l=>[l.lat,l.lon]);
+    if(inside.length>=3){
+      const h=hull(inside);
+      L.polygon(h,{color:BANDCOL[b],weight:1,opacity:.5,fillColor:BANDCOL[b],fillOpacity:fillOp[b]}).addTo(LAYER);
+    }
+  }
+  // population points, sized by population
+  locs.forEach(l=>{
+    const rad=Math.max(3,Math.min(20,Math.sqrt(l.pop)/40));
+    const dtxt=(raster&&l.drive!=null)?`${l.drive} min drive`:`${Math.round(hav(a.lat,a.lon,l.lat,l.lon))} km`;
+    L.circleMarker([l.lat,l.lon],{radius:rad,color:'#fff',weight:1,fillColor:BANDCOL[l.band],fillOpacity:.85})
+      .bindTooltip(`<b>${l.name||''}</b><br>pop ${fmtN(l.pop)} · ${dtxt}`,{direction:'top'}).addTo(LAYER);
+  });
+  // airport marker on top
+  L.marker([a.lat,a.lon],{icon:L.divIcon({className:'',html:
+    `<div style="width:16px;height:16px;background:#fff;border:3px solid #1F3864;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,.4)"></div>`,
+    iconSize:[16,16],iconAnchor:[8,8]})}).bindTooltip(`<b>${a.code}</b> ${a.city||''}`,{permanent:false,direction:'right'}).addTo(LAYER);
+
+  $('#mapTitle').textContent=`${a.code} drive-time catchment`;
+  $('#mapSub').textContent=(a.city?a.city+(a.country?', '+a.country:''):'')+
+    (raster?' · least-cost road drive time':' · straight-line distance (drive raster not loaded)');
+
+  // KPIs
+  $('#k_total').textContent=fmtM(d.total_pop);
+  $('#k_total_s').textContent=`within ${Math.round(d.radius_km)} km · ${fmtN(d.total_pop)} people`;
+  $('#k_reach').textContent=fmtM(d.reach_120_pop);
+  $('#k_places').textContent=fmtN(d.locales.length);
+  if(d.capture!=null){
+    $('#k_cap').textContent=Math.round(d.capture*100)+'%';
+    $('#k_cap_s').textContent='measured (survey + mobility)';
+    $('#capNote').innerHTML=`Capture is measured for <b>${a.code}</b>: with its own nonstop it takes about `+
+      `<b>${Math.round(d.capture*100)}%</b> of this catchment's demand on the route, from passenger survey and mobility data. `+
+      `That measured share overrides the model for every ${a.code} route.`;
+  } else {
+    $('#k_cap').textContent='per route';
+    $('#k_cap_s').textContent='modelled, not yet measured';
+    $('#capNote').innerHTML=`No measured capture is held for <b>${a.code}</b> yet, so Cortex models the share per route `+
+      `from drive time and competing service. Where we have survey or mobility data (as for SJC at 32%), that measured share replaces the model.`;
+  }
+
+  // band breakdown (from server bands, plus fallback recompute if raster absent)
+  let bands=d.bands;
+  if(!raster){
+    bands={30:0,60:0,90:0,120:0,999:0};
+    locs.forEach(l=>bands[l.band]=(bands[l.band]||0)+l.pop);
+  }
+  const tot=[30,60,90,120,999].reduce((s,b)=>s+(+bands[b]||0),0)||1;
+  const mx=Math.max(...[30,90,60,120,999].map(b=>+bands[b]||0))||1;
+  $('#bands').innerHTML=[30,60,90,120,999].map(b=>{
+    const v=+bands[b]||0, w=Math.round(v/mx*100), pc=Math.round(v/tot*100);
+    return `<div class="brow"><div class="bl"><span class="sw" style="background:${BANDCOL[b]}"></span>${BANDLBL[b]}</div>`+
+      `<div class="bt"><div class="bf" style="width:${w}%;background:${BANDCOL[b]}"></div></div>`+
+      `<div class="bv">${fmtN(v)} · ${pc}%</div></div>`;
+  }).join('');
+  $('#results').classList.remove('hidden');
+  setTimeout(()=>MAP.invalidateSize(),120);
+}
+
+function load(){
+  const q=$('#ap').value.trim(); if(!q){ return; }
+  const btn=$('#go'); btn.disabled=true; btn.innerHTML='<span class="spinner"></span>Mapping…';
+  $('#err').classList.add('hidden');
+  fetch('/api/catchment?place='+encodeURIComponent(q)).then(r=>r.json()).then(d=>{
+    if(!d.ok){ $('#err').textContent=d.error||'could not load catchment'; $('#err').classList.remove('hidden'); $('#results').classList.add('hidden'); return; }
+    draw(d);
+  }).catch(e=>{ $('#err').textContent=String(e.message||e); $('#err').classList.remove('hidden'); })
+  .finally(()=>{ btn.disabled=false; btn.textContent='Show catchment'; });
+}
+$('#go').onclick=load;
+$('#ap').addEventListener('keydown',e=>{ if(e.key==='Enter') load(); });
+document.querySelectorAll('.exchip').forEach(c=>c.onclick=()=>{ $('#ap').value=c.dataset.a; load(); });
+load();
+</script>
+</body>
+</html>

@@ -4,118 +4,146 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>Avia Cortex: Catchment</title>
+<title>The Observatory · Meridian — Catchment and demand</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;1,6..72,400&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <style>
   :root{
-    --navy:#1F3864; --navy-700:#16294A; --navy-900:#0E1B33;
-    --accent:#2F6BF0; --accent-soft:#EAF0FE;
-    --green:#0E9F6E; --green-soft:#E6F6EF; --amber:#C9781A; --amber-soft:#FBF0E0;
-    --red:#D84C4C; --red-soft:#FBEBEB;
-    --ink:#0F1C30; --body:#46566E; --muted:#8A97AB; --line:#E6EBF2;
-    --bg:#F4F7FB; --card:#FFFFFF;
-    --r:12px; --sh:0 1px 2px rgba(16,32,60,.04), 0 6px 20px rgba(16,32,60,.06);
-    --font:-apple-system,"Segoe UI",Roboto,system-ui,Helvetica,Arial,sans-serif;
-    --b30:#0E9F6E; --b60:#5BB56B; --b90:#C9781A; --b120:#E08A2B; --bout:#98A6BC;
+    --ink:#0F1B28; --ink-900:#0B141D;
+    --brass:#D4A249; --brass-deep:#A97C33; --brass-soft:#F1E6CD;
+    --paper:#F6F3EC; --screen:#FAF8F3; --card:#F6F3EC; --grey:#C4CDD6;
+    --line:#E2DCCC; --line-ink:#24313F;
+    --text:#26313B; --body:#3A444E; --muted:#6E6A5E; --muted-ink:#8FA0B0;
+    --signal:#CE3B2A; --s2:#3D6A88; --s3:#5F8D7A; --s5:#8793A0;
+    --serif:'Newsreader',Georgia,serif; --sans:'Inter',system-ui,sans-serif; --mono:'IBM Plex Mono',monospace;
+    --r:2px;
+    /* drive-time bands = one measure by intensity -> brass ramp, nearest darkest */
+    --b30:#A97C33; --b60:#D4A249; --b90:#E4C489; --b120:#F1E6CD; --bout:#C4CDD6;
   }
   *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:var(--font);background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;font-size:14px;line-height:1.45}
-  .app{display:grid;grid-template-columns:248px 1fr;min-height:100vh}
-  .side{background:var(--navy-900);color:#C8D3E6;display:flex;flex-direction:column;padding:22px 16px}
-  .brand{display:flex;align-items:center;gap:11px;padding:6px 8px 22px}
-  .brand .mark{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--accent),#5C8DF6);display:flex;align-items:center;justify-content:center;flex:0 0 auto}
-  .brand .mark svg{width:18px;height:18px}
-  .brand .name{font-weight:700;letter-spacing:.3px;color:#fff;font-size:15px;line-height:1.1}
-  .brand .name small{display:block;font-weight:500;font-size:10.5px;letter-spacing:2px;color:#7E8FB0;margin-top:2px}
-  .navlbl{font-size:10.5px;letter-spacing:1.4px;text-transform:uppercase;color:#5F6F8E;margin:18px 8px 8px}
-  .nav a{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;color:#C8D3E6;text-decoration:none;font-size:13.5px;font-weight:500;cursor:pointer}
-  .nav a .ic{width:16px;height:16px;opacity:.85;flex:0 0 auto}
-  .nav a.active{background:rgba(47,107,240,.18);color:#fff}
-  .nav a.soft{color:#6C7C9B}
-  .nav a .soon{margin-left:auto;font-size:9.5px;letter-spacing:.6px;color:#6C7C9B;border:1px solid #2C3C5C;border-radius:20px;padding:1px 7px}
-  .side .foot{margin-top:auto;font-size:11px;color:#5F6F8E;padding:14px 8px 2px;border-top:1px solid #1C2A45}
+  body{font-family:var(--serif);background:var(--screen);color:var(--text);-webkit-font-smoothing:antialiased;font-size:14.5px;line-height:1.5}
+  a{color:inherit} button{font-family:var(--sans)}
+  :focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+  .app{display:grid;grid-template-columns:256px 1fr;min-height:100vh}
+  .side{background:var(--ink);color:var(--grey);display:flex;flex-direction:column;padding:20px 16px;border-right:1px solid var(--line-ink)}
+  .brand{display:flex;align-items:center;gap:12px;padding:4px 6px 18px;border-bottom:1px solid var(--line-ink)}
+  .brand .mark{width:34px;height:34px;flex:0 0 auto;display:flex;align-items:center;justify-content:center}
+  .brand .mark svg{width:34px;height:34px}
+  .brand .name{display:flex;flex-direction:column;line-height:1.15}
+  .brand .name .inst{font-family:var(--serif);font-weight:400;font-size:11px;color:#9AA7B3}
+  .brand .name .prod{font-family:var(--serif);font-weight:500;font-size:16px;color:#F4F1EA;margin:1px 0}
+  .brand .name .fn{font-family:var(--sans);font-weight:600;font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:#8998A6}
+  .navlbl{font-family:var(--sans);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:#5E6E7E;margin:20px 8px 9px}
+  .nav a{display:flex;align-items:center;gap:12px;padding:8px 10px;color:var(--grey);text-decoration:none;font-family:var(--sans);font-size:13px;font-weight:500;cursor:pointer;border-left:2px solid transparent}
+  .nav a:hover{color:#F3EFE6}
+  .nav a .ic{width:20px;height:20px;flex:0 0 auto;display:flex;align-items:center;justify-content:center}
+  .nav a .ic svg{width:20px;height:20px;display:block}
+  .nav a.active{color:#fff;border-left-color:var(--brass);background:linear-gradient(90deg,rgba(212,162,73,.13),transparent 72%)}
+  .nav a.cur{color:#F3EFE6}
+  .nav a.cur::after{content:"";width:5px;height:5px;border-radius:50%;background:var(--brass);margin-left:auto;flex:0 0 auto}
+  .nav a.soft{color:#566575}
+  .nav a .soon{margin-left:auto;font-family:var(--sans);font-size:8px;letter-spacing:.14em;color:#566575;border:1px solid var(--line-ink);border-radius:2px;padding:2px 6px}
+  .side .foot{margin-top:auto;font-family:var(--sans);font-size:10px;letter-spacing:.06em;color:#5E6E7E;padding:14px 8px 2px;border-top:1px solid var(--line-ink)}
   .main{display:flex;flex-direction:column;min-width:0}
-  .top{height:62px;background:var(--card);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:16px;padding:0 28px}
-  .top .pill{margin-left:auto;font-size:12px;color:var(--body);background:var(--bg);border:1px solid var(--line);border-radius:20px;padding:6px 12px;font-weight:600}
-  .avatar{width:32px;height:32px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
-  .wrap{padding:26px 28px 40px;max-width:1240px;width:100%}
-  .head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:18px}
-  .head h1{font-size:25px;font-weight:700;letter-spacing:-.2px}
-  .head p{color:var(--body);font-size:13.5px;margin-top:4px}
-  .btn{background:var(--accent);color:#fff;border:none;border-radius:9px;padding:11px 18px;font-weight:600;font-size:13.5px;font-family:var(--font);cursor:pointer;box-shadow:0 2px 8px rgba(47,107,240,.28)}
-  .btn:disabled{opacity:.55;cursor:default}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh)}
-  .card .ch{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--line)}
-  .card .ch h3{font-size:15px;font-weight:700}
-  .card .ch .sub{font-size:12px;color:var(--muted)}
+  .top{height:56px;background:var(--ink);border-bottom:1px solid var(--line-ink);display:flex;align-items:center;gap:16px;padding:0 28px}
+  .top .pill{margin-left:auto;font-family:var(--sans);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--grey);border:1px solid var(--line-ink);border-radius:2px;padding:6px 12px}
+  .avatar{width:30px;height:30px;border-radius:50%;border:1px solid var(--brass);color:#F3EFE6;background:transparent;display:flex;align-items:center;justify-content:center;font-family:var(--sans);font-size:11px;font-weight:600}
+  .wrap{padding:28px 40px 48px;max-width:1680px;width:100%;margin:0 auto}
+  .head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:22px;padding-bottom:16px;border-bottom:1px solid var(--line)}
+  .head h1{font-family:var(--serif);font-weight:300;font-size:30px;color:var(--ink)}
+  .head p{font-family:var(--serif);color:var(--body);font-size:15px;margin-top:6px;max-width:74ch}
+  .btn{background:var(--brass);color:var(--ink);border:1px solid var(--brass);border-radius:var(--r);padding:10px 18px;font-family:var(--sans);font-weight:600;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+  .btn:hover{background:var(--brass-deep);border-color:var(--brass-deep);color:#fff}
+  .btn:disabled{opacity:.5;cursor:default}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r)}
+  .card .ch{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 18px;border-bottom:1px solid var(--line)}
+  .card .ch h3{font-family:var(--serif);font-weight:500;font-size:17px;color:var(--ink)}
+  .card .ch .sub{font-family:var(--serif);font-size:14px;color:var(--body);margin-top:3px;line-height:1.45}
   .cb{padding:18px}
-  .fld{display:flex;flex-direction:column;gap:5px;position:relative}
-  .fld label{font-size:10.5px;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);font-weight:700}
-  .fld input{border:1px solid var(--line);border-radius:8px;padding:9px 11px;font-size:13.5px;font-family:var(--font);color:var(--ink);background:#fff;width:100%}
-  .fld input:focus{outline:none;border-color:var(--accent)}
+  .fld{display:flex;flex-direction:column;gap:6px;position:relative}
+  .fld label{font-family:var(--sans);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);font-weight:600}
+  .fld input{border:1px solid var(--line);border-radius:var(--r);padding:9px 11px;font-family:var(--serif);font-size:14px;color:var(--ink);background:#FFFDF8;width:100%}
+  .fld input:focus{outline:none;border-color:var(--brass);box-shadow:0 0 0 2px rgba(212,162,73,.28)}
   .searchrow{display:flex;gap:12px;align-items:end}
-  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;align-items:center}
-  .exchip{font-size:12px;font-weight:600;color:var(--body);background:var(--bg);border:1px solid var(--line);border-radius:20px;padding:6px 12px;cursor:pointer}
-  .exchip:hover{border-color:var(--accent);color:var(--accent)}
-  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin:20px 0}
-  .kpi{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;box-shadow:var(--sh)}
-  .kpi .l{font-size:11px;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);font-weight:600}
-  .kpi .v{font-size:29px;font-weight:700;letter-spacing:-.5px;margin-top:7px}
-  .kpi .s{font-size:12px;color:var(--body);margin-top:5px}
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;align-items:center}
+  .chips>span:first-child{font-family:var(--sans);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600}
+  .exchip{font-family:var(--sans);font-size:11px;letter-spacing:.03em;font-weight:500;color:var(--body);background:transparent;border:1px solid var(--line);border-radius:2px;padding:6px 11px;cursor:pointer}
+  .exchip:hover{border-color:var(--brass);color:var(--brass-deep)}
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin:22px 0;border-top:1px solid var(--ink)}
+  .kpi{padding:16px 20px 16px 0;border-right:1px solid var(--line)}
+  .kpi:last-child{border-right:none}
+  .kpi .l{font-family:var(--sans);font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);font-weight:600}
+  .kpi .v{font-family:var(--serif);font-weight:400;font-size:32px;margin-top:10px;color:var(--ink);font-variant-numeric:tabular-nums lining-nums;line-height:1}
+  .kpi .v.capbig{font-size:28px}
+  .kpi .s{font-family:var(--serif);font-size:14px;color:var(--body);margin-top:9px;line-height:1.5}
   .grid{display:grid;grid-template-columns:1.7fr 1fr;gap:16px}
-  #map{height:520px;width:100%;border-radius:0 0 var(--r) var(--r);z-index:1}
-  .legend{background:#fff;padding:9px 11px;border-radius:8px;box-shadow:var(--sh);font-size:12px;line-height:1.9}
-  .legend .sw{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:7px;vertical-align:-1px}
-  .brow{display:flex;align-items:center;gap:10px;margin:12px 0}
-  .brow .bl{width:96px;font-size:12.5px;color:var(--body);flex:0 0 auto;display:flex;align-items:center;gap:7px}
-  .brow .bl .sw{width:11px;height:11px;border-radius:3px;flex:0 0 auto}
-  .brow .bt{flex:1;background:var(--bg);border-radius:6px;height:20px;overflow:hidden}
-  .brow .bf{height:100%;border-radius:6px}
-  .brow .bv{width:118px;font-size:12px;font-weight:700;color:var(--ink);flex:0 0 auto;text-align:right}
-  .fnote{font-size:12px;color:var(--body);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-top:6px;line-height:1.5}
-  .spinner{width:14px;height:14px;border:2px solid rgba(255,255,255,.5);border-top-color:#fff;border-radius:50%;display:inline-block;animation:sp .7s linear infinite;margin-right:7px;vertical-align:-2px}
+  #map{height:540px;width:100%;z-index:1;filter:saturate(.8) contrast(.98)}
+  .legend{background:var(--paper);padding:10px 12px;border:1px solid var(--line);border-radius:2px;font-family:var(--sans);font-size:10px;letter-spacing:.05em;text-transform:uppercase;line-height:1.9;color:var(--body)}
+  .legend .sw{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:7px;vertical-align:-1px}
+  .brow{display:flex;align-items:center;gap:12px;margin:12px 0}
+  .brow .bl{width:108px;font-family:var(--sans);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--body);flex:0 0 auto;display:flex;align-items:center;gap:8px}
+  .brow .bl .sw{width:11px;height:11px;border-radius:2px;flex:0 0 auto}
+  .brow .bt{flex:1;background:transparent;border-bottom:1px solid var(--line);height:18px;position:relative}
+  .brow .bf{position:absolute;top:2px;height:14px}
+  .brow .bv{width:150px;font-family:var(--serif);font-size:13.5px;font-weight:500;color:var(--ink);flex:0 0 auto;text-align:right;font-variant-numeric:tabular-nums lining-nums}
+  .fnote{font-family:var(--serif);font-size:13px;color:var(--body);background:transparent;border:1px solid var(--line);border-left:2px solid var(--brass);padding:12px 14px;margin-top:12px;line-height:1.55}
+  .dtab{display:flex;flex-direction:column}
+  .drow{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:9px 4px;border-bottom:1px solid var(--line);font-family:var(--serif);font-size:13.5px;cursor:pointer}
+  .drow:hover{background:var(--brass-soft)}
+  .drow.hdr{cursor:default;font-family:var(--sans);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600;border-bottom:1px solid var(--ink)}
+  .drow.hdr:hover{background:transparent}
+  .drow .dk{flex:1;color:var(--body);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .drow .dv{width:120px;text-align:right;font-variant-numeric:tabular-nums lining-nums;color:var(--ink)}
+  .spinner{width:14px;height:14px;display:inline-block;margin-right:8px;vertical-align:-2px;position:relative}
+  .spinner::before{content:"";position:absolute;inset:0;border-radius:50%;border:1.5px solid currentColor;opacity:.25}
+  .spinner::after{content:"";position:absolute;inset:0;border-radius:50%;border:1.5px solid transparent;border-top-color:currentColor;animation:sp 1.4s linear infinite}
   @keyframes sp{to{transform:rotate(360deg)}}
   .hidden{display:none!important}
-  .capbig{font-size:15px}
+  @media(max-width:960px){.grid{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,1fr)}}
+  @media (prefers-reduced-motion: reduce){*{animation-duration:.001ms!important}}
 </style>
 </head>
 <body>
 <div class="app">
   <aside class="side">
     <div class="brand">
-      <span class="mark"><svg viewBox="0 0 24 24" fill="none"><path d="M3 12c4 0 5-7 9-7s5 14 9 7" stroke="#fff" stroke-width="2.1" stroke-linecap="round"/></svg></span>
-      <span class="name">Avia&nbsp;Cortex<small>INTELLIGENCE PLATFORM</small></span>
+      <span class="mark"><svg viewBox="0 0 34 34" fill="none" stroke="#C4CDD6" stroke-width="1.3" stroke-linecap="round"><circle cx="17" cy="17" r="12"/><ellipse cx="17" cy="17" rx="5" ry="12"/><line x1="5" y1="17" x2="29" y2="17"/><circle cx="17" cy="17" r="2" fill="#D4A249" stroke="none"/></svg></span>
+      <span class="name"><span class="inst">The Observatory</span><span class="prod">Meridian</span><span class="fn">ROUTE FORECASTING</span></span>
     </div>
     <div class="navlbl">Route Forecasting</div>
     <nav class="nav">
-      <a href="/"><span class="ic">▥</span> Dashboard</a>
-      <a href="/?mode=expert"><span class="ic">✦</span> Expert mode</a>
-      <a class="active" href="/catchment"><span class="ic">◎</span> Catchment</a>
-      <a href="/economics"><span class="ic">▤</span> Economics</a>
-      <a class="soft"><span class="ic">⛁</span> Data &amp; schedules</a>
-      <a href="/help"><span class="ic">?</span> Help</a>
+      <a href="/"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><ellipse cx="12" cy="12" rx="3.2" ry="8"/><line x1="4" y1="12" x2="20" y2="12"/><circle cx="12" cy="12" r="1.5" fill="#D4A249" stroke="none"/></svg></span> Dashboard</a>
+      <a href="/?mode=expert"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8 L7 20"/><path d="M12 8 L17 20"/><path d="M12 8 v-3"/><circle cx="12" cy="4.4" r="1.4" fill="#D4A249" stroke="none"/></svg></span> Expert mode</a>
+      <a class="active" href="/catchment"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><path d="M12 5 L14 12 L12 19 L10 12 Z"/><circle cx="12" cy="12" r="1.3" fill="#D4A249" stroke="none"/></svg></span> Catchment &amp; demand</a>
+      <a href="/economics"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6 v13"/><path d="M6 9 h12"/><path d="M6 9 L4 13.5 h4 Z"/><path d="M18 9 L16 13.5 h4 Z"/><path d="M9 19 h6"/><circle cx="12" cy="6" r="1.3" fill="#D4A249" stroke="none"/></svg></span> Economics</a>
+      <a href="/trackrecord" target="_blank"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13.5" r="7"/><path d="M12 13.5 V9.5"/><path d="M12 13.5 L15 15"/><path d="M10 4 h4"/><circle cx="12" cy="6.5" r="1.2" fill="#D4A249" stroke="none"/></svg></span> Track Record</a>
+      <a href="/methodology" target="_blank"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 20 L12 12.5 L16 20"/><path d="M12 12.5 V9.4"/><rect x="8.6" y="6" width="6.8" height="3.4" rx="0.5"/><path d="M15.4 7.7 H19"/><circle cx="19" cy="7.7" r="1.2" fill="#D4A249" stroke="none"/></svg></span> Method</a>
+      <a class="soft"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="14" height="14" rx="1"/><path d="M5 10 H19"/><path d="M5 14.5 H19"/><path d="M11 10 V19"/><circle cx="8" cy="7.5" r="1.1" fill="#D4A249" stroke="none"/></svg></span> Data &amp; schedules</a>
+      <a href="/help"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><path d="M9.7 9.5 a2.3 2.3 0 1 1 3.1 2.2 c-0.9 0.4 -1 0.9 -1 1.6"/><circle cx="11.8" cy="16" r="1.1" fill="#D4A249" stroke="none"/></svg></span> Help</a>
     </nav>
-    <div class="navlbl">Cortex products</div>
+    <div class="navlbl">The Observatory</div>
     <nav class="nav">
-      <a class="active" href="/"><span class="ic">✈</span> Route Forecasting</a>
-      <a class="soft"><span class="ic">⌖</span> Airport Forecasts <span class="soon">SOON</span></a>
-      <a class="soft"><span class="ic">◍</span> Global Forecasts <span class="soon">SOON</span></a>
-      <a class="soft"><span class="ic">◴</span> Design Day Schedule Forecasts <span class="soon">SOON</span></a>
+      <a class="cur" href="/"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><path d="M4.5 10 C 9 13, 15 13, 19.5 10"/><circle cx="12" cy="12.4" r="1.2" fill="#D4A249" stroke="none"/></svg></span> Meridian</a>
+      <a class="soft"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 18 L12 3 L19 18 A15 15 0 0 1 5 18 Z"/><path d="M12 3 L12 15"/><circle cx="12" cy="15" r="1.4" fill="#D4A249" stroke="none"/></svg></span> Airport Forecasts <span class="soon">SOON</span></a>
+      <a class="soft"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><path d="M12 4 V20 M4 12 H20"/><circle cx="12" cy="12" r="1.2" fill="#D4A249" stroke="none"/></svg></span> Global Forecasts <span class="soon">SOON</span></a>
+      <a class="soft"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13.5" r="7"/><path d="M12 13.5 V9.5"/><path d="M12 13.5 L15 15"/><path d="M10 4 h4"/><circle cx="12" cy="6.5" r="1.2" fill="#D4A249" stroke="none"/></svg></span> Design Day Schedules <span class="soon">SOON</span></a>
     </nav>
-    <div class="foot">Powered by Avia&nbsp;Cortex · prototype</div>
+    <div class="foot">Published by The Observatory · beta</div>
   </aside>
 
   <div class="main">
     <div class="top">
-      <span class="pill" id="ctxpill">Drive-time catchment</span>
+      <span class="pill" id="ctxpill">Catchment &amp; demand</span>
       <div class="avatar">JC</div>
     </div>
 
     <div class="wrap">
       <div class="head">
         <div>
-          <h1>Catchment</h1>
-          <p>Who an airport can actually reach: the resident population within drive time, and the share Cortex assumes it captures.</p>
+          <h1>Catchment and demand</h1>
+          <p>Who an airport can actually reach: the resident population within drive time, the share Meridian assumes it captures, and the biggest destination markets a nonstop could win back.</p>
         </div>
       </div>
 
@@ -127,7 +155,7 @@
             <button class="btn" id="go" style="flex:0 0 auto">Show catchment</button>
           </div>
           <div class="chips">
-            <span style="font-size:11.5px;color:var(--muted)">Try:</span>
+            <span>Try</span>
             <span class="exchip" data-a="SJC">SJC</span>
             <span class="exchip" data-a="SFO">SFO</span>
             <span class="exchip" data-a="London">London</span>
@@ -137,7 +165,7 @@
         </div>
       </div>
 
-      <div id="err" class="fnote hidden" style="border-color:var(--red);color:var(--red)"></div>
+      <div id="err" class="fnote hidden" style="border-left-color:var(--signal);color:var(--signal)"></div>
 
       <div id="results" class="hidden">
         <div class="kpis">
@@ -160,6 +188,11 @@
             </div>
           </div>
         </div>
+
+        <div class="card hidden" id="demandRow" style="margin-top:16px">
+          <div class="ch"><div><h3>Top destination markets</h3><div class="sub" id="demandSub">the catchment's biggest destination markets today, ranked by the leakage a nonstop could win back</div></div></div>
+          <div class="cb"><div class="dtab" id="demandTbl"></div><div class="fnote" id="demandNote">Click a market to open a full forecast on the dashboard.</div></div>
+        </div>
       </div>
     </div>
   </div>
@@ -168,8 +201,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script>
 const $=s=>document.querySelector(s);
-const BANDCOL={30:getComputedStyle(document.documentElement).getPropertyValue('--b30').trim()||'#0E9F6E',
-  60:'#5BB56B',90:'#C9781A',120:'#E08A2B',999:'#98A6BC'};
+// drive-time bands mapped to the brass intensity ramp (nearest darkest), plus grey beyond the practical catchment
+const BANDCOL={30:'#A97C33',60:'#D4A249',90:'#E4C489',120:'#F1E6CD',999:'#C4CDD6'};
 const BANDLBL={30:'0-30 min',60:'30-60 min',90:'60-90 min',120:'90-120 min',999:'120 min +'};
 function fmtM(n){ if(n>=1e6) return (n/1e6).toFixed(n>=1e7?0:1)+'m'; if(n>=1e3) return Math.round(n/1e3)+'k'; return String(Math.round(n)); }
 function fmtN(n){ return Math.round(n).toLocaleString('en-GB'); }
@@ -187,7 +220,7 @@ function ensureMap(lat,lon){
     const lg=L.control({position:'bottomright'});
     lg.onAdd=function(){const d=L.DomUtil.create('div','legend');
       d.innerHTML=[30,60,90,120,999].map(b=>`<div><span class="sw" style="background:${BANDCOL[b]}"></span>${BANDLBL[b]}</div>`).join('')
-        +`<div style="margin-top:4px"><span class="sw" style="background:#fff;border:2px solid #1F3864;border-radius:50%"></span>airport</div>`;
+        +`<div style="margin-top:4px"><span class="sw" style="background:#fff;border:2px solid #0F1B28;border-radius:50%"></span>airport</div>`;
       return d;};
     lg.addTo(MAP);
   }
@@ -220,12 +253,12 @@ function draw(d){
   });
   // nested isochrone-style hull fills, widest band first (drawn underneath)
   const order=[120,90,60,30];
-  const fillOp={30:.20,60:.15,90:.12,120:.09};
+  const fillOp={30:.22,60:.16,90:.13,120:.10};
   for(const b of order){
     const inside=locs.filter(l=>l.band<=b).map(l=>[l.lat,l.lon]);
     if(inside.length>=3){
       const h=hull(inside);
-      L.polygon(h,{color:BANDCOL[b],weight:1,opacity:.5,fillColor:BANDCOL[b],fillOpacity:fillOp[b]}).addTo(LAYER);
+      L.polygon(h,{color:BANDCOL[b],weight:1,opacity:.55,fillColor:BANDCOL[b],fillOpacity:fillOp[b]}).addTo(LAYER);
     }
   }
   // population points, sized by population
@@ -237,7 +270,7 @@ function draw(d){
   });
   // airport marker on top
   L.marker([a.lat,a.lon],{icon:L.divIcon({className:'',html:
-    `<div style="width:16px;height:16px;background:#fff;border:3px solid #1F3864;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,.4)"></div>`,
+    `<div style="width:16px;height:16px;background:#fff;border:3px solid #0F1B28;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,.4)"></div>`,
     iconSize:[16,16],iconAnchor:[8,8]})}).bindTooltip(`<b>${a.code}</b> ${a.city||''}`,{permanent:false,direction:'right'}).addTo(LAYER);
 
   $('#mapTitle').textContent=`${a.code} drive-time catchment`;
@@ -247,7 +280,7 @@ function draw(d){
   // KPIs
   $('#k_total').textContent=fmtM(d.total_pop);
   $('#k_total_s').textContent=`within ${Math.round(d.radius_km)} km · ${fmtN(d.total_pop)} people`;
-  $('#k_reach').textContent=fmtM(d.reach_120_pop);
+  // #k_reach (within 120-min) is set from the band sum below, so it is robust when the drive raster is absent
   $('#k_places').textContent=fmtN(d.locales.length);
   if(d.capture!=null){
     $('#k_cap').textContent=Math.round(d.capture*100)+'%';
@@ -258,16 +291,19 @@ function draw(d){
   } else {
     $('#k_cap').textContent='per route';
     $('#k_cap_s').textContent='modelled, not yet measured';
-    $('#capNote').innerHTML=`No measured capture is held for <b>${a.code}</b> yet, so Cortex models the share per route `+
+    $('#capNote').innerHTML=`No measured capture is held for <b>${a.code}</b> yet, so Meridian models the share per route `+
       `from drive time and competing service. Where we have survey or mobility data (as for SJC at 32%), that measured share replaces the model.`;
   }
 
   // band breakdown (from server bands, plus fallback recompute if raster absent)
   let bands=d.bands;
-  if(!raster){
+  if(!raster || !bands){
     bands={30:0,60:0,90:0,120:0,999:0};
     locs.forEach(l=>bands[l.band]=(bands[l.band]||0)+l.pop);
   }
+  // within-120 practical catchment = sum of the sub-120 bands (same fallback the panel uses; never 0 without the raster)
+  const reach120=[30,60,90,120].reduce((s,b)=>s+(+bands[b]||0),0);
+  $('#k_reach').textContent=fmtM(reach120 || d.reach_120_pop || 0);
   const tot=[30,60,90,120,999].reduce((s,b)=>s+(+bands[b]||0),0)||1;
   const mx=Math.max(...[30,90,60,120,999].map(b=>+bands[b]||0))||1;
   $('#bands').innerHTML=[30,60,90,120,999].map(b=>{
@@ -280,6 +316,26 @@ function draw(d){
   setTimeout(()=>MAP.invalidateSize(),120);
 }
 
+// Demand: rank the catchment's biggest destination markets by recapture leakage (/api/opportunities).
+function loadDemand(origin){
+  const row=$('#demandRow'), tbl=$('#demandTbl');
+  row.classList.remove('hidden');
+  tbl.innerHTML='<div class="fnote">Ranking destination markets…</div>';
+  fetch('/api/opportunities?origin='+encodeURIComponent(origin)).then(r=>r.json()).then(res=>{
+    if(!res||!res.ok){ tbl.innerHTML='<div class="fnote">'+((res&&res.error)||'No demand ranking available for this airport.')+'</div>'; return; }
+    renderDemand(res, origin);
+  }).catch(e=>{ tbl.innerHTML='<div class="fnote">Demand ranking unavailable.</div>'; });
+}
+function renderDemand(res, origin){
+  const ops=res.opportunities||[];
+  $('#demandSub').textContent=(res.origin_city||res.origin||origin)+" catchment · "+ops.length+" destination markets, ranked by recapture leakage (Sabre "+res.year+")";
+  const hdr='<div class="drow hdr"><span class="dk">Destination</span><span class="dv">Market (ew)</span><span class="dv" style="width:92px">Via home</span><span class="dv">Leakage (ew)</span></div>';
+  const body=ops.map(x=>'<div class="drow" data-o="'+(res.origin||origin)+'" data-d="'+x.dest+'"><span class="dk">'+x.dest_city+' <span style="color:var(--muted);font-size:11px">'+x.dest+'</span></span><span class="dv">'+fmtN(x.pax)+'</span><span class="dv" style="width:92px">'+Math.round((x.home_share||0)*100)+'%</span><span class="dv">'+fmtN(x.leakage)+'</span></div>').join('');
+  $('#demandTbl').innerHTML=hdr+(body||'<div class="fnote">No destination markets found for this airport.</div>');
+  $('#demandTbl').querySelectorAll('.drow:not(.hdr)').forEach(el=>el.onclick=()=>{
+    location.href='/?origin='+encodeURIComponent(el.dataset.o)+'&dest='+encodeURIComponent(el.dataset.d);
+  });
+}
 function load(){
   const q=$('#ap').value.trim(); if(!q){ return; }
   const btn=$('#go'); btn.disabled=true; btn.innerHTML='<span class="spinner"></span>Mapping…';
@@ -287,6 +343,7 @@ function load(){
   fetch('/api/catchment?place='+encodeURIComponent(q)).then(r=>r.json()).then(d=>{
     if(!d.ok){ $('#err').textContent=d.error||'could not load catchment'; $('#err').classList.remove('hidden'); $('#results').classList.add('hidden'); return; }
     draw(d);
+    loadDemand((d.airport&&d.airport.code)||q);
   }).catch(e=>{ $('#err').textContent=String(e.message||e); $('#err').classList.remove('hidden'); })
   .finally(()=>{ btn.disabled=false; btn.textContent='Show catchment'; });
 }

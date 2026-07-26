@@ -1,0 +1,14 @@
+year,pull_basis,ireland_poo_pax,uk_poo_pax,other_poo_pax,total_pax,uk_share_pct,basis
+2013,POO,396529,1025,482120,879675,0.1,one-way departures
+2014,ND,443651,1300,493175,938127,0.1,one-way departures
+2015,POO,493428,1890,559069,1054388,0.2,one-way departures
+2016,ND,470843,1896,629150,1101890,0.2,one-way departures
+2017,ND,542292,4190,746642,1293125,0.3,one-way departures
+2018,ND,738640,2611,968435,1709686,0.2,one-way departures
+2019,ND,736371,2770,1006336,1745477,0.2,one-way departures
+2020,,,,,,,2020 absent from store - gap not interpolated
+2021,ND,429962,3583,484103,917649,0.4,one-way departures
+2022,ND,547344,1062,702207,1250615,0.1,one-way departures
+2023,ND,645161,1834,923316,1570312,0.1,one-way departures
+2024,ND,796838,11596,1006151,1814585,0.6,one-way departures
+2025,ND,894682,1862,937466,1834011,0.1,one-way departures
