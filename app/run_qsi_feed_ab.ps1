@@ -53,11 +53,19 @@ param(
     [double]$MemReserve = 12,
 
     [string]$Years      = "2016,2017,2018,2019",
-    [string]$Python     = "py -3.12"
+
+    # The launcher and its arguments are SEPARATE. PowerShell's call operator takes the
+    # executable as its first token, so "py -3.12" passed as one string is looked up as a command
+    # literally named "py -3.12" and fails with CommandNotFoundException. That is what happened on
+    # the first run, 8 August 2026, after preflight had already passed.
+    [string]$Python     = "py",
+    [string]$PythonArgs = "-3.12"
 )
 
 $ErrorActionPreference = "Stop"
 $app = $PSScriptRoot
+$pyArgs = @()
+if ($PythonArgs) { $pyArgs = $PythonArgs.Split(" ") }
 New-Item -ItemType Directory -Force $TempDir | Out-Null
 New-Item -ItemType Directory -Force $OutDir  | Out-Null
 $log = Join-Path $OutDir "run.log"
@@ -121,11 +129,11 @@ $v1Out = Join-Path $OutDir "bt_v1_08Aug2026.csv"
 $v2Out = Join-Path $OutDir "bt_v2_qsifeed_08Aug2026.csv"
 
 Say "ARM 1 of 2: V1, the shipped feed. This is the control and it must run on today's code."
-& $Python.Split() (Join-Path $app "backtest.py") @common --out $v1Out 2>&1 | Tee-Object -Append -FilePath $log
+& $Python @pyArgs (Join-Path $app "backtest.py") @common --out $v1Out 2>&1 | Tee-Object -Append -FilePath $log
 Say ("ARM 1 done, exit {0}" -f $LASTEXITCODE)
 
 Say "ARM 2 of 2: V2, --qsi-feed at the default k. The only flag that differs."
-& $Python.Split() (Join-Path $app "backtest.py") @common --qsi-feed --wave-cache (Join-Path $app "qsi_wave_cache.duckdb") --out $v2Out 2>&1 | Tee-Object -Append -FilePath $log
+& $Python @pyArgs (Join-Path $app "backtest.py") @common --qsi-feed --wave-cache (Join-Path $app "qsi_wave_cache.duckdb") --out $v2Out 2>&1 | Tee-Object -Append -FilePath $log
 Say ("ARM 2 done, exit {0}" -f $LASTEXITCODE)
 
 Say "BOTH ARMS COMPLETE"
