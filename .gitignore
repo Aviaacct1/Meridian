@@ -62,6 +62,17 @@ bt_ab_*/
 *_direct.log
 run.log
 
+# bt2, the accuracy programme. Code and the experiment log are committed; artifacts and computed
+# intermediates are not, because they are 42MB of build output and they belong with the data.
+# bt2/README.md records the SHA-256 of every artifact behind a published claim, so a claim can be
+# traced to the thing that produced it even though the binary lives elsewhere.
+# Set AVIA_BT2_DIR to the data location so runs never write artifacts into the repo.
+bt2/*.pkl
+bt2/*.json
+!bt2/ddfs_packs/
+bt2/*.csv
+bt2/__pycache__/
+
 # machine config: the deck renderer's local paths. avia_config.example.json IS committed
 # as the template; the resolved copy never is, per point 4 of the tool standard.
 avia_config.json
