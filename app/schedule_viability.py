@@ -20,8 +20,24 @@ Avia Solutions Limited. All rights reserved.
 
 VIABLE_LF = 0.65        # below this, a long-haul schedule is not a proposition
 MARGINAL_LF = 0.75      # below this, it is thin and worth a second look
-PLANNING_LF = 0.80      # the fill a sized schedule is written to
-OPTIMISER_LF = 0.55     # cortex_app MIN_OPT_LF: keep the two the same on purpose
+
+# One owner per constant. PLANNING_LF was defined here AND in schedule_sizing, both at 0.80,
+# which is two numbers that have to be kept equal by whoever remembers. It belongs to the
+# sizer, because it is the fill a sized schedule is written to, so it is imported.
+# The fallback keeps this module standalone-testable, and it reports rather than pretending.
+try:
+    from schedule_sizing import PLANNING_LF
+except ImportError:                                    # pragma: no cover
+    PLANNING_LF = 0.80
+    _PLANNING_LF_IMPORT_FAILED = True
+
+# The optimiser's floor. Until 8 August 2026 this was 0.55, mirroring a MIN_OPT_LF of the same
+# value in cortex_app, with a comment asking whoever changed one to change the other. That is a
+# coupling maintained by memory, and cortex_app has now moved its floor to VIABLE_LF, so the
+# comment would have been the only thing left saying 0.55 was deliberate. It is defined as
+# VIABLE_LF, so the two cannot disagree: an optimiser that proposes a schedule this module would
+# call unviable is proposing something Avia would not show an airline.
+OPTIMISER_LF = VIABLE_LF
 
 
 def _pct(x, dp=0):
@@ -53,43 +69,49 @@ def schedule_viability(fc, min_lf=VIABLE_LF, target=PLANNING_LF, sized=False):
     if not lf or lf >= MARGINAL_LF:
         return None
 
-    # THE OPTIMISER OUTRANKS THIS CHECK, and it has to, because otherwise two
-    # house rules contradict each other in front of a client. This function is a
-    # heuristic with a 65% floor. /api/optimise is a profit-maximising sweep over
-    # the airline, the gauge, the frequency and the season, and it carries its
-    # own floor at 55%. On EDI to AUS it chose a summer 3x that makes 717,078 a
-    # year at 57%, and this check then called the same schedule "not a
-    # proposition". Both cannot be Avia's view. A seasonal service runs a lower
-    # average load by design, which is part of why the optimiser picked summer.
-    # So where the optimiser chose the schedule AND the schedule makes money, the
-    # finding is reported rather than objected to.
+    # THE OPTIMISER USED TO OUTRANK THIS CHECK. Revised 8 August 2026.
+    #
+    # The original reasoning was sound for the optimiser as it then was: two house rules must not
+    # contradict each other in front of a client, and /api/optimise was a profit-maximising sweep
+    # carrying its own floor at 55%. On EDI to AUS it chose a summer 3x returning 717,078 a year at
+    # 57% fill, and this check called the same schedule "not a proposition". Both could not be Avia's
+    # view, so the optimiser won.
+    #
+    # The cause has now gone. /api/optimise selects on passengers at the planning load factor, not
+    # profit, and takes its floor from VIABLE_LF in this module, so the two cannot disagree about what
+    # is presentable. Where no schedule clears the floor the optimiser says so itself, in
+    # `optimised.not_viable`.
+    #
+    # So the deferral is narrowed to where it was always legitimate: the MARGINAL band, 65% to 75%,
+    # where a seasonal service runs a lower average load by design. Below 65% this check speaks,
+    # because a warning that is now correct must not be suppressed by a workaround built for an
+    # objective that no longer exists. Removing the cause without removing the workaround is how a
+    # silenced check outlives its reason.
     opt = (fc or {}).get("optimised") or {}
     profit = opt.get("annual_profit")
     if opt and profit and profit > 0:
-        if lf >= OPTIMISER_LF:
+        if lf >= VIABLE_LF:
             return {"band": "OPTIMISER'S CHOICE", "load_factor": lf,
                     "frequency": freq, "sized_frequency": None, "was_sized": True,
                     "message": "The optimiser chose this schedule: %s%s a week%s, "
                                "planning at %s load and returning %s a year. It "
                                "swept the airline, the gauge, the frequency and "
-                               "the season and this was the most profitable. A "
-                               "fill below the usual planning target is a "
-                               "deliberate part of that answer, not an oversight."
+                               "the season and this filled closest to the planning "
+                               "target while clearing the viable floor. A fill "
+                               "below the planning target is a deliberate part of "
+                               "that answer, not an oversight."
                                % ((opt.get("airline") + ", ") if opt.get("airline") else "",
                                   opt.get("freq") or freq,
                                   (" over the %s season" % opt["season"])
                                   if opt.get("season") and opt["season"] != "annual" else "",
                                   _pct(lf), _money(profit)),
                     "question": ""}
-        # below even the optimiser's own floor, so it is worth saying out loud
-        return {"band": "THIN, OPTIMISED", "load_factor": lf, "frequency": freq,
-                "sized_frequency": None, "was_sized": True,
-                "message": "The optimiser chose this schedule and it returns %s a "
-                           "year, but at %s the fill is below the optimiser's own "
-                           "%s floor. Check the season and the gauge before this "
-                           "goes to an airline."
-                           % (_money(profit), _pct(lf), _pct(OPTIMISER_LF)),
-                "question": ""}
+        # Below the viable floor. The optimiser no longer proposes this as a recommendation: it
+        # reports the closest any schedule reached and flags optimised.not_viable. So this falls
+        # through to the ordinary bands below, and NOT A PROPOSITION is allowed to say so. Left as an
+        # explicit no-op with the reason, because the previous branch returned a softened
+        # "THIN, OPTIMISED" here and a reader needs to know that was removed on purpose.
+        pass
     band = "NOT A PROPOSITION" if lf < min_lf else "THIN"
     # "as entered" is wrong once the schedule has been sized, and the distinction
     # matters: a thin fill on a frequency the user chose is an input to change,

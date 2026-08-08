@@ -1231,8 +1231,29 @@ def api_optimise(origin: str, dest: str, airline: str = "", carrier_type: str = 
     _freqs = [int(freq)] if (freq and int(freq) > 0) else [3, 4, 5, 6, 7, 10, 14]     # client-fixed freq, else sweep
     _types = [carrier_type if carrier_type in ("FSC", "LCC", "ULCC") else "FSC"]   # type follows the operator, not swept (can't fly AA as a ULCC)
     _seasons = [season] if season in ("annual", "summer", "winter") else ["annual", "summer", "winter"]  # unselected = sweep schedule
-    best = None; best_any = None
-    MIN_OPT_LF = 0.55          # right-size: prefer the tightest gauge that still runs at a healthy load factor
+    # OBJECTIVE, changed 8 August 2026 (John). Passengers subject to the load factor reaching the
+    # planning band, not profit. The reasoning is the practice: nobody outside an airline knows how it
+    # prices transfer passengers internally and the external costs and revenues are estimates, so
+    # profit is directionally indicative guidance on whether a route is likely to make money. It is
+    # not the thing to optimise. It stays in the output, labelled, and comes out of the selection.
+    #
+    # Profit-max also fails in a specific way here. On a new market demand is floored at the capacity
+    # deployed, so passengers are a fixed multiple of capacity and profit-max reaches for the largest
+    # gauge at the highest frequency: EDI-AUS returned 43,730 two-way at 33% fill on 8 August and
+    # called it the best answer, while the tool's own viability banner said no airline would take it.
+    #
+    # The two constants come from the modules that own them, so there is one definition of each:
+    #   schedule_viability.VIABLE_LF   0.65  below this a long-haul schedule is not a proposition
+    #   schedule_sizing.PLANNING_LF    0.80  the fill a sized schedule is written to
+    # Avia never shows an airline a load factor below 65% and targets the mid to late seventies or low
+    # eighties: too high reads as implausible, too low and no airline engages. The old MIN_OPT_LF of
+    # 0.55 sat below the floor Avia would ever present, and the fallback below it dropped the floor
+    # altogether.
+    import schedule_sizing as _SS
+    import schedule_viability as _SV
+    VIABLE_LF = _SV.VIABLE_LF
+    TARGET_LF = _SS.PLANNING_LF
+    rows = []
     for cand in cands:
         for ct_i in _types:
             for sea_i in _seasons:
@@ -1255,16 +1276,33 @@ def api_optimise(origin: str, dest: str, airline: str = "", carrier_type: str = 
                     except Exception:
                         continue
                     prof = ranked[0]["annual_profit"]; lf = ranked[0].get("total_lf") or 0.0
-                    row = {"airline": cand, "aircraft": code, "freq": f, "ctype": ct_i, "season": sea_i,
-                           "annual_profit": prof, "demand": demand}
-                    if best_any is None or prof > best_any["annual_profit"]:
-                        best_any = row                           # profit-max regardless of fill (fallback)
-                    if lf >= MIN_OPT_LF and (best is None or prof > best["annual_profit"]):
-                        best = row                               # profit-max among gauges that fill to >= MIN_OPT_LF
-    if best is None:
-        best = best_any                                          # very thin route: nothing cleared the LF floor, take profit-max
-    if best is None:
+                    rows.append({"airline": cand, "aircraft": code, "freq": f, "ctype": ct_i,
+                                 "season": sea_i, "annual_profit": prof, "demand": demand,
+                                 "lf": float(lf)})
+    if not rows:
         return JSONResponse({"ok": False, "error": _explain_infeasible(origin, dest, dist_km, plan_lf)})
+
+    # SELECTION. The schedule whose planned fill sits nearest the target, among those clearing the
+    # viable floor. The tie-break is the HIGHER frequency, which is schedule_sizing._closest's own
+    # documented rule and is used here rather than reinvented: two schedules the same distance from
+    # the target are not equally good to propose, and the one with more flights carries more people
+    # and leaves more room in a soft season.
+    _closest = lambda rs: min(rs, key=lambda r: (abs(r["lf"] - TARGET_LF), -r["freq"]))
+    viable = [r for r in rows if r["lf"] >= VIABLE_LF]
+    if viable:
+        best = _closest(viable)
+        not_viable = None
+    else:
+        # NOT a silent fallback to profit-max, which is what this did before and is how a 33% fill
+        # became the recommended answer. Report the closest any schedule gets and say plainly that
+        # none of them is a proposition, because "no schedule reaches 65%, this route does not work"
+        # is a real answer an airport pays for and is the screening use the tool is for.
+        best = max(rows, key=lambda r: (r["lf"], r["freq"]))
+        not_viable = ("No schedule in the search reaches a %.0f%% planned load, which is the floor "
+                      "below which a long-haul route is not a proposition. The closest is %s at "
+                      "%d a week, planning at %.0f%%. Reported so the route can be screened out on "
+                      "the evidence; it is not a recommendation."
+                      % (VIABLE_LF * 100, best["aircraft"], best["freq"], best["lf"] * 100))
     final = calibrated_forecast(origin, dest, airline=(best["airline"] or None), carrier_type=best.get("ctype", carrier_type),
                                 aircraft=best["aircraft"], freq=best["freq"], econ_share=econ_share,
                                 plan_lf=plan_lf, bus_fare=bus_fare, with_econ=True, season=best.get("season", "annual"))
@@ -1272,11 +1310,32 @@ def api_optimise(origin: str, dest: str, airline: str = "", carrier_type: str = 
     _attach_range_margin(final, best["aircraft"])
     _attach_viability(final)
     if isinstance(final, dict):
+        # The fill the sweep selected on and the fill the forecast reports are computed differently:
+        # the sweep measures against TRUE demand (line above runs the engine with induced_floor=False,
+        # deliberately, so the sizing sees the market rather than the floor), while the returned
+        # forecast runs with the floor on. On an induced route those diverge, which is why a run on
+        # 8 August selected at 57% and reported 58.1%. Both are correct for what they measure, and
+        # the difference is now stated rather than left for a reader to notice.
+        _sel_lf = best.get("lf")
+        _rep_lf = ((final.get("capacity") or {}).get("load"))
+        _lf_note = None
+        if _sel_lf is not None and _rep_lf is not None and abs(float(_rep_lf) - float(_sel_lf)) >= 0.02:
+            _lf_note = ("selected on %.0f%% against the measured market and reports %.0f%% against "
+                        "the forecast as returned; the difference is the induced floor, which sets "
+                        "demand from the capacity deployed"
+                        % (float(_sel_lf) * 100, float(_rep_lf) * 100))
         final["optimised"] = {"airline": best["airline"], "airline_auto": (not al) and bool(best["airline"]),
                               "aircraft": best["aircraft"], "freq": best["freq"],
                               "carrier_type": best.get("ctype"), "carrier_type_auto": carrier_type not in ("FSC", "LCC", "ULCC"),
                               "season": best.get("season"), "season_auto": season not in ("annual", "summer", "winter"),
-                              "annual_profit": round(best["annual_profit"])}
+                              "annual_profit": round(best["annual_profit"]),
+                              # what it optimised FOR, so the output says which question it answered
+                              "objective": "passengers at the planning load factor",
+                              "target_lf": TARGET_LF, "viable_lf": VIABLE_LF,
+                              "selected_lf": (round(float(_sel_lf), 3) if _sel_lf is not None else None),
+                              "lf_basis_note": _lf_note,
+                              "not_viable": not_viable,
+                              "candidates": len(rows)}
     _record_run(origin, dest, best.get("season") or "annual")   # feeds the welcome-screen counter + recent runs
     return JSONResponse(final)
 

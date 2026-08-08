@@ -763,7 +763,18 @@ function render(d){
   $("#basis").textContent=`Demand from Sabre ${d.year} O&D and OAG schedules week ${d.week}. Steady-state estimate; the Expert view lets you project to a future start year.`;
   // Confidence band moved to the Track Record tab; the forecast summary shows only the new-market provenance flag.
   if(d.confidence && d.confidence.modelled){ $("#basis").textContent += "  New-market route: forecast is modelled from comparable launches, not a measured market."; }
-  if(d.optimised){ const op=d.optimised; $("#basis").textContent="Optimised for maximum profit: "+(op.airline?op.airline+(op.airline_auto?" (auto-chosen)":""):"selected airline")+" · "+op.aircraft+" · "+op.freq+"x/week.  "+$("#basis").textContent; }
+  // The objective changed on 8 August from maximum profit to passengers at the planning load factor,
+  // so this line now reads it from the payload rather than asserting it. A screen that names the
+  // wrong objective is worse than one that names none, because a reader takes it on trust.
+  if(d.optimised){ const op=d.optimised;
+    const _obj = op.objective ? ("Optimised for "+op.objective
+                   +(op.target_lf?" (target "+Math.round(op.target_lf*100)+"%, floor "+Math.round(op.viable_lf*100)+"%)":""))
+                : "Optimised";
+    $("#basis").textContent=_obj+": "+(op.airline?op.airline+(op.airline_auto?" (auto-chosen)":""):"selected airline")+" · "+op.aircraft+" · "+op.freq+"x/week.  "+$("#basis").textContent;
+    // Both notes are things the run knows and a reader would otherwise have to infer.
+    if(op.lf_basis_note) $("#basis").textContent += "  Load factor "+op.lf_basis_note+".";
+    if(op.not_viable) $("#basis").textContent += "  "+op.not_viable;
+  }
   // WHAT THIS RUN ANSWERED. The same city pair returns a different number depending
   // on whether an airline is attached, and both answers are right: the market on its
   // own is one question, a named carrier flying it with their connections is another.
