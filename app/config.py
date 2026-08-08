@@ -126,6 +126,24 @@ FORM41_DUCKDB = _env_path("AVIA_FORM41_DUCKDB", LOCAL_CACHE / "form41_p12.duckdb
 CASM_BENCHMARK = _env_path("AVIA_CASM_BENCHMARK", LOCAL_CACHE / "casm_benchmark.duckdb")  # carrier CASM/RASM + stage
 
 # ----------------------------------------------------------------------------
+# Root 4: ASSETS  (imagery and fonts: data with a rights record, never in the repo)
+# ----------------------------------------------------------------------------
+# Added 8 August 2026, when the deck renderer moved into the repo as deck/ and its
+# imagery libraries did not. 102MB of Observatory photography and 34MB of brand
+# imagery are data, and each carries a rights determination per image, so they live
+# beside the stores and are configured, not bundled. C:/assets on the Dev PC and
+# D:\assets on the workstation; AVIA_ASSETS moves the root in one place.
+ASSETS_DIR = _env_path("AVIA_ASSETS", Path("C:/assets"))
+# 51 images plus library.json, the manifest the deck generator reads.
+OBS_LIBRARY_DIR = _env_path("AVIA_OBS_LIBRARY", ASSETS_DIR / "observatory_library")
+# 15 images plus rights.json, the per-image rights determination.
+BRAND_LIBRARY_DIR = _env_path("AVIA_BRAND_LIBRARY", ASSETS_DIR / "brand_library")
+# Per-engagement photography and the generated chart PNGs for the BA LHR-SJC and
+# GOA-NYC reference decks. build_ba_sjc.py and build_goa_nyc.py need this to
+# reproduce those two decks; nothing on the live path reads it.
+ENGAGEMENT_ASSETS_DIR = _env_path("AVIA_ENGAGEMENT_ASSETS", ASSETS_DIR / "engagement")
+
+# ----------------------------------------------------------------------------
 # Shared master data (18 Products/Data) - read in place, never copied
 # ----------------------------------------------------------------------------
 SABRE_RAW_DIR = _env_path("AVIA_SABRE_RAW_DIR", DATA_ROOT / "18 Products" / "Data" / "Sabre" / "ODPOO")

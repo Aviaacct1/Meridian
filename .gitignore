@@ -53,6 +53,10 @@ master_v?_complete*.csv
 _dot_test.csv
 _smoke.csv
 
+# machine config: the deck renderer's local paths. avia_config.example.json IS committed
+# as the template; the resolved copy never is, per point 4 of the tool standard.
+avia_config.json
+
 # generated decks and workbooks. Outputs belong in the output folder, not the repo.
 # Already-tracked .pptx files at the root and in app/ stay tracked until they are
 # deliberately removed; this stops new ones arriving by accident.

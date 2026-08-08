@@ -1,0 +1,12 @@
+[
+ ["sjc_terminal", "Norman Y. Mineta San Jose International Airport terminal", 10],
+ ["sjc_airside",  "San Jose International Airport aircraft", 8],
+ ["sanjose_skyline", "Downtown San Jose California skyline", 10],
+ ["lhr_terminal", "Heathrow Airport Terminal 5", 10],
+ ["lhr_airside",  "British Airways Boeing 787 Heathrow", 8],
+ ["london_city",  "City of London skyline", 10],
+ ["apple_park",   "Apple Park Cupertino", 8],
+ ["googleplex",   "Googleplex Mountain View", 8],
+ ["nvidia_hq",    "Nvidia headquarters Santa Clara", 6],
+ ["silicon_valley", "Silicon Valley aerial Santa Clara County", 8]
+]

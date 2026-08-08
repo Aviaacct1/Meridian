@@ -16,16 +16,50 @@ import tempfile
 import market_research_module as MRM
 import city_pair_pptx_generator as CPG
 
-# Observatory deck path, opt-in. AVIA_DECK_STYLE=observatory turns it on; the
-# legacy unstyled generator stays the default until it has been run in anger.
-OBSERVATORY = os.environ.get("AVIA_DECK_STYLE", "").lower() == "observatory"
+# Paths come from config, never from here. config resolves every one through _env_path,
+# so a machine moves its assets by setting AVIA_ASSETS and changing no code.
+try:
+    import config as _CFG
+except Exception:                                   # pragma: no cover
+    _CFG = None
+
+# The Observatory deck path is the product, and from 8 August 2026 it is the default.
+# AVIA_DECK_STYLE=legacy returns the unstyled generator, which is kept only as a way back.
+# It was opt-in from the day it was written until 8 August, the variable was never set, and
+# so no deck the application produced had ever been through it. A switch that has to be
+# turned on to get the finished product is a switch pointing the wrong way.
+OBSERVATORY = os.environ.get("AVIA_DECK_STYLE", "observatory").lower() != "legacy"
+
+# The renderer lives in the repo, beside app/, as deck/. AVIA_DECK_V4 stays as an override
+# for a machine that has not moved yet, and should be retired once every machine has.
 _V4 = os.environ.get("AVIA_DECK_V4") or os.path.join(
-    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-    "Deck Generator", "v4")
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "deck")
 if OBSERVATORY and _V4 not in sys.path:
     sys.path.insert(0, _V4)
-OBS_LIBRARY = os.path.join(_V4, "observatory_library")
+
+# The imagery library is data with a rights record, so it is configured rather than
+# bundled: see config.ASSETS_DIR. The fixture assets that render_observatory and
+# test_visual_layer both read DO travel with the code, so they resolve inside deck/.
+OBS_LIBRARY = os.environ.get("AVIA_OBS_LIBRARY") or (
+    str(_CFG.OBS_LIBRARY_DIR) if _CFG is not None
+    else os.path.join("C:" + os.sep, "assets", "observatory_library"))
 OBS_ASSETS = os.path.join(_V4, "assets_obs")
+
+# A fallback must report. Both of these were silent: a missing deck/ folder failed on
+# import, and a missing library folder dropped the imagery resolver at line 417 below
+# and built a deck with no photography and no complaint.
+_DECK_OK = os.path.isdir(_V4)
+_LIBRARY_OK = os.path.isdir(OBS_LIBRARY)
+if OBSERVATORY and not _DECK_OK:
+    sys.stderr.write(
+        "pitch_report: the Observatory renderer is not at %s.\n"
+        "  Set AVIA_DECK_V4 to the deck folder, or AVIA_DECK_STYLE=legacy to fall back.\n"
+        % _V4)
+if OBSERVATORY and _DECK_OK and not _LIBRARY_OK:
+    sys.stderr.write(
+        "pitch_report: the Observatory imagery library is not at %s, so decks will build\n"
+        "  without photography. Set AVIA_OBS_LIBRARY or AVIA_ASSETS to where it lives.\n"
+        % OBS_LIBRARY)
 OBS_SAFE_FONTS = os.environ.get("AVIA_DECK_SAFE_FONTS", "1") != "0"
 # Product decks are published by The Aviation Observatory, the separate company, not
 # by Avia Solutions. Deliberate departure from the Avia house rule, product only.

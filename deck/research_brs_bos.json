@@ -1,0 +1,517 @@
+{
+ "route": "BRS-BOS",
+ "airline": "",
+ "origin_city": "Bristol",
+ "destination_city": "Boston",
+ "origin_country": "United Kingdom",
+ "destination_country": "United States",
+ "demand_profile": "mixed",
+ "route_type": "lcc_p2p",
+ "buyer_type": "airport",
+ "execution_date": "6 August 2026",
+ "executive_summary": "Bristol is the largest airport in the United Kingdom with no transatlantic service. In 2024 just 77,405 long-haul passengers departed Bristol while 3,367,653 from the same region travelled through Heathrow, an 80 per cent share held by an airport two hours away. Continental proved the market once, flying Newark daily for five and a half years on a 757 and carrying over 400,000 passengers before Air Passenger Duty and the recession ended it. What has changed since is the aircraft: a transatlantic narrowbody turns a route that needed a widebody's traffic into one that needs a fraction of it. Boston is the natural first market, at the shortest sector of any major United States gateway, into a state whose largest goods export market is the United Kingdom, and it is the destination Bristol's own £500m runway extension is designed to reach.",
+ "blocks": [
+  {
+   "block_id": "airport_overview",
+   "block_name": "The airport",
+   "relevance": "essential",
+   "summary": "Bristol handled 10,751,233 passengers in 2025, its largest ever total and England's third largest regional airport outside the South East. Its traffic is 84.5% international but almost entirely short haul: 77,405 long-haul passengers used Bristol in 2024 against 3.37m from the same region who used Heathrow.",
+   "presentation_text": "Bristol handled 10.75m passengers in 2025, its busiest year ever, and is England's third largest regional airport. Yet its 84% international traffic is almost entirely short haul: just 77,000 long-haul passengers use Bristol, while 3.4m from the same catchment route through Heathrow. A circa £500m planning application submitted in March 2026 would extend the runway by 170 metres expressly to open North America.",
+   "findings": [
+    {
+     "claim": "Bristol Airport handled its highest ever annual total in 2025, against a planning cap of 12 million",
+     "value": "10,751,233",
+     "unit": "passengers",
+     "year": "2025",
+     "relevance_to_case": "The airport sits circa 1.25m below its consented cap, so a new route needs no cap headroom to launch.",
+     "is_single_source": false,
+     "citations": [
+      {
+       "source_name": "Bristol Airport Limited, Q4 2025 compliance report",
+       "title": "",
+       "date": "2026",
+       "url": ""
+      },
+      {
+       "source_name": "WSP Planning Statement",
+       "title": "",
+       "date": "March 2026",
+       "url": ""
+      }
+     ]
+    },
+    {
+     "claim": "Long-haul passengers using Bristol in 2024, against 3,367,653 from the same region who used Heathrow, an 80% Heathrow share",
+     "value": "77,405",
+     "unit": "long-haul passengers",
+     "year": "2024",
+     "relevance_to_case": "This is the leakage a Boston service would recapture, on the airport's own evidence base.",
+     "is_single_source": true,
+     "citations": [
+      {
+       "source_name": "WSP Planning Statement, citing CAA Passenger Surveys",
+       "title": "",
+       "date": "March 2026",
+       "url": ""
+      }
+     ]
+    },
+    {
+     "claim": "Single runway 09/27, which the airport's own application calls relatively short for international operations",
+     "value": "2,011",
+     "unit": "metres",
+     "year": "2026",
+     "relevance_to_case": "The binding physical constraint: any narrowbody rotation must be assessed against 2,011m until the extension is built.",
+     "is_single_source": true,
+     "citations": [
+      {
+       "source_name": "WSP Planning Statement, para 2.4.1",
+       "title": "",
+       "date": "March 2026",
+       "url": ""
+      }
+     ]
+    },
+    {
+     "claim": "Hybrid planning application submitted March 2026 for 15 mppa, including an eastern runway extension and three terminal extensions",
+     "value": "170",
+     "unit": "metre runway extension",
+     "year": "2026",
+     "relevance_to_case": "The extension is sought expressly to enable North America, so launch timing is tied to a 2026 planning decision.",
+     "is_single_source": false,
+     "citations": [
+      {
+       "source_name": "North Somerset Council, ref 26/P/0686/OU2",
+       "title": "",
+       "date": "29 April 2026",
+       "url": ""
+      },
+      {
+       "source_name": "Bristol Airport Limited",
+       "title": "",
+       "date": "27 March 2026",
+       "url": ""
+      }
+     ]
+    },
+    {
+     "claim": "Investment proposed in the 15 mppa application",
+     "value": "circa £500m",
+     "unit": "",
+     "year": "2026",
+     "relevance_to_case": "Signals an airport partner already committed to long haul as a named strategic objective.",
+     "is_single_source": false,
+     "citations": [
+      {
+       "source_name": "Bristol Airport Limited",
+       "title": "",
+       "date": "27 March 2026",
+       "url": ""
+      },
+      {
+       "source_name": "BBC News",
+       "title": "",
+       "date": "25 November 2024",
+       "url": ""
+      }
+     ]
+    },
+    {
+     "claim": "Continental Airlines flew the only US nonstop ever operated from Bristol, to Newark, from 20 May 2005 to 7 November 2010 on 172-seat Boeing 757-200s",
+     "value": "400,000+",
+     "unit": "passengers carried",
+     "year": "2005-2010",
+     "relevance_to_case": "The market sustained a daily 757 for five and a half years and failed on yield mix and Air Passenger Duty, not on load factor.",
+     "is_single_source": false,
+     "citations": [
+      {
+       "source_name": "Simple Flying",
+       "title": "",
+       "date": "12 October 2022",
+       "url": ""
+      },
+      {
+       "source_name": "Business Traveller",
+       "title": "",
+       "date": "7 April 2010",
+       "url": ""
+      }
+     ]
+    },
+    {
+     "claim": "Share of Bristol passengers who were international in 2024, with 16% travelling on business and business travel back to pre-pandemic levels",
+     "value": "84.5%",
+     "unit": "",
+     "year": "2024",
+     "relevance_to_case": "Confirms a genuine international gateway with a recovered business segment to support a premium cabin.",
+     "is_single_source": true,
+     "citations": [
+      {
+       "source_name": "WSP Planning Statement, Table 2.3",
+       "title": "",
+       "date": "March 2026",
+       "url": ""
+      }
+     ]
+    },
+    {
+     "claim": "easyJet and Ryanair together account for 77% of seat capacity across 115 destinations, with no incumbent long-haul or network carrier",
+     "value": "77%",
+     "unit": "of seats",
+     "year": "2025",
+     "relevance_to_case": "No competitive response on the route, but no in-house feed either beyond KLM over Amsterdam.",
+     "is_single_source": false,
+     "citations": [
+      {
+       "source_name": "WSP Planning Statement, citing OAG",
+       "title": "",
+       "date": "March 2026",
+       "url": ""
+      },
+      {
+       "source_name": "Bristol Airport Limited",
+       "title": "",
+       "date": "23 June 2025",
+       "url": ""
+      }
+     ]
+    }
+   ],
+   "data_gaps": [
+    "No published route-development incentive exists in the 2026/27 Fees and Charges or Conditions of Use. Claims to the contrary traced to AI-generated summaries with no primary source and were excluded. Incentive terms must come from the airport directly.",
+    "No catchment population by drive-time band, and no household income data for the catchment, in any citable public source.",
+    "No authoritative payload-range statement confirming an A321LR/XLR or 737 MAX 8 can operate BRS-BOS off 2,011m at the required take-off weight. Needs an OEM airport planning manual calculation against BRS elevation and temperature."
+   ]
+  },
+  {
+   "block_id": "corporate_links",
+   "block_name": "Corporate and sector links",
+   "relevance": "essential",
+   "summary": "Bristol hosts substantial named US operations in aerospace, defence and computing. Sector overlap with Boston is genuine on aerospace and advanced technology, and the UK is Massachusetts' largest goods export market, but Boston-specific corporate evidence is thinner than the generic transatlantic evidence.",
+   "presentation_text": "Bristol and Boston are two of the Atlantic's densest aerospace, defence and advanced-technology clusters. Boeing's UK defence headquarters sits in Bristol with 700 staff, HPE runs its UK research base there, and Archer Aviation opened a Bristol engineering hub in February 2026. Filton holds northern Europe's largest concentration of aerospace engineers. The United Kingdom is Massachusetts' largest single goods export market.",
+   "findings": [
+    {
+     "claim": "Boeing opened a 40,000 sq ft UK defence headquarters in Bristol Business Park in May 2024",
+     "value": "700",
+     "unit": "employees",
+     "year": "2024",
+     "relevance_to_case": "A US prime with headquarters-level presence generates recurring senior travel to US programme sites.",
+     "is_single_source": false,
+     "citations": [
+      {
+       "source_name": "Boeing UK",
+       "title": "",
+       "date": "14 May 2024",
+       "url": ""
+      },
+      {
+       "source_name": "ADS Advance",
+       "title": "",
+       "date": "2024",
+       "url": ""
+      }
+     ]
+    },
+    {
+     "claim": "Hewlett Packard Enterprise opened its UK research and development hub at Stoke Gifford in October 2024, consolidating storage, hybrid cloud, Hewlett Packard Labs and Cray supercomputing teams",
+     "value": "200+",
+     "unit": "employees",
+     "year": "2024",
+     "relevance_to_case": "A US-headquartered R&D site of this type is a repeat premium-cabin buyer.",
+     "is_single_source": true,
+     "citations": [
+      {
+       "source_name": "Hewlett Packard Enterprise",
+       "title": "",
+       "date": "10 October 2024",
+       "url": ""
+      }
+     ]
+    },
+    {
+     "claim": "Airbus employs over 14,000 people directly in the UK and describes its Filton site near Bristol as northern Europe's largest concentration of aerospace engineers",
+     "value": "14,000",
+     "unit": "UK direct jobs",
+     "year": "2025",
+     "relevance_to_case": "Sizes the engineering workforce inside the airport catchment that transatlantic aerospace travel is drawn from.",
+     "is_single_source": true,
+     "citations": [
+      {
+       "source_name": "Airbus",
+       "title": "",
+       "date": "accessed 6 August 2026",
+       "url": ""
+      }
+     ]
+    },
+    {
+     "claim": "The West of England aerospace, manufacturing and advanced engineering base, worth over £2.7bn",
+     "value": "51,000",
+     "unit": "jobs",
+     "year": "",
+     "relevance_to_case": "This is the sector that overlaps most directly with Boston's own aerospace and defence base.",
+     "is_single_source": true,
+     "citations": [
+      {
+       "source_name": "Invest Bristol & Bath",
+       "title": "",
+       "date": "accessed 6 August 2026",
+       "url": ""
+      }
+     ]
+    },
+    {
+     "claim": "The United Kingdom is Massachusetts' largest single goods export market, some 12% of the state total",
+     "value": "$4.5bn",
+     "unit": "Massachusetts goods exports to the UK",
+     "year": "2025",
+     "relevance_to_case": "Establishes the UK, not a third country, as Massachusetts' leading trade partner.",
+     "is_single_source": true,
+     "citations": [
+      {
+       "source_name": "Office of the United States Trade Representative",
+       "title": "",
+       "date": "accessed 6 August 2026",
+       "url": ""
+      }
+     ]
+    },
+    {
+     "claim": "Massachusetts biopharma employment, alongside 15.7% of the US drug development pipeline, though R&D employment fell 1.7% in 2024",
+     "value": "117,108",
+     "unit": "biopharma jobs",
+     "year": "2025",
+     "relevance_to_case": "Quantifies the Boston sector that dominates its inbound business travel, and flags that it is contracting.",
+     "is_single_source": false,
+     "citations": [
+      {
+       "source_name": "MassBio, 2025 Industry Snapshot",
+       "title": "",
+       "date": "August 2025",
+       "url": ""
+      },
+      {
+       "source_name": "WBUR",
+       "title": "",
+       "date": "26 August 2025",
+       "url": ""
+      }
+     ]
+    },
+    {
+     "claim": "US eVTOL developer Archer Aviation opened a UK engineering office in Bristol in February 2026, working with Anduril UK and GKN on Ministry of Defence autonomy programmes",
+     "value": "",
+     "unit": "",
+     "year": "2026",
+     "relevance_to_case": "The most recent inbound US investment into Bristol, built on collaboration that requires travel.",
+     "is_single_source": true,
+     "citations": [
+      {
+       "source_name": "Aerospace Testing International",
+       "title": "",
+       "date": "20 February 2026",
+       "url": ""
+      }
+     ]
+    },
+    {
+     "claim": "GKN Aerospace runs a 10,000 sq m research centre at Filton and aerostructures sites at Cromwell and Newington, Connecticut",
+     "value": "",
+     "unit": "",
+     "year": "2026",
+     "relevance_to_case": "The only South West company identified with confirmed New England operations, though in Connecticut not Boston.",
+     "is_single_source": true,
+     "citations": [
+      {
+       "source_name": "GKN Aerospace",
+       "title": "",
+       "date": "accessed 6 August 2026",
+       "url": ""
+      }
+     ]
+    },
+    {
+     "claim": "Boston College lists the University of Bristol among its formal bilateral student exchange partners",
+     "value": "",
+     "unit": "",
+     "year": "2026",
+     "relevance_to_case": "A standing two-way academic flow between the two cities.",
+     "is_single_source": true,
+     "citations": [
+      {
+       "source_name": "Boston College Office of Global Education",
+       "title": "",
+       "date": "accessed 6 August 2026",
+       "url": ""
+      }
+     ]
+    }
+   ],
+   "data_gaps": [
+    "No South West England company with a confirmed operation inside the Boston metro was found. The nearest verified New England presence is GKN Aerospace in Connecticut.",
+    "No Bristol to Boston sister-city agreement, chamber link or trade mission was found. The region's one signed transatlantic technology agreement is with Colorado, not Massachusetts.",
+    "No published employee counts for the US semiconductor design centres in Bristol, so the cluster cannot be sized."
+   ]
+  },
+  {
+   "block_id": "tourism",
+   "block_name": "Visitor demand",
+   "relevance": "essential",
+   "summary": "The UK and US are each other's largest long-haul visitor markets. The USA generated a record 5.6m visits to the UK in 2024 worth £7.3bn, while the UK sent 4.6m visitors to the US in 2025 and was the only large Western European market to grow. Massachusetts ranks fifth among states for overseas visitor spend.",
+   "presentation_text": "The USA is the UK's largest inbound market: a record 5.6m visits and £7.3bn of spend in 2024, at £1,301 per visit, 1.6 times the global average. In the other direction the UK is America's largest overseas market at 4.6m visitors in 2025, and one of very few that grew while overseas arrivals fell 2.5%. Bath and the Cotswolds inbound, Boston and the New England autumn outbound, gives two-directional demand spread across the seasons.",
+   "findings": [
+    {
+     "claim": "The United Kingdom is by far the largest overseas source market for the United States, and grew 0.5% in 2025 while overseas arrivals overall fell 2.5%",
+     "value": "4.6m",
+     "unit": "UK visitors to the US",
+     "year": "2025",
+     "relevance_to_case": "The largest single overseas flow into the US, and resilient even in a declining year.",
+     "is_single_source": false,
+     "citations": [
+      {
+       "source_name": "US National Travel and Tourism Office",
+       "title": "",
+       "date": "19 March 2026",
+       "url": ""
+      },
+      {
+       "source_name": "Travel Weekly",
+       "title": "",
+       "date": "9 February 2026",
+       "url": ""
+      }
+     ]
+    },
+    {
+     "claim": "The USA is the UK's largest inbound market, ahead of France on 3.6m and Germany on 3.3m, with record expenditure of £7.3bn",
+     "value": "5.6m",
+     "unit": "US visits to the UK",
+     "year": "2024",
+     "relevance_to_case": "The biggest long-haul feeder into the UK, so a regional gateway draws on a deep pool.",
+     "is_single_source": false,
+     "citations": [
+      {
+       "source_name": "Office for National Statistics, Travel trends 2024",
+       "title": "",
+       "date": "26 August 2025",
+       "url": ""
+      },
+      {
+       "source_name": "VisitBritain",
+       "title": "",
+       "date": "17 April 2026",
+       "url": ""
+      }
+     ]
+    },
+    {
+     "claim": "Average spend per US visit to the UK, 1.6 times the £818 global average, over an 8-night stay, with 51% of visits for holiday",
+     "value": "£1,301",
+     "unit": "per visit",
+     "year": "2024",
+     "relevance_to_case": "High-yield, long-staying, holiday-led inbound traffic supports premium cabin and ancillary assumptions.",
+     "is_single_source": true,
+     "citations": [
+      {
+       "source_name": "VisitBritain, citing ONS International Passenger Survey",
+       "title": "",
+       "date": "17 April 2026",
+       "url": ""
+      }
+     ]
+    },
+    {
+     "claim": "Inbound spend in the South West of England, the third highest of any English region outside London, up 4% on 2023 across 2.4m visits",
+     "value": "£1.5bn",
+     "unit": "inbound spend",
+     "year": "2024",
+     "relevance_to_case": "Quantifies the inbound prize in the Bristol catchment, though visits remain 8% below 2019.",
+     "is_single_source": true,
+     "citations": [
+      {
+       "source_name": "VisitBritain, Annual Inbound Update",
+       "title": "",
+       "date": "26 August 2025",
+       "url": ""
+      }
+     ]
+    },
+    {
+     "claim": "Visitors to Bath's Roman Baths and Pump Room, 29th among ALVA member attractions",
+     "value": "1,075,143",
+     "unit": "visitors",
+     "year": "2024",
+     "relevance_to_case": "Bath is the anchor attraction that makes the Bristol catchment saleable to US leisure.",
+     "is_single_source": true,
+     "citations": [
+      {
+       "source_name": "Association of Leading Visitor Attractions",
+       "title": "",
+       "date": "March 2025",
+       "url": ""
+      }
+     ]
+    },
+    {
+     "claim": "Overseas visitor spending in Massachusetts, the fifth highest of any US state, supporting 42,250 jobs across 1.5m overseas visits",
+     "value": "$7.7bn",
+     "unit": "visitor spend",
+     "year": "2024",
+     "relevance_to_case": "Confirms Boston's state as a top-five overseas destination, with the UK a leading contributor nationally.",
+     "is_single_source": true,
+     "citations": [
+      {
+       "source_name": "US National Travel and Tourism Office",
+       "title": "",
+       "date": "April 2026",
+       "url": ""
+      }
+     ]
+    },
+    {
+     "claim": "Massachusetts' official tourism strategy names fall foliage as a peak season and the United Kingdom among five priority overseas markets",
+     "value": "",
+     "unit": "",
+     "year": "2026",
+     "relevance_to_case": "An official growth target, and the autumn season supports shoulder-month loads.",
+     "is_single_source": false,
+     "citations": [
+      {
+       "source_name": "Massachusetts Advisory Commission on Travel and Tourism",
+       "title": "",
+       "date": "22 July 2025",
+       "url": ""
+      },
+      {
+       "source_name": "Mass.gov",
+       "title": "",
+       "date": "19 August 2025",
+       "url": ""
+      }
+     ]
+    },
+    {
+     "claim": "US inbound recovery is incomplete and reversing: 2025 arrivals were 5.5% below 2024 and only 86% of 2019",
+     "value": "68,287,793",
+     "unit": "total US international arrivals",
+     "year": "2025",
+     "relevance_to_case": "Requires the case to treat US inbound growth as a downside risk, not an assumed tailwind.",
+     "is_single_source": false,
+     "citations": [
+      {
+       "source_name": "US National Travel and Tourism Office",
+       "title": "",
+       "date": "19 March 2026",
+       "url": ""
+      }
+     ]
+    }
+   ],
+   "data_gaps": [
+    "No published UK-specific visitor count or spend for Massachusetts or Boston, only the UK's national rank as third largest overseas spending market.",
+    "No current town-level figure for US visits to Bath or the Cotswolds; VisitBritain town data was last published for 2023.",
+    "Massachusetts international visitor totals conflict across official sources: 1.5m, 2.1m and 2.5m, with no reconciled basis published."
+   ]
+  }
+ ]
+}

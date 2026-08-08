@@ -1,0 +1,1237 @@
+{
+  "_contract": "Avia deck data contract v1",
+  "_author": "Avia Solutions",
+  "_source": "BA LHR-SJC validated 2015 deck (British Airways Master forecast slides (OS) 06Mar2015); acceptance test",
+  "route_metadata": {
+    "airline_name": "British Airways",
+    "airline_iata": "BA",
+    "origin_airport": "LHR",
+    "origin_city_code": "LON",
+    "destination_airport": "SJC",
+    "destination_city_code": "SJC",
+    "hub_airport": "LHR",
+    "aircraft_type": "B788",
+    "seats": 214,
+    "frequency_per_week": 7,
+    "service_year": 2016,
+    "distance_km": 8618.1,
+    "distance_nm": 4653.4,
+    "catchment_headline": {
+      "point_to_point_market": 249800,
+      "connecting_market_over_hub": 904500,
+      "connecting_market_over_destination": 1107200
+    }
+  },
+  "summary_and_schedule": {
+    "point_to_point_market": 249800,
+    "connecting_market_over_hub": 904500,
+    "connecting_market_over_destination": 1107200,
+    "catchment_note": "Based on AviaSolutions' San Jose Service Area catchment analysis",
+    "schedule": [
+      {
+        "sector": "LHR-SJC",
+        "dep_time": "11:30",
+        "arr_time": "14:30",
+        "operating_days": "Daily",
+        "aircraft": "B788",
+        "seats": 214,
+        "annual_seats": 77896,
+        "annual_pax": 65173,
+        "seat_factor": 0.837
+      },
+      {
+        "sector": "SJC-LHR",
+        "dep_time": "16:30",
+        "arr_time": "10:55+1",
+        "operating_days": "Daily",
+        "aircraft": "B788",
+        "seats": 214,
+        "annual_seats": 77896,
+        "annual_pax": 65173,
+        "seat_factor": 0.837
+      },
+      {
+        "sector": "TOTAL",
+        "dep_time": "",
+        "arr_time": "",
+        "operating_days": "7/wk each way",
+        "aircraft": "B788",
+        "seats": 214,
+        "annual_seats": 155792,
+        "annual_pax": 130346,
+        "seat_factor": 0.837
+      }
+    ],
+    "_schedule_times_note": "ASSUMPTION - representative schedule; real times are a deck input"
+  },
+  "segment_forecast": {
+    "rows": [
+      {
+        "segment": "Origin (UK) Business",
+        "base_annual_demand": 71400,
+        "annual_growth_rate": 0.09,
+        "demand_at_service_year": 77900,
+        "stimulation_factor": 1.15,
+        "demand_after_stimulation": 89600,
+        "capture_rate": 0.4,
+        "forecast": 35800,
+        "pdew": 49.2
+      },
+      {
+        "segment": "Origin (UK) Leisure/VFR Primary",
+        "base_annual_demand": 36400,
+        "annual_growth_rate": 0.09,
+        "demand_at_service_year": 39700,
+        "stimulation_factor": 1.0,
+        "demand_after_stimulation": 39700,
+        "capture_rate": 0.2,
+        "forecast": 7900,
+        "pdew": 10.9
+      },
+      {
+        "segment": "Origin (UK) Leisure/VFR Secondary",
+        "base_annual_demand": 17400,
+        "annual_growth_rate": 0.09,
+        "demand_at_service_year": 19000,
+        "stimulation_factor": 1.0,
+        "demand_after_stimulation": 19000,
+        "capture_rate": 0.2,
+        "forecast": 3800,
+        "pdew": 5.2
+      },
+      {
+        "segment": "Origin (UK) Leisure/VFR Contested",
+        "base_annual_demand": 4600,
+        "annual_growth_rate": 0.09,
+        "demand_at_service_year": 5000,
+        "stimulation_factor": 1.0,
+        "demand_after_stimulation": 5000,
+        "capture_rate": 0.05,
+        "forecast": 300,
+        "pdew": 0.4
+      },
+      {
+        "segment": "Destination (US) Business",
+        "base_annual_demand": 65900,
+        "annual_growth_rate": 0.09,
+        "demand_at_service_year": 71900,
+        "stimulation_factor": 1.15,
+        "demand_after_stimulation": 82700,
+        "capture_rate": 0.22,
+        "forecast": 18200,
+        "pdew": 25.0
+      },
+      {
+        "segment": "Destination (US) Leisure/VFR Primary",
+        "base_annual_demand": 33600,
+        "annual_growth_rate": 0.075,
+        "demand_at_service_year": 36100,
+        "stimulation_factor": 1.0,
+        "demand_after_stimulation": 36100,
+        "capture_rate": 0.3,
+        "forecast": 10800,
+        "pdew": 14.8
+      },
+      {
+        "segment": "Destination (US) Leisure/VFR Secondary",
+        "base_annual_demand": 16100,
+        "annual_growth_rate": 0.075,
+        "demand_at_service_year": 17300,
+        "stimulation_factor": 1.0,
+        "demand_after_stimulation": 17300,
+        "capture_rate": 0.3,
+        "forecast": 5200,
+        "pdew": 7.1
+      },
+      {
+        "segment": "Destination (US) Leisure/VFR Contested",
+        "base_annual_demand": 4300,
+        "annual_growth_rate": 0.075,
+        "demand_at_service_year": 4600,
+        "stimulation_factor": 1.0,
+        "demand_after_stimulation": 4600,
+        "capture_rate": 0.15,
+        "forecast": 700,
+        "pdew": 1.0
+      }
+    ],
+    "summary": {
+      "point_to_point_total": {
+        "base_annual_demand": 249800,
+        "demand_at_service_year": 271500,
+        "demand_after_stimulation": 293900,
+        "capture_rate": 0.281,
+        "forecast": 82708,
+        "pdew": 113.6
+      },
+      "connecting_at_hub_total": {
+        "base_annual_demand": 904500,
+        "demand_at_service_year": 991300,
+        "demand_after_stimulation": 991300,
+        "capture_rate": 0.045,
+        "forecast": 45011,
+        "pdew": 61.8
+      },
+      "connecting_at_destination_total": {
+        "base_annual_demand": 1107200,
+        "demand_at_service_year": 1206800,
+        "demand_after_stimulation": 1206800,
+        "capture_rate": 0.002,
+        "forecast": 2628,
+        "pdew": 3.6
+      },
+      "grand_total": {
+        "base_annual_demand": 2261500,
+        "demand_at_service_year": 2469700,
+        "demand_after_stimulation": 2492100,
+        "capture_rate": 0.052,
+        "forecast": 130346,
+        "pdew": 179.0
+      }
+    },
+    "_competition_buckets": {
+      "connecting_at_hub": [
+        {
+          "bucket": "No direct competition",
+          "base": 904500,
+          "capture": 0.045,
+          "forecast": 45000
+        }
+      ],
+      "connecting_at_destination": [
+        {
+          "bucket": "Direct competition",
+          "base": 977800,
+          "capture": 0.001,
+          "forecast": 800
+        },
+        {
+          "bucket": "No direct competition",
+          "base": 129400,
+          "capture": 0.013,
+          "forecast": 1800
+        }
+      ]
+    }
+  },
+  "connecting_at_hub": {
+    "hub": "LHR",
+    "cities": [
+      {
+        "nr": 1,
+        "city_code": "PAR",
+        "city_name": "Paris",
+        "country": "France",
+        "annual_demand": 140521,
+        "airline_share": 0.03,
+        "annual_forecast": 4216,
+        "pdew": 5.8
+      },
+      {
+        "nr": 2,
+        "city_code": "DUB",
+        "city_name": "Dublin",
+        "country": "Ireland",
+        "annual_demand": 28174,
+        "airline_share": 0.09,
+        "annual_forecast": 2536,
+        "pdew": 3.5
+      },
+      {
+        "nr": 3,
+        "city_code": "MUC",
+        "city_name": "Munich",
+        "country": "Germany",
+        "annual_demand": 43810,
+        "airline_share": 0.054,
+        "annual_forecast": 2366,
+        "pdew": 3.2
+      },
+      {
+        "nr": 4,
+        "city_code": "CPT",
+        "city_name": "Cape Town",
+        "country": "South Africa",
+        "annual_demand": 5893,
+        "airline_share": 0.375,
+        "annual_forecast": 2212,
+        "pdew": 3.0
+      },
+      {
+        "nr": 5,
+        "city_code": "FRA",
+        "city_name": "Frankfurt",
+        "country": "Germany",
+        "annual_demand": 100810,
+        "airline_share": 0.02,
+        "annual_forecast": 2016,
+        "pdew": 2.8
+      },
+      {
+        "nr": 6,
+        "city_code": "DUS",
+        "city_name": "Dusseldorf",
+        "country": "Germany",
+        "annual_demand": 13088,
+        "airline_share": 0.137,
+        "annual_forecast": 1793,
+        "pdew": 2.5
+      },
+      {
+        "nr": 7,
+        "city_code": "AMS",
+        "city_name": "Amsterdam",
+        "country": "Netherlands",
+        "annual_demand": 60675,
+        "airline_share": 0.029,
+        "annual_forecast": 1767,
+        "pdew": 2.4
+      },
+      {
+        "nr": 8,
+        "city_code": "STO",
+        "city_name": "Stockholm",
+        "country": "Sweden",
+        "annual_demand": 25155,
+        "airline_share": 0.062,
+        "annual_forecast": 1555,
+        "pdew": 2.1
+      },
+      {
+        "nr": 9,
+        "city_code": "GVA",
+        "city_name": "Geneva",
+        "country": "Switzerland",
+        "annual_demand": 12128,
+        "airline_share": 0.126,
+        "annual_forecast": 1531,
+        "pdew": 2.1
+      },
+      {
+        "nr": 10,
+        "city_code": "HEL",
+        "city_name": "Helsinki",
+        "country": "Finland",
+        "annual_demand": 6606,
+        "airline_share": 0.196,
+        "annual_forecast": 1294,
+        "pdew": 1.8
+      },
+      {
+        "nr": 11,
+        "city_code": "CAI",
+        "city_name": "Cairo",
+        "country": "Egypt",
+        "annual_demand": 5501,
+        "airline_share": 0.235,
+        "annual_forecast": 1294,
+        "pdew": 1.8
+      },
+      {
+        "nr": 12,
+        "city_code": "MIL",
+        "city_name": "Milan",
+        "country": "Italy",
+        "annual_demand": 19567,
+        "airline_share": 0.065,
+        "annual_forecast": 1278,
+        "pdew": 1.8
+      },
+      {
+        "nr": 13,
+        "city_code": "BER",
+        "city_name": "Berlin",
+        "country": "Germany",
+        "annual_demand": 18020,
+        "airline_share": 0.07,
+        "annual_forecast": 1269,
+        "pdew": 1.7
+      },
+      {
+        "nr": 14,
+        "city_code": "GLA",
+        "city_name": "Glasgow",
+        "country": "United Kingdom",
+        "annual_demand": 4028,
+        "airline_share": 0.303,
+        "annual_forecast": 1219,
+        "pdew": 1.7
+      },
+      {
+        "nr": 15,
+        "city_code": "CPH",
+        "city_name": "Copenhagen",
+        "country": "Denmark",
+        "annual_demand": 32449,
+        "airline_share": 0.036,
+        "annual_forecast": 1173,
+        "pdew": 1.6
+      },
+      {
+        "nr": 16,
+        "city_code": "BCN",
+        "city_name": "Barcelona",
+        "country": "Spain",
+        "annual_demand": 22072,
+        "airline_share": 0.052,
+        "annual_forecast": 1155,
+        "pdew": 1.6
+      },
+      {
+        "nr": 17,
+        "city_code": "TLV",
+        "city_name": "Tel Aviv-Yafo",
+        "country": "Israel",
+        "annual_demand": 45892,
+        "airline_share": 0.023,
+        "annual_forecast": 1075,
+        "pdew": 1.5
+      },
+      {
+        "nr": 18,
+        "city_code": "ZRH",
+        "city_name": "Zurich",
+        "country": "Switzerland",
+        "annual_demand": 36924,
+        "airline_share": 0.029,
+        "annual_forecast": 1057,
+        "pdew": 1.5
+      },
+      {
+        "nr": 19,
+        "city_code": "ORK",
+        "city_name": "Cork",
+        "country": "Ireland",
+        "annual_demand": 3037,
+        "airline_share": 0.306,
+        "annual_forecast": 930,
+        "pdew": 1.3
+      },
+      {
+        "nr": 20,
+        "city_code": "JED",
+        "city_name": "Jeddah",
+        "country": "Saudi Arabia",
+        "annual_demand": 5336,
+        "airline_share": 0.153,
+        "annual_forecast": 815,
+        "pdew": 1.1
+      },
+      {
+        "nr": 21,
+        "city_code": "EDI",
+        "city_name": "Edinburgh",
+        "country": "United Kingdom",
+        "annual_demand": 5944,
+        "airline_share": 0.129,
+        "annual_forecast": 768,
+        "pdew": 1.1
+      },
+      {
+        "nr": 22,
+        "city_code": "OSL",
+        "city_name": "Oslo",
+        "country": "Norway",
+        "annual_demand": 9265,
+        "airline_share": 0.08,
+        "annual_forecast": 744,
+        "pdew": 1.0
+      },
+      {
+        "nr": 23,
+        "city_code": "ROM",
+        "city_name": "Rome",
+        "country": "Italy",
+        "annual_demand": 27549,
+        "airline_share": 0.026,
+        "annual_forecast": 715,
+        "pdew": 1.0
+      },
+      {
+        "nr": 24,
+        "city_code": "VIE",
+        "city_name": "Vienna",
+        "country": "Austria",
+        "annual_demand": 14304,
+        "airline_share": 0.049,
+        "annual_forecast": 697,
+        "pdew": 1.0
+      },
+      {
+        "nr": 25,
+        "city_code": "PRG",
+        "city_name": "Prague",
+        "country": "Czech Republic",
+        "annual_demand": 8455,
+        "airline_share": 0.068,
+        "annual_forecast": 576,
+        "pdew": 0.8
+      },
+      {
+        "nr": 26,
+        "city_code": "MAD",
+        "city_name": "Madrid",
+        "country": "Spain",
+        "annual_demand": 19730,
+        "airline_share": 0.029,
+        "annual_forecast": 576,
+        "pdew": 0.8
+      },
+      {
+        "nr": 27,
+        "city_code": "LYS",
+        "city_name": "Grenoble/Lyon",
+        "country": "France",
+        "annual_demand": 10060,
+        "airline_share": 0.057,
+        "annual_forecast": 569,
+        "pdew": 0.8
+      },
+      {
+        "nr": 28,
+        "city_code": "DXB",
+        "city_name": "Dubai",
+        "country": "UAE",
+        "annual_demand": 13038,
+        "airline_share": 0.043,
+        "annual_forecast": 557,
+        "pdew": 0.8
+      },
+      {
+        "nr": 29,
+        "city_code": "MAN",
+        "city_name": "Manchester",
+        "country": "United Kingdom",
+        "annual_demand": 13139,
+        "airline_share": 0.042,
+        "annual_forecast": 553,
+        "pdew": 0.8
+      },
+      {
+        "nr": 30,
+        "city_code": "BRU",
+        "city_name": "Brussels",
+        "country": "Belgium",
+        "annual_demand": 16663,
+        "airline_share": 0.031,
+        "annual_forecast": 516,
+        "pdew": 0.7
+      },
+      {
+        "nr": 31,
+        "city_code": "JNB",
+        "city_name": "Johannesburg",
+        "country": "South Africa",
+        "annual_demand": 9752,
+        "airline_share": 0.044,
+        "annual_forecast": 431,
+        "pdew": 0.6
+      },
+      {
+        "nr": 32,
+        "city_code": "EAP",
+        "city_name": "Basel/Mulhouse",
+        "country": "France",
+        "annual_demand": 6575,
+        "airline_share": 0.065,
+        "annual_forecast": 427,
+        "pdew": 0.6
+      },
+      {
+        "nr": 33,
+        "city_code": "NCE",
+        "city_name": "Nice",
+        "country": "France",
+        "annual_demand": 7306,
+        "airline_share": 0.057,
+        "annual_forecast": 418,
+        "pdew": 0.6
+      },
+      {
+        "nr": 34,
+        "city_code": "HAM",
+        "city_name": "Hamburg",
+        "country": "Germany",
+        "annual_demand": 12265,
+        "airline_share": 0.031,
+        "annual_forecast": 384,
+        "pdew": 0.5
+      },
+      {
+        "nr": 35,
+        "city_code": "IST",
+        "city_name": "Istanbul",
+        "country": "Turkey",
+        "annual_demand": 15646,
+        "airline_share": 0.023,
+        "annual_forecast": 356,
+        "pdew": 0.5
+      },
+      {
+        "nr": 36,
+        "city_code": "BUD",
+        "city_name": "Budapest",
+        "country": "Hungary",
+        "annual_demand": 8959,
+        "airline_share": 0.036,
+        "annual_forecast": 325,
+        "pdew": 0.4
+      },
+      {
+        "nr": 37,
+        "city_code": "ATH",
+        "city_name": "Athens",
+        "country": "Greece",
+        "annual_demand": 7547,
+        "airline_share": 0.043,
+        "annual_forecast": 324,
+        "pdew": 0.4
+      },
+      {
+        "nr": 38,
+        "city_code": "BFS",
+        "city_name": "Belfast",
+        "country": "United Kingdom",
+        "annual_demand": 1587,
+        "airline_share": 0.194,
+        "annual_forecast": 308,
+        "pdew": 0.4
+      },
+      {
+        "nr": 39,
+        "city_code": "VCE",
+        "city_name": "Venice",
+        "country": "Italy",
+        "annual_demand": 10673,
+        "airline_share": 0.028,
+        "annual_forecast": 296,
+        "pdew": 0.4
+      },
+      {
+        "nr": 40,
+        "city_code": "HAJ",
+        "city_name": "Hannover",
+        "country": "Germany",
+        "annual_demand": 4183,
+        "airline_share": 0.059,
+        "annual_forecast": 247,
+        "pdew": 0.3
+      },
+      {
+        "nr": 41,
+        "city_code": "ABV",
+        "city_name": "Abuja",
+        "country": "Nigeria",
+        "annual_demand": 546,
+        "airline_share": 0.435,
+        "annual_forecast": 237,
+        "pdew": 0.3
+      },
+      {
+        "nr": 42,
+        "city_code": "SNN",
+        "city_name": "Shannon",
+        "country": "Ireland",
+        "annual_demand": 4740,
+        "airline_share": 0.049,
+        "annual_forecast": 232,
+        "pdew": 0.3
+      },
+      {
+        "nr": 43,
+        "city_code": "GOT",
+        "city_name": "Goteborg",
+        "country": "Sweden",
+        "annual_demand": 8092,
+        "airline_share": 0.028,
+        "annual_forecast": 225,
+        "pdew": 0.3
+      },
+      {
+        "nr": 44,
+        "city_code": "ABZ",
+        "city_name": "Aberdeen",
+        "country": "United Kingdom",
+        "annual_demand": 975,
+        "airline_share": 0.207,
+        "annual_forecast": 202,
+        "pdew": 0.3
+      },
+      {
+        "nr": 45,
+        "city_code": "BLQ",
+        "city_name": "Bologna",
+        "country": "Italy",
+        "annual_demand": 3872,
+        "airline_share": 0.042,
+        "annual_forecast": 162,
+        "pdew": 0.2
+      },
+      {
+        "nr": 46,
+        "city_code": "NCL",
+        "city_name": "Newcastle",
+        "country": "United Kingdom",
+        "annual_demand": 1897,
+        "airline_share": 0.075,
+        "annual_forecast": 142,
+        "pdew": 0.2
+      },
+      {
+        "nr": 47,
+        "city_code": "MOW",
+        "city_name": "Moscow",
+        "country": "Russia",
+        "annual_demand": 10826,
+        "airline_share": 0.013,
+        "annual_forecast": 138,
+        "pdew": 0.2
+      },
+      {
+        "nr": 48,
+        "city_code": "BUH",
+        "city_name": "Bucharest",
+        "country": "Romania",
+        "annual_demand": 3326,
+        "airline_share": 0.038,
+        "annual_forecast": 128,
+        "pdew": 0.2
+      },
+      {
+        "nr": 49,
+        "city_code": "LIS",
+        "city_name": "Lisbon",
+        "country": "Portugal",
+        "annual_demand": 3808,
+        "airline_share": 0.03,
+        "annual_forecast": 115,
+        "pdew": 0.2
+      },
+      {
+        "nr": 50,
+        "city_code": "LAD",
+        "city_name": "Luanda",
+        "country": "Angola",
+        "annual_demand": 304,
+        "airline_share": 0.346,
+        "annual_forecast": 105,
+        "pdew": 0.1
+      },
+      {
+        "nr": 51,
+        "city_code": "TLS",
+        "city_name": "Toulouse",
+        "country": "France",
+        "annual_demand": 4835,
+        "airline_share": 0.021,
+        "annual_forecast": 99,
+        "pdew": 0.1
+      },
+      {
+        "nr": 52,
+        "city_code": "MRS",
+        "city_name": "Marseille",
+        "country": "France",
+        "annual_demand": 5654,
+        "airline_share": 0.016,
+        "annual_forecast": 91,
+        "pdew": 0.1
+      },
+      {
+        "nr": 53,
+        "city_code": "PSA",
+        "city_name": "Pisa",
+        "country": "Italy",
+        "annual_demand": 1311,
+        "airline_share": 0.066,
+        "annual_forecast": 87,
+        "pdew": 0.1
+      },
+      {
+        "nr": 54,
+        "city_code": "RUH",
+        "city_name": "Riyadh",
+        "country": "Saudi Arabia",
+        "annual_demand": 5400,
+        "airline_share": 0.015,
+        "annual_forecast": 81,
+        "pdew": 0.1
+      },
+      {
+        "nr": 55,
+        "city_code": "WAW",
+        "city_name": "Warsaw",
+        "country": "Poland",
+        "annual_demand": 5511,
+        "airline_share": 0.014,
+        "annual_forecast": 78,
+        "pdew": 0.1
+      },
+      {
+        "nr": 56,
+        "city_code": "LBA",
+        "city_name": "Leeds Bradford",
+        "country": "United Kingdom",
+        "annual_demand": 473,
+        "airline_share": 0.159,
+        "annual_forecast": 75,
+        "pdew": 0.1
+      },
+      {
+        "nr": 57,
+        "city_code": "STR",
+        "city_name": "Stuttgart",
+        "country": "Germany",
+        "annual_demand": 7098,
+        "airline_share": 0.009,
+        "annual_forecast": 63,
+        "pdew": 0.1
+      },
+      {
+        "nr": 58,
+        "city_code": "BEY",
+        "city_name": "Beirut",
+        "country": "Lebanon",
+        "annual_demand": 2502,
+        "airline_share": 0.021,
+        "annual_forecast": 53,
+        "pdew": 0.1
+      },
+      {
+        "nr": 59,
+        "city_code": "KWI",
+        "city_name": "Kuwait",
+        "country": "Kuwait",
+        "annual_demand": 1306,
+        "airline_share": 0.038,
+        "annual_forecast": 50,
+        "pdew": 0.1
+      },
+      {
+        "nr": 60,
+        "city_code": "DOH",
+        "city_name": "Doha",
+        "country": "Qatar",
+        "annual_demand": 1476,
+        "airline_share": 0.032,
+        "annual_forecast": 47,
+        "pdew": 0.1
+      },
+      {
+        "nr": 61,
+        "city_code": "ZAG",
+        "city_name": "Zagreb",
+        "country": "Croatia",
+        "annual_demand": 1668,
+        "airline_share": 0.025,
+        "annual_forecast": 43,
+        "pdew": 0.1
+      },
+      {
+        "nr": 62,
+        "city_code": "BIO",
+        "city_name": "Bilbao",
+        "country": "Spain",
+        "annual_demand": 1586,
+        "airline_share": 0.023,
+        "annual_forecast": 36,
+        "pdew": 0.0
+      },
+      {
+        "nr": 63,
+        "city_code": "LUX",
+        "city_name": "Luxembourg",
+        "country": "Luxembourg",
+        "annual_demand": 1643,
+        "airline_share": 0.02,
+        "annual_forecast": 33,
+        "pdew": 0.0
+      },
+      {
+        "nr": 64,
+        "city_code": "NBO",
+        "city_name": "Nairobi",
+        "country": "Kenya",
+        "annual_demand": 3757,
+        "airline_share": 0.007,
+        "annual_forecast": 28,
+        "pdew": 0.0
+      },
+      {
+        "nr": 65,
+        "city_code": "BGO",
+        "city_name": "Bergen",
+        "country": "Norway",
+        "annual_demand": 1251,
+        "airline_share": 0.016,
+        "annual_forecast": 21,
+        "pdew": 0.0
+      },
+      {
+        "nr": 66,
+        "city_code": "LOS",
+        "city_name": "Lagos",
+        "country": "Nigeria",
+        "annual_demand": 2750,
+        "airline_share": 0.007,
+        "annual_forecast": 18,
+        "pdew": 0.0
+      },
+      {
+        "nr": 67,
+        "city_code": "EBB",
+        "city_name": "Entebbe",
+        "country": "Uganda",
+        "annual_demand": 1294,
+        "airline_share": 0.013,
+        "annual_forecast": 17,
+        "pdew": 0.0
+      },
+      {
+        "nr": 68,
+        "city_code": "ACC",
+        "city_name": "Accra",
+        "country": "Ghana",
+        "annual_demand": 1194,
+        "airline_share": 0.012,
+        "annual_forecast": 15,
+        "pdew": 0.0
+      },
+      {
+        "nr": 69,
+        "city_code": "SVG",
+        "city_name": "Stavanger",
+        "country": "Norway",
+        "annual_demand": 1052,
+        "airline_share": 0.013,
+        "annual_forecast": 14,
+        "pdew": 0.0
+      },
+      {
+        "nr": 70,
+        "city_code": "CMB",
+        "city_name": "Colombo",
+        "country": "Sri Lanka",
+        "annual_demand": 979,
+        "airline_share": 0.014,
+        "annual_forecast": 14,
+        "pdew": 0.0
+      },
+      {
+        "nr": 71,
+        "city_code": "AUH",
+        "city_name": "Abu Dhabi",
+        "country": "UAE",
+        "annual_demand": 783,
+        "airline_share": 0.01,
+        "annual_forecast": 8,
+        "pdew": 0.0
+      },
+      {
+        "nr": 72,
+        "city_code": "BAH",
+        "city_name": "Bahrain",
+        "country": "Bahrain",
+        "annual_demand": 799,
+        "airline_share": 0.007,
+        "annual_forecast": 6,
+        "pdew": 0.0
+      },
+      {
+        "nr": 73,
+        "city_code": "SPU",
+        "city_name": "Split",
+        "country": "Croatia",
+        "annual_demand": 518,
+        "airline_share": 0.009,
+        "annual_forecast": 4,
+        "pdew": 0.0
+      },
+      {
+        "nr": 74,
+        "city_code": "IBZ",
+        "city_name": "Ibiza",
+        "country": "Spain",
+        "annual_demand": 115,
+        "airline_share": 0.027,
+        "annual_forecast": 3,
+        "pdew": 0.0
+      },
+      {
+        "nr": 75,
+        "city_code": "Other",
+        "city_name": "Other",
+        "country": "",
+        "annual_demand": 45675,
+        "airline_share": 0.0,
+        "annual_forecast": 6,
+        "pdew": 0.0
+      }
+    ],
+    "total": {
+      "annual_demand": 991300,
+      "annual_forecast": 45011,
+      "pdew": 61.8
+    }
+  },
+  "connecting_at_destination": {
+    "destination": "SJC",
+    "cities": [],
+    "total": {
+      "annual_demand": 1206800,
+      "annual_forecast": 2628,
+      "pdew": 3.6
+    },
+    "_note": "Per-city table extractable identically to connecting_at_hub; the SJC behind-feed is a 2,628-pax flow (US domestic over SJC). Buckets: direct-comp 800, no-direct-comp 1,800."
+  },
+  "revenue_forecast": {
+    "years": [
+      2016,
+      2017,
+      2018
+    ],
+    "passengers": {
+      "point_to_point": [
+        82708,
+        85106,
+        87574
+      ],
+      "connecting_at_hub": [
+        45011,
+        46316,
+        47659
+      ],
+      "connecting_at_destination": [
+        2628,
+        2704,
+        2782
+      ],
+      "total": [
+        130346,
+        134126,
+        138016
+      ]
+    },
+    "annual_capacity": [
+      155792,
+      155792,
+      155792
+    ],
+    "revenue": {
+      "point_to_point": [
+        84645831,
+        87100560,
+        89626476
+      ],
+      "connecting_at_hub": [
+        26636396,
+        27408851,
+        28203708
+      ],
+      "connecting_at_destination": [
+        2120647,
+        2182145,
+        2245428
+      ],
+      "cargo": [
+        7280000,
+        7644000,
+        8026200
+      ],
+      "ancillary": [
+        1036250,
+        1066302,
+        1097224
+      ],
+      "total": [
+        121719124,
+        125401858,
+        129199036
+      ]
+    },
+    "implied_load_factor": [
+      0.837,
+      0.861,
+      0.886
+    ]
+  },
+  "economics_year1": {
+    "equipment": "B788",
+    "weekly_departures": 7,
+    "total_departures_annual_two_way": 728,
+    "block_hours_per_departure": 10.5,
+    "cabin_seats": {
+      "business": 35,
+      "premium_coach": 25,
+      "coach": 154
+    },
+    "total_seats": 214,
+    "seats_per_departure": 214,
+    "cabin_load_factor": {
+      "business": null,
+      "premium_coach": null,
+      "coach": null
+    },
+    "total_load_factor": 0.837,
+    "avg_ow_fare_point_to_point": 1023.43,
+    "avg_ow_fare_connecting": 603.64,
+    "avg_ow_fare_blended": 870.01,
+    "yield_rev_per_rpk": 0.101,
+    "prask": 0.0845,
+    "passenger_revenue": 113402874,
+    "cargo_revenue": 7280000,
+    "ancillary_revenue": 1036250,
+    "total_revenue": 121719124,
+    "trask": 0.0907,
+    "cask": null,
+    "breakeven_load_factor": null
+  },
+  "revenue_build": {
+    "by_flow": {
+      "years": [
+        2016,
+        2017,
+        2018
+      ],
+      "point_to_point": [
+        84645831,
+        87100560,
+        89626476
+      ],
+      "connecting_at_hub": [
+        26636396,
+        27408851,
+        28203708
+      ],
+      "connecting_at_destination": [
+        2120647,
+        2182145,
+        2245428
+      ],
+      "cargo": [
+        7280000,
+        7644000,
+        8026200
+      ],
+      "ancillary": [
+        1036250,
+        1066302,
+        1097224
+      ]
+    },
+    "by_cabin": {
+      "years": [
+        2016,
+        2017,
+        2018
+      ],
+      "business": [
+        null,
+        null,
+        null
+      ],
+      "premium_coach": [
+        null,
+        null,
+        null
+      ],
+      "coach": [
+        null,
+        null,
+        null
+      ],
+      "_note": "Cabin revenue split needs the cabin fare x cabin pax split (Market Forecast Scenario slide / model cabin allocation); not in the revenue table extract."
+    }
+  },
+  "catchment": {
+    "zones": {
+      "primary": {
+        "definition": "Core San Jose service area - the inner catchment where SJC is the clear nearest gateway."
+      },
+      "secondary": {
+        "definition": "Wider Bay Area where SJC competes with SFO/OAK on access time."
+      },
+      "contested": {
+        "definition": "Outer overlap shared with SFO/OAK; demand split by generalised cost."
+      },
+      "_note": "Zone geometry and per-band population/demand come from the catchment module (cell-level apportionment); definitions here, figures wired from the model."
+    },
+    "top_markets_beyond_hub": [
+      {
+        "city": "Paris",
+        "city_code": "PAR",
+        "annual_demand": 140521
+      },
+      {
+        "city": "Frankfurt",
+        "city_code": "FRA",
+        "annual_demand": 100810
+      },
+      {
+        "city": "Amsterdam",
+        "city_code": "AMS",
+        "annual_demand": 60675
+      },
+      {
+        "city": "Tel Aviv-Yafo",
+        "city_code": "TLV",
+        "annual_demand": 45892
+      },
+      {
+        "city": "Munich",
+        "city_code": "MUC",
+        "annual_demand": 43810
+      },
+      {
+        "city": "Zurich",
+        "city_code": "ZRH",
+        "annual_demand": 36924
+      },
+      {
+        "city": "Copenhagen",
+        "city_code": "CPH",
+        "annual_demand": 32449
+      },
+      {
+        "city": "Dublin",
+        "city_code": "DUB",
+        "annual_demand": 28174
+      },
+      {
+        "city": "Rome",
+        "city_code": "ROM",
+        "annual_demand": 27549
+      },
+      {
+        "city": "Stockholm",
+        "city_code": "STO",
+        "annual_demand": 25155
+      },
+      {
+        "city": "Barcelona",
+        "city_code": "BCN",
+        "annual_demand": 22072
+      },
+      {
+        "city": "Madrid",
+        "city_code": "MAD",
+        "annual_demand": 19730
+      },
+      {
+        "city": "Milan",
+        "city_code": "MIL",
+        "annual_demand": 19567
+      },
+      {
+        "city": "Berlin",
+        "city_code": "BER",
+        "annual_demand": 18020
+      },
+      {
+        "city": "Brussels",
+        "city_code": "BRU",
+        "annual_demand": 16663
+      }
+    ]
+  }
+}
