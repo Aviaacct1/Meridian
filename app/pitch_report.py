@@ -9,17 +9,40 @@ numbers. The model never supplies a commercial figure: forecast, catchment and e
 from Cortex. Returns (deck_path, audit). Falls back to a clear error if no research key is set.
 """
 import os
+import sys
 import json
 import tempfile
 
 import market_research_module as MRM
 import city_pair_pptx_generator as CPG
+
+# Observatory deck path, opt-in. AVIA_DECK_STYLE=observatory turns it on; the
+# legacy unstyled generator stays the default until it has been run in anger.
+OBSERVATORY = os.environ.get("AVIA_DECK_STYLE", "").lower() == "observatory"
+_V4 = os.environ.get("AVIA_DECK_V4") or os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+    "Deck Generator", "v4")
+if OBSERVATORY and _V4 not in sys.path:
+    sys.path.insert(0, _V4)
+OBS_LIBRARY = os.path.join(_V4, "observatory_library")
+OBS_ASSETS = os.path.join(_V4, "assets_obs")
+OBS_SAFE_FONTS = os.environ.get("AVIA_DECK_SAFE_FONTS", "1") != "0"
+# Product decks are published by The Aviation Observatory, the separate company, not
+# by Avia Solutions. Deliberate departure from the Avia house rule, product only.
+DECK_AUTHOR = os.environ.get("AVIA_DECK_AUTHOR", "The Aviation Observatory")
 import research_provider as RP
 import pitch_verify as PV
 
-# essential + include blocks are researched; optional/skip are left out to control cost/latency
-_RESEARCH_RELEVANCE = {"essential", "include"}
-_MAX_BLOCKS = 7
+# Which blocks are researched. Optional blocks used to be cut, and the cap of seven
+# then cut one of the eight that remained, so a hub long-haul pitch reached the deck
+# with no education section, no non-cannibalisation section and no economic context.
+# The relevance matrix already decides what earns a place; a second cap on top of it
+# was removing sections nobody had chosen to remove. Set AVIA_RESEARCH_RELEVANCE to
+# "essential,include" and AVIA_RESEARCH_MAX_BLOCKS lower for a cheap test run.
+_RESEARCH_RELEVANCE = set(
+    x.strip() for x in os.environ.get(
+        "AVIA_RESEARCH_RELEVANCE", "essential,include,optional").split(",") if x.strip())
+_MAX_BLOCKS = int(os.environ.get("AVIA_RESEARCH_MAX_BLOCKS", "12"))
 
 
 def _enum(name, val, default=None):
@@ -92,8 +115,127 @@ def _pptx_config(fc, inputs):
     }
 
 
-def build_pitch(fc, inputs=None, provider=None, fetch_back=True):
-    """Returns (deck_path, audit_dict). Raises RuntimeError if no research provider is available."""
+# Slide types that carry evidence and therefore must carry an attribution line.
+# Covers, contents, dividers and the closing frame make no claim, so they do not.
+_CONTENT_SLIDES = {"stat_row", "keynumbers", "table", "figure", "prose", "grid", "plate"}
+
+
+def _deck_audit(spec):
+    """What to read after a run, without opening the deck.
+
+    Three things go wrong silently on this path: the value gets blanked and no
+    slide qualifies as a key number, a slide loses its attribution line, and a
+    section arrives with evidence but no argument. Report all three.
+    """
+    slides = spec["slides"]
+    try:
+        import deck_spec as DS
+        over = DS.check(spec, verbose=False)
+    except Exception:
+        over = []
+    return {
+        "slides": len(slides),
+        "over_budget": len(over),
+        "over_budget_detail": over[:20],
+        "by_type": {t: sum(1 for s in slides if s["type"] == t)
+                    for t in sorted({s["type"] for s in slides})},
+        "keynumbers_slides": sum(1 for s in slides if s["type"] == "keynumbers"),
+        "keynumbers_values": sum(len(s.get("items") or []) for s in slides
+                                 if s["type"] == "keynumbers"),
+        "slides_without_source": [
+            "%s (%s)" % (s.get("title") or s["type"], s["type"])
+            for s in slides if s["type"] in _CONTENT_SLIDES and not s.get("source")],
+    }
+
+
+def _prose_from_file(path, deck_blocks):
+    """Section prose written outside the pipeline, subject to the same guard.
+
+    Used when the writing pass is done by hand or in a chat session rather than by a
+    metered API call. The file is {"executive_summary": str, "blocks": {block_id: str}}.
+    Every paragraph is still checked against that block's findings, and one that
+    introduces a figure the research did not source is rejected, not repaired, exactly
+    as the model-written path is. The provenance is recorded as "file" so a deck built
+    this way is never mistaken for one the pipeline wrote unaided.
+    """
+    import json as _json
+    import pitch_prose as PP
+    with open(path, encoding="utf-8") as fh:
+        doc = _json.load(fh)
+    by_id = dict(doc.get("blocks") or {})
+    notes, flags = {}, {}
+    for b in deck_blocks:
+        text = (by_id.get(b["block_id"]) or "").strip()
+        if not text:
+            notes[b["block_id"]] = "no paragraph supplied"
+            continue
+        stray = PP.check_no_new_figures(text, b["findings"])
+        if stray:
+            notes[b["block_id"]] = "rejected, figures not in findings: %s" % ", ".join(stray[:5])
+            continue
+        b["presentation_text"] = text
+        notes[b["block_id"]] = "ok"
+        f = PP.house_style_flags(text)
+        if f:
+            flags[b["block_id"]] = f
+    summary = (doc.get("executive_summary") or "").strip()
+    allowed = [f for b in deck_blocks for f in (b.get("findings") or [])]
+    snote = "ok"
+    if summary:
+        stray = PP.check_no_new_figures(summary, allowed)
+        if stray:
+            summary, snote = "", "rejected, figures not in findings: %s" % ", ".join(stray[:5])
+    out = {"source": "file", "blocks": notes, "executive_summary": summary,
+           "executive_summary_note": snote,
+           "written": sum(1 for v in notes.values() if v == "ok")}
+    if flags:
+        out["house_style_flags"] = flags
+    return out
+
+
+def _write_prose(prov, deck_blocks, ctx, forecast_line=""):
+    """Fill presentation_text on every block, and write the one-page proposition.
+
+    The provider owns the model client, so the writing pass rides on it rather than
+    opening a second connection. A replay provider has no client, and the run then
+    proceeds with no prose, which the report already flags. Every paragraph is
+    checked against the findings before it is accepted.
+    """
+    getter = getattr(prov, "_client_obj", None)
+    if not callable(getter):
+        return {"skipped": "provider has no model client"}
+    try:
+        client = getter()
+    except Exception as e:
+        return {"skipped": "no model client: %s" % e}
+    import pitch_prose as PP
+    notes, flags = {}, {}
+    for b in deck_blocks:
+        text, note = PP.write_block(client, b["block_id"], b["block_name"],
+                                    b["findings"], ctx)
+        b["presentation_text"] = text
+        notes[b["block_id"]] = note
+        f = PP.house_style_flags(text)
+        if f:
+            flags[b["block_id"]] = f
+    summary, snote = PP.write_executive_summary(client, deck_blocks, ctx, forecast_line)
+    out = {"blocks": notes, "executive_summary": summary, "executive_summary_note": snote,
+           "written": sum(1 for v in notes.values() if v == "ok")}
+    if flags:
+        out["house_style_flags"] = flags
+    return out
+
+
+def build_pitch(fc, inputs=None, provider=None, fetch_back=True, contract=None,
+                currency="USD", prose_file=None):
+    """Returns (deck_path, html_path, audit_dict).
+
+    contract   a deck_contract dict. Without it the deck carries no forecast.
+    currency   stated by the caller, following the asset's home jurisdiction. It is
+               written into the revenue column head and never inferred.
+    prose_file section prose written outside the pipeline, same guard applied.
+    Raises RuntimeError if no research provider is available.
+    """
     inputs = dict(inputs or {})
     o = fc["origin"]; d = fc["dest"]
     _code = (inputs.get("airline_name") or fc.get("airline") or "").strip()
@@ -140,18 +282,151 @@ def build_pitch(fc, inputs=None, provider=None, fetch_back=True):
                    "unverified": "cited", "cited": "cited"}.get(conf, conf)
             src = (f.get("source_name") or "").strip()
             f["source_name"] = f"{src} - {lbl}" if src else lbl
-            f["value"] = ""   # the claim sentence already carries the figure; avoid a duplicate on the slide
+            # The legacy generator printed "claim (value)" on one bullet, so the
+            # figure had to be blanked to avoid printing it twice. The
+            # Observatory renderer sets the value as a separate display number
+            # beside the sentence, which is the house idiom, so it NEEDS the
+            # value. Keep it, and blank a copy only for the legacy path.
+            f["value_display"] = f.get("value") or ""
+            if not OBSERVATORY:
+                f["value"] = ""
             final.append(f)
         if final:
-            research_blocks[b.block_id] = {"findings": final, "summary": PV.block_summary(final)}
+            research_blocks[b.block_id] = {
+                "findings": final, "summary": PV.block_summary(final),
+                "block_name": getattr(b, "name", b.block_id), "relevance": rel}
         audit["blocks"].append({"block": b.block_id, "relevance": rel, "found": len(raw or []),
                                 "kept": len(final), "search_meta": meta, "decisions": block_audit})
         done += 1
 
+    # The quantitative core. Without a contract the deck is research only, which is
+    # what the first live run produced, so the absence is recorded rather than left
+    # to be noticed.
+    fcspec, fcline, assumptions = None, "", []
+    figures, route_facts, fig_sources = {}, [], {}
+    if OBSERVATORY:                   # forecast_spec lives with the v4 renderers
+        import forecast_spec as FS
+        if contract:
+            fcspec = FS.from_contract(contract, currency=currency)
+            fcline = FS.headline_sentence(contract)
+            assumptions = FS.assumptions_from_contract(contract)
+            audit["forecast"] = dict(FS.describe(fcspec), source="deck contract")
+            audit["figures"] = {"drawn": [], "not_drawn": {
+                "route_map": "contract path: deck_figures reads the engine "
+                             "output, not a deck contract",
+                "demand_build": "contract path: deck_figures reads the engine "
+                                "output, not a deck contract"}}
+        elif fc.get("demand") and not fc.get("_stub"):
+            # The figures are drawn BEFORE the forecast spec, because the
+            # segments table drops the rows the chart takes and has to know
+            # whether the chart drew.
+            import deck_figures as DF
+            figdir = os.path.join(tempfile.gettempdir(),
+                                  'avia_figs_{}_{}'.format(o["iata"], d["iata"]))
+            figures, fig_notes = DF.build(fc, figdir, source=FS.SOURCE)
+            route_facts = DF.route_facts(fc)
+            charted = bool(figures.get("demand_build"))
+            fcspec = FS.from_forecast(fc, currency=currency, charted=charted)
+            fcline = FS.headline_from_forecast(fc)
+            assumptions = FS.assumptions_from_forecast(fc)
+            audit["forecast"] = dict(FS.describe(fcspec), source="calibrated engine")
+            audit["figures"] = {"drawn": sorted(figures), "not_drawn": fig_notes}
+            if not charted:
+                # a fallback that reports: the table quietly reverting to the
+                # full build is exactly the shape of bug we fixed on 6 August
+                audit["figures"]["segments_table"] = (
+                    "reverted to the full demand build, because the chart that "
+                    "would have carried the volume rows did not draw")
+            # Does the schedule as entered stand up commercially. Never blocks: a
+            # client may print the schedule they asked for. It just says so first.
+            # _schedule_sized is set by the runner when --freq auto chose the
+            # frequency. It changes what a thin fill MEANS: on a frequency the
+            # user entered it is an input to change, on a sized one the market is
+            # the constraint and no frequency fixes it.
+            _v = FS.schedule_viability(fc, sized=bool(fc.get("_schedule_sized")))
+            if _v:
+                audit["schedule_viability"] = _v
+        else:
+            audit["forecast"] = {"present": False,
+                                 "note": "no contract and no engine demand; research only"}
+
+    # The airport charts. These come from the STORES, not from the research, so
+    # they are drawn whether or not there is a forecast: a research-only deck
+    # still has an origin and a destination, and the OAG, ACI and DOT series for
+    # both exist regardless. They are what fills the research sections, which ran
+    # about 60% empty on every deck before this.
+    if OBSERVATORY:
+        try:
+            import deck_figures as DF
+            figdir = os.path.join(tempfile.gettempdir(),
+                                  'avia_figs_{}_{}'.format(o["iata"], d["iata"]))
+            afigs, anotes, asrc = DF.build_airport(fc, figdir)
+            figures.update(afigs)
+            fig_sources.update(asrc)
+            fa = audit.setdefault("figures", {"drawn": [], "not_drawn": {}})
+            fa["drawn"] = sorted(set(fa.get("drawn") or []) | set(afigs))
+            fa.setdefault("not_drawn", {}).update(anotes)
+        except Exception as e:
+            audit.setdefault("figures", {}).setdefault("not_drawn", {})[
+                "airport_charts"] = "%s: %s" % (type(e).__name__, e)
+
     config = _pptx_config(fc, inputs)
     base = f'AviaCortex_Pitch_{o["iata"]}_{d["iata"]}'
     deck_path = os.path.join(tempfile.gettempdir(), base + ".pptx")
-    CPG.generate_presentation(config, research_blocks, deck_path)
+    if OBSERVATORY:
+        # house-style path: research -> deck_spec -> Observatory PowerPoint
+        import spec_from_research as SFR
+        import render_pptx as RPX
+        import avia_slots
+        # PV.block_summary returns a verification count, "5 sourced findings (3
+        # verified against the cited page)". The legacy generator set it as a
+        # caption under the bullets. The Observatory path reads `summary` as the
+        # section's opening paragraph AND as the divider strap, so a build
+        # statistic would print as the argument on a client-facing sales deck.
+        # Strip it for the deck and keep it in the audit. The section is then
+        # correctly reported as thin by missing_prose, which is the true state
+        # until a writing pass fills presentation_text.
+        deck_blocks = [{"block_id": bid, "block_name": b.get("block_name") or bid,
+                        "relevance": b.get("relevance", "include"),
+                        "summary": "", "presentation_text": "",
+                        "data_gaps": [], "findings": b["findings"]}
+                       for bid, b in research_blocks.items()]
+        # The writing pass. Findings remain the only source of fact; a paragraph
+        # that introduces a figure of its own is rejected and the section is
+        # reported as thin rather than shipped.
+        prose_audit = (_prose_from_file(prose_file, deck_blocks) if prose_file
+                       else _write_prose(prov, deck_blocks, ctx, fcline))
+        if prose_audit:
+            audit["prose"] = prose_audit
+        deck_research = {"origin_city": o["city"], "destination_city": d["city"],
+                         "executive_summary": prose_audit.get("executive_summary", "")
+                         if prose_audit else "",
+                         "blocks": deck_blocks}
+        spec = SFR.build_spec(
+            deck_research, forecast=fcspec,
+            codename=config.get("codename") or f'{o["iata"]}-{d["iata"]}',
+            title=config.get("deck_title")
+                  or f'A direct link between\n{o["city"]} and {d["city"]}',
+            strap=config.get("strap") or "",
+            prepared_for=config.get("prepared_for") or o.get("name") or "",
+            date=config.get("date") or "",
+            include_optional=True, max_sections=len(deck_blocks),
+            assumptions=assumptions, forecast_line=fcline, author=DECK_AUTHOR,
+            figures=figures, route_facts=route_facts, fig_sources=fig_sources)
+        resolver = None
+        if os.path.isdir(OBS_LIBRARY):
+            resolver = avia_slots.SlotResolver(
+                brand_library=OBS_LIBRARY, project=spec["meta"]["codename"],
+                origin=(o.get("lon"), o.get("lat")) if o.get("lon") else None,
+                use="confidential")
+        RPX.render(spec, deck_path, safe_fonts=OBS_SAFE_FONTS,
+                   assets_dir=OBS_ASSETS, resolver=resolver)
+        audit["sections_without_prose"] = SFR.missing_prose(deck_research)
+        audit["deck"] = _deck_audit(spec)
+        audit["block_verification"] = {bid: b.get("summary", "")
+                                       for bid, b in research_blocks.items()}
+    else:
+        CPG.generate_presentation(config, research_blocks, deck_path)
     # the interactive HTML digital pitch (self-contained, emailable, iPad-friendly)
     html_path = os.path.join(tempfile.gettempdir(), base + ".html")
     try:

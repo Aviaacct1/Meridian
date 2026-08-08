@@ -313,37 +313,61 @@ def _operated(oag, weeks, dep, arr):
     season's weekly frequency (the service level the airline actually offers when it operates)."""
     if isinstance(weeks, str):
         weeks = [weeks]
+    weeks = weeks or []
+    import re as _re
+    # each OAG row is one dated departure (frequency=1, seats_total = per-departure seats), so annual
+    # capacity is the SUM of seats_total over the year's departures. Classify the label granularities and
+    # NEVER double-count: prefer the MONTHLY labels (a true full-year sum); fall back to the WEEKLY snapshots
+    # (that week's seats x operating weeks) for routes/years the store only holds as snapshots (NA pre-2019,
+    # 2023+). Exclude the annual (YYYY) and half-year (YYYY-Hn) rollups so no granularity is summed twice.
+    monthly = [w for w in weeks if _re.fullmatch(r"\d{4}-\d{2}(p\d{2})?", w)]
+    weekly = [w for w in weeks if _re.fullmatch(r"\d{4}-\d{2}-\d{2}", w)]
     con = _con(oag)
     try:
+        # 1) MONTHLY full-year sum (Euro/Asia 2015-2019): annual = SUM(seats_total), no x52, no season blend
+        if monthly:
+            ph = ",".join("?" * len(monthly))
+            r = con.execute(
+                f"SELECT COALESCE(SUM(TRY_CAST(seats_total AS DOUBLE)),0), AVG(TRY_CAST(gcd_km AS DOUBLE)), "
+                f"COUNT(DISTINCT substr(week,1,7)), "
+                f"COALESCE(SUM(CASE WHEN dep_airport=? THEN TRY_CAST(frequency AS DOUBLE) ELSE 0 END),0) "
+                f"FROM oag WHERE week IN ({ph}) AND service_type='J' "
+                f"AND ((dep_airport=? AND arr_airport=?) OR (dep_airport=? AND arr_airport=?))",
+                [dep] + monthly + [dep, arr, arr, dep]).fetchone()
+            cap_m = float(r[0] or 0.0)
+            if cap_m > 0:
+                gcd = float(r[1]) if r[1] is not None else 0.0
+                nmo = int(r[2] or 0)
+                ann_deps = float(r[3] or 0.0)
+                if 0 < nmo < 12:                          # part-year (e.g. 2019 to Nov) -> full-year equivalent
+                    cap_m *= 12.0 / nmo
+                    ann_deps *= 12.0 / nmo
+                return cap_m, ann_deps / 52.0, gcd, ("annual" if nmo >= 11 else "seasonal")
+        # 2) WEEKLY snapshots (NA pre-2019, all 2023+): that week's seats x operating weeks, seasonal blend
         cap = {"S": 0.0, "W": 0.0}
         frq = {"S": 0.0, "W": 0.0}
         seen = set()
         gcds = []
-        for wk in (weeks or []):
+        for wk in weekly:
             r = con.execute(
-                "SELECT COALESCE(SUM(s*f),0), "
-                "COALESCE(SUM(CASE WHEN dep_airport=? THEN f ELSE 0 END),0), AVG(g) FROM ("
-                "SELECT dep_airport, COALESCE(TRY_CAST(seats_total AS DOUBLE),TRY_CAST(seats AS DOUBLE),0) s, "
-                "COALESCE(TRY_CAST(frequency AS DOUBLE),1) f, TRY_CAST(gcd_km AS DOUBLE) g FROM oag "
-                "WHERE week=? AND ((dep_airport=? AND arr_airport=?) OR (dep_airport=? AND arr_airport=?)))",
+                "SELECT COALESCE(SUM(TRY_CAST(seats_total AS DOUBLE)),0), "
+                "COALESCE(SUM(CASE WHEN dep_airport=? THEN TRY_CAST(frequency AS DOUBLE) ELSE 0 END),0), "
+                "AVG(TRY_CAST(gcd_km AS DOUBLE)) FROM oag WHERE week=? "
+                "AND ((dep_airport=? AND arr_airport=?) OR (dep_airport=? AND arr_airport=?))",
                 [dep, wk, dep, arr, arr, dep]).fetchone()
             s = _week_season(wk)
             seen.add(s)
-            cap[s] = max(cap[s], float(r[0] or 0))       # busiest week in that season's pull
+            cap[s] = max(cap[s], float(r[0] or 0))       # busiest week in that season's snapshot
             frq[s] = max(frq[s], float(r[1] or 0))
             if r[2] is not None:
                 gcds.append(float(r[2]))
         if "S" in seen and "W" in seen:
             annual_cap = cap["S"] * _SUMMER_WEEKS + cap["W"] * _WINTER_WEEKS
-            # service pattern from the two pulls: flew both -> annual; one only -> seasonal. A summer-only
-            # route graded against annual demand LOOKS over-forecast; it isn't, it's a seasonal business
-            # case. Tagged here so calibration can separate it (see SEASONALITY_CHECK.md; true seasonal
-            # DEMAND grading needs Nick's monthly Sabre pull, the O&D store is annual).
             service = "annual" if (cap["S"] > 0 and cap["W"] > 0) else \
                       "summer" if cap["S"] > 0 else "winter" if cap["W"] > 0 else "na"
-        else:                                            # only one season in the store: old behaviour
+        else:                                            # only one season snapshot: annualise x52
             annual_cap = (cap["S"] or cap["W"]) * 52.0
-            service = "unknown"                          # can't classify from a single-season store
+            service = "unknown"
         freq = frq["S"] if cap["S"] >= cap["W"] else frq["W"]
         gcd = (sum(gcds) / len(gcds)) if gcds else 0.0
         return annual_cap, freq, gcd, service
@@ -474,7 +498,17 @@ def asif_forecast(route, oag, sabre, served_cache, wby, stimulation=1.15, radius
             "capacity": annual_cap or 0, "natural": r["natural_market"], "propensity": r["qsi_share"],
             "propensity_basis": "qsi-share", "dest_count": hub, "gcd_km": gcd or 0, "service": service,
             "graded_season": graded_season, "season_share": round(season_share, 3),
-            "induced": bool(r.get("induced")), "avg_fare": r.get("avg_fare")}
+            "induced": bool(r.get("induced")), "avg_fare": r.get("avg_fare"),
+            # FULL forecast-time feature set (exported under --full-features) - the route's own operated
+            # schedule and the engine's internal QSI legs, so the feature search sees everything the engine
+            # knows, not a hand-picked subset. All are forecast-time (Y-1 / operated), no outturn leakage.
+            "freq": freq, "block_min": round(block, 1),
+            "gauge": round((annual_cap or 0) / (max(freq, 1) * 52.0 * 2), 1) if annual_cap else 0,
+            "dest_share": r.get("dest_share"), "stimulation": r.get("stimulation"),
+            "coverage": r.get("coverage_gross_up"), "premium_share": r.get("premium_share"),
+            "att_exponent": r.get("att_exponent"), "planned_lf": r.get("planned_load_factor"),
+            "freq_discount": r.get("freq_discount"), "haul_trim_applied": r.get("haul_trim"),
+            "od_source": r.get("od_source"), "capture_rate": r.get("capture_rate")}
 
 
 # ----------------------------------------------------------------------------- R2: parallel route pool
@@ -557,9 +591,38 @@ def _forecast_route(r):
             row["outturn_fare"] = route_avg_fare(c["sabre"], r["dep"], r["arr"], r["year"] + off)
         if c.get("nonstop_share"):    # connecting-heaviness diagnostic
             row["p2p_share"] = f.get("p2p_share")
+        if c.get("full_features"):    # complete route-level engine feature set for the feature search
+            for _k in ("freq", "block_min", "gauge", "dest_share", "stimulation", "coverage",
+                       "premium_share", "att_exponent", "planned_lf", "freq_discount",
+                       "haul_trim_applied", "od_source", "capture_rate", "avg_fare"):
+                row[_k] = f.get(_k)
         if c.get("decompose") and f.get("decomp"):   # T3: per-route error legs
             for _k, _v in f["decomp"].items():
                 row["d_" + _k] = _v
+        if c.get("horizons"):
+            # STEP 0: grade the ONE Y1-pinned forecast (growth + capacity fixed at Y1) against the pure-P2P
+            # outturn at Y+1/Y+2/Y+3; only the denominator moves (NOT the retired H7 forecast-growth overshoot).
+            # captured = the P2P forecast leg (pre-feed) = the same numerator as fc_over_p2p. mature=mean(Y2,Y3).
+            cap = f["captured"]
+            row["p2p_out_y1"] = round(p2p) if p2p else ""
+            row["fc_over_p2p_y1"] = round(ratio_p2p, 3) if ratio_p2p else ""
+            for h in (2, 3):
+                try:
+                    _ph = p2p_traffic(c["sabre"], r["dep"], r["arr"], r["year"] + h)
+                except Exception:
+                    _ph = 0
+                if _ph and _ph >= c["min_outturn"]:
+                    row[f"p2p_out_y{h}"] = round(_ph)
+                    row[f"fc_over_p2p_y{h}"] = round(cap / _ph, 3) if cap else ""
+                else:                                    # COVID gap / route not material at this horizon
+                    row[f"p2p_out_y{h}"] = ""; row[f"fc_over_p2p_y{h}"] = ""
+            _p2, _p3 = row["p2p_out_y2"], row["p2p_out_y3"]
+            if _p2 != "" and _p3 != "":
+                _pm = (_p2 + _p3) / 2.0
+                row["p2p_out_mature"] = round(_pm)
+                row["fc_over_p2p_mature"] = round(cap / _pm, 3) if cap else ""
+            else:
+                row["p2p_out_mature"] = ""; row["fc_over_p2p_mature"] = ""
         return row
     except Exception as e:
         return {"__error__": f"{r['dep']+'-'+r['arr']:12} {r.get('type',''):9} "
@@ -673,6 +736,17 @@ def main():
     ap.add_argument("--mature", action="store_true",
                     help="grade against Y2 (second full year, less launch-ramp noise) instead of Y1")
     ap.add_argument("--y3", action="store_true", help="grade against Y3 (most matured)")
+    ap.add_argument("--full-features", action="store_true",
+                    help="export the COMPLETE route-level engine feature set (route frequency, gauge, block "
+                         "time, and the QSI legs: dest_share, stimulation, coverage, premium_share, "
+                         "att_exponent, planned_lf, capture_rate, avg_fare) so the feature search sees "
+                         "everything the engine knows. Combine with --decompose --nonstop-share for the "
+                         "full substrate. All forecast-time, no outturn leakage.")
+    ap.add_argument("--horizons", action="store_true",
+                    help="STEP 0: grade ONE Y1-pinned forecast against Y1/Y2/Y3 and mature=mean(Y2,Y3) "
+                         "in a single run; report +/-20% and median fc/p2p by horizon + attrition. The "
+                         "forecast growth is held fixed (only the outturn/denominator year moves), so this "
+                         "is NOT the retired H7 overshoot. Forces --offset 1. ~2 extra Sabre queries/route.")
     ap.add_argument("--offset", type=int, default=None,
                     help="grade against launch year + OFFSET, overriding --mature/--y3. --offset 0 grades "
                          "against the LAUNCH-YEAR outturn (as-if Y-1), so 2024/2025 launches are gradeable "
@@ -797,6 +871,8 @@ def main():
             feed_cfg["logit_lambda"] = a.qsi_lambda
     keep_regions = set(s.strip().upper() for s in a.regions.split(",")) if a.regions else None
     offset = a.offset if a.offset is not None else (3 if a.y3 else 2 if a.mature else 1)   # Y+offset
+    if a.horizons:
+        offset = 1   # multi-horizon: the forecast is pinned at the Y1 reference; only the outturn year moves
 
     if not os.path.exists(a.oag):
         print(f"OAG store not found: {a.oag}"); return
@@ -903,7 +979,7 @@ def main():
            "market_factor": market_factor, "season_grade": a.season_grade,
            "induced_floor": a.induced_floor, "nonstop_share": a.nonstop_share,
            "decompose": a.decompose, "airport_factors": _airport_factors,
-           "fy_capacity": a.fy_capacity}
+           "fy_capacity": a.fy_capacity, "horizons": a.horizons, "full_features": a.full_features}
     # make sure the --out directory exists, so a long run never dies at the final write (e.g. a fresh
     # E:\Avia\QSI\backtests path). Created up front so --resume streaming also has somewhere to write.
     _outdir = os.path.dirname(os.path.abspath(a.out))
@@ -1083,6 +1159,54 @@ def main():
         print("    by haul:");   grp(fore_g, lambda r: bkt(r.get("gcd_km"), HAUL_E, HAUL_L), HAUL_L)
         print("    by hub:");    grp(fore_g, lambda r: "hub" if r.get("hub_dest") else "non-hub", ["hub", "non-hub"])
         print("    by market:"); grp(fore_g, lambda r: bkt(r.get("p2p_outturn"), MKT_E, MKT_L), MKT_L)
+
+    if a.horizons:
+        _HZ = [("Y1", "fc_over_p2p_y1", "p2p_out_y1"), ("Y2", "fc_over_p2p_y2", "p2p_out_y2"),
+               ("Y3", "fc_over_p2p_y3", "p2p_out_y3"), ("mature(Y2,Y3)", "fc_over_p2p_mature", "p2p_out_mature")]
+        print("\n  MULTI-HORIZON GRADING (Step 0): ONE Y1-pinned forecast, only the outturn year moves.")
+        print("    Forecastable P2P at each horizon (natural >= that horizon's P2P outturn); the Y1 row")
+        print("    reconciles with the FORECASTABLE deep-dive above (same population).")
+        print(f"    {'horizon':14} {'n':>4} {'median':>7} {'over':>5} {'under':>6} {'+/-20%':>9}")
+        for lbl, rk, pk in _HZ:
+            xs = [r[rk] for r in rows
+                  if r.get(rk) not in (None, "") and r.get(pk) not in (None, "")
+                  and (r.get("natural") or 0) >= (r.get(pk) or 0)]
+            if xs:
+                ov, un = balance(xs); w = sum(1 for x in xs if 0.8 <= x <= 1.2)
+                print(f"    {lbl:14} {len(xs):>4} {med(xs):>7.2f} {ov:>5} {un:>6} {w:>5}/{len(xs):<3}")
+            else:
+                print(f"    {lbl:14} {'0':>4}   (no gradeable outturn - COVID gap 2020-22 or attrition)")
+        _y1 = sum(1 for r in rows if r.get("p2p_out_y1") not in (None, ""))
+        _att = []
+        for lbl, _rk, pk in _HZ[:3]:
+            _sv = sum(1 for r in rows if r.get(pk) not in (None, ""))
+            _att.append(f"{lbl} {_sv}" + (f" ({_sv*100//_y1}%)" if _y1 else ""))
+        print("    survivorship (routes with a material P2P outturn at the horizon): " + ", ".join(_att))
+        # haul x horizon: the direct ramp test - does the long-haul over-read shrink as the outturn matures?
+        _HAUL_E, _HAUL_L = [800, 2500, 6000], ["<800km", "800-2500", "2500-6000", ">6000km"]
+        def _hb(v):
+            v = v or 0
+            for i, e in enumerate(_HAUL_E):
+                if v < e:
+                    return _HAUL_L[i]
+            return _HAUL_L[-1]
+        print("    by haul x horizon (median fc/p2p, +/-20% hit in brackets):")
+        print(f"    {'haul':11} {'Y1':>15} {'Y2':>15} {'Y3':>15}")
+        for hl in _HAUL_L:
+            cells = []
+            for lbl, rk, pk in _HZ[:3]:
+                xs = [r[rk] for r in rows
+                      if r.get(rk) not in (None, "") and r.get(pk) not in (None, "")
+                      and (r.get("natural") or 0) >= (r.get(pk) or 0) and _hb(r.get("gcd_km")) == hl]
+                if xs:
+                    w = sum(1 for x in xs if 0.8 <= x <= 1.2)
+                    cells.append(f"{med(xs):.2f} ({w}/{len(xs)})")
+                else:
+                    cells.append("-")
+            print(f"    {hl:11} {cells[0]:>15} {cells[1]:>15} {cells[2]:>15}")
+        print("    Read: if the long-haul (2500-6000km) over-read at Y1 falls toward 1.0 at Y2/Y3 it was a")
+        print("    start-up ramp and mature-horizon grading is the fix; if it holds ~2x it is a real distance")
+        print("    bias for the two-sided haul recalibration (then validate on the hold-out).")
 
     print(f"\ndropped from stats: {len(rows)-len(gradable)} routes (no P2P outturn / failed / < {MIN_OUTTURN})")
 

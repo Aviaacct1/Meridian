@@ -6,11 +6,17 @@ Any airport can see how the forecast engine has performed against every new rout
 there in the graded sample: forecast vs actual first-full-year outturn, as a distribution.
 No competing manual QSI can show an outturn record at all - transparency IS the pitch.
 
-Framing rules (agreed 4 Jul):
-- Lead with BIAS: the forecastable median near 1.0 with over/under roughly even is the strong,
-  honest claim. Raw within-10% is single digits for every forecaster in this industry, so the
-  spread is expressed as factor bands around the median (half of outcomes within x1.4, 80%
-  within x2.1), with within-10/20/30% shown in the table for completeness.
+Framing rules (agreed 4 Jul; revised 5 Aug 2026 for the BT2 calibrated evidence):
+- The claim structure follows the site positioning (QSI_SITE_ACCURACY_COPY.md): lead with the
+  CALIBRATED accuracy - 90% of 2,915 launches within +-20%, 83% within +-10% - stated as
+  calibrated, with blind validation (portfolios of twenty unseen routes within +-20% 94% of
+  the time, held across the COVID break) named alongside. Only the twenty-route portfolio
+  figure is published (John, 5 Aug): the ten-route 80% reads ambiguously against the
+  calibrated 89% headline. "Calibrated" and "blind/unseen" are
+  the load-bearing words; neither may borrow the other's number. The old factor-band framing
+  ("half within x1.4") belonged to the pre-BT2 engine and is retained in the tables only.
+- With a BT2-scored evidence file (engine=bt2 column) the page must NOT describe forecasts as
+  made "with no knowledge of the outcome" - that is the blind claim. Copy switches on _BT2_SOURCE.
 - FORECASTABLE vs INDUCED split, clearly labelled: forecastable (a pre-existing market at least
   the size the route carried) is the engine's real test; induced (the route created a market
   history didn't show) is the stimulation/judgement layer and reads low by construction.
@@ -26,6 +32,7 @@ USE:  /trackrecord?airport=STT on the portal, or offline:
 """
 import argparse
 import csv
+import random
 import html as _html
 import math
 import os
@@ -102,15 +109,28 @@ def _dest_fac(arr, market):
     return _ACAP.dest_thin_factor(arr, market) if _ACAP else 1.0
 
 
+_BT2_SOURCE = False   # set by load_rows: evidence file is BT2-scored (calibrated basis)
+_HAS_CORRECTED = False  # set by load_rows: corrected_fc_over_out actually carries values
+
 def load_rows(path):
+    global _BT2_SOURCE, _HAS_CORRECTED
     rows = []
     for r in csv.DictReader(open(path)):
         try:
             ratio = float(r.get("fc_over_out") or 0)
             if ratio <= 0:
                 continue
-            dfac = _dest_fac(r["arr"], float(r.get("natural") or 0))   # thin-market lift for under-credited destinations (SJC inbound)
-            corr = float(r.get("corrected_fc_over_out") or 0)   # in-sample ML correction (dev view); 0 if not scored
+            # thin-market lift for under-credited destinations (SJC inbound). Engine-era files only:
+            # BT2-scored files (engine=bt2) already carry every correction inside the model, so the
+            # lift would double-correct - skip it for those rows.
+            if r.get("engine") == "bt2":
+                _BT2_SOURCE = True
+                dfac = 1.0   # BT2 files carry every correction inside the model; the lift would double-correct
+            else:
+                dfac = _dest_fac(r["arr"], float(r.get("natural") or 0))
+            corr = float(r.get("corrected_fc_over_out") or 0)
+            if corr > 0:
+                _HAS_CORRECTED = True
             rows.append({
                 "route": r["route"], "dep": r["dep"], "arr": r["arr"],
                 "year": int(r["year"]), "region": r.get("region", ""),
@@ -143,19 +163,41 @@ def _stats(ratios):
             "w10": w(0.10), "w20": w(0.20), "w30": w(0.30)}
 
 
-def _hist(ratios, bins=13):
-    """Counts in log2(ratio) bins from 1/8x to 8x, outliers clamped into the end bins."""
-    lo, hi = -3.0, 3.0
+def _hist(ratios, bins=13, half=None):
+    """Counts in log2(ratio) bins, symmetric about 1.00, with the width read from the data.
+
+    The width used to be fixed at 1/8x to 8x, which was right for the old engine's
+    errors. On the calibrated basis almost every route lands inside 1/1.2x to 1.2x,
+    so a fixed wide axis puts the whole sample in the middle bar and the chart says
+    nothing. The half-width now covers the middle 98% of the sample, rounded up to a
+    readable step and floored so a handful of routes cannot produce a silly axis.
+
+    Returns (counts, labels, half). `half` is the log2 half-width the axis spans, and
+    the renderer needs it to place the bars and the plus or minus 20% band.
+    """
+    xs = sorted(math.log2(r) for r in ratios if r > 0)
+    if not xs:
+        return [0] * bins, [""] * bins, 3.0
+    if half is None:
+        lo = xs[int(0.01 * (len(xs) - 1))]
+        hi = xs[int(0.99 * (len(xs) - 1))]
+        need = max(abs(lo), abs(hi), math.log2(1.25))
+        for step in (0.25, 0.4, 0.6, 0.8, 1.2, 1.6, 2.0, 3.0):
+            if need <= step:
+                half = step
+                break
+        else:
+            half = 3.0
     counts = [0] * bins
-    for r in ratios:
-        v = max(lo, min(hi - 1e-9, math.log2(r)))
-        counts[int((v - lo) / (hi - lo) * bins)] += 1
+    for v in xs:
+        v = max(-half, min(half - 1e-9, v))
+        counts[int((v + half) / (2 * half) * bins)] += 1
     labels = []
     for i in range(bins):
-        c = lo + (i + 0.5) * (hi - lo) / bins
+        c = -half + (i + 0.5) * (2 * half) / bins
         f = 2 ** c
-        labels.append(("x%.1f" % f) if f >= 1 else ("1/%.1f" % (1 / f)))
-    return counts, labels
+        labels.append(("x%.2f" % f) if f >= 1 else ("1/%.2f" % (1 / f)))
+    return counts, labels, half
 
 
 def airport_track(rows, airport):
@@ -166,13 +208,17 @@ def airport_track(rows, airport):
     indu = [r for r in mine if not r["forecastable"]]
     regions = [rg for rg, _n in Counter(r["region"] for r in mine if r["region"]).most_common(2)]
 
-    basis, basis_rows = "airport", fore
-    if len(fore) < FLOOR:
-        peer = [r for r in rows if r["forecastable"] and r["region"] in regions] if regions else []
+    # BT2 calibrated evidence: the headline is the WHOLE book at the airport (John, 5 Aug 2026);
+    # the existing/new-market split stays in the detail table. Pre-BT2 files keep the old basis.
+    core = mine if _BT2_SOURCE else fore
+    pool = rows if _BT2_SOURCE else [r for r in rows if r["forecastable"]]
+    basis, basis_rows = "airport", core
+    if len(core) < FLOOR:
+        peer = [r for r in pool if r["region"] in regions] if regions else []
         if len(peer) >= PEER_MIN:
             basis, basis_rows = "peer", peer
         else:
-            basis, basis_rows = "global", [r for r in rows if r["forecastable"]]
+            basis, basis_rows = "global", pool
 
     years = sorted({r["year"] for r in rows})
     return {
@@ -184,9 +230,13 @@ def airport_track(rows, airport):
         "stats_induced": _stats([r["ratio"] for r in indu]),
         "hist": _hist([r["ratio"] for r in basis_rows]),
         # corrected (in-sample ML) view, ALWAYS on this airport's own forecastable routes (even below FLOOR)
-        "n_corr": len(fore),
-        "stats_corr": _stats([r["ratio_corr"] for r in fore]) if fore else None,
-        "hist_corr": _hist([r["ratio_corr"] for r in fore]) if fore else None,
+        "n_corr": len(fore) if _HAS_CORRECTED else 0,
+        "stats_corr": _stats([r["ratio_corr"] for r in fore]) if (fore and _HAS_CORRECTED) else None,
+        "hist_corr": _hist([r["ratio_corr"] for r in fore]) if (fore and _HAS_CORRECTED) else None,
+        # existing and new markets stay as a table under the one chart, not as a
+        # second chart: the airport headline is every launch at the airport
+        "split": [("Existing markets", _stats([r["ratio"] for r in fore])),
+                  ("New markets", _stats([r["ratio"] for r in indu]))],
         "routes": sorted(mine, key=lambda r: -r["year"])[:40],
     }
 
@@ -250,16 +300,17 @@ def _stat_row(label, s):
             f"<td>{s['w10']*100:.0f}%</td><td>{s['w20']*100:.0f}%</td><td>{s['w30']*100:.0f}%</td></tr>")
 
 
-def _svg_hist(counts, labels):
+def _svg_hist(counts, labels, half=3.0):
     """Error distribution to the Observatory grammar: ink bars, brass centre (on-the-money) bin,
     a dashed Signal-Red reference at the unbiased line (1.00), corner registration ticks and a
     provenance rail. Each bar counts routes by how far the forecast landed from the outcome."""
     mx = max(counts) or 1
     W, H, L, R, T, B = 760, 250, 34, 726, 34, 196
     n = len(counts)
-    span = 6.0                                  # -3..+3 log2
-    bx = lambda v: L + (v + 3.0) / span * (R - L)
-    b20l, b20r = bx(-math.log2(1.2)), bx(math.log2(1.2))
+    span = 2.0 * half                           # the axis width, read from the data
+    bx = lambda v: L + (v + half) / span * (R - L)
+    b20l = max(L, bx(-math.log2(1.2)))
+    b20r = min(R, bx(math.log2(1.2)))
     plot_h = B - T
     bw = (R - L) / n
     bars, ticks = [], []
@@ -303,12 +354,133 @@ def _svg_hist(counts, labels):
             f'more dependable the forecast.</div>')
 
 
+def _split_table(split):
+    """Existing against new markets, under the one chart rather than as a second chart.
+
+    John's ruling of 6 August: the airport headline is every launch at the airport,
+    and the split belongs in a table beneath it. Two charts of the same airport
+    invited a comparison the page was not actually drawing.
+    """
+    body = "".join(_stat_row(_html.escape(k), st) for k, st in (split or []))
+    if not body:
+        return ""
+    return (f'<table style="margin-top:16px"><thead><tr><th>Market</th><th>Routes</th>'
+            f'<th>Median</th><th>Over/under</th><th>Half within</th><th>80% within</th>'
+            f'<th>&plusmn;10%</th><th>&plusmn;20%</th><th>&plusmn;30%</th></tr></thead>'
+            f'<tbody>{body}</tbody></table>')
+
+
+def portfolios(rows, k=10, draws=4000, seed=7):
+    """Accuracy of a basket of k routes: summed forecast over summed outturn.
+
+    A buyer does not launch one route, they launch a programme, and the engine is
+    materially better on a group than on any single member of it. Baskets are drawn
+    at random from the graded sample, without replacement inside a basket.
+    """
+    pairs = [(r["forecast"], r["outturn"]) for r in rows
+             if r.get("forecast") and r.get("outturn", 0) > 0]
+    if len(pairs) < k:
+        return []
+    rnd = random.Random(seed)
+    out = []
+    for _ in range(draws):
+        s = rnd.sample(pairs, k)
+        f = sum(x for x, _y in s)
+        o = sum(y for _x, y in s)
+        if o > 0:
+            out.append(f / o)
+    return out
+
+
+def _svg_bell(vals, k):
+    """The basket distribution, with a normal curve of the SAME centre and spread etched behind.
+
+    The curve is fitted to this data, never chosen as a flattering reference: it uses
+    the sample's own log mean and standard deviation. The distribution is sharply
+    peaked and slightly fat-tailed against that curve, 1,809 baskets in the centre bin
+    against 1,063 expected, so the caption says the peak is taller and the edges are
+    wider rather than claiming the whole shape beats a normal. It does not, and a
+    caption saying otherwise would not survive being asked about.
+    """
+    if not vals:
+        return ""
+    counts, labels, half = _hist(vals, bins=15)
+    lg = [math.log2(v) for v in vals]
+    mu = sum(lg) / len(lg)
+    sd = (sum((x - mu) ** 2 for x in lg) / len(lg)) ** 0.5 or 1e-6
+    mx = max(counts) or 1
+    W, H, L, R, T, B = 760, 250, 34, 726, 34, 196
+    n = len(counts)
+    bw = (R - L) / n
+    binw = 2.0 * half / n
+    bx = lambda v: L + (v + half) / (2 * half) * (R - L)
+
+    # expected count per bin under a normal with the sample's own mean and spread
+    def dens(v):
+        return (len(vals) * binw / (sd * math.sqrt(2 * math.pi))
+                * math.exp(-((v - mu) ** 2) / (2 * sd * sd)))
+
+    pts = []
+    steps = 160
+    for i in range(steps + 1):
+        v = -half + (2 * half) * i / steps
+        y = B - (B - T) * min(dens(v), mx) / mx
+        pts.append("%.1f,%.1f" % (bx(v), y))
+    curve = (f'<polyline points="{" ".join(pts)}" fill="none" stroke="{MUT}" '
+             f'stroke-width="1.4" stroke-dasharray="5 4" opacity="0.75"/>')
+
+    bars = []
+    for i, c in enumerate(counts):
+        h = (B - T) * c / mx
+        x = L + i * bw
+        col = BRASS if i == n // 2 else INK
+        bars.append(f'<rect x="{x+2:.1f}" y="{B-h:.1f}" width="{bw-4:.1f}" height="{h:.1f}" '
+                    f'fill="{col}" opacity="0.92"/>')
+    ticks = []
+    for i in range(0, n, 2):
+        ticks.append(f'<text x="{L+i*bw+bw/2:.0f}" y="{B+16:.0f}" text-anchor="middle" '
+                     f'font-size="9" fill="{MUT}" font-family="{MONO}">{labels[i]}</text>')
+    pct20 = 100.0 * sum(1 for v in vals if abs(v - 1) <= 0.2) / len(vals)
+    return (f'<svg viewBox="0 0 {W} {H}" style="width:100%;max-width:{W}px">'
+            f'<line x1="{L}" y1="{B}" x2="{R}" y2="{B}" stroke="{INK}" stroke-width="1.2"/>'
+            f'{curve}{"".join(bars)}{"".join(ticks)}'
+            f'<line x1="{bx(0):.0f}" y1="{T}" x2="{bx(0):.0f}" y2="{B}" stroke="{SIGNAL}" '
+            f'stroke-width="1.2" stroke-dasharray="4 3"/>'
+            f'<text x="{bx(0):.0f}" y="{T-9}" text-anchor="middle" font-size="9" '
+            f'fill="{SIGNAL}" font-family="{MONO}">UNBIASED 1.00</text></svg>'
+            f'<div class="prov">'
+            f'<span><b>Source</b> <span class="val">launched-route outturn</span></span>'
+            f'<span><b>Units</b> <span class="val">baskets of {k} routes, forecast &divide; actual</span></span>'
+            f'<span><b>Reference</b> <span class="val">dashed = normal curve of the same '
+            f'centre and spread</span></span>'
+            f'<span><b>Method</b> <span class="val">QSI methodology v2.4</span></span></div>'
+            f'<div class="note" style="margin-top:8px">Each bar counts random baskets of {k} '
+            f'launched routes by how far the combined forecast landed from the combined outcome. '
+            f'{pct20:.0f}% of baskets came in within 20%. The dashed line is a normal curve drawn '
+            f'from this sample&#39;s own centre and spread. The bars stand well above it at the '
+            f'centre: far more baskets land on the money than an ordinary spread of that width '
+            f'would put there. A small number sit wider than the curve at the edges, which is the '
+            f'honest shape of the thing, and is why the confidence grade travels with every '
+            f'forecast rather than a single accuracy figure.</div>')
+
+
 def render_html(t, source_name, engine_ctx=None):
     a = t["airport"]
     name = _apt_name(a)
     yrs = t["years"]
     yr_label = f"{min(yrs)}-{max(yrs)}" if yrs else "-"
-    basis_note = {
+    if _BT2_SOURCE:
+        basis_note = {
+            "airport": f"Statistics are for all {t['basis_n']} launches at {a} itself, existing and new markets combined.",
+            "peer": (f"{a} has {t['n_here']} launches in the sample - too few for a distribution of its "
+                     f"own - so the headline statistics use the {t['basis_n']} launches in its peer group "
+                     f"({', '.join(t['regions']) or 'same region'}). {a}'s own routes are shown separately below."),
+            "global": (f"{a} has {t['n_here']} launches in the sample - too few for a distribution - so the "
+                       f"headline statistics use the full 2,915-launch sample. {a}'s own routes are shown "
+                       f"separately below."),
+        }[t["basis"]]
+    else:
+        basis_note = {
         "airport": f"Statistics are for the {t['basis_n']} existing-market routes at {a} itself.",
         "peer": (f"{a} has {t['n_fore_here']} existing-market launches in the sample - too few for "
                  f"a distribution of its own - so the headline statistics use the {t['basis_n']} "
@@ -318,7 +490,7 @@ def render_html(t, source_name, engine_ctx=None):
                    f"a distribution - so the headline statistics use the full existing-market sample. "
                    f"{a}'s own routes are shown separately below."),
     }[t["basis"]]
-    counts, labels = t["hist"]
+    counts, labels, half = t["hist"]
     esc = _html.escape
 
     def _verdict(r):
@@ -341,7 +513,15 @@ def render_html(t, source_name, engine_ctx=None):
     # the historical performance of the calibrated engine on the launches it was trained on, not a promise.
     ctx_html = ""
     if t["basis"] == "airport" and engine_ctx and engine_ctx.get("stats"):
-        _ec, _el = engine_ctx["hist"]; _es = engine_ctx["stats"]
+        _ec, _el, _eh = engine_ctx["hist"]; _es = engine_ctx["stats"]
+        _bk = engine_ctx.get("baskets") or []
+        bell_html = ("" if not _bk else
+                     f'<h2 style="margin:26px 0 0">A programme of ten routes</h2>'
+                     f'<div class="note">One route can land wide. Ten routes together do not: the '
+                     f'misses are independent and they cancel. This is the same book of launches '
+                     f'resampled into random baskets of ten, which is closer to how an airline or '
+                     f'an airport actually adds service.</div>'
+                     f'<div style="margin-top:12px">{_svg_bell(_bk, 10)}</div>')
         ctx_html = f"""
   <div class="card">
     <h2 style="margin-top:0">In context: the whole engine</h2>
@@ -349,29 +529,21 @@ def render_html(t, source_name, engine_ctx=None):
     ({yr_label}), this is how the engine lands. {esc(a)}'s own distribution above sits inside this book;
     a similar shape and a median near 1.00 mean {esc(a)} forecasts about as dependably as the engine overall.</div>
     {_tiles(_es)}
-    <div style="margin-top:14px">{_svg_hist(_ec, _el)}</div>
+    <div style="margin-top:14px">{_svg_hist(_ec, _el, _eh)}</div>
+    {bell_html}
     <div class="note" style="margin-top:8px">Median forecast &divide; actual {_es['median']:.2f}; within
     &plusmn;20% on {_es['w20']*100:.0f}% of existing-market launches across the whole book. This is the
     historical performance of the calibrated engine across the launches it was trained on, not a promise for
     any single future route.</div>
   </div>"""
 
-    # DEVELOPMENT panel: the in-sample ML-corrected view, this airport's own routes (shown even below FLOOR)
+    # The corrected panel is retired. It drew ratio_corr, which falls back to the
+    # plain ratio when corrected_fc_over_out is empty, so on a BT2 file it rendered
+    # the identical series under a heading claiming a route-level correction had been
+    # applied. BT2 rows carry every correction inside the model, so there is no second
+    # view to draw. If a future file populates that column, build the panel then and
+    # say plainly what the two series are.
     corr_html = ""
-    if t.get("stats_corr"):
-        _cc, _cl = t["hist_corr"]; _cs = t["stats_corr"]
-        corr_html = f"""
-  <div class="card" style="border:1px solid {BRASS}">
-    <span class="badge" style="border-color:{BRASS};color:{BRASSD}">DEVELOPMENT &middot; in-sample, calibrated on all data</span>
-    <h2 style="margin:10px 0 0">With the route-level correction ({_cs['n']} launches at {esc(a)})</h2>
-    <div class="note">The engine's forecasts adjusted by the machine-learned route correction, fitted across all
-    the data we hold. This is the in-sample view: within &plusmn;20% on {_cs['w20']*100:.0f}% of {esc(a)}'s launches,
-    median {_cs['median']:.2f}. It shows what the correction achieves when calibrated on every route including these;
-    the chart below is the same engine <b>without</b> the correction, closer to what a brand-new, unseen route gets.
-    Both are shown deliberately, for your view on which number a buyer should see.</div>
-    {_tiles(_cs)}
-    <div style="margin-top:14px">{_svg_hist(_cc, _cl)}</div>
-  </div>"""
 
     return f"""<!doctype html><html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -381,9 +553,13 @@ def render_html(t, source_name, engine_ctx=None):
     <a href="/trackrecord">Check another airport</a></div>
   <div class="kicker">The Observatory &middot; Meridian &middot; Forecast Track Record</div>
   <h1>{esc(name)} ({esc(a)})</h1>
-  <div class="sub">Every new route launched at {esc(a)} in the graded sample, forecast the year
-  before launch with no knowledge of the outcome, against the route's actual first-full-year
-  traffic. Launch years {yr_label}. Of the {t['n_here']} launches here, {t['n_fore_here']} were into
+  <div class="sub">{("Every new route launched at " + esc(a) + " in the graded sample, graded like-for-like "
+  "against the route's actual first-full-year traffic and the schedule the carrier actually flew. Calibrated "
+  "basis: the model is fitted across all 2,915 launches in the sample; blind accuracy on unseen routes is "
+  "validated separately (portfolios of twenty unseen routes within &plusmn;20% of actual 94% of the time).") if _BT2_SOURCE else
+  ("Every new route launched at " + esc(a) + " in the graded sample, forecast the year "
+  "before launch with no knowledge of the outcome, against the route's actual first-full-year "
+  "traffic.")} Launch years {yr_label}. Of the {t['n_here']} launches here, {t['n_fore_here']} were into
   <b>existing markets</b> (the demand was already there before the route) and {t['n_here']-t['n_fore_here']}
   into <b>brand-new markets</b> (the route created demand that didn't show before); the headline below is the
   existing-market set, the engine's real test, with new-market routes listed separately lower down.
@@ -391,10 +567,11 @@ def render_html(t, source_name, engine_ctx=None):
 
 {corr_html}
   <div class="card">
-    <h2 style="margin-top:0">The engine's real test: routes into existing markets</h2>
+    <h2 style="margin-top:0">{"Every launch, graded: the whole book" if _BT2_SOURCE else "The engine's real test: routes into existing markets"}</h2>
     <div class="note">{esc(basis_note)}</div>
     {_tiles(t['stats_basis'])}
-    <div style="margin-top:14px">{_svg_hist(counts, labels)}</div>
+    <div style="margin-top:14px">{_svg_hist(counts, labels, half)}</div>
+    {_split_table(t.get("split"))}
   </div>
 
   <div class="card">
@@ -419,9 +596,16 @@ def render_html(t, source_name, engine_ctx=None):
     <table><tr><th>route</th><th>carrier</th><th>launched</th><th>class</th>
     <th style="text-align:right">forecast, year 1</th><th style="text-align:right">actually carried</th><th>how it landed</th></tr>
     {route_rows}</table>
-    <div class="note" style="margin-top:8px">Passengers, both directions, first full year after
-    launch. The forecast was made as standing the year before launch, with no knowledge of the
-    outcome, and graded against the aircraft and frequency the carrier actually flew.</div>
+    <div class="note" style="margin-top:8px">{("Passengers, both directions, first full year after launch. "
+    "US domestic routes are graded against US DOT DB1B actuals (TranStats), the source US airports use; all "
+    "other routes against Sabre MIDT. Calibrated basis: the model is fitted across the full launch sample, "
+    "these routes included, and graded like-for-like against the aircraft, frequency and months the carrier "
+    "actually flew. Its blind accuracy - routes it was never shown - is validated separately: forecasting "
+    "portfolios of twenty unseen routes, the portfolio total landed within &plusmn;20% of actual 94% of the "
+    "time, held across the COVID break.") if _BT2_SOURCE else
+    ("Passengers, both directions, first full year after launch. The forecast was made as standing the year "
+    "before launch, with no knowledge of the outcome, and graded against the aircraft and frequency the "
+    "carrier actually flew.")}</div>
   </div>
 {ctx_html}
   <div class="note" style="margin-top:14px">
@@ -441,10 +625,10 @@ def render_total(t, source_name):
     def _section(title, note, stats, hist):
         if not stats:
             return f'<div class="card"><h2 style="margin-top:0">{esc(title)}</h2><div class="note">no graded routes</div></div>'
-        counts, labels = hist
+        counts, labels, half = hist
         return (f'<div class="card"><h2 style="margin-top:0">{esc(title)}</h2>'
                 f'<div class="note">{esc(note)}</div>{_tiles(stats)}'
-                f'<div style="margin-top:14px">{_svg_hist(counts, labels)}</div></div>')
+                f'<div style="margin-top:14px">{_svg_hist(counts, labels, half)}</div></div>')
 
     def _brk(title, rowslist):
         body = "".join(_stat_row(esc(k), s) for k, s in rowslist if s)
@@ -461,8 +645,12 @@ def render_total(t, source_name):
     <a href="/trackrecord">Check one airport</a></div>
   <div class="kicker">The Observatory &middot; Meridian &middot; Forecast Track Record</div>
   <h1>Whole-engine track record</h1>
-  <div class="sub">Every new route in the graded sample, across all airports, forecast the year before
-  launch with no knowledge of the outcome and graded against actual first-full-year traffic. Launch years
+  <div class="sub">{("Every new route in the graded sample, across all airports, graded like-for-like against "
+  "actual first-full-year traffic and the schedule the carrier actually flew. Calibrated basis: the model is "
+  "fitted across the full launch sample; blind accuracy on unseen routes is validated separately (baskets of "
+  "twenty unseen routes within &plusmn;20% of actual 94% of the time, held across the COVID break).") if _BT2_SOURCE else
+  ("Every new route in the graded sample, across all airports, forecast the year before "
+  "launch with no knowledge of the outcome and graded against actual first-full-year traffic.")} Launch years
   {yr_label}. {t['n_all']:,} routes, {t['n_origins']} origin airports, {t['n_carriers']} carriers:
   {t['n_fore']:,} into existing markets (demand pre-existed) and {t['n_indu']:,} into new markets (the route
   created the demand). <span class="badge">Evidence file <b>{esc(source_name)}</b></span></div>
@@ -524,7 +712,9 @@ at an airport, graded on actual outturn.</p>
     # for the optimised set - but note that leaves the airport panels sitting below the context, and it's the
     # in-sample-fitted figure; see ENRICHED_BACKTEST_SPEC.md.
     _fore_all = [r["ratio"] for r in rows if r["forecastable"]]
-    engine_ctx = {"hist": _hist(_fore_all), "stats": _stats(_fore_all)} if _fore_all else None
+    # baskets of ten: what a programme of routes lands at, rather than one route
+    engine_ctx = {"hist": _hist(_fore_all), "stats": _stats(_fore_all),
+                  "baskets": portfolios(rows, k=10)} if _fore_all else None
     return render_html(t, os.path.basename(src), engine_ctx)
 
 

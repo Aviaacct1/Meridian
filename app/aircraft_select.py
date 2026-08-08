@@ -205,3 +205,87 @@ if __name__ == "__main__":
     for r in ranked:
         print(f"{r['aircraft']:6}{r['seats']:>6}{r['range_km']:>8}{(r['total_lf'] or 0):>8.0%}"
               f"{r['spilled_each_way']:>9,}{(r['margin'] or 0):>8.1%}{r['annual_profit']:>13,}")
+
+
+# ---------------------------------------------------------------------------
+# Range criticality (John, 6 August 2026)
+# ---------------------------------------------------------------------------
+# The range filter in candidates() is a pass or fail against the type's still-air
+# book range with a 3% cushion. That is the right gate, but it says nothing about
+# how close to the edge a route that passes actually sits, and a reader looking at
+# a recommendation cannot tell a comfortable sector from one that will be payload
+# restricted on a bad day. This reports the margin so the page can say so.
+#
+# Book range is still air at a typical payload. A real mission loses distance to
+# routing away from the great circle, to reserves and to the alternate, and the
+# westbound North Atlantic and westbound transcontinental legs lose more again to
+# the prevailing wind in winter. So the bands are set against book range, and the
+# message defers to the operator's payload-range chart rather than asserting a
+# penalty this module has no source for.
+
+RANGE_BANDS = [
+    (0.95, "AT THE LIMIT"),
+    (0.85, "RANGE CRITICAL"),
+    (0.75, "RANGE WATCH"),
+]
+
+
+def _westbound(origin_lon, dest_lon, threshold_deg=25.0):
+    """True where the sector runs materially west, which is the headwind leg."""
+    if origin_lon is None or dest_lon is None:
+        return False
+    d = dest_lon - origin_lon
+    while d > 180:
+        d -= 360
+    while d < -180:
+        d += 360
+    return d <= -threshold_deg
+
+
+def range_margin(code, distance_km, origin_lon=None, dest_lon=None):
+    """How close this type sits to its book range on this sector.
+
+    Returns None when the type is unknown or the sector is comfortable, so the
+    caller shows nothing. Otherwise a dict with band, the ratio, and a line written
+    for the page. Silence is the default: a message on every route trains the
+    reader to ignore it.
+    """
+    from aircraft_economics import AIRCRAFT   # imported here, as candidates() does
+    ac = AIRCRAFT.get(code)
+    if not ac or not ac.get("range_km") or not distance_km:
+        return None
+    book = float(ac["range_km"])
+    ratio = float(distance_km) / book
+    band = None
+    for cut, name in RANGE_BANDS:
+        if ratio >= cut:
+            band = name
+            break
+    if not band:
+        return None
+
+    nm = distance_km / 1.852
+    book_nm = book / 1.852
+    head = ("The sector is %s nm against a still-air range of %s nm for the %s, "
+            "so it uses %.0f%% of book range."
+            % (format(int(round(nm)), ","), format(int(round(book_nm)), ","), code, ratio * 100))
+    if band == "AT THE LIMIT":
+        body = ("At this margin the type is at its published limit on this sector. Expect a "
+                "payload restriction in normal winter conditions, and treat a full cabin as "
+                "the exception rather than the plan.")
+    elif band == "RANGE CRITICAL":
+        body = ("A sector this close to book range is flown payload restricted on the days the "
+                "wind is against it. Westbound in winter the aircraft would be expected to "
+                "carry fewer passengers or less cargo on some rotations."
+                if _westbound(origin_lon, dest_lon) else
+                "A sector this close to book range is flown payload restricted on the days the "
+                "wind is against it, and on a hot day out of a short or high field.")
+    else:
+        body = ("There is margin here, but not much of it. Routing away from the great circle, "
+                "the alternate and the reserve all come out of the same figure.")
+    tail = ("Confirm against the operator's payload-range chart for the planned cabin before "
+            "the schedule is fixed.")
+    return {"band": band, "ratio": round(ratio, 3), "code": code,
+            "distance_nm": round(nm), "book_range_nm": round(book_nm),
+            "westbound": _westbound(origin_lon, dest_lon),
+            "message": "%s %s %s" % (head, body, tail)}

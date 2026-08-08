@@ -16,6 +16,7 @@ research finding must police itself before it reaches a slide. Layered checks, c
 Every decision is recorded in the audit log so a disputed figure is traceable. No finding is ever
 invented here; this module only removes or downgrades.
 """
+import html
 import re
 import urllib.request
 import urllib.parse
@@ -72,8 +73,33 @@ def _plausible(value, unit):
     return True
 
 
+def _magnitude_forms(base, word, scale):
+    """Every way a page might write `base` in units of `scale`, e.g. millions.
+
+    Publishers round. A finding of 4,037,000 taken from a page that says "4.0
+    million" must still match, so the forms are generated at three, two, one and
+    zero decimal places, in both the spelled and the abbreviated style.
+    """
+    n = base / scale
+    if n < 1 or n >= 1000:
+        return set()
+    short = {"million": "m", "billion": "bn"}[word]
+    out = set()
+    for dp in (3, 2, 1, 0):
+        t = f"{n:.{dp}f}".rstrip(".") if dp else f"{n:.0f}"
+        out.add(f"{t} {word}"); out.add(f"{t}{short}"); out.add(f"{t} {short}")
+    return out
+
+
 def _value_candidates(value):
-    """Strings we would accept as the figure appearing on the page."""
+    """Strings we would accept as the figure appearing on the page.
+
+    Expansion runs BOTH ways. It used to run downward only: "3.16m" generated
+    "3.16 million" and "3,160,000", but "4,037,000" generated nothing beyond
+    itself, so a sound finding whose source page writes "4.0 million" was
+    dropped as figure-not-on-page. That signature accounted for three of the
+    eight fetch-back drops on the first live EDI-AUS run.
+    """
     if not value:
         return []
     v = str(value).strip()
@@ -91,6 +117,10 @@ def _value_candidates(value):
                 out.add(f"{base:g} billion"); out.add(f"{base:.1f} billion"); out.add(f"{int(base * 1e9):,}")
             elif re.search(r"\dm\b", suf) or "million" in suf:
                 out.add(f"{base:g} million"); out.add(f"{base:.1f} million"); out.add(f"{int(base * 1e6):,}")
+            elif abs(base) >= 1e5:
+                # written out in full; the page may well be written in millions
+                out |= _magnitude_forms(abs(base), "million", 1e6)
+                out |= _magnitude_forms(abs(base), "billion", 1e9)
         except Exception:
             pass
     return [c for c in out if len(c) >= 2]
@@ -117,6 +147,11 @@ def _fetch_text(url, timeout=12):
         txt = re.sub(r"<script.*?</script>", " ", txt, flags=re.DOTALL | re.I)
         txt = re.sub(r"<style.*?</style>", " ", txt, flags=re.DOTALL | re.I)
         txt = re.sub(r"<[^>]+>", " ", txt)
+        # Entities are decoded AFTER the tags come out, so an escaped angle
+        # bracket in the body is never mistaken for markup. Without this a page
+        # writing "&pound;7.3 billion" or a thin space between digits never
+        # matches the figure, and a sound finding is dropped.
+        txt = html.unescape(txt)
         return re.sub(r"\s+", " ", txt)
     except Exception:
         return None
@@ -158,7 +193,16 @@ def verify_findings(findings, ctx=None, fetch_back=True):
                 elif any(c in page for c in cands):
                     confidence, verified, snippet = "verified", True, _around(page, cands)
                 else:
-                    audit.append({"claim": claim[:80], "drop": f"figure-not-on-page:{value}", "url": url})
+                    # A drop here removes a finding the model believes it sourced.
+                    # Record enough to tell a misattribution from a formatting
+                    # miss or an empty page, so the loss is reviewable rather
+                    # than invisible.
+                    audit.append({"claim": claim[:80], "drop": f"figure-not-on-page:{value}",
+                                  "url": url, "value": value,
+                                  "tried": sorted(cands)[:8],
+                                  "page_chars": len(page),
+                                  "review": "formatting or empty page" if len(page) < 800
+                                            else "figure absent from the page as fetched"})
                     continue
         f2 = dict(f)
         f2.update(source_type=source_type, confidence=confidence, verified=verified)

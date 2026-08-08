@@ -740,6 +740,98 @@ def api_route_status(origin: str = "", dest: str = "", airline: str = ""):
         return JSONResponse({"ok": False, "error": str(e)})
 
 
+
+
+def _attach_airfield(fc, aircraft, plan_lf=0.85):
+    """ADVISORY airfield check, on every path that returns a forecast.
+
+    John, 4 July: advisory first, filtering later once trusted. Can the chosen
+    aircraft use both fields on this mission? Never blocks the forecast, and UNKNOWN
+    stays silent. The dashboard shows the binding end's verdict.
+
+    Made a helper on 6 August for the same reason as the range margin: it lived
+    inside /api/forecast, and OPTIMISE returns through /api/optimise, so the check was
+    absent on the one path that actually chooses the aircraft.
+    """
+    try:
+        if not isinstance(fc, dict) or not fc.get("ok"):
+            return fc
+        import airfield_check as AFC
+        dist_km = float(fc.get("distance_nm") or 0) * 1.852
+        o_iata = (fc.get("origin") or {}).get("iata")
+        d_iata = (fc.get("dest") or {}).get("iata")
+        if dist_km > 0 and o_iata and d_iata:
+            co = AFC.capability(aircraft, o_iata, dist_km, plan_lf=plan_lf)
+            cd = AFC.capability(aircraft, d_iata, dist_km, plan_lf=plan_lf)
+            known = [x for x in ((o_iata, co), (d_iata, cd)) if x[1].get("band") != "UNKNOWN"]
+            if known:
+                apt, bind = min(known, key=lambda x: x[1].get("max_pax") or 10 ** 9)
+                fc["airfield"] = {"band": bind["band"], "airport": apt,
+                                  "max_pax": bind.get("max_pax"), "seats": bind.get("seats"),
+                                  "note": bind.get("note")}
+    except Exception:
+        pass
+    return fc
+
+
+def _attach_range_margin(fc, aircraft):
+    """ADVISORY range margin, on every path that returns a forecast (John, 6 Aug).
+
+    The candidate filter in aircraft_select is a pass or fail against book range, so
+    a route that clears it by 2% and one that clears it by 40% read the same on the
+    page. This says which, and only when it is close enough to matter.
+
+    It lives in a helper because the first version sat inside /api/forecast alone, and
+    the OPTIMISE button returns through /api/optimise, which never touched it. The
+    advisory was therefore absent on exactly the path that chooses the aircraft.
+    """
+    try:
+        if not isinstance(fc, dict) or not fc.get("ok"):
+            return fc
+        import aircraft_select as _ASel
+        _ll = fc.get("catchment") or {}
+        _o = _ll.get("origin_ll") or [None, None]
+        _d = _ll.get("dest_ll") or [None, None]
+        rm = _ASel.range_margin(aircraft, float(fc.get("distance_nm") or 0) * 1.852,
+                                origin_lon=_o[1], dest_lon=_d[1])
+        if rm:
+            fc["range_margin"] = rm
+    except Exception:
+        pass
+    return fc
+
+
+def _attach_viability(fc):
+    """ADVISORY schedule viability, on every path that returns a forecast.
+
+    John, 7 August: the runner warned and the screen did not, so a user working
+    on the dashboard could take a 38% load factor all the way to a deck without
+    ever being told. It warns; it never blocks and never changes a number.
+
+    A helper for the same reason as the airfield and range checks: /api/optimise
+    returns its own forecast, and a check that lives inside /api/forecast alone
+    is absent on the path that chooses the schedule.
+    """
+    try:
+        if not isinstance(fc, dict) or not fc.get("ok"):
+            return fc
+        import schedule_viability as _SV
+        v = _SV.schedule_viability(fc)
+        if v:
+            fc["viability"] = v
+    except Exception as e:
+        # Reporting, not swallowing. A silent pass here reads on the dashboard
+        # as "the load factor is fine", which is the failure the check exists
+        # to prevent.
+        fc["viability"] = {"band": "CHECK NOT RUN", "load_factor": None,
+                           "frequency": None, "sized_frequency": None,
+                           "question": "",
+                           "message": "The schedule viability check did not "
+                                      "run: %s: %s. The load factor has NOT "
+                                      "been assessed." % (type(e).__name__, e)}
+    return fc
+
+
 @app.get("/api/forecast")
 def api_forecast(origin: str, dest: str, airline: str = "", carrier_type: str = "FSC",
                  aircraft: str = "A21X", freq: int = 7, econ_share: float = 0.85,
@@ -795,25 +887,10 @@ def api_forecast(origin: str, dest: str, airline: str = "", carrier_type: str = 
         if _auto_ac:
             fc["auto_aircraft"] = _auto_ac      # UI shows which gauge the demand sized to
         _record_run(origin, dest, season)       # feeds the welcome-screen counter + recent runs
-        # ADVISORY airfield check (John, 4 Jul: advisory first, filtering later once trusted):
-        # can the chosen aircraft actually use both fields on this mission? Never blocks the
-        # forecast; UNKNOWN stays silent. The dashboard shows the binding end's verdict.
-        try:
-            import airfield_check as AFC
-            dist_km = float(fc.get("distance_nm") or 0) * 1.852
-            o_iata = (fc.get("origin") or {}).get("iata")
-            d_iata = (fc.get("dest") or {}).get("iata")
-            if dist_km > 0 and o_iata and d_iata:
-                co = AFC.capability(aircraft, o_iata, dist_km, plan_lf=plan_lf)
-                cd = AFC.capability(aircraft, d_iata, dist_km, plan_lf=plan_lf)
-                known = [x for x in ((o_iata, co), (d_iata, cd)) if x[1].get("band") != "UNKNOWN"]
-                if known:
-                    apt, bind = min(known, key=lambda x: x[1].get("max_pax") or 10 ** 9)
-                    fc["airfield"] = {"band": bind["band"], "airport": apt,
-                                      "max_pax": bind.get("max_pax"), "seats": bind.get("seats"),
-                                      "note": bind.get("note")}
-        except Exception:
-            pass
+        _attach_airfield(fc, aircraft, plan_lf)
+        _attach_range_margin(fc, aircraft)
+        _attach_viability(fc)
+
         global LAST_FC
         import time as _t
         LAST_FC = {"fc": fc, "when": _t.time()}      # feeds the /methodology bridge chart
@@ -840,7 +917,9 @@ def methodology_page_route():
     """Methodology (John, 4 Jul 2026): a lay-person, graphic walk-through of how the forecast
     is built, with a bridge chart tied to the LAST forecast run on the dashboard."""
     try:
+        import importlib
         import methodology_page as MP
+        importlib.reload(MP)   # evidence pages hot-reload: copy edits go live without a restart
         return HTMLResponse(MP.render(LAST_FC))
     except Exception as e:
         return HTMLResponse(f"<h3>Methodology page unavailable: {e}</h3>", status_code=500)
@@ -1189,6 +1268,9 @@ def api_optimise(origin: str, dest: str, airline: str = "", carrier_type: str = 
     final = calibrated_forecast(origin, dest, airline=(best["airline"] or None), carrier_type=best.get("ctype", carrier_type),
                                 aircraft=best["aircraft"], freq=best["freq"], econ_share=econ_share,
                                 plan_lf=plan_lf, bus_fare=bus_fare, with_econ=True, season=best.get("season", "annual"))
+    _attach_airfield(final, best["aircraft"], plan_lf)
+    _attach_range_margin(final, best["aircraft"])
+    _attach_viability(final)
     if isinstance(final, dict):
         final["optimised"] = {"airline": best["airline"], "airline_auto": (not al) and bool(best["airline"]),
                               "aircraft": best["aircraft"], "freq": best["freq"],
@@ -1469,7 +1551,9 @@ def trackrecord(airport: str = ""):
     itself when the 6-year sample lands."""
     from fastapi.responses import HTMLResponse
     try:
+        import importlib
         import track_record as TR
+        importlib.reload(TR)   # evidence pages hot-reload: copy edits go live without a restart
         return HTMLResponse(TR.page(airport or None))
     except Exception as e:
         return HTMLResponse(f"<h3>Track record unavailable: {e}</h3>", status_code=500)

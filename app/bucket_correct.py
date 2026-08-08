@@ -13,15 +13,30 @@ import json, os, math
 
 _M = None
 _AP = None
+LOAD_FAILURES = []      # read by the callers and printed by the runner
 
 
 def _model():
+    """The bucket model. A model that does not load SAYS so.
+
+    7 August: bucket_model.json was missing from the working copy and this
+    returned empty factors, so the correction was off and every forecast on that
+    copy was uncorrected with nothing to say why. An empty factor table and a
+    table of ones are indistinguishable in the output, which is exactly why the
+    absence has to be announced rather than absorbed.
+    """
     global _M
     if _M is None:
+        path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "bucket_model.json")
         try:
-            _M = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "bucket_model.json")))
-        except Exception:
+            _M = json.load(open(path))
+        except Exception as e:
             _M = {"airport_bucket": {}, "factors": {}}
+            msg = ("bucket_correct: bucket_model.json did not load (%s: %s). The "
+                   "airport bucket correction is OFF and demand is uncorrected."
+                   % (type(e).__name__, e))
+            LOAD_FAILURES.append(msg)
+            print("WARNING: %s" % msg)
     return _M
 
 

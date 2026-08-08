@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>The Observatory · Meridian — Route Forecasting</title>
+<title>The Observatory · Meridian - Route Forecasting</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;1,6..72,400&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -181,6 +181,7 @@
   @media(max-width:820px){.econgrid{grid-template-columns:1fr}}
 
   /* ---- banners ---- */
+  .runline{margin:2px 0 10px;font-family:var(--serif);font-size:14px;line-height:1.5;color:var(--text);border-left:2px solid var(--brass);padding-left:12px}
   .banner{margin-top:16px;border:1px solid var(--line);border-left:2px solid var(--ink);padding:12px 16px;font-family:var(--serif);font-size:13.5px;color:var(--text);display:flex;gap:10px;align-items:center;background:var(--card)}
   .banner.ok{border-left-color:var(--s3)} .banner.warn{border-left-color:var(--signal)}
   .foot-note{margin-top:22px;font-family:var(--serif);font-size:13px;color:var(--body);line-height:1.5}
@@ -305,7 +306,12 @@
       <div id="err" class="err hidden"></div>
       <div id="results" class="hidden">
         <div class="kpis" id="kpis"></div>
+        <div id="runline" class="runline"></div>
         <div id="basis" class="foot-note" style="margin:-6px 0 16px"></div>
+        <div id="cap" class="banner ok"></div>
+        <div id="airfield" class="banner ok hidden"></div>
+        <div id="rangemargin" class="banner warn hidden"></div>
+        <div id="viability" class="banner warn hidden"></div>
         <div class="grid">
           <div class="card">
             <div class="ch"><div><h3>Where the catchment flies today</h3><div class="sub" id="catSub"></div></div><span id="fidChip" class="chip"><span class="dot"></span> Calibrated</span></div>
@@ -369,8 +375,6 @@
             <div><div style="font-family:var(--sans);font-size:9px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;color:var(--muted);margin-bottom:10px">Beyond the destination, carrying on</div><div class="pnl" id="beyondTbl"></div></div>
           </div></div>
         </div>
-        <div id="cap" class="banner ok"></div>
-        <div id="airfield" class="banner ok hidden"></div>
         <div id="reportRow" class="hidden" style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
           <button class="btn" onclick="downloadReport('xlsx')">Download Forecast Excel</button>
           <button class="btn" onclick="downloadReport('csv')" title="The workbook's sheets as CSVs in a zip, for spreadsheet-restricted environments">Download CSV bundle</button>
@@ -393,7 +397,7 @@ const money = n => (n==null||isNaN(n)) ? "-" : "$"+Math.round(n).toLocaleString(
 const pct = n => (n==null||isNaN(n)) ? "-" : (n*100).toFixed(0)+"%";
 const pct1 = n => (n==null||isNaN(n)) ? "-" : (n*100).toFixed(1)+"%";
 
-// single-sourced chart palette — mirrors the CSS tokens so SVG colour never drifts
+// single-sourced chart palette - mirrors the CSS tokens so SVG colour never drifts
 const PAL={ink:'#0F1B28',brass:'#D4A249',brassDeep:'#A97C33',signal:'#CE3B2A',oxblood:'#A9553F',guide:'#E3DDCD',axis:'#C9C2B2',muted:'#6E6A5E'};
 
 // provenance rail: labels/words in Inter tracked, the date/period in mono (brief section 2, 4.7)
@@ -734,6 +738,26 @@ function render(d){
   // Confidence band moved to the Track Record tab; the forecast summary shows only the new-market provenance flag.
   if(d.confidence && d.confidence.modelled){ $("#basis").textContent += "  New-market route: forecast is modelled from comparable launches, not a measured market."; }
   if(d.optimised){ const op=d.optimised; $("#basis").textContent="Optimised for maximum profit: "+(op.airline?op.airline+(op.airline_auto?" (auto-chosen)":""):"selected airline")+" · "+op.aircraft+" · "+op.freq+"x/week.  "+$("#basis").textContent; }
+  // WHAT THIS RUN ANSWERED. The same city pair returns a different number depending
+  // on whether an airline is attached, and both answers are right: the market on its
+  // own is one question, a named carrier flying it with their connections is another.
+  // Saying which, in plain words and next to the number, is what stops the two being
+  // read as a discrepancy.
+  (function(){
+    const op=d.optimised, al=(op&&op.airline)||d.airline||"";
+    const feed=(d.demand&&(d.demand.feed_total||d.demand.connecting_carried))||0;
+    let line="";
+    if(al){
+      line="<b>"+al+" flying it.</b> Their connections at both ends, on the aircraft and "
+          +"frequency that earn them the most. A different airline will return a different "
+          +"number, because their network is different.";
+    } else {
+      line="<b>The market on its own.</b> No airline network behind it, so this is what a "
+          +"nonstop carries from the local market alone. Put an airline in and the forecast "
+          +"changes, because their connections change what the route can fill.";
+    }
+    $("#runline").innerHTML=line;
+  })();
   const dem=d.demand, cap=d.capacity, ec=d.economics;
   STATE.season=d.season||{mode:"annual",share:1,weeks:52};
   const profitable = ec && ec.margin>0;
@@ -777,7 +801,17 @@ function render(d){
   if(feedInc>0) rows.push(["Connecting feed",local,feedInc,feedInc,"var(--s2)"]);
   rows.push(["Total forecast, each way",0,total,total,"var(--brass)"]);
   $("#funnel").innerHTML=rows.map(r=>`<div class="brow"><div class="bl">${r[0]}</div><div class="bt"><div class="bf" style="left:${(r[1]/total*100).toFixed(1)}%;width:${Math.max(r[2]/total*100,1.5).toFixed(1)}%;background:${r[4]}"></div></div><div class="bv">${fmt(r[3])}</div></div>`).join("");
-  setTxt("funnelSub", `captured from a ${fmt(dem.natural)} addressable market · each way / year`);
+  // On a new-market route the forecast is BUILT from comparable launches rather than
+  // captured from a measured market, so it can and does exceed that market. Labelling
+  // it "captured from an 8,035 market" while showing 20,923 is simply wrong, and it is
+  // the first thing an analyst queries.
+  {
+    const _nat=dem.natural||0, _tot=dem.total||0;
+    const _modelled=!!(d.confidence && d.confidence.modelled) || (_nat>0 && _tot>_nat);
+    setTxt("funnelSub", _modelled
+      ? `new market: built from comparable launches, not captured from the ${fmt(_nat)} measured market · each way / year`
+      : `captured from a ${fmt(_nat)} addressable market · each way / year`);
+  }
   $("#funnelNote").innerHTML = '<span>'+(cap.recommendation||"")+'</span>'+provRail('Sabre O&amp;D, OAG','Passengers each way / yr','Sabre '+(d.year||'-')+' · OAG wk '+(d.week||'-'),'QSI methodology v2.4');
 
   if(d.economics_ok && ec && ec.cost_model){
@@ -821,6 +855,30 @@ function render(d){
     $("#airfield").className="banner "+(warn?"warn":"ok");
     $("#airfield").textContent="Airfield ("+af.airport+"): "+(af.note||af.band);
   } else { $("#airfield").classList.add("hidden"); }
+
+  // Range margin: shown only when the sector is close enough to the type's book
+  // range to change how the schedule is planned. Silent otherwise, so that when it
+  // does appear the reader takes it seriously.
+  const rm=d.range_margin;
+  if(rm&&rm.message){
+    $("#rangemargin").classList.remove("hidden");
+    $("#rangemargin").className="banner "+(rm.band==="RANGE WATCH"?"ok":"warn");
+    $("#rangemargin").innerHTML="<b>"+rm.band+"</b>&nbsp; "+rm.message;
+  } else { $("#rangemargin").classList.add("hidden"); }
+
+  // Schedule viability: the runner has warned on a thin load factor since 7
+  // August and the screen did not, so a user could carry a 38% fill all the way
+  // to a client deck without ever being told. It asks, it never blocks: the
+  // frequency is the user's to set and a client may want the schedule they
+  // asked for printed. CHECK NOT RUN is shown too, because a silent banner
+  // reads as "the load factor is fine", which is what this exists to prevent.
+  const vb=d.viability;
+  if(vb&&vb.message){
+    $("#viability").classList.remove("hidden");
+    $("#viability").className="banner "+(vb.band==="THIN"?"ok":"warn");
+    $("#viability").innerHTML="<b>"+vb.band+"</b>&nbsp; "
+      +(vb.question?("<b>"+vb.question+"</b> "):"")+vb.message;
+  } else { $("#viability").classList.add("hidden"); }
 
   renderProjection(d);
   renderLeakage(d);

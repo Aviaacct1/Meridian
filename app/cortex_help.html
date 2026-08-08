@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>The Observatory · Meridian — Help</title>
+<title>The Observatory · Meridian - Help</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;1,6..72,400&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -112,6 +112,39 @@
         <h2>What it does</h2>
         <p class="lead">Meridian forecasts a new air route. You give it a city pair, an airline, an aircraft and a frequency; it returns the annual traffic each way, the load the aircraft would carry, and the route economics. The demand comes from measured Sabre origin-and-destination traffic and live OAG schedules, not a rule of thumb, so the answer is grounded in what the market actually flies today.</p>
         <p>A forecast has three parts: the <b>local market</b> Meridian measures in the origin catchment, the <b>share</b> the new service captures from competing airports and airlines, and the <b>connecting feed</b> the chosen airline adds behind and beyond each end. The three add up to the total each-way forecast.</p>
+      </div>
+
+      <div class="card">
+        <h2>Why the same route can give two different numbers</h2>
+        <p class="lead">Because two different questions are being asked, and both answers are right.</p>
+        <p><b>Leave the airline blank.</b> You are asking what the market is worth on its own. Meridian
+        measures how many people already travel between the two places, works out how many of them would
+        use a nonstop, and stops there. Nobody is connecting onto anything, because there is no airline
+        yet. This is the number an airport uses to decide whether a route is worth chasing at all.</p>
+        <p><b>Put an airline in, or press Optimise.</b> Now you are asking what that particular airline
+        would carry. On top of the local market they add their own passengers: people flying in from
+        somewhere else to catch the flight, and people carrying on somewhere else at the far end. That is
+        the connecting feed, and it belongs to the airline, not to the route.</p>
+        <p>So a route can be worth 8,000 passengers to one carrier and 21,000 to another, on the same day,
+        with the same measured market underneath. That is not the model changing its mind. An airline with
+        a big bank of flights at the far end simply has more people to put on the aeroplane, and the whole
+        point of a quality of service index forecast is to measure exactly that difference.</p>
+        <p class="note">If you are pitching four airlines, expect four forecasts. Send each carrier the one
+        built on their own network. A forecast built on somebody else's connections is not a forecast of
+        their route.</p>
+      </div>
+
+      <div class="card">
+        <h2>New markets, where nobody flies today</h2>
+        <p class="lead">Some routes have almost no measured traffic, because there is no service and the
+        journey is too awkward to make. The demand is real, it just has nowhere to show up in the data.</p>
+        <p>When that happens Meridian says so on the page, and it stops measuring and starts comparing. It
+        looks at routes that launched into the same kind of gap, sees what they actually carried in their
+        first year, and builds the forecast from that. This is why a new-market forecast can be larger than
+        the market Meridian measured: the measured market is what people manage to do today, and the
+        forecast is what they would do once the flight exists.</p>
+        <p class="note">A new-market forecast is a comparison, not a measurement, and it carries more
+        uncertainty. The Track Record page shows how the engine has performed on launches of this kind.</p>
       </div>
 
       <div class="card">

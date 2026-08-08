@@ -502,18 +502,44 @@ def forecast(sabre_db, oag_db, week, origin, dest_codes, competing_airports, *, 
             captured *= __import__("airport_capture").dest_thin_factor(dest_airport, market)
         except Exception:
             pass
-    # HAUL trim (opt-in, default OFF): the P2P capture over-reads on long, thin sectors (backtest:
-    # 2500-6000km ran hot, <800km ~1.0 with over/under even). Scale captured down as distance rises
-    # beyond a floor; short-haul untouched. AVIA_HAUL_TRIM=1 enables; AVIA_HAUL_TRIM_BETA (0.35) and
-    # AVIA_HAUL_TRIM_FLOOR (800 km) tune the curve on the backtest. Uses gcd_est (always defined).
+    # HAUL recalibration (opt-in, default OFF): a TWO-SIDED distance-response correction around a healthy
+    # 800-2500km middle. The mature-horizon backtest (Step 0, confirmed NOT a start-up ramp) shows a stable
+    # haul bias: <800km UNDER-forecasts (median circa 0.45, likely Sabre under-reading short-haul O&D) and
+    # 2500-6000km OVER-forecasts (median circa 1.83). Lift captured below the SHORT floor, trim it above the
+    # LONG floor, leave the middle untouched. All params tune on the hold-out. Short uplift is OFF by default
+    # (_sbeta 0) so the DB1B source test - which may close the short side as a data gap, not a factor - is
+    # tried first. AVIA_HAUL_TRIM=1 enables. Old AVIA_HAUL_TRIM_FLOOR/BETA still work as the long-side names.
     haul_trim = 1.0
     if os.environ.get("AVIA_HAUL_TRIM", "").strip().lower() in ("1", "true", "on", "yes"):
         _hk = gcd_est if (gcd_est and gcd_est > 0) else max((block_min - 20.0) * 7.0 * 1.852, 100.0)
-        _hfloor = float(os.environ.get("AVIA_HAUL_TRIM_FLOOR", "800"))
-        _hbeta = float(os.environ.get("AVIA_HAUL_TRIM_BETA", "0.35"))
-        if _hk > _hfloor:
-            haul_trim = (_hfloor / _hk) ** _hbeta
+        _sfloor = float(os.environ.get("AVIA_HAUL_SHORT_FLOOR", "800"))
+        _sbeta  = float(os.environ.get("AVIA_HAUL_SHORT_BETA", "0"))      # 0 = short uplift OFF (test DB1B first)
+        _scap   = float(os.environ.get("AVIA_HAUL_SHORT_CAP", "2.2"))     # cap the short-haul uplift
+        _lfloor = float(os.environ.get("AVIA_HAUL_LONG_FLOOR", os.environ.get("AVIA_HAUL_TRIM_FLOOR", "2500")))
+        _lbeta  = float(os.environ.get("AVIA_HAUL_LONG_BETA",  os.environ.get("AVIA_HAUL_TRIM_BETA", "0.35")))
+        if _sbeta > 0 and _hk < _sfloor:
+            haul_trim = min((_sfloor / _hk) ** _sbeta, _scap)            # short-haul uplift (capped)
             captured *= haul_trim
+        elif _hk > _lfloor:
+            haul_trim = (_lfloor / _hk) ** _lbeta                        # long-haul trim
+            captured *= haul_trim
+    # FREQUENCY capture discount (opt-in, default OFF): a thin, low-frequency long-haul nonstop is over-
+    # credited by the QSI share - it is scored as winning the market when a 2x-weekly 3000km nonstop wins a
+    # sliver (time-sensitive demand still connects on the hubs, the rest does not fly). Discount captured
+    # toward the daily-service benchmark for long sectors; high-frequency and short-haul untouched.
+    # Diagnosed on the NA pre-COVID long-haul set: fc/p2p vs deployed capacity corr -0.42, low-capacity
+    # median 2.16 vs high-capacity 1.15, worst on ULCC/leisure P2P (ORF-PHX, OAK-MEM, SJU-PIT). Cause-based
+    # and forecast-time-knowable (proposed frequency is an input). AVIA_FREQ_DISCOUNT=1 enables; FLOOR
+    # (2500 km), REF (7/wk = daily), BETA (0.5), CAP (0.4 floor on the discount) tune it on the hold-out.
+    freq_discount = 1.0
+    if os.environ.get("AVIA_FREQ_DISCOUNT", "").strip().lower() in ("1", "true", "on", "yes"):
+        _ffloor = float(os.environ.get("AVIA_FREQ_DISC_FLOOR", "2500"))
+        _fref = float(os.environ.get("AVIA_FREQ_DISC_REF", "7"))
+        _fbeta = float(os.environ.get("AVIA_FREQ_DISC_BETA", "0.5"))
+        _fcap = float(os.environ.get("AVIA_FREQ_DISC_CAP", "0.4"))
+        if gcd_est > _ffloor and freq and freq < _fref:
+            freq_discount = max((freq / _fref) ** _fbeta, _fcap)
+            captured *= freq_discount
     # SEASONAL mode: scale the annual demand to the operating season's share of the year (from the
     # monthly profile; caller supplies the SEASON's capacity via annual_capacity). season_share 1.0 =
     # annual, unchanged. A summer service carries its summer share of the O&D, not half of it.
@@ -625,6 +651,7 @@ def forecast(sabre_db, oag_db, week, origin, dest_codes, competing_airports, *, 
         "qsi_share": round(share, 4), "dest_share": round(dshare, 4), "capture_rate": capture_rate,
         "repatriated": round(repatriated), "premium_share": round(prem, 4), "att_exponent": round(att, 3),
         "coverage_gross_up": round(_cov, 3), "od_source": od_src, "haul_trim": round(haul_trim, 3),
+        "freq_discount": round(freq_discount, 3),
         "captured_demand": round(captured), "connecting_feed": round(feed),
         "p2p_carried": round(p2p_carried), "connecting_carried": round(conn_carried),
         "p2p_share": round(p2p_share_v, 3),

@@ -23,6 +23,7 @@ Auto-populates from:
 
 import os
 import json
+import re
 import tempfile
 from datetime import datetime
 from typing import Dict, List, Optional, Any
@@ -143,7 +144,7 @@ def _slide_cover(prs, config):
     # Title
     headline = config.get("headline", "")
     if not headline:
-        headline = (f"{config.get('origin_city', '')} — {config.get('dest_city', '')}\n"
+        headline = (f"{config.get('origin_city', '')} - {config.get('dest_city', '')}\n"
                     f"Route Assessment for {config.get('airline_name', '')}")
 
     _add_text_box(slide, Inches(0.8), Inches(1.8), Inches(11), Inches(2),
@@ -151,7 +152,7 @@ def _slide_cover(prs, config):
                   alignment=PP_ALIGN.LEFT, font_name="Georgia")
 
     # Subtitle line
-    subtitle = (f"{config.get('origin', '')} – {config.get('destination', '')} | "
+    subtitle = (f"{config.get('origin', '')} - {config.get('destination', '')} | "
                 f"{config.get('frequency', 7)}x weekly | {config.get('aircraft_type', '')}")
     _add_text_box(slide, Inches(0.8), Inches(4.0), Inches(11), Inches(0.6),
                   subtitle, font_size=18, font_colour=ICE_BLUE,
@@ -198,7 +199,7 @@ def _slide_contents(prs, config, sections):
 
     # Footer
     _add_text_box(slide, Inches(0.8), Inches(7.0), Inches(10), Inches(0.3),
-                  f"Avia Solutions — {config.get('origin', '')}–{config.get('destination', '')} Assessment",
+                  f"Avia Solutions - {config.get('origin', '')}-{config.get('destination', '')} Assessment",
                   font_size=9, font_colour=MED_GREY)
 
 
@@ -235,7 +236,7 @@ def _slide_executive_summary(prs, config, research):
     if not summary:
         summary = (f"This assessment evaluates the commercial viability of "
                    f"{config.get('airline_name', '')} operating "
-                   f"{config.get('origin_city', '')} ({config.get('origin', '')}) — "
+                   f"{config.get('origin_city', '')} ({config.get('origin', '')}) - "
                    f"{config.get('dest_city', '')} ({config.get('destination', '')}) "
                    f"at {config.get('frequency', 7)}x weekly frequency.")
 
@@ -263,7 +264,16 @@ def _slide_executive_summary(prs, config, research):
                           str(value), font_size=28, font_colour=NAVY, bold=True)
 
     _add_text_box(slide, Inches(0.8), Inches(7.0), Inches(10), Inches(0.3),
-                  "Avia Solutions — Confidential", font_size=9, font_colour=MED_GREY)
+                  "Avia Solutions - Confidential", font_size=9, font_colour=MED_GREY)
+
+
+_VERIFICATION_COUNT = re.compile(
+    r"^\s*(no independently sourced figures|\d+\s+sourced finding)", re.I)
+
+
+def _is_verification_count(text):
+    """True for pitch_verify.block_summary output, which is audit, not content."""
+    return bool(text) and bool(_VERIFICATION_COUNT.match(str(text)))
 
 
 def _slide_research_block(prs, config, block_id, block_name, findings, summary_text=""):
@@ -276,7 +286,13 @@ def _slide_research_block(prs, config, block_id, block_name, findings, summary_t
                   bold=True, font_name="Georgia")
     _add_shape_rect(slide, Inches(0.8), Inches(1.15), Inches(1.5), Inches(0.04), ACCENT_GOLD)
 
-    # Summary paragraph
+    # Summary paragraph. A caller may pass real prose, and that belongs here. What
+    # does NOT belong here is the verification count, "3 sourced findings (3
+    # verified against the cited page)", which pitch_report supplies for the audit
+    # trail. It was printing as the opening line of every section, so the deck told
+    # the reader how many facts had been checked instead of what they meant.
+    if _is_verification_count(summary_text):
+        summary_text = ""
     if summary_text:
         _add_text_box(slide, Inches(0.8), Inches(1.5), Inches(11), Inches(1),
                       summary_text, font_size=13, font_colour=DARK_TEXT,
@@ -321,7 +337,7 @@ def _slide_research_block(prs, config, block_id, block_name, findings, summary_t
                       src_text, font_size=9, font_colour=MED_GREY, italic=True)
 
     _add_text_box(slide, Inches(0.8), Inches(7.0), Inches(10), Inches(0.3),
-                  f"Avia Solutions — {config.get('origin', '')}–{config.get('destination', '')}",
+                  f"Avia Solutions - {config.get('origin', '')}-{config.get('destination', '')}",
                   font_size=9, font_colour=MED_GREY)
 
 
@@ -338,7 +354,7 @@ def _slide_forecast(prs, config):
     forecast = config.get("forecast", {})
     if not forecast or not forecast.get('grand_total'):
         _add_text_box(slide, Inches(0.8), Inches(2), Inches(10), Inches(1),
-                      "Forecast data not yet available — run the QSI pipeline first.",
+                      "Forecast data not yet available - run the QSI pipeline first.",
                       font_size=16, font_colour=MED_GREY, italic=True)
         return
 
@@ -381,7 +397,7 @@ def _slide_forecast(prs, config):
                   svc, font_size=11, font_colour=DARK_TEXT)
 
     _add_text_box(slide, Inches(0.8), Inches(7.0), Inches(10), Inches(0.3),
-                  "Avia Solutions — Confidential", font_size=9, font_colour=MED_GREY)
+                  "Avia Solutions - Confidential", font_size=9, font_colour=MED_GREY)
 
 
 def _slide_forecast_breakdown(prs, config):
@@ -445,7 +461,7 @@ def _slide_forecast_breakdown(prs, config):
                           alignment=PP_ALIGN.RIGHT)
 
     _add_text_box(slide, Inches(0.8), Inches(7.0), Inches(10), Inches(0.3),
-                  "Avia Solutions — Confidential", font_size=9, font_colour=MED_GREY)
+                  "Avia Solutions - Confidential", font_size=9, font_colour=MED_GREY)
 
 
 def _slide_assumptions(prs, config):
@@ -463,7 +479,7 @@ def _slide_assumptions(prs, config):
 
     lines = [
         f"Airline: {config.get('airline_name', 'N/A')}",
-        f"Route: {config.get('origin', '')} — {config.get('destination', '')} ({config.get('origin_city', '')} — {config.get('dest_city', '')})",
+        f"Route: {config.get('origin', '')} - {config.get('destination', '')} ({config.get('origin_city', '')} - {config.get('dest_city', '')})",
         f"Aircraft: {config.get('aircraft_type', 'N/A')} with {config.get('seats', 'N/A')} seats",
         f"Frequency: {config.get('frequency', 'N/A')}x weekly",
         f"Demand source: Sabre MIDT (indirect O&D passengers)",
@@ -492,7 +508,7 @@ def _slide_assumptions(prs, config):
                    line_spacing=1.5)
 
     _add_text_box(slide, Inches(0.8), Inches(7.0), Inches(10), Inches(0.3),
-                  "Avia Solutions — Confidential", font_size=9, font_colour=MED_GREY)
+                  "Avia Solutions - Confidential", font_size=9, font_colour=MED_GREY)
 
 
 def _slide_connecting_cities(prs, config):
@@ -541,7 +557,7 @@ def _slide_connecting_cities(prs, config):
                       alignment=PP_ALIGN.RIGHT)
 
     _add_text_box(slide, Inches(0.8), Inches(7.0), Inches(10), Inches(0.3),
-                  "Avia Solutions — Confidential", font_size=9, font_colour=MED_GREY)
+                  "Avia Solutions - Confidential", font_size=9, font_colour=MED_GREY)
 
 
 def _slide_methodology(prs, config):
@@ -586,7 +602,7 @@ def _slide_methodology(prs, config):
                    line_spacing=1.35)
 
     _add_text_box(slide, Inches(0.8), Inches(7.0), Inches(10), Inches(0.3),
-                  "Avia Solutions — Confidential", font_size=9, font_colour=MED_GREY)
+                  "Avia Solutions - Confidential", font_size=9, font_colour=MED_GREY)
 
 
 def _slide_why_route(prs, config):
@@ -758,6 +774,20 @@ def generate_presentation(config: Dict[str, Any],
             f"{config.get('airline_name', 'Airline').replace(' ', '_')}.pptx"
         )
 
+    # House rule: every generated file carries Avia Solutions as author and as
+    # last modified by, never the generating library. The decks the site has been
+    # producing carried an empty author, which is what a reader's file properties
+    # showed when they opened one.
+    # These decks are published by The Aviation Observatory, the separate company,
+    # not by Avia Solutions. Deliberate departure from the Avia house rule, product
+    # output only.
+    publisher = os.environ.get("AVIA_DECK_AUTHOR", "The Aviation Observatory")
+    cp = prs.core_properties
+    cp.author = publisher
+    cp.last_modified_by = publisher
+    cp.company = publisher
+    cp.title = "%s to %s route pitch" % (config.get("origin_city", ""),
+                                         config.get("dest_city", ""))
     prs.save(output_path)
     return output_path
 

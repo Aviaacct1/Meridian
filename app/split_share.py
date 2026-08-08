@@ -46,7 +46,19 @@ REGION = {
 }
 
 
+LOAD_FAILURES = []      # read by the callers and printed by the runner
+
+
 def _load():
+    """Load the localness tables. A table that does not load SAYS so.
+
+    7 August: both tables were missing from the working copy for weeks and this
+    function absorbed it, so the re-split was simply off and every forecast taken
+    on that copy carried an uncorrected point to point and connecting split with
+    nothing on the screen or in the log to say why. Third instance of that shape
+    in this codebase, after the airport_capture shim and the empty backtest
+    column, so the failure is now recorded in LOAD_FAILURES and printed once.
+    """
     global _REGION, _LOCAL, _GLOBAL, _APT
     if _REGION is not None:
         return
@@ -60,8 +72,13 @@ def _load():
                 _REGION.setdefault(k, v)
             for k, v in (d.get("local") or {}).items():
                 _LOCAL.setdefault(k, float(v))
-        except Exception:
-            pass
+        except Exception as e:
+            msg = ("split_share: %s did not load (%s: %s). The hub localness "
+                   "re-split is OFF and the point to point and connecting split "
+                   "is the engine's own, uncorrected."
+                   % (os.path.basename(path), type(e).__name__, e))
+            LOAD_FAILURES.append(msg)
+            print("WARNING: %s" % msg)
     try:
         import airportsdata
         _APT = airportsdata.load("IATA")

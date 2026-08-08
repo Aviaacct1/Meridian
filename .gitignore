@@ -29,3 +29,47 @@ bt_v3_routes.txt
 # runtime state / scratch previews (mutate every run)
 entry_counter.txt
 *_PREVIEW.html
+_synth_*.csv
+
+# added 8 August 2026, from the reconciler's LEAVE list and the tree comparison.
+# venv/ carries its own .gitignore containing *, which is why git has never seen it
+# and why audit_split.py does not finish. The explicit entries are belt and braces.
+venv/
+app/venv/
+app/avia-forecast/venv/
+
+# computed, regenerable, machine-local: the drive-time cache catchment_master.py
+# writes. It belongs to whichever machine did the computing.
+_dt_cache/
+
+# back-test master tables: outputs, circa 11MB, regenerable from the stores, and
+# read only by the July analysis scripts. master_backtest*.csv is already above.
+master_complete*.csv
+master_v?_complete*.csv
+
+# result dumps from the July accuracy runs. The findings are written up in
+# BT2_BACKTEST_PROGRAMME.md; these are the raw console output.
+*_results_*.txt
+_dot_test.csv
+_smoke.csv
+
+# generated decks and workbooks. Outputs belong in the output folder, not the repo.
+# Already-tracked .pptx files at the root and in app/ stay tracked until they are
+# deliberately removed; this stops new ones arriving by accident.
+*.pptx
+*.pdf
+
+# NOT ignored, deliberately, so the decision is visible:
+#   app_avia_style/          already tracked, 8 files. The frozen rollback copy is a
+#                            record. Removing it is a separate decision, not a side
+#                            effect of a .gitignore edit.
+#   _archive_old_versions/   holds calibration_library_v7, __6_ and
+#                            research_to_presentation. Already tracked, and it is the
+#                            record of what came before.
+#   accuracy_dist.json       an INPUT: methodology_page.py reads it, and it going
+#                            missing from one tree is what left the proof card with no
+#                            distribution to draw on 7 August.
+#   the July scratch (runner*, score*, bench*, importance*, subgroups*,
+#   explore_segments, stage_runner): these go to app/attic/ and are COMMITTED there in
+#   a second commit. An attic folder that is committed is a record; a file ignored is a
+#   file that exists on one machine only, which is the fault this repo exists to end.

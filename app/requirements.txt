@@ -23,7 +23,25 @@ python-docx            # .docx packs
 xlrd>=2.0              # reads legacy .xls (MCT files, older Sabre extracts)
 
 # --- numeric helpers used in the catchment / drive-time layer ---
+# NOT pinned deliberately: basemap constrains numpy, and pinning both here means one of
+# them loses. Installing basemap into a Python that already has a newer numpy DOWNGRADES
+# it (2.5.1 to 2.3.5 on 7 August 2026), and on Windows the old version's files are often
+# locked and left behind as ~-prefixed folders in site-packages, which then breaks the
+# import. Build the venv first and install everything into it in one pass. check_env.py
+# looks for exactly that wreckage.
 numpy
+
+# --- the Observatory deck generator (Deck Generator/v4) ---
+# Not previously listed here, which is why these were installed by hand and took numpy
+# with them. The deck path is opt-in via AVIA_DECK_STYLE=observatory, but the packages
+# belong in the declared set whether or not it is switched on.
+matplotlib             # every chart, and the drawing surface the maps sit on
+basemap                # route map ONLY. Optional: without it the deck builds one page
+                       # shorter and deck_figures reports why. In maintenance upstream,
+                       # so replace it with a bundled coastline file before hosting.
+pillow                 # picture fitting and the JPEG re-encode that keeps decks emailable
+fonttools              # avia_fonts, embedded typeface handling
+piexif                 # avia_library, image rights metadata
 
 # --- researched airline pitch (Stage 2). Needs ANTHROPIC_API_KEY. NOT run live at the stand (D3);
 #     pre-generate the pack and open the HTML. Safe to install; the core demo does not require it. ---

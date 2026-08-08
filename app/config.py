@@ -118,6 +118,10 @@ OAG_DUCKDB = _env_path("AVIA_OAG_DUCKDB", LOCAL_CACHE / "oag.duckdb")
 # Aggregated, so small; live next to sabre.duckdb.
 DB1B_DUCKDB = _env_path("AVIA_DB1B_DUCKDB", LOCAL_CACHE / "db1b.duckdb")      # US domestic O&D (od_market)
 T100_DUCKDB = _env_path("AVIA_T100_DUCKDB", LOCAL_CACHE / "t100.duckdb")      # US capacity/seats/LF (seg)
+# ACI airport traffic, monthly, worldwide. Built by load_aci.py from the hand-
+# maintained workbook on Egnyte. TOTAL THROUGHPUT: arrivals + departures +
+# transit, domestic and international together. Not O&D, not one direction.
+ACI_DUCKDB = _env_path("AVIA_ACI_DUCKDB", LOCAL_CACHE / "aci.duckdb")         # non-US airport traffic (aci_monthly)
 FORM41_DUCKDB = _env_path("AVIA_FORM41_DUCKDB", LOCAL_CACHE / "form41_p12.duckdb")  # carrier P&L / CASM
 CASM_BENCHMARK = _env_path("AVIA_CASM_BENCHMARK", LOCAL_CACHE / "casm_benchmark.duckdb")  # carrier CASM/RASM + stage
 
@@ -161,6 +165,7 @@ ALL_PATHS = {
     "OAG_DUCKDB": OAG_DUCKDB,
     "DB1B_DUCKDB": DB1B_DUCKDB,
     "T100_DUCKDB": T100_DUCKDB,
+    "ACI_DUCKDB": ACI_DUCKDB,
     "FORM41_DUCKDB": FORM41_DUCKDB,
     "CASM_BENCHMARK": CASM_BENCHMARK,
     "SABRE_RAW_DIR": SABRE_RAW_DIR,
