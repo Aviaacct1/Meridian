@@ -1,0 +1,10 @@
+{
+  "_note": "Copy to avia_config.json, which is gitignored, and set for this machine. Forward slashes: JSON reads a single backslash as an escape, so C:\\Avia breaks. Paths below are the Dev PC convention; the workstation uses D:/assets and D:/data. Nothing here is read from a hardcoded path in code: config.py resolves ASSETS_DIR through AVIA_ASSETS, so a machine moves its assets by setting one variable.",
+  "image_store": "C:/assets/engagement",
+  "font_store": "C:/assets/deck_fonts",
+  "brand_library": "C:/assets/brand_library",
+  "observatory_library": "C:/assets/observatory_library",
+  "contract_dir": "C:/Avia/QSI/contracts",
+  "output_dir": "C:/Avia/QSI/decks",
+  "bt2_dir": "C:/Avia/bt2"
+}
