@@ -10,21 +10,69 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter
 import os
 
-NAVY = "#021D49"
-BODY = "#002060"
-ORANGE = "#FFA800"
-CYAN = "#00B0F0"
-MID = "#1F6FB2"
-TEAL = "#145A6E"
-GREY = "#8A8A8A"
-LIGHT = "#C9D9EC"
-GREEN = "#2E8B57"
-RED_LINE = "#C0392B"
+# ---------------------------------------------------------------------------
+# PALETTE. Observatory Brand Guidelines v1.3, section 5. Replaced 8 August 2026.
+#
+# Until then this module carried its own palette of ten colours, none of which appeared in the
+# brand guide: #002060 and #00B0F0 are Office theme defaults, #FFA800 an amber, #2E8B57 the CSS
+# named seagreen, #C0392B a Flat UI red. These charts go into client decks, so the deck was
+# arriving in a scheme the brand does not contain. The 36 checks in test_airport_charts.py all
+# passed throughout, because they check what a chart SAYS, its title, unit, period, source and
+# gap handling, and nothing checks what it looks like.
+#
+# The guide's two rules that decide everything below:
+#   "Brand colour identifies; data colour distinguishes. They stay apart."
+#   "Assign hues in the fixed order, brass first, always the observed series."
+# and Signal Red is reserved for averages, targets and thresholds, never a category.
+#
+# STRUCTURE, not series. Ink and body carry type and axes; they must never fill a series.
+INK        = "#0F1B28"      # titles, direct labels
+BODY       = "#26313B"      # axis labels, tick labels, body type
+MUTED      = "#6E6A5E"      # source lines, de-emphasised annotation
+AXIS       = "#C9C2B2"      # axis spines
+GRID       = "#E2DCCC"      # gridlines
+PAPER      = "#F6F3EC"      # figure ground
+
+# CATEGORICAL SERIES, assigned in the guide's fixed order. S3 is Verdigris everywhere, so these
+# names are the series numbers and not the colours: renaming a hue must not renumber a series.
+S1_BRASS     = "#D4A249"    # always the observed series
+S2_PRUSSIAN  = "#3D6A88"
+S3_VERDIGRIS = "#5F8D7A"
+S4_OXBLOOD   = "#A9553F"
+S5_SLATE     = "#8793A0"    # de-emphasised or "other" categories
+S6_PLUM      = "#7B617F"
+S7_OLIVE     = "#9C8A4E"
+
+# SEQUENTIAL RAMP, for one measure by intensity and for muting within a series.
+RAMP_PALE  = "#F1E6CD"
+RAMP_LIGHT = "#E4C489"
+RAMP_DEEP  = "#A97C33"      # brass-deep, for a direct label on the observed series
+
+# RESERVED. Averages, targets, thresholds, alerts. Never a category.
+SIGNAL_RED = "#CE3B2A"
+
+# The set any colour in this module must come from. Asserted by test_chart_palette.py so the
+# scheme cannot drift back one inline hex at a time, which is how it drifted in the first place.
+SANCTIONED = {INK, BODY, MUTED, AXIS, GRID, PAPER,
+              S1_BRASS, S2_PRUSSIAN, S3_VERDIGRIS, S4_OXBLOOD, S5_SLATE, S6_PLUM, S7_OLIVE,
+              RAMP_PALE, RAMP_LIGHT, RAMP_DEEP, SIGNAL_RED, "white"}
+
+# Names the rest of the module already uses, mapped to their role rather than their old hue.
+NAVY     = INK              # was #021D49, used for titles and bold direct labels
+ORANGE   = S2_PRUSSIAN      # was #FFA800, the second series in a stack or a grouped pair
+CYAN     = S3_VERDIGRIS     # was #00B0F0, the third series
+MID      = S1_BRASS         # was #1F6FB2, the PRIMARY series: brass, per the guide
+GREY     = MUTED            # was #8A8A8A, source line and de-emphasised type
+LIGHT    = RAMP_LIGHT       # was #C9D9EC, a muted step of the observed series
+RED_LINE = SIGNAL_RED       # was #C0392B, a threshold rule: the guide's sanctioned use
+
+# TEAL (#145A6E) and GREEN (#2E8B57) were defined and never used. Removed rather than remapped:
+# an unused colour constant is a hue waiting to be spent without a decision.
 
 plt.rcParams.update({
     "font.family": "DejaVu Sans",
     "font.size": 10,
-    "axes.edgecolor": "#B7C2D2",
+    "axes.edgecolor": AXIS,
     "axes.labelcolor": BODY,
     "text.color": BODY,
     "xtick.color": BODY,
@@ -55,7 +103,7 @@ def _finish(fig, ax, title, sub, ylab, source, path, legend=True):
     if legend:
         ax.legend(frameon=False, fontsize=8.6, loc="upper center",
                   bbox_to_anchor=(0.5, -0.07), ncol=3, handlelength=1.4)
-    ax.grid(axis="y", color="#E3E9F1", linewidth=0.8)
+    ax.grid(axis="y", color=GRID, linewidth=0.8)
     ax.set_axisbelow(True)
     if source:
         fig.text(0.005, 0.005, source, fontsize=7.2, color=GREY, ha="left")
@@ -102,9 +150,9 @@ def carrier_sfo(path):
     fig, ax = plt.subplots(figsize=(6.6, 3.9))
     w = 0.26
     xs = range(len(yrs))
-    ax.bar([x - w for x in xs], ba, w, color=NAVY, label="British Airways")
-    ax.bar(list(xs), ua, w, color=MID, label="United")
-    ax.bar([x + w for x in xs], vs, w, color=ORANGE, label="Virgin Atlantic")
+    ax.bar([x - w for x in xs], ba, w, color=S1_BRASS, label="British Airways")
+    ax.bar(list(xs), ua, w, color=S2_PRUSSIAN, label="United")
+    ax.bar([x + w for x in xs], vs, w, color=S3_VERDIGRIS, label="Virgin Atlantic")
     ax.annotate("United +27.5%\n2015 to 2019", xy=(4, 338230), xytext=(2.35, 430000),
                 fontsize=8.4, fontweight="bold", color=NAVY,
                 arrowprops=dict(arrowstyle="->", color=NAVY, lw=1.1))
@@ -128,7 +176,7 @@ def sjc_traffic(path):
     fig, ax = plt.subplots(figsize=(6.6, 3.7))
     ax.bar(yrs, v, color=cols, width=0.66)
     ax.axhline(15650444, color=ORANGE, linestyle="--", linewidth=1.4)
-    ax.text(2015, 15900000, "2019 peak 15.65m", fontsize=8.4, color="#B37600",
+    ax.text(2015, 15900000, "2019 peak 15.65m", fontsize=8.4, color=RAMP_DEEP,
             fontweight="bold")
     ax.annotate("2025: 10.68m\n-31.8% on 2019", xy=(2025, 10675167),
                 xytext=(2021.4, 13600000), fontsize=8.6, fontweight="bold",
@@ -149,7 +197,7 @@ def gdp_per_worker(path):
     labs = ["United States", "California", "Santa Clara County", "San Francisco",
             "Silicon Valley", "San Mateo County"]
     v2025 = [192361, 235390, 325429, 328613, 336515, 366403]
-    cols = [GREY, GREY, MID, MID, NAVY, MID]
+    cols = [S5_SLATE, S5_SLATE, RAMP_LIGHT, RAMP_LIGHT, S1_BRASS, RAMP_LIGHT]
     fig, ax = plt.subplots(figsize=(6.4, 3.5))
     b = ax.barh(labs, v2025, color=cols, height=0.62)
     for r, val in zip(b, v2025):
@@ -171,7 +219,7 @@ def marketcap(path):
     labs = ["US passenger\nairlines (combined)", "Meta Platforms", "Broadcom",
             "Apple", "Alphabet / Google", "NVIDIA"]
     v = [122, 1490, 2010, 4510, 4620, 5370]
-    cols = [ORANGE] + [MID] * 4 + [NAVY]
+    cols = [S1_BRASS] + [S5_SLATE] * 5
     fig, ax = plt.subplots(figsize=(6.4, 3.5))
     b = ax.barh(labs, v, color=cols, height=0.62)
     for r, val in zip(b, v):
@@ -362,11 +410,11 @@ def airport_source(slot, label=""):
     return tpl % {"label": label or "the store"} if tpl else ""
 
 
-COVID_BAND = "#E4EEF8"
-COVID_INK = "#5A7EA6"
+COVID_BAND = RAMP_PALE
+COVID_INK = MUTED
 # a pandemic bar has to stay legible against the band it sits in, so it is a
 # muted version of the series colour rather than the palest tint available
-COVID_BAR = "#8FAECD"
+COVID_BAR = RAMP_LIGHT
 
 
 def _covid_band(ax, span, y=0.97):
@@ -540,8 +588,8 @@ def airport_haul(path, *, haul, airport, embed_source=True, w=8.6, h=3.8):
     fig, ax = plt.subplots(figsize=(w, h))
     span = _year_axis(ax, years)
     _covid_band(ax, span)
-    ax.bar(years, dom, 0.66, color=NAVY, label="Domestic", zorder=2)
-    ax.bar(years, itl, 0.66, bottom=dom, color=ORANGE, label="International",
+    ax.bar(years, dom, 0.66, color=S1_BRASS, label="Domestic", zorder=2)
+    ax.bar(years, itl, 0.66, bottom=dom, color=S2_PRUSSIAN, label="International",
            zorder=2)
     tot = [a + b for a, b in zip(dom, itl)]
     top = max(tot)
@@ -629,7 +677,7 @@ def airport_load(path, *, series, airport, pax_label, halved=False,
     ys = [have.get(y, float("nan")) for y in span_years]
     span = _year_axis(ax, years)
     _covid_band(ax, span)
-    ax.plot(span_years, ys, color=NAVY, linewidth=2.2, marker="o", markersize=5,
+    ax.plot(span_years, ys, color=S1_BRASS, linewidth=2.2, marker="o", markersize=5,
             zorder=3)
     for y, v in zip(years, vals):
         ax.text(y, v + 1.6, "%.0f%%" % v, ha="center", fontsize=8.4,
@@ -637,7 +685,7 @@ def airport_load(path, *, series, airport, pax_label, halved=False,
     # A gap outside the pandemic has no band to explain it, so it gets its own.
     gaps = [y for y in span_years if y not in have and y not in PANDEMIC]
     for y in gaps:
-        ax.axvspan(y - 0.5, y + 0.5, color="#F2F5F9", zorder=0)
+        ax.axvspan(y - 0.5, y + 0.5, color=RAMP_PALE, zorder=0)
     if gaps:
         ax.text(sum(gaps) / float(len(gaps)), 0.04,
                 "no figure", transform=ax.get_xaxis_transform(),
@@ -661,12 +709,12 @@ def route_map(path):
     fig = plt.figure(figsize=(9.4, 4.3))
     ax = fig.add_axes([0, 0, 1, 1])
     ax.set_axis_off()
-    ax.set_facecolor("#DCEAF6")
-    fig.patch.set_facecolor("#DCEAF6")
+    ax.set_facecolor(PAPER)
+    fig.patch.set_facecolor(PAPER)
     try:
         import geopandas  # optional
         world = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
-        world.plot(ax=ax, color="#EFF3E8", edgecolor="#BFCBD8", linewidth=0.5)
+        world.plot(ax=ax, color=GRID, edgecolor=AXIS, linewidth=0.5)
     except Exception:
         pass
     lhr = (-0.4614, 51.4706)
@@ -683,9 +731,12 @@ def route_map(path):
     z = A * np.sin(lat1) + B * np.sin(lat2)
     lat = np.degrees(np.arctan2(z, np.sqrt(x ** 2 + y ** 2)))
     lon = np.degrees(np.arctan2(y, x))
-    ax.plot(lon, lat, color="#C0392B", linewidth=2.4, zorder=5)
+    ax.plot(lon, lat, color=S1_BRASS, linewidth=2.4, zorder=5)
     for (px, py), lab, ha in [(lhr, "London Heathrow", "left"),
                               (sjc, "San Jose", "right")]:
+        # Ink deliberately, and test_chart_palette.py allows it here. These two markers locate
+        # named airports beside their labels; they are type furniture rather than a data series,
+        # and in brass they would disappear into the route line they sit on.
         ax.plot([px], [py], "o", color=NAVY, markersize=9, zorder=6)
     ax.set_xlim(-135, 25)
     ax.set_ylim(20, 72)
