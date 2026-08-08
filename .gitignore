@@ -53,6 +53,15 @@ master_v?_complete*.csv
 _dot_test.csv
 _smoke.csv
 
+# Pre-test and diagnostic outputs. app/pretest_qsi.csv, a result file from 3 July, was swept
+# into the first commit by git add -A and then shipped down to the workstation in the clone,
+# where a watcher waiting for tonight's run to produce it found the stale one already present
+# and released early. Results do not belong in the tool repo: they belong with the data.
+pretest_*.csv
+bt_ab_*/
+*_direct.log
+run.log
+
 # machine config: the deck renderer's local paths. avia_config.example.json IS committed
 # as the template; the resolved copy never is, per point 4 of the tool standard.
 avia_config.json

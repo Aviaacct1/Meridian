@@ -1,0 +1,25 @@
+# Avia Cortex / QSI - LEGACY dependencies. Not needed to run Meridian.
+#
+# Split out of requirements.txt on 8 August 2026. These support avia_qsi_auto_v3.py, the
+# previous Streamlit pipeline, which is kept because departure_time_grid.py is reached only
+# through it and holds the specification and the reference numbers for the departure-time
+# work (129,162 passengers at a 21:30 SJC departure against circa 139,302 at 17:00).
+#
+# WHY THEY ARE NOT IN THE MAIN FILE. Installing this set on the workstation pulled streamlit
+# and its tree, and pip then resolved starlette DOWN from 1.6.0 to 1.3.1 to satisfy streamlit's
+# constraint. Starlette is what the live portal server runs on. A tool we do not run changed a
+# dependency of the tool we do, silently, in a resolver step nobody reads.
+#
+# So: a run host installs requirements.txt only. Install this file where the legacy tool is
+# actually being used, and preferably into its own virtual environment, because check_env.py
+# reports "virtualenv NO, this is a shared Python" on both machines today and says why:
+# "Installing one tool's dependencies here changes every other tool that uses this interpreter."
+# That warning is not theoretical any more.
+#
+#     py -3.12 -m venv .venv-legacy
+#     .venv-legacy\Scripts\python -m pip install -r requirements-legacy.txt
+#
+# Avia Solutions Limited. All rights reserved.
+
+streamlit>=1.33
+pandas>=2.1

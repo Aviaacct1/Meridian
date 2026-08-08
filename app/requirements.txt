@@ -47,6 +47,17 @@ piexif                 # avia_library, image rights metadata
 #     pre-generate the pack and open the HTML. Safe to install; the core demo does not require it. ---
 anthropic
 
-# --- legacy Streamlit tool (avia_qsi_auto_v3.py); not the demo server, kept for the older workflow ---
-streamlit>=1.33
-pandas>=2.1
+# --- legacy Streamlit tool: MOVED OUT, 8 August 2026 --------------------------------------
+# streamlit and pandas were here for avia_qsi_auto_v3.py, the previous pipeline. Installing
+# this file on the workstation pulled streamlit and with it altair, pydeck, pyarrow (27MB),
+# protobuf, jsonschema, watchdog, narwhals and more, for a tool that host does not run.
+#
+# The cost was not disk. pip resolved starlette to 1.6.0 for fastapi, then BACKTRACKED and
+# installed 1.3.1 because streamlit constrains it. Starlette is what the live portal server
+# runs on, so installing a tool we do not use downgraded a dependency of the tool we do. That
+# is the same fault this file already warns about for basemap and numpy, and it is why the
+# legacy set now lives in requirements-legacy.txt and is installed only where it is wanted.
+#
+#     py -3.12 -m pip install -r requirements-legacy.txt
+#
+# A run host installs requirements.txt and nothing else.

@@ -62,6 +62,10 @@ param(
     [string]$PythonArgs = "-3.12"
 )
 
+# "Stop" is right for the preflight and wrong for the runs: with 2>&1 a native command's
+# stderr becomes terminating error records, so on 8 August the first line of a Python
+# traceback aborted the script and the body never reached the log, which is the one job the
+# log has. Preflight keeps Stop; the runs switch to Continue and render stderr to text.
 $ErrorActionPreference = "Stop"
 $app = $PSScriptRoot
 $pyArgs = @()
@@ -128,12 +132,15 @@ $common = @(
 $v1Out = Join-Path $OutDir "bt_v1_08Aug2026.csv"
 $v2Out = Join-Path $OutDir "bt_v2_qsifeed_08Aug2026.csv"
 
+$ErrorActionPreference = "Continue"
 Say "ARM 1 of 2: V1, the shipped feed. This is the control and it must run on today's code."
-& $Python @pyArgs (Join-Path $app "backtest.py") @common --out $v1Out 2>&1 | Tee-Object -Append -FilePath $log
+& $Python @pyArgs (Join-Path $app "backtest.py") @common --out $v1Out 2>&1 |
+    Out-String -Stream | Tee-Object -Append -FilePath $log
 Say ("ARM 1 done, exit {0}" -f $LASTEXITCODE)
 
 Say "ARM 2 of 2: V2, --qsi-feed at the default k. The only flag that differs."
-& $Python @pyArgs (Join-Path $app "backtest.py") @common --qsi-feed --wave-cache (Join-Path $app "qsi_wave_cache.duckdb") --out $v2Out 2>&1 | Tee-Object -Append -FilePath $log
+& $Python @pyArgs (Join-Path $app "backtest.py") @common --qsi-feed --wave-cache (Join-Path $app "qsi_wave_cache.duckdb") --out $v2Out 2>&1 |
+    Out-String -Stream | Tee-Object -Append -FilePath $log
 Say ("ARM 2 done, exit {0}" -f $LASTEXITCODE)
 
 Say "BOTH ARMS COMPLETE"
