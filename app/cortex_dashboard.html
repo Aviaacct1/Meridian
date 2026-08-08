@@ -8,6 +8,17 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;1,6..72,400&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<!-- Leaflet, for the catchment map. Added 8 August 2026. renderMap() has always had two
+     paths: a Leaflet map on tiles, or a bare SVG scatter of circles and leakage lines with no
+     basemap. window.L was never defined on this page, because these two tags were only ever
+     on cortex_catchment.html, so the Leaflet branch had never run once and the catch(e)
+     around it said nothing. The map that looked like it had lost its background had never
+     had one.
+     WATCHPOINT: this puts the map on cdnjs for the library and cartocdn for the tiles, so it
+     will not draw on an offline demo laptop. Either bundle both locally or have the SVG path
+     state on the figure that it is drawing positions without a basemap. -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <style>
   /* ---- Observatory tokens (see observatory_tokens.css) ---- */
   :root{
@@ -194,7 +205,10 @@
 
   .hidden{display:none}
   .err{background:#FBEEEB;color:var(--signal);border:1px solid var(--signal);border-left-width:2px;border-radius:var(--r);padding:13px 16px;font-family:var(--serif);font-size:13.5px;margin-top:18px}
-  @media(max-width:960px){.grid{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,1fr)}.form{grid-template-columns:repeat(6,1fr)}}
+  /* !important because render() now sets the column count inline from the number of cards,
+     so the card row can never disagree with what is in it. An inline style beats a media
+     query, so without this the row would stay at six columns on a narrow screen. */
+  @media(max-width:960px){.grid{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,1fr) !important}.form{grid-template-columns:repeat(6,1fr)}}
   @media (prefers-reduced-motion: reduce){*{animation-duration:.001ms !important;transition-duration:.001ms !important}}
 </style>
 </head>
@@ -306,6 +320,11 @@
       <div id="err" class="err hidden"></div>
       <div id="results" class="hidden">
         <div class="kpis" id="kpis"></div>
+        <!-- The schedule the forecast assumes. Hidden until a run fills it. -->
+        <div class="hidden" id="schedRow" style="margin:-8px 0 20px;padding:9px 0 0;border-top:1px solid var(--line)">
+          <div style="font-family:var(--sans);font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);font-weight:600">Schedule assumed</div>
+          <div id="schedLine" style="font-family:var(--mono);font-size:11.5px;color:var(--body);margin-top:6px;line-height:1.6"></div>
+        </div>
         <div id="runline" class="runline"></div>
         <div id="basis" class="foot-note" style="margin:-6px 0 16px"></div>
         <div id="cap" class="banner ok"></div>
@@ -579,9 +598,16 @@ function renderSeason(){
   let peakIdx=0; months.forEach((v,i)=>{if(v>months[peakIdx])peakIdx=i;});
   const bars=months.map((ld,i)=>{
     const cx=L+(R-L)*(i+0.5)/12, y=yOf(ld), h=Math.max(B-y,1);
-    // Signal Red is never a data fill: near-cap and peak months brass, the rest ink.
-    // The dashed Signal-Red cap line and the direct peak label carry the spill meaning.
-    const col=ld>=plf*0.9?PAL.brass:PAL.ink;
+    // Brand colour identifies, data colour distinguishes, and they stay apart: Observatory
+    // Brand Guidelines v1.3, section 5. Ink is a brand colour and was filling the observed
+    // series, so on a route whose peak load sits below 0.9 x the plan cap every month fell to
+    // ink and the chart came out in the institution's colour instead of the data palette.
+    // EDI-AUS peaks at 47% against an 85% cap, so that was every bar.
+    // One series, one hue: Brass S1, "brass first, always the observed series". The threshold
+    // stays where the guide puts it, on the dashed Signal-Red plan-LF rule, and the peak keeps
+    // its direct label. A ramp keyed to load factor was considered and rejected: bar height
+    // already carries that measure, so colouring by it as well is decoration.
+    const col=PAL.brass;
     return `<rect x="${(cx-bw/2).toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" fill="${col}"></rect>`;
   }).join("");
   const monthLbls=MO.map((m,i)=>{const cx=L+(R-L)*(i+0.5)/12;return `<text x="${cx.toFixed(1)}" y="194" text-anchor="middle">${m}</text>`;}).join("");
@@ -779,11 +805,39 @@ function render(d){
     ["Point-to-point", fmt(_ptp*2), `Two way; each way ${fmt(_ptp)} · captured from the ${fmt(dem.natural)} local market`],
     ["Connecting feed", fmt(_cf*2), _cf>0 ? `Two way; each way ${fmt(_cf)} · carried onto and off the network` : "Point-to-point carrier"],
   ];
+  // Load factor on the card row, added 8 August 2026. The engine has always returned
+  // planned_load_factor (route_forecast.py: carried / annual_capacity) and the dashboard has
+  // always had it as capacity.load, but it appeared only inside the viability warning prose,
+  // so the fill a forecast assumes was the one headline number a reader had to hunt for.
+  // It sits beside the volumes because it is the number that decides whether the volumes are
+  // a proposition: the same demand at 57% and at 80% is two different conversations.
+  if(cap && cap.load!=null)
+    kpis.push(["Load factor", pct1(cap.load), `on ${cap.freq}x/week ${cap.aircraft}, ${fmt(cap.annual_capacity)} seats each way / yr`]);
   if(MODE!=="forecast" && d.economics_ok)
     kpis.push(["Route margin", pct1(ec.margin), profitable?'<span class="tag up">Profitable</span> at these inputs':'<span class="tag dn">Loss</span> at these inputs']);
   else
     kpis.push(["Capture share", pct1(dem.qsi_share), "of the catchment market"]);
+  // Column count follows the cards, so the grid can never disagree with what is in it.
+  $("#kpis").style.gridTemplateColumns=`repeat(${kpis.length},1fr)`;
   $("#kpis").innerHTML=kpis.map(k=>`<div class="kpi"><div class="l">${k[0]}</div><div class="v${k[0]==='Total forecast'?' brass':''}">${k[1]}</div><div class="s">${k[2]}</div></div>`).join("");
+
+  // The schedule the forecast assumes, both legs. Added 8 August 2026: cortex_app has always
+  // sent d.schedule from _schedule_times, and nothing displayed it, so a reader could not see
+  // which schedule produced the number. Labelled indicative because it is: _schedule_times
+  // departs the origin at 11:00 local on every route in the tool and turns two hours later,
+  // using longitude/15 as a timezone proxy. It is not slot-, curfew- or connection-optimised.
+  // When departure time becomes a search dimension these stop being illustrative and the
+  // label comes off.
+  const _sc=d.schedule;
+  if(_sc && _sc.outbound){
+    const _bh=Math.floor((_sc.block_min||0)/60), _bm=(_sc.block_min||0)%60;
+    setTxt("schedLine",
+      `${_sc.outbound.sector} dep ${_sc.outbound.dep} arr ${_sc.outbound.arr}  ·  `+
+      `${_sc.inbound.sector} dep ${_sc.inbound.dep} arr ${_sc.inbound.arr}  ·  `+
+      `${cap.aircraft}, ${cap.freq}x/week, block ${_bh}h ${String(_bm).padStart(2,"0")}m each way`+
+      (_sc.indicative?"  ·  local times, indicative: not slot-, curfew- or connection-optimised":""));
+    const _el=$("#schedRow"); if(_el) _el.classList.remove("hidden");
+  } else { const _el=$("#schedRow"); if(_el) _el.classList.add("hidden"); }
 
   const est = d.title.indexOf("Genoa")<0;
   $("#fidChip").className = est?"chip est":"chip";
@@ -797,7 +851,10 @@ function render(d){
   $("#barNote").innerHTML = '<span>'+barTxt+'</span>'+provRail('Sabre O&amp;D','Share of catchment O&amp;D, each way','Sabre '+(d.year||'-'),'QSI methodology v2.4');
 
   const local=(dem.p2p_carried!=null?dem.p2p_carried:(dem.captured||0)), feedInc=(dem.connecting_carried!=null?dem.connecting_carried:Math.max((dem.total||0)-(dem.captured||0),0)), total=dem.total||1;
-  const rows=[["Local demand captured",0,local,local,"var(--ink)"]];
+  // Data palette, not brand: ink was filling this bar while the other two already used
+  // Prussian and Brass. Verdigris is S3 and stays S3 everywhere, per the guide's rule that
+  // series do not get reordered chart to chart.
+  const rows=[["Local demand captured",0,local,local,"var(--s3)"]];
   if(feedInc>0) rows.push(["Connecting feed",local,feedInc,feedInc,"var(--s2)"]);
   rows.push(["Total forecast, each way",0,total,total,"var(--brass)"]);
   $("#funnel").innerHTML=rows.map(r=>`<div class="brow"><div class="bl">${r[0]}</div><div class="bt"><div class="bf" style="left:${(r[1]/total*100).toFixed(1)}%;width:${Math.max(r[2]/total*100,1.5).toFixed(1)}%;background:${r[4]}"></div></div><div class="bv">${fmt(r[3])}</div></div>`).join("");
