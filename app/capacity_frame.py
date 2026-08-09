@@ -161,6 +161,72 @@ def frame(a, b, period="2025-%", min_ops=6, band=0.25):
     return gcd, out
 
 
+def frequency_frame(a, b, carriers=None, period="2025-%", band=0.25, con=None):
+    """How often a carrier actually opens and runs a route of this length, per direction per week.
+
+    The third side of the frame. Aircraft and seats say what an airline can put on the route; this
+    says how often it flies it, and it is the same kind of observable. A carrier that runs its
+    comparable long-haul at four weekly does not open a new one at daily, and the schedule says so.
+
+    Returned per carrier: the median, the quartiles and the range across its routes of comparable
+    length, so the caller can frame a low, central and high case rather than pick one.
+    """
+    close = False
+    if con is None:
+        db = _oag()
+        if not db:
+            sys.exit("no OAG store found.")
+        con = duckdb.connect(db, read_only=True)
+        con.execute("SET memory_limit='3GB'; SET threads=3")
+        close = True
+    try:
+        gcd, _ = (None, None)
+        import airportsdata
+        import math
+        ap_ = airportsdata.load("IATA")
+        if a in ap_ and b in ap_:
+            la1, lo1 = math.radians(ap_[a]["lat"]), math.radians(ap_[a]["lon"])
+            la2, lo2 = math.radians(ap_[b]["lat"]), math.radians(ap_[b]["lon"])
+            h = (math.sin((la2 - la1) / 2) ** 2
+                 + math.cos(la1) * math.cos(la2) * math.sin((lo2 - lo1) / 2) ** 2)
+            gcd = 2 * 6371 * math.asin(math.sqrt(h))
+        if not gcd:
+            return {}
+        lo, hi = gcd * (1 - band), gcd * (1 + band)
+        where = ""
+        params = [period, lo, hi]
+        if carriers:
+            where = " AND carrier IN (%s)" % ",".join("?" for _ in carriers)
+            params += list(carriers)
+        # Weekly frequency per direction on a route-month. days_of_op is a seven-character mask so
+        # its digit count is flights per week, but the store holds the SAME schedule record once per
+        # region label: UA SFO-TPE in June 2025 is sixty rows carrying two distinct flight numbers,
+        # both daily. Summing the mask across rows returned 420 weekly frequencies for United, which
+        # is what sent me back to look at a single route-month rather than trust the aggregate.
+        # Deduped to one figure per flight number, then summed, which gives the honest fourteen.
+        rows = con.execute("""
+          WITH d AS (
+            SELECT carrier, dep_airport || '-' || arr_airport rt, substr(week,1,7) mon, flight_no,
+                   max(length(replace(coalesce(days_of_op,''), '.', ''))) dop
+            FROM oag
+            WHERE service_type='J' AND week LIKE ? AND try_cast(stops AS INT)=0
+              AND try_cast(gcd_km AS DOUBLE) BETWEEN ? AND ? %s
+            GROUP BY 1,2,3,4),
+          f AS (SELECT carrier, rt, mon, sum(dop) wk FROM d GROUP BY 1,2,3 HAVING sum(dop) > 0)
+          SELECT carrier, count(DISTINCT rt) routes,
+                 quantile_cont(wk, 0.25) q1, median(wk) med, quantile_cont(wk, 0.75) q3,
+                 min(wk) lo, max(wk) hi
+          FROM f GROUP BY 1
+        """ % where, params).fetchall()
+        return {r[0]: {"routes": int(r[1]), "q1": round(float(r[2]), 1),
+                       "median": round(float(r[3]), 1), "q3": round(float(r[4]), 1),
+                       "min": round(float(r[5]), 1), "max": round(float(r[6]), 1)}
+                for r in rows}
+    finally:
+        if close:
+            con.close()
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -186,6 +252,15 @@ def main():
             print("    %-5s %-22s %4d seats (%3d premium)  on %3d routes, %5d sectors, %5d-%5d km"
                   % (d["aircraft"], (d["name"] or "")[:22], d["seats"], d["premium"],
                      d["routes"], d["ops"], d["km_range"][0], d["km_range"][1]))
+    fq = frequency_frame(a, b, carriers=order[:x.max_carriers], period=x.period, band=x.band)
+    if fq:
+        print("\n  weekly frequency per direction on routes of comparable length")
+        print("    %-6s %8s %8s %8s %8s %8s" % ("", "low q1", "median", "high q3", "min", "max"))
+        for car in order[:x.max_carriers]:
+            d = fq.get(car)
+            if d:
+                print("    %-6s %8.1f %8.1f %8.1f %8.1f %8.1f   across %d routes"
+                      % (car, d["q1"], d["median"], d["q3"], d["min"], d["max"], d["routes"]))
 
 
 if __name__ == "__main__":
