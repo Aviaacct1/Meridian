@@ -31,12 +31,32 @@ from bt2_paths import BT2, OAG, require
 
 require(OAG=OAG)
 
-REF = "2018"          # a full pre-COVID year, before the network disruption
+# THE REFERENCE YEAR, and 2018 was the wrong choice. It was picked because a country's region and a
+# carrier's home are structural and slow moving, which is true of a HOME and not true of a CARRIER.
+# Starlux was founded after 2018, so it is absent from a 2018-built lookup, and on 9 August 2026 that
+# silently deleted it from an SJC-TPE capacity frame: the one route it obviously belongs in. A
+# historic year also misses every merger, rebrand and failure since. Default is now the most recent
+# full year in the store, and the file records which year it used.
+#     AVIA_REGION_REF=2019   to pin it, for reproducing an older artefact
+import os as _os
+
+REF = _os.environ.get("AVIA_REGION_REF", "")
 
 
 def main():
     con = duckdb.connect(OAG, read_only=True)
     con.execute("SET memory_limit='3GB'; SET threads=4")
+
+    global REF
+    if not REF:
+        # The most recent year with a full twelve months, so a part-loaded current year cannot make
+        # a carrier look smaller than it is or drop it out of the file altogether.
+        rows = con.execute("""
+          SELECT substr(week,1,4) y, count(DISTINCT substr(week,6,2)) m
+          FROM oag GROUP BY 1 ORDER BY 1 DESC""").fetchall()
+        full = [y for y, m in rows if m >= 12]
+        REF = full[0] if full else rows[0][0]
+    print("reference year %s (set AVIA_REGION_REF to pin it)" % REF)
 
     rows = con.execute("""
       SELECT dep_country, region, sum(try_cast(seats_total as bigint)) s
