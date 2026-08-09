@@ -12,18 +12,19 @@ BT2 fits a quantile regression at 0.5, so it returns the median of the predicted
 O&D per seat. The claim is scored on whether the forecast lands within +-20% of the outturn. Those
 ask for different numbers, and the gap is not a rounding matter:
 
-    within +-20% means  |f/A - 1| <= 0.20,  so  A in [f/1.2, f/0.8]
+    within +-20% means  |f/A - 1| <= 0.20,  so  f/A in [0.80, 1.20]
 
-Writing f = seats.exp(m) and A = seats.exp(Z), the route is a hit when
+Writing e = log(f/A), the route is a hit when
 
-    Z in [m - log(1.2), m + log(1.25)]  =  [m - 0.1823, m + 0.2231]
+    e in [log 0.80, log 1.20]  =  [-0.22314, +0.18232]
 
-THE BAND IS ASYMMETRIC IN LOGS. It is wider above than below, because being 20% under the outturn
-and 20% over it are not the same distance in ratio terms. The window's midpoint is m + 0.0204, so a
-forecast placed at the median of Z puts the median 0.0204 ABOVE the centre of its own scoring
-window, and gives away coverage on every route. The correction is to forecast at
+THE BAND IS ASYMMETRIC IN LOGS, AND IT IS WIDER BELOW THAN ABOVE, because being 20% under the
+outturn is a longer step in logs than being 20% over it. The window's midpoint is -0.02041, so a
+forecast placed at the median of e sits ABOVE the centre of its own scoring window and gives away
+coverage on every route. The correction is a multiplier of exp(-0.02041) = 0.9798.
 
-    median - 0.0204,  a multiplier of exp(-0.0204) = 0.9798
+The first version of this file had that asymmetry the wrong way round and concluded the shift should
+be upward. The band now comes from bt2_score, which writes it down once and self-tests the direction.
 
 This is DERIVED, not fitted. It comes from the definition of the band and nothing else, so there is
 no grid, no selection, and no best-of-N to discount. The curve over other multipliers is printed for
