@@ -112,3 +112,21 @@ it is a refit rather than a search.
 ---
 
 Avia Solutions Limited. All rights reserved.
+
+## Running BT2 from PowerShell
+
+Both the Dev PC and the workstation are PowerShell, where `set` is an alias for `Set-Variable` and
+makes a PowerShell variable rather than an environment variable. A run started that way looks
+configured and is not: on 9 August 2026 it resolved BT2 to the repo folder and stopped on a missing
+`capture_2016.csv`, which is the guard in `bt2_paths` working, but the cause took a round trip to
+find. Use `$env:`.
+
+```powershell
+cd C:\AviaDev\bt2
+$env:AVIA_LOCAL_CACHE = "C:\Avia"          # E:\Avia on DONATELLO
+$env:AVIA_BT2_DIR     = "C:\Avia\bt2"      # artifacts live with the data, never in the repo
+$env:AVIA_APP_DIR     = "C:\AviaDev\app"   # BT2 imports the Meridian connection builder
+$env:AVIA_BT2_COHORTS = "2016,2017,2018,2019,2024,2025"
+$env:AVIA_BT2_BUDGET  = "130"              # bt2_capture seconds per invocation; 33 is the old cap
+py -3.12 bt2_paths.py                      # prints all six resolved paths before anything runs
+```
