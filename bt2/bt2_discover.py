@@ -10,7 +10,32 @@ import duckdb
 # mounts that resolve on neither the Dev PC nor the workstation, so this stage could not run.
 from bt2_paths import BT2, SABRE, require
 require(SABRE=SABRE)
-THR, VIRGIN_FRAC, MINBASE, MAXRATIO = 1500.0, 3.0, 2000.0, 5.0
+
+# THE FOUR NUMBERS THAT DEFINE THE SAMPLE, and they were fixed constants until 9 August 2026.
+#
+#   THR           a pair must carry this many passengers in the launch year to count as a launch
+#   VIRGIN_FRAC   and under THR/VIRGIN_FRAC in each of the two years before, to count as virgin
+#   MINBASE       the existing market must be at least this big
+#   MAXRATIO      the launch year must not exceed this multiple of the existing market
+#
+# The last two are exclusions, and on cohort 2024 they removed 1,652 of 2,518 candidates. MAXRATIO
+# in particular throws out exactly the heavily stimulated markets that the accuracy work finds
+# hardest, which flatters every figure the programme has published. They are settable so the
+# question can be MEASURED rather than argued, and the defaults are unchanged so nothing moves
+# unless it is asked to.
+#
+#     AVIA_BT2_THR / AVIA_BT2_VIRGIN_FRAC / AVIA_BT2_MINBASE / AVIA_BT2_MAXRATIO
+#
+# A relaxed run belongs in its own AVIA_BT2_DIR. Two samples under one set of filenames is how a
+# published number ends up measured on a different population from the one it names.
+def _env(name, default):
+    return float(os.environ.get(name, default))
+
+
+THR = _env("AVIA_BT2_THR", 1500.0)
+VIRGIN_FRAC = _env("AVIA_BT2_VIRGIN_FRAC", 3.0)
+MINBASE = _env("AVIA_BT2_MINBASE", 2000.0)
+MAXRATIO = _env("AVIA_BT2_MAXRATIO", 5.0)
 
 def gcd_map():
     import airportsdata
