@@ -6,13 +6,16 @@ Writes base_strength_L.json. One cohort per call: python3 bt2_base.py 2017
 """
 import csv, duckdb, json, sys
 
-BT2 = "/sessions/wizardly-peaceful-tesla/mnt/Avia/bt2"
+# PATHS. Rewritten 9 August 2026, see bt2_paths.py. The two constants here were hardcoded Cowork
+# session mounts that resolve on neither the Dev PC nor the workstation, so this stage could not run.
+from bt2_paths import BT2, OAG, require
+require(OAG=OAG)
 
 def run(L):
     prof = list(csv.DictReader(open(f"{BT2}/launch_profile_{L}.csv")))
     months = sorted({r["pre_month"] for r in prof})
     aps = sorted({r["a"] for r in prof} | {r["b"] for r in prof})
-    con = duckdb.connect("/sessions/wizardly-peaceful-tesla/mnt/Avia/oag.duckdb", read_only=True)
+    con = duckdb.connect(OAG, read_only=True)
     con.execute("SET memory_limit='3GB'; SET threads=4")
     ms = "(" + ",".join(f"'{m}'" for m in months) + ")"
     s = "(" + ",".join(f"'{a}'" for a in aps) + ")"

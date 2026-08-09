@@ -3,7 +3,10 @@
 import csv, math, statistics, time
 from collections import defaultdict
 
-BT2 = "/sessions/wizardly-peaceful-tesla/mnt/Avia/bt2"
+# PATHS. Rewritten 9 August 2026, see bt2_paths.py. The BT2 folder and the engine folder were both
+# hardcoded Cowork session mounts that resolve on neither the Dev PC nor the workstation, so every
+# stage importing this library could not run.
+from bt2_paths import BT2, find_app
 COHORTS = (2016, 2017, 2018, 2019)
 STIM = 1.30
 
@@ -11,7 +14,9 @@ LCC_SET = None
 def lcc_set():
     global LCC_SET
     if LCC_SET is None:
-        import sys; sys.path.insert(0, "/sessions/wizardly-peaceful-tesla/mnt/Avia QSI Tool/app")
+        # find_app is loud on purpose: BT2 consumes the Meridian engine, and a silent miss here
+        # would take the LCC list from nowhere rather than stopping.
+        import sys; sys.path.insert(0, find_app())
         import connection_builder as CB
         LCC_SET = set(CB.DEFAULT_LCC_LIST)
     return LCC_SET

@@ -49,6 +49,32 @@ _ROOTS = [
 ]
 
 
+def _warn_if_bt2_is_the_repo():
+    """Warn when BT2 has resolved to the repo folder while the data root holds a populated one.
+
+    Added 9 August 2026. On the Dev PC the data root holds 104 BT2 artifacts, including
+    bt2_model_v1_2.pkl and every capture_L.csv, and the repo's bt2 folder holds only code. With
+    AVIA_BT2_DIR unset the default is the repo folder, so a stage finds no artifact, recomputes it
+    from the stores, and writes the result into the repo. That is not a wrong answer, it is a day of
+    recompute and a repo carrying data, against point 3 of the Avia tool standard. Left as a warning
+    rather than a changed default, because a resolver that quietly picks a different folder from the
+    one it documents is the failure this module exists to stop.
+    """
+    if os.environ.get("AVIA_BT2_DIR"):
+        return
+    for r in _ROOTS:
+        cand = r and os.path.join(r, "bt2")
+        if cand and os.path.isdir(cand) and os.path.abspath(cand) != os.path.abspath(BT2):
+            import sys
+            print("bt2_paths: AVIA_BT2_DIR is not set, so artifacts resolve to the repo folder\n"
+                  "  %s\n"
+                  "while the data root already holds a BT2 folder\n"
+                  "  %s\n"
+                  "Set AVIA_BT2_DIR to the second one, or this run recomputes what already exists "
+                  "and writes it into the repo." % (BT2, cand), file=sys.stderr)
+            return
+
+
 def _first_existing(*paths):
     for p in paths:
         if p and os.path.exists(p):
@@ -63,7 +89,14 @@ def _in_roots(name, env=None):
 
 OAG = _in_roots("oag.duckdb", "AVIA_OAG_DUCKDB")
 SABRE = _in_roots("sabre.duckdb", "AVIA_SABRE_DUCKDB")
-US_MARKET = _in_roots("Usmarket data", "AVIA_US_MARKET")
+
+# The US DOT extract folder is named differently on the two machines: "Usmarket data" on the
+# workstation and "US Market Data" on the Dev PC. Windows ignores case but not the space, so the
+# single name written here on 8 August resolved on the workstation and returned None on the Dev PC,
+# which stopped bt2_db1b and bt2_coupon at require(). Both names are tried, first hit wins.
+US_MARKET = (_first_existing(os.environ.get("AVIA_US_MARKET"))
+             or _in_roots("Usmarket data")
+             or _in_roots("US Market Data"))
 
 
 def mct_master():
@@ -115,6 +148,9 @@ def require(**named):
             "Set the matching variable, or AVIA_LOCAL_CACHE to the data root "
             "(E:\\Avia on the workstation, C:\\Avia on the Dev PC)."
             % ", ".join(missing))
+
+
+_warn_if_bt2_is_the_repo()
 
 
 if __name__ == "__main__":

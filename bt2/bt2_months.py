@@ -7,8 +7,10 @@ Writes bt2/pair_months_L.csv. One cohort per call.
 import argparse
 import duckdb
 
-BT2 = "/sessions/wizardly-peaceful-tesla/mnt/Avia/bt2"
-OAG = "/sessions/wizardly-peaceful-tesla/mnt/Avia/oag.duckdb"
+# PATHS. Rewritten 9 August 2026, see bt2_paths.py. Both constants were hardcoded Cowork session
+# mounts that resolve on neither the Dev PC nor the workstation, so this stage could not run.
+from bt2_paths import BT2, OAG, require
+require(OAG=OAG)
 
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument("--cohort", type=int, required=True)

@@ -10,8 +10,10 @@ scaled 4/3 and flagged - not silently filled.
 """
 import argparse, csv, glob, os, subprocess, sys
 
-BT2 = "/sessions/wizardly-peaceful-tesla/mnt/Avia/bt2"
-US = "/sessions/wizardly-peaceful-tesla/mnt/Usmarket data"
+# PATHS. Rewritten 9 August 2026, see bt2_paths.py. Both constants were hardcoded Cowork session
+# mounts that resolve on neither the Dev PC nor the workstation, so this stage could not run.
+from bt2_paths import BT2, US_MARKET as US, require
+require(US_MARKET=US)
 SPLIT = 15_000_000   # rows in part 1
 
 def us_pairs(L):

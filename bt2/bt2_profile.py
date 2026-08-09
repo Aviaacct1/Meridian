@@ -9,7 +9,9 @@ Writes launch_profile_L.csv. All cohorts in one call.
 import csv
 from collections import defaultdict
 
-BT2 = "/sessions/wizardly-peaceful-tesla/mnt/Avia/bt2"
+# PATHS. Rewritten 9 August 2026, see bt2_paths.py. This constant was a hardcoded Cowork session
+# mount that resolves on neither the Dev PC nor the workstation, so this stage could not run.
+from bt2_paths import BT2
 MIN_OPS = 4  # ops per month for a "launched" month (~weekly)
 
 def run(L):

@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 """Avia Solutions - BT2 Stage 1: launch discovery per cohort (Sabre).
 Cohorts 2016-2019 (+2025). Virgin pair: nonstop >=1500 pax in L, <500 in L-1 and L-2.
-Writes C:\\Avia\\bt2\\launches_L.csv per cohort. Run: one cohort per call (45s cap).
+Writes launches_L.csv per cohort into the BT2 folder resolved by bt2_paths. Run: one cohort per call.
 """
 import argparse, csv, math, os
 import duckdb
 
-BT2 = "/sessions/wizardly-peaceful-tesla/mnt/Avia/bt2"
-SABRE = "/sessions/wizardly-peaceful-tesla/mnt/Avia/sabre.duckdb"
+# PATHS. Rewritten 9 August 2026, see bt2_paths.py. Both constants were hardcoded Cowork session
+# mounts that resolve on neither the Dev PC nor the workstation, so this stage could not run.
+from bt2_paths import BT2, SABRE, require
+require(SABRE=SABRE)
 THR, VIRGIN_FRAC, MINBASE, MAXRATIO = 1500.0, 3.0, 2000.0, 5.0
 
 def gcd_map():

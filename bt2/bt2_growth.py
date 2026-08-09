@@ -5,8 +5,10 @@ Writes growth_L.csv (a, b, base_mkt_m2). All cohorts, one per call if slow.
 import sys
 import duckdb
 
-BT2 = "/sessions/wizardly-peaceful-tesla/mnt/Avia/bt2"
-SABRE = "/sessions/wizardly-peaceful-tesla/mnt/Avia/sabre.duckdb"
+# PATHS. Rewritten 9 August 2026, see bt2_paths.py. Both constants were hardcoded Cowork session
+# mounts that resolve on neither the Dev PC nor the workstation, so this stage could not run.
+from bt2_paths import BT2, SABRE, require
+require(SABRE=SABRE)
 
 def run(L):
     con = duckdb.connect(SABRE, read_only=True)

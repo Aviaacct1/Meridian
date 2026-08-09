@@ -72,6 +72,13 @@ bt2/*.json
 !bt2/ddfs_packs/
 bt2/*.csv
 bt2/__pycache__/
+# _cpn_worker.py and _db1b_worker.py are GENERATED, not source: bt2_coupon.py and bt2_db1b.py
+# write them fresh on every part, with the airport list and the output path baked in for that call.
+# Both were committed by mistake on 8 August and both carried a dead Cowork session mount, which is
+# why they appeared on the eleven-file fix list. Editing a generated file fixes nothing, because the
+# next run overwrites it. Ignored here so the pair cannot come back.
+bt2/_cpn_worker.py
+bt2/_db1b_worker.py
 
 # machine config: the deck renderer's local paths. avia_config.example.json IS committed
 # as the template; the resolved copy never is, per point 4 of the tool standard.
