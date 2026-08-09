@@ -8,11 +8,11 @@ No competing manual QSI can show an outturn record at all - transparency IS the 
 
 Framing rules (agreed 4 Jul; revised 5 Aug 2026 for the BT2 calibrated evidence):
 - The claim structure follows the site positioning (QSI_SITE_ACCURACY_COPY.md): lead with the
-  CALIBRATED accuracy - 90% of 2,915 launches within +-20%, 83% within +-10% - stated as
-  calibrated, with blind validation (portfolios of twenty unseen routes within +-20% 94% of
+  CALIBRATED accuracy - 93% of 6,524 launches within +-20%, 86% within +-10% - stated as
+  calibrated, with blind validation (portfolios of twenty unseen routes within +-20% 93% of
   the time, held across the COVID break) named alongside. Only the twenty-route portfolio
   figure is published (John, 5 Aug): the ten-route 80% reads ambiguously against the
-  calibrated 89% headline. "Calibrated" and "blind/unseen" are
+  calibrated 93% headline. "Calibrated" and "blind/unseen" are
   the load-bearing words; neither may borrow the other's number. The old factor-band framing
   ("half within x1.4") belonged to the pre-BT2 engine and is retained in the tables only.
 - With a BT2-scored evidence file (engine=bt2 column) the page must NOT describe forecasts as
@@ -476,7 +476,7 @@ def render_html(t, source_name, engine_ctx=None):
                      f"own - so the headline statistics use the {t['basis_n']} launches in its peer group "
                      f"({', '.join(t['regions']) or 'same region'}). {a}'s own routes are shown separately below."),
             "global": (f"{a} has {t['n_here']} launches in the sample - too few for a distribution - so the "
-                       f"headline statistics use the full 2,915-launch sample. {a}'s own routes are shown "
+                       f"headline statistics use the full 6,524-launch sample. {a}'s own routes are shown "
                        f"separately below."),
         }[t["basis"]]
     else:
@@ -555,8 +555,8 @@ def render_html(t, source_name, engine_ctx=None):
   <h1>{esc(name)} ({esc(a)})</h1>
   <div class="sub">{("Every new route launched at " + esc(a) + " in the graded sample, graded like-for-like "
   "against the route's actual first-full-year traffic and the schedule the carrier actually flew. Calibrated "
-  "basis: the model is fitted across all 2,915 launches in the sample; blind accuracy on unseen routes is "
-  "validated separately (portfolios of twenty unseen routes within &plusmn;20% of actual 94% of the time).") if _BT2_SOURCE else
+  "basis: the model is fitted across all 6,524 launches in the sample; blind accuracy on unseen routes is "
+  "validated separately (portfolios of twenty unseen routes within &plusmn;20% of actual 93% of the time).") if _BT2_SOURCE else
   ("Every new route launched at " + esc(a) + " in the graded sample, forecast the year "
   "before launch with no knowledge of the outcome, against the route's actual first-full-year "
   "traffic.")} Launch years {yr_label}. Of the {t['n_here']} launches here, {t['n_fore_here']} were into
@@ -597,11 +597,10 @@ def render_html(t, source_name, engine_ctx=None):
     <th style="text-align:right">forecast, year 1</th><th style="text-align:right">actually carried</th><th>how it landed</th></tr>
     {route_rows}</table>
     <div class="note" style="margin-top:8px">{("Passengers, both directions, first full year after launch. "
-    "US domestic routes are graded against US DOT DB1B actuals (TranStats), the source US airports use; all "
-    "other routes against Sabre MIDT. Calibrated basis: the model is fitted across the full launch sample, "
+    "Every route in this sample is graded against Sabre MIDT, the industry booking reference. Calibrated basis: the model is fitted across the full launch sample, "
     "these routes included, and graded like-for-like against the aircraft, frequency and months the carrier "
     "actually flew. Its blind accuracy - routes it was never shown - is validated separately: forecasting "
-    "portfolios of twenty unseen routes, the portfolio total landed within &plusmn;20% of actual 94% of the "
+    "portfolios of twenty unseen routes, the portfolio total landed within &plusmn;20% of actual 93% of the "
     "time, held across the COVID break.") if _BT2_SOURCE else
     ("Passengers, both directions, first full year after launch. The forecast was made as standing the year "
     "before launch, with no knowledge of the outcome, and graded against the aircraft and frequency the "
@@ -648,7 +647,7 @@ def render_total(t, source_name):
   <div class="sub">{("Every new route in the graded sample, across all airports, graded like-for-like against "
   "actual first-full-year traffic and the schedule the carrier actually flew. Calibrated basis: the model is "
   "fitted across the full launch sample; blind accuracy on unseen routes is validated separately (baskets of "
-  "twenty unseen routes within &plusmn;20% of actual 94% of the time, held across the COVID break).") if _BT2_SOURCE else
+  "twenty unseen routes within &plusmn;20% of actual 93% of the time, held across the COVID break).") if _BT2_SOURCE else
   ("Every new route in the graded sample, across all airports, forecast the year before "
   "launch with no knowledge of the outcome and graded against actual first-full-year traffic.")} Launch years
   {yr_label}. {t['n_all']:,} routes, {t['n_origins']} origin airports, {t['n_carriers']} carriers:

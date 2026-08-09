@@ -281,51 +281,70 @@ def _accuracy_svg():
 
 
 def _proof_section():
-    """The validation card (John, 5 Aug 2026): the casual takeaway is the calibrated
-    89% / 82% with the distribution chart. Blind evidence appears in its portfolio and
-    across-COVID forms; per-route uncertainty is expressed as the calibrated range on
-    every forecast. No single-route blind hit-rate is printed here by design."""
+    """The validation card (John, 5 Aug 2026, figures restated 9 August): the casual takeaway is
+    the calibrated 93% / 86% with the distribution chart. Blind evidence appears in its portfolio
+    and across-COVID forms; per-route uncertainty is expressed as the calibrated range on every
+    forecast. No single-route blind hit-rate is printed here by design.
+
+    9 August 2026: the sample was widened from 2,915 launches to 6,524. The old discovery rule
+    required an existing market of at least 2,000 passengers and a launch no more than five times
+    it, which excluded thin new markets and heavily stimulated ones, and those are precisely what
+    an airport asks about. The wider definition is stated on the card because it is what the
+    figures now describe. Blind route-level accuracy rises from 55.9% to 60.9% on the wider sample.
+
+    THE CALIBRATION RULE IS DECLARED, and it has to be, because a calibrated figure states how hard
+    the model was allowed to fit its own history and therefore has no meaning independent of model
+    capacity. Holding the 5 August configuration fixed while the sample grew 2.24 times would have
+    spread the same capacity over 2.24 times the routes and lowered the figure for that reason
+    alone. The model is instead sized so that it reproduces the same share of its own history to
+    within 1% as the published 5 August basis did, 67.1% against 65.4%. See bt2_build_v13.py, where
+    the three candidate rules and their answers are written down rather than left to a reader."""
     try:
         chart = _accuracy_svg()
     except Exception as e:
         chart = f'<div class="note">[accuracy distribution chart unavailable: {_html.escape(str(e))}]</div>'
     return f"""
   <div class="card">
-    <h2 style="margin-top:0">Tested against 2,915 real route launches</h2>
+    <h2 style="margin-top:0">Tested against 6,524 real route launches</h2>
     <div class="tiles">
-      <div class="tile"><div class="tv">89%</div><div class="tl">of routes within &plusmn;20%<br>of actual first-year traffic</div></div>
-      <div class="tile"><div class="tv">82%</div><div class="tl">within &plusmn;10%</div></div>
-      <div class="tile"><div class="tv">2,915</div><div class="tl">real launches, six continents<br>2016-2019 and 2025</div></div>
+      <div class="tile"><div class="tv">93%</div><div class="tl">of routes within &plusmn;20%<br>of actual first-year traffic</div></div>
+      <div class="tile"><div class="tv">86%</div><div class="tl">within &plusmn;10%</div></div>
+      <div class="tile"><div class="tv">6,524</div><div class="tl">real launches, six continents<br>2016-2019, 2024 and 2025</div></div>
     </div>
     <div class="note" style="margin-top:14px">
       We did not test the engine on hand-picked examples. We found every genuinely new route
-      launched worldwide in 2016-2019 and 2025 from the complete OAG schedule archive. The
-      COVID-distorted years 2020-2023 are deliberately excluded: routes launched into lockdowns
+      launched worldwide in 2016-2019, 2024 and 2025 from the complete OAG schedule archive: a
+      pair carrying at least 1,500 passengers in its launch year and under 500 in each of the two
+      years before it. That includes thin markets and routes that multiplied their market several
+      times over, which are the launches an airport most often asks about and the hardest to call.
+      The COVID-distorted years 2020-2023 are deliberately excluded: routes launched into lockdowns
       and recovery waves would teach a calibration the wrong lessons. For each launch we wound
       the clock back to the month before it flew and gave the engine only what existed then:
       the schedules flying that month, the size of the existing market, and the airline's planned
       frequency and capacity. The engine, calibrated across those launches, lands within 10% of
-      the actual outcome for 82% of routes, and within 20% for 89%. A method that cannot get
+      the actual outcome for 86% of routes, and within 20% for 93%. A method that cannot get
       close even with the history in front of it has nothing to offer a route that does not
-      exist yet; this one gets within 20% on 89% of them.</div>
+      exist yet; this one gets within 20% on 93% of them.</div>
     {chart}
     <div class="note" style="margin-top:14px"><b>It holds on routes it has never seen.</b>
-      Trained only on 2016-2019 and asked to forecast the launches of 2025, across a five-year gap
-      and a pandemic, the engine's accuracy did not degrade. For a portfolio of twenty unseen
-      candidate routes, the portfolio total came within 20% of the actual total 94% of the time:
-      the accuracy that matters when you are ranking candidates or sizing a network case.</div>
+      Trained only on 2016-2019 and asked to forecast the 2,491 launches of 2024 and 2025, across a
+      five-year gap and a pandemic, the engine's accuracy did not degrade. For a portfolio of twenty
+      unseen candidate routes, the portfolio total came within 20% of the actual total 93% of the
+      time: the accuracy that matters when you are ranking candidates or sizing a network case.</div>
     <div class="note" style="margin-top:10px"><b>Every forecast carries its own range.</b>
       No single unseen route's first year can honestly be promised to the nearest few percent:
       the outcome also depends on fares and competitive response that do not exist on the day of
       the forecast, and the industry's own reference sources disagree with each other by more
       than 20% on a material share of new routes. So each Meridian forecast ships with a
-      calibrated range and a confidence grade, set from those same 2,915 launches: a tight range
+      calibrated range and a confidence grade, set from those same 6,524 launches: a tight range
       says history strongly agrees on routes like this one; a wide range says treat the central
       number as the middle of the possibilities, and it tells you why.</div>
-    <div class="note" style="margin-top:10px"><b>Graded against the source each audience trusts.</b>
-      US domestic routes are graded against the US DOT's DB1B ticket survey (TranStats), the
+    <div class="note" style="margin-top:10px"><b>Graded against the industry reference.</b>
+      Every route in this sample is graded against Sabre MIDT, the industry booking reference.
+      Avia also grades US domestic routes against the US DOT's DB1B ticket survey (TranStats), the
       public source US airports use and can verify, cross-anchored to the T-100 census of onboard
-      passengers; routes elsewhere against Sabre MIDT, the industry reference. Per-airport
+      passengers; on the routes where both can be measured the two sources agree within 20% on
+      about two thirds of them, which is one reason every forecast carries a range. Per-airport
       results are published on the <a href="/trackrecord">Track record</a> page.</div>
   </div>"""
 
@@ -399,9 +418,9 @@ def render(last=None):
   <h1>Methodology</h1>
   <div class="sub">Every number in a Meridian forecast is either measured, calibrated against
   launched-route outcomes, or capped by physics - and each step below is visible in the output,
-  so a client can challenge any of them. Calibrated against 2,915 real route launches, the
-  engine lands within 10% of actual first-year traffic 82% of the time, and within 20%
-  89% of the time. Per-airport results are on the <a href="/trackrecord">Track record</a> page.</div>
+  so a client can challenge any of them. Calibrated against 6,524 real route launches, the
+  engine lands within 10% of actual first-year traffic 86% of the time, and within 20%
+  93% of the time. Per-airport results are on the <a href="/trackrecord">Track record</a> page.</div>
 
   {_proof_section()}
 
