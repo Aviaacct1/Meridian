@@ -117,6 +117,63 @@ def _vec(r, carid):
     return f
 
 
+# THE DOMAIN GUARD. Measured on the 6,524 training launches, 9 August 2026: the pair's existing
+# market runs from a floor of 250 passengers a year (the discovery rule's own minimum) with a median
+# of 3,779, and seats offered over that market reaches a maximum of 1,107 times with a 99th
+# percentile of 163.
+#
+# WHY IT MATTERS, found by wiring SJC-TPE through the whole chain rather than by reasoning about it.
+# Sabre records 212 passengers a year between San Jose and Taipei against 283,412 for SFO-TPE.
+# Silicon Valley's Taipei demand books out of San Francisco: the pair's own bookings are empty
+# because the market has LEAKED to the primary airport.
+#
+# THE FIRST VERSION OF THIS GUARD WAS WRONG, and the wiring test caught it by refusing training
+# routes. It keyed on the seats-over-market ratio alone and called 289 times "beyond anything BT2
+# has been trained on", which is false: the training set reaches 1,107. The ratio is a SYMPTOM. The
+# signal is the market itself being below the floor BT2 has ever seen, because a pair carrying 212
+# passengers a year between two airports of this size is not a thin market, it is a market measured
+# in the wrong place.
+#
+# The scope limit underneath is real and worth stating. BT2 was trained on pairs that already carried
+# traffic, because the discovery rule requires at least 250. A secondary airport whose demand books
+# from the primary is precisely the case that rule excludes, and precisely the case Meridian's
+# catchment machinery was built for. There, the QSI engine is the right tool and BT2 is not.
+TRAIN_MIN_BASE = 250.0        # the discovery floor: no training route had a thinner market
+TRAIN_MAX_RATIO = 1107.0      # the largest seats-over-market ever seen in training
+TRAIN_P99_RATIO = 163.0
+
+
+def domain(route):
+    """IN, MARGINAL or OUT, with the ratio and a note. Never guesses."""
+    try:
+        bm = float(route.get("base_mkt") or 0)
+        s = float(route.get("seats_ly") or 0)
+    except (TypeError, ValueError):
+        return "UNKNOWN", None, "seats_ly or base_mkt is not a number"
+    if bm <= 0 or s <= 0:
+        return "UNKNOWN", None, "seats_ly and base_mkt must both be positive"
+    r = s / bm
+    if bm < TRAIN_MIN_BASE:
+        return "OUT", r, (
+            "The pair records only %.0f passengers a year, below the %.0f floor of every route BT2 "
+            "has been trained on. On a pair between airports of any size that usually means the "
+            "market has leaked to a larger airport nearby and is being measured in the wrong place: "
+            "San Jose to Taipei records 212 a year while San Francisco to Taipei records 283,412. "
+            "The catchment engine measures a leaked market and BT2 cannot. Use the QSI engine."
+            % (bm, TRAIN_MIN_BASE))
+    if r > TRAIN_MAX_RATIO:
+        return "OUT", r, (
+            "This route offers %.0f times the seats of its existing market, beyond the %.0f maximum "
+            "of anything in training, so the model would be extrapolating rather than forecasting."
+            % (r, TRAIN_MAX_RATIO))
+    if r > TRAIN_P99_RATIO:
+        return "MARGINAL", r, (
+            "This route offers %.0f times the seats of its existing market, above the 99th "
+            "percentile of the launches BT2 was trained on, so few comparable cases exist. Treat "
+            "the number as indicative and read the range rather than the point." % r)
+    return "IN", r, ""
+
+
 def check(route):
     """What is missing, named. Returns [] when the route can be forecast."""
     bad = []
@@ -147,6 +204,12 @@ def forecast(route, mode="scheduled"):
     missing = check(route)
     if missing:
         return {"ok": False, "reason": "cannot forecast, missing or invalid: " + ", ".join(missing)}
+    verdict, ratio, note = domain(route)
+    if verdict == "OUT":
+        # Refused rather than caveated. A number this far outside the training set is not a forecast
+        # with a wide range, it is an extrapolation dressed as one, and the caller has a better tool.
+        return {"ok": False, "domain": verdict, "seats_over_market": round(ratio, 1),
+                "reason": note, "use_instead": "qsi"}
     import numpy as np
     x = np.array([_vec(route, m["carid"])])
     p50 = float(m["q50"].predict(x)[0])
@@ -165,7 +228,11 @@ def forecast(route, mode="scheduled"):
         "engine": "bt2",
         "model": m.get("version"),
         "population": m.get("population"),
+        "domain": verdict,
+        "seats_over_market": round(ratio, 1),
     }
+    if note:
+        out["domain_note"] = note
     if mode != "scheduled":
         # Said in the payload, not in a comment, because a caller that does not read this will
         # present a circular number as a market forecast.
