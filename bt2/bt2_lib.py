@@ -7,7 +7,15 @@ from collections import defaultdict
 # hardcoded Cowork session mounts that resolve on neither the Dev PC nor the workstation, so every
 # stage importing this library could not run.
 from bt2_paths import BT2, find_app
-COHORTS = (2016, 2017, 2018, 2019)
+
+# COHORTS was the four cohorts the programme started with. It is settable on 9 August 2026 because
+# adding a cohort is the one change with a measured value attached to it (+1.7 points blind, four
+# cohorts to five, bt2_experiments.log line 38 of 5 August), and every stage below reads this
+# tuple. Default unchanged, so anything that relied on the four-cohort number still returns it.
+#     AVIA_BT2_COHORTS=2016,2017,2018,2019,2024,2025
+import os as _os
+COHORTS = tuple(int(c) for c in _os.environ.get(
+    "AVIA_BT2_COHORTS", "2016,2017,2018,2019").split(",") if c.strip())
 STIM = 1.30
 
 LCC_SET = None

@@ -17,7 +17,11 @@ import duckdb
 from bt2_paths import BT2, OAG, find_app, mct_master, require
 APP = find_app()                      # loud: BT2 imports the QSI connection builder
 require(OAG=OAG, APP=APP)
-T0, BUDGET = time.time(), 33.0
+# The 33 second budget was set by the 45 second call cap of the Cowork session that wrote this
+# stage. It is not a property of the work, and on a machine with no such cap it means the stage
+# reloads the airport coordinates and the MCT master once for every 33 seconds of useful capture.
+# Made settable on 9 August 2026, default unchanged so nothing that relied on it moves.
+T0, BUDGET = time.time(), float(os.environ.get("AVIA_BT2_BUDGET", "33"))
 
 sys.path.insert(0, APP)
 import connection_builder as CB
