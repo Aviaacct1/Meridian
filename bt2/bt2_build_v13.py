@@ -58,7 +58,15 @@ def main():
 
     rows = G.rows
     F.attach(rows)
+    # John's rule of 5 August: a route is graded against the source its audience can verify, so US
+    # domestic launches are graded against the DOT and everything else against Sabre. Applied here
+    # rather than in the caller, so the model, the evidence file and the histogram cannot end up on
+    # three different definitions of an outturn.
+    import bt2_mixed_basis as MB
+    n_dot = MB.attach(rows)
     pop = os.path.basename(B.BT2.rstrip("/\\"))
+    print("  outturn basis: %d US domestic launches graded against US DOT DB1B, %d against Sabre "
+          "MIDT" % (n_dot, len(rows) - n_dot))
     print("sample %s, n=%d, cohorts %s, calibration rule '%s'"
           % (pop, len(rows), ",".join(str(c) for c in B.COHORTS), a.calib))
 
@@ -94,7 +102,7 @@ def main():
         print("  dry run, nothing written")
         return
 
-    basis = "calibrated-fitted v1.3 %s sample, %s rule" % (pop, a.calib)
+    basis = "calibrated-fitted v1.3 %s sample, %s rule, mixed outturn basis" % (pop, a.calib)
     prov = ("BT2 v1.3, sample %s n=%d, cohorts %s. Calibration rule '%s' (%s). "
             "Calibrated %.1f%% within +-20%%, %.1f%% within +-10%%. Blind LOCO %.1f%% within +-20%%. "
             "A calibrated figure states how hard the model was allowed to fit its own history and "
@@ -141,11 +149,9 @@ def main():
                 w.writerow(["%s-%s" % (r["a"], r["b"]), r["a"], r["b"], r["cohort"], reg,
                             r["oag_carrier"], r["typ"], round(f), round(r["actual"]),
                             round(r["actual"]), round(r["base_mkt"]),
-                            round(f / r["actual"], 4), "", "bt2", basis, "Sabre MIDT", pop])
+                            round(f / r["actual"], 4), "", "bt2", basis,
+                            r.get("_src", "Sabre MIDT"), pop])
         print("  wrote %s" % p)
-        print("  NOTE: outturn_source is Sabre MIDT on every row. The mixed basis adopted on")
-        print("  5 August, US domestic graded against DOT DB1B, is NOT in this build: the DB1B")
-        print("  outturns were built for the canon pairs and would have to be rebuilt for these.")
         errs = [100.0 * (x - 1) for x in ratios]
         bins = []
         for lo in range(-55, 55, 5):

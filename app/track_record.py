@@ -8,11 +8,11 @@ No competing manual QSI can show an outturn record at all - transparency IS the 
 
 Framing rules (agreed 4 Jul; revised 5 Aug 2026 for the BT2 calibrated evidence):
 - The claim structure follows the site positioning (QSI_SITE_ACCURACY_COPY.md): lead with the
-  CALIBRATED accuracy - 93% of 6,524 launches within +-20%, 86% within +-10% - stated as
+  CALIBRATED accuracy - 92% of 6,524 launches within +-20%, 86% within +-10% - stated as
   calibrated, with blind validation (portfolios of twenty unseen routes within +-20% 93% of
   the time, held across the COVID break) named alongside. Only the twenty-route portfolio
   figure is published (John, 5 Aug): the ten-route 80% reads ambiguously against the
-  calibrated 93% headline. "Calibrated" and "blind/unseen" are
+  calibrated 92% headline. "Calibrated" and "blind/unseen" are
   the load-bearing words; neither may borrow the other's number. The old factor-band framing
   ("half within x1.4") belonged to the pre-BT2 engine and is retained in the tables only.
 - With a BT2-scored evidence file (engine=bt2 column) the page must NOT describe forecasts as
@@ -597,7 +597,8 @@ def render_html(t, source_name, engine_ctx=None):
     <th style="text-align:right">forecast, year 1</th><th style="text-align:right">actually carried</th><th>how it landed</th></tr>
     {route_rows}</table>
     <div class="note" style="margin-top:8px">{("Passengers, both directions, first full year after launch. "
-    "Every route in this sample is graded against Sabre MIDT, the industry booking reference. Calibrated basis: the model is fitted across the full launch sample, "
+    "US domestic routes are graded against US DOT DB1B actuals (TranStats), the source US airports use; all "
+    "other routes against Sabre MIDT. Calibrated basis: the model is fitted across the full launch sample, "
     "these routes included, and graded like-for-like against the aircraft, frequency and months the carrier "
     "actually flew. Its blind accuracy - routes it was never shown - is validated separately: forecasting "
     "portfolios of twenty unseen routes, the portfolio total landed within &plusmn;20% of actual 93% of the "

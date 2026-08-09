@@ -282,7 +282,7 @@ def _accuracy_svg():
 
 def _proof_section():
     """The validation card (John, 5 Aug 2026, figures restated 9 August): the casual takeaway is
-    the calibrated 93% / 86% with the distribution chart. Blind evidence appears in its portfolio
+    the calibrated 92% / 86% with the distribution chart. Blind evidence appears in its portfolio
     and across-COVID forms; per-route uncertainty is expressed as the calibrated range on every
     forecast. No single-route blind hit-rate is printed here by design.
 
@@ -307,7 +307,7 @@ def _proof_section():
   <div class="card">
     <h2 style="margin-top:0">Tested against 6,524 real route launches</h2>
     <div class="tiles">
-      <div class="tile"><div class="tv">93%</div><div class="tl">of routes within &plusmn;20%<br>of actual first-year traffic</div></div>
+      <div class="tile"><div class="tv">92%</div><div class="tl">of routes within &plusmn;20%<br>of actual first-year traffic</div></div>
       <div class="tile"><div class="tv">86%</div><div class="tl">within &plusmn;10%</div></div>
       <div class="tile"><div class="tv">6,524</div><div class="tl">real launches, six continents<br>2016-2019, 2024 and 2025</div></div>
     </div>
@@ -322,9 +322,9 @@ def _proof_section():
       the clock back to the month before it flew and gave the engine only what existed then:
       the schedules flying that month, the size of the existing market, and the airline's planned
       frequency and capacity. The engine, calibrated across those launches, lands within 10% of
-      the actual outcome for 86% of routes, and within 20% for 93%. A method that cannot get
+      the actual outcome for 86% of routes, and within 20% for 92%. A method that cannot get
       close even with the history in front of it has nothing to offer a route that does not
-      exist yet; this one gets within 20% on 93% of them.</div>
+      exist yet; this one gets within 20% on 92% of them.</div>
     {chart}
     <div class="note" style="margin-top:14px"><b>It holds on routes it has never seen.</b>
       Trained only on 2016-2019 and asked to forecast the 2,491 launches of 2024 and 2025, across a
@@ -339,12 +339,13 @@ def _proof_section():
       calibrated range and a confidence grade, set from those same 6,524 launches: a tight range
       says history strongly agrees on routes like this one; a wide range says treat the central
       number as the middle of the possibilities, and it tells you why.</div>
-    <div class="note" style="margin-top:10px"><b>Graded against the industry reference.</b>
-      Every route in this sample is graded against Sabre MIDT, the industry booking reference.
-      Avia also grades US domestic routes against the US DOT's DB1B ticket survey (TranStats), the
-      public source US airports use and can verify, cross-anchored to the T-100 census of onboard
-      passengers; on the routes where both can be measured the two sources agree within 20% on
-      about two thirds of them, which is one reason every forecast carries a range. Per-airport
+    <div class="note" style="margin-top:10px"><b>Graded against the source each audience trusts.</b>
+      US domestic routes are graded against the US DOT's DB1B ticket survey (TranStats), the
+      public source US airports use and can verify; routes elsewhere against Sabre MIDT, the
+      industry booking reference. That is a deliberately harder test on US routes: on the 595
+      launches where both sources can measure the same route they agree within 20% on only 68% of
+      them, so part of what any forecast is scored against there is the disagreement between two
+      industry references, which is one reason every forecast carries a range. Per-airport
       results are published on the <a href="/trackrecord">Track record</a> page.</div>
   </div>"""
 
@@ -420,7 +421,7 @@ def render(last=None):
   launched-route outcomes, or capped by physics - and each step below is visible in the output,
   so a client can challenge any of them. Calibrated against 6,524 real route launches, the
   engine lands within 10% of actual first-year traffic 86% of the time, and within 20%
-  93% of the time. Per-airport results are on the <a href="/trackrecord">Track record</a> page.</div>
+  92% of the time. Per-airport results are on the <a href="/trackrecord">Track record</a> page.</div>
 
   {_proof_section()}
 
