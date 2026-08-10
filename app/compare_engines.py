@@ -74,9 +74,19 @@ def main():
     fc = RF.forecast(sabre, oag, a.week, origin, dest_codes, competing,
                      year=a.year, freq=a.freq, block_min=a.block_min,
                      dest_airport=dest_airport, airline=a.carrier,
-                     annual_capacity=a.seats * a.freq * 2.0 * 52.0 * (a.months / 12.0))
+                     # EACH-WAY, which is the engine's convention: route_forecast computes
+                     # annual_capacity as seats x freq x weeks and its comment records that a
+                     # previous x2 "halved the reported load factor against each-way demand".
+                     annual_capacity=a.seats * a.freq * 52.0 * (a.months / 12.0))
 
-    qsi_pax = float(fc.get("carried_forecast") or 0)
+    # THE CONVENTIONS DIFFER AND MIXING THEM IS THE ERROR THIS TOOL EXISTS TO PREVENT, so it is
+    # stated here. The QSI engine works EACH-WAY. BT2's seats_ly is BOTH DIRECTIONS, because
+    # bt2_discover and bt2_profile sum both. Everything below is reported TWO-WAY, which is the
+    # convention a client and an airline planner use, so the engine figure is doubled and BT2's is
+    # left alone. On 9 August 2026 the first version of this tool passed a two-way capacity into the
+    # each-way parameter and then divided an each-way forecast by two-way seats, which halved every
+    # load factor and made the engine look badly low on SJC-TPE against John's known 115-135k.
+    qsi_pax = 2.0 * float(fc.get("carried_forecast") or 0)
     seats = a.seats * a.freq * 2.0 * 52.0 * (a.months / 12.0)
 
     print("=" * 78)
@@ -84,14 +94,15 @@ def main():
           % (origin, dest_airport, a.carrier or "carrier not named", a.seats, a.freq,
              a.months, a.week))
     print("=" * 78)
-    print("  seats offered, both directions   %s" % format(int(seats), ","))
+    print("  seats offered, both directions   %s  (all figures below are TWO-WAY)" % format(int(seats), ","))
 
-    print("\nQSI ENGINE  (catchment, capture, connecting feed)")
+    print("\nQSI ENGINE  (catchment, capture, connecting feed). Engine works each-way; doubled here")
     print("  forecast                         %s passengers" % format(int(qsi_pax), ","))
-    print("  measured market                  %s" % format(int(fc.get("natural_market") or 0), ","))
+    print("  measured market, two-way         %s" % format(int(2 * (fc.get("natural_market") or 0)), ","))
     print("  capture share                    %.4f" % (fc.get("qsi_share") or 0))
     print("  connecting feed                  %s behind, %s beyond"
-          % (format(int(fc.get("feed_behind") or 0), ","), format(int(fc.get("feed_beyond") or 0), ",")))
+          % (format(int(2 * (fc.get("feed_behind") or 0)), ","),
+             format(int(2 * (fc.get("feed_beyond") or 0)), ",")))
     print("  implied load factor              %.1f%%" % (100.0 * qsi_pax / seats if seats else 0))
 
     print("\nBT2  (capacity anchor, trained on 6,524 launches)")
