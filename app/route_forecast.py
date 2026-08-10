@@ -186,7 +186,7 @@ def haul_radius_km(gcd_km):
 def qsi_capture_share(oag_db, week, origin, dest_codes, competing_airports,
                       proposed_freq, proposed_block_min, mct_file=None, dump=DUMP,
                       radius_km=220.0, qsi_scale=100.0, logit_scale=0.008, att_exponent=0.0,
-                      served_index=None):
+                      served_index=None, diag_out=None):
     # att_exponent default 0.0 (size pull OFF) until real drive-time access is wired: the domestic
     # basket wants ~0.65 but that needs true road times or it collapses Genoa (3.5hr Apennine drive
     # to Milan that great-circle reads as 1.5hr). Size pull + real drive times get calibrated together.
@@ -202,9 +202,18 @@ def qsi_capture_share(oag_db, week, origin, dest_codes, competing_airports,
     import geonames as G, catchment as C, route_qsi as RQ, oag_served as OAS
     import airportsdata
     ap = airportsdata.load("IATA")
-    qd = RQ.airport_qsi_to_dest(oag_db, week, dest_codes, competing_airports,
+    # diag_out, when a dict is passed, is filled with the connection-set summary the QSI machinery
+    # already computes. Nothing else changes: the return signature and every existing caller stand.
+    _r = RQ.airport_qsi_to_dest(oag_db, week, dest_codes, competing_airports,
                                 proposed_origin=origin, proposed_freq=proposed_freq,
-                                proposed_block_min=proposed_block_min, mct_file=mct_file)
+                                proposed_block_min=proposed_block_min, mct_file=mct_file,
+                                with_diag=(diag_out is not None))
+    if diag_out is not None:
+        qd, _d = _r
+        if _d:
+            diag_out.update(_d)
+    else:
+        qd = _r
     o = ap.get(origin)
     if not o or o["lat"] is None:
         tot = sum(v for v in qd.values() if v > 0)
@@ -444,8 +453,11 @@ def forecast(sabre_db, oag_db, week, origin, dest_codes, competing_airports, *, 
     # cheap fare than FSC pax will). Default 1.0 = unchanged; the caller sets it by the named airline's
     # business model. Distinct from the reverted haul-scaling: this is purpose-driven, not distance.
     radius = haul_radius_km(gcd_est) * catchment_mult
+    # _qdiag carries the connection-set summary out of the QSI machinery so BT2 can read the
+    # connecting structure the engine already builds. Added 9 August 2026; nothing else changes.
+    _qdiag = {}
     share, qd = qsi_capture_share(oag_db, week, origin, dest_codes, competing_airports,
-                                  freq, block_min, mct_file=mct_file, att_exponent=att, radius_km=radius)
+                                  freq, block_min, mct_file=mct_file, att_exponent=att, radius_km=radius, diag_out=_qdiag)
     if share_override is not None:             # EXPERT override of the origin's capture share (wins)
         share = float(share_override)
     else:                                      # measured airport capture truth (surveys / mobility data)
@@ -649,6 +661,11 @@ def forecast(sabre_db, oag_db, week, origin, dest_codes, competing_airports, *, 
         "natural_market": round(natural), "current_via_origin": round(current),
         "leaked": round(leaked), "avg_fare": round(avg_fare, 2),
         "qsi_share": round(share, 4), "dest_share": round(dshare, 4), "capture_rate": capture_rate,
+        # The connection set, summarised. legs_n and the three connection-type sums are what BT2
+        # needs and what bt2_capture used to recompute by calling build_connections a second time.
+        "legs_n": _qdiag.get("n_legs"), "n_connections": _qdiag.get("n_connections"),
+        "s_online": _qdiag.get("s_online"), "s_alliance": _qdiag.get("s_alliance"),
+        "s_interline": _qdiag.get("s_interline"),
         "repatriated": round(repatriated), "premium_share": round(prem, 4), "att_exponent": round(att, 3),
         "coverage_gross_up": round(_cov, 3), "od_source": od_src, "haul_trim": round(haul_trim, 3),
         "freq_discount": round(freq_discount, 3),

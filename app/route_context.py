@@ -193,16 +193,24 @@ def build(a, b, carrier, aircraft_seats, freq, months=12, launch_mon=6, year=Non
     capa = None
     if engine_payload is not None:
         capa = engine_payload.get("qsi_share")
-        if qcx is None:
-            qcx = engine_payload.get("qcx")
         if legs_n is None:
             legs_n = engine_payload.get("legs_n")
+        if qcx is None:
+            # The three connection-type sums come from the engine, computed over the connection set
+            # it already builds. The weighting is BT2's definition, so it is applied HERE and not in
+            # the engine: online counts in full, alliance at three quarters, interline at a quarter,
+            # exactly as bt2_lib combines the capture components.
+            so = engine_payload.get("s_online")
+            sa = engine_payload.get("s_alliance")
+            si = engine_payload.get("s_interline")
+            if so is not None or sa is not None or si is not None:
+                qcx = float(so or 0.0) + 0.75 * float(sa or 0.0) + 0.25 * float(si or 0.0)
     if capa is None:
         miss.append("capa: pass the engine payload, whose qsi_share is the capture BT2 needs")
     if qcx is None:
-        miss.append("qcx: the engine does not yet return it, see the note at the top of this file")
+        miss.append("qcx: the engine payload carries no s_online/s_alliance/s_interline. Call route_forecast.forecast, which now returns them from the connection set it builds.")
     if legs_n is None:
-        miss.append("legs_n: the engine does not yet return it, see the note at the top of this file")
+        miss.append("legs_n: the engine payload carries none. Call route_forecast.forecast, which now returns it.")
 
     bm, growth, err = market(a, b, year)
     if err:

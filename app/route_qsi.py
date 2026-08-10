@@ -41,7 +41,8 @@ def _dedupe_flights(legs):
 
 def airport_qsi_to_dest(db, week, dest_codes, catchment_airports, proposed_origin=None,
                         proposed_freq=7, proposed_block_min=540, mct_file=None,
-                        default_mct=90, min_connect=20, max_connect=720, circuity_cut=1.25):
+                        default_mct=90, min_connect=20, max_connect=720, circuity_cut=1.25,
+                        with_diag=False):
     """{airport: QSI to the destination} for every catchment airport. Service-level: nonstops one
     per carrier (codeshares deduped), connections aggregated per (origin, hub, carriers) route with
     a frequency cap. The proposed origin's QSI includes its new nonstop."""
@@ -117,6 +118,36 @@ def airport_qsi_to_dest(db, week, dest_codes, catchment_airports, proposed_origi
         a["ct"] = c.get("cnx_type", "INTERLINING")
     for (org, _hub, _l1, _l2), a in cagg.items():
         services.append((org, min(a["freq"], CONN_FREQ_CAP), a["elapsed"], a["ct"], 1))
+
+    # DIAGNOSTICS OVER THE CONNECTION SET, added 9 August 2026 so the connecting structure this
+    # function already builds can leave the function instead of being discarded.
+    #
+    # BT2 needs two summaries of exactly this work: the count of scheduled legs in play, and the
+    # connection-competition strength, which is the frequency of each connection weighted by how far
+    # its elapsed time falls behind the best available. bt2_capture computes both by calling
+    # build_connections a second time, which was the only reason a second call existed. Returned
+    # here, that duplication goes away and both engines read one calculation.
+    #
+    # The elapsed-time decay is bt2_capture._et, reproduced rather than imported because app must not
+    # depend on bt2: bt2 imports the engine, and a cycle between them is worse than one shared
+    # formula. If either changes, both change. The weighting of the three connection types belongs to
+    # BT2 and is applied on its side, not here.
+    _diag = None
+    if with_diag:
+        def _et(el, mn):
+            x = (el - mn) / 60.0
+            return 1.0 if x <= 0 else 1.0 / ((int(x / 0.1) + 1) ** 0.8)
+        _mn = min([c.get("elapsed_time") or 10 ** 9 for c in conns] or [10 ** 9])
+        _S = {"ONLINE": 0.0, "ALLIANCE": 0.0, "INTERLINING": 0.0}
+        for c in conns:
+            t = c.get("cnx_type", "INTERLINING")
+            _S[t] = _S.get(t, 0.0) + (c.get("frequency", 0) or 0) * _et(
+                c.get("elapsed_time") or _mn, _mn)
+        _diag = {"n_legs": len(nonstops) + len(hub_dest) + len(cat_hub),
+                 "n_connections": len(conns),
+                 "min_elapsed": (None if _mn >= 10 ** 9 else _mn),
+                 "s_online": _S["ONLINE"], "s_alliance": _S["ALLIANCE"],
+                 "s_interline": _S["INTERLINING"]}
     # the proposed origin's new nonstop
     if proposed_origin:
         services.append((proposed_origin, float(proposed_freq), float(proposed_block_min), "ONLINE", 0))
@@ -126,7 +157,8 @@ def airport_qsi_to_dest(db, week, dest_codes, catchment_airports, proposed_origi
     qsi = defaultdict(float)
     for org, freq, elapsed, ct, ns in services:
         qsi[org] += itinerary_qsi(freq, elapsed, me, ct, ns)
-    return dict(qsi)
+    # Default return is unchanged, so every existing caller is untouched.
+    return (dict(qsi), _diag) if with_diag else dict(qsi)
 
 
 def service_values_from_qsi(qsi_dict, scale=SERVICE_SCALE, ln_cap=2.5):
