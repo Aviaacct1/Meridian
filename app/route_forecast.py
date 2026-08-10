@@ -465,7 +465,33 @@ def forecast(sabre_db, oag_db, week, origin, dest_codes, competing_airports, *, 
             import airport_capture as _ACAP
             _apc = _ACAP.capture_for(origin, market)   # tapered on very large markets a secondary can't supply
             if _apc is not None:
-                share = float(_apc)
+                # FREQUENCY SENSITIVITY. Measured 10 August 2026: with the measured factor in force
+                # the capture is a CONSTANT, so SJC-TPE returns 0.32 at three, five, seven, ten and
+                # fourteen weekly, and the forecast cannot answer what a seventh frequency buys.
+                # That is the first question an airline planner asks in the room.
+                #
+                # The QSI share does move: 0.0449 at 3/wk to 0.0835 at 14/wk on SJC-TPE, 86% across
+                # the range. It is simply discarded here. But it cannot replace the measured factor
+                # either: it reads 0.059 at daily against a measured 0.32, the factor of five that
+                # is exactly the "access over-credits a secondary once it has a nonstop" problem the
+                # measured factors were introduced to fix.
+                #
+                # So the measured factor is kept as the ANCHOR and the QSI share supplies only the
+                # SHAPE, as a ratio to the same computation at a daily reference. At seven weekly
+                # the answer is unchanged, which is why the default is off and nothing moves without
+                # being asked. AVIA_FREQ_SENSITIVE=1 turns it on.
+                _apc = float(_apc)
+                if os.environ.get("AVIA_FREQ_SENSITIVE", "").strip() in ("1", "true", "on"):
+                    try:
+                        _ref = qsi_capture_share(oag_db, week, origin, dest_codes,
+                                                 competing_airports, 7.0, block_min,
+                                                 mct_file=mct_file, att_exponent=att,
+                                                 radius_km=radius)[0]
+                        if _ref and share and _ref > 0:
+                            _apc *= (float(share) / float(_ref))
+                    except Exception:
+                        pass                    # anchor unchanged rather than a wrong shape
+                share = _apc
         except Exception:
             pass
     # DESTINATION leg: the specific destination airport takes only its QSI share of its metro, so a
