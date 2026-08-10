@@ -503,7 +503,7 @@ def _schedule_times(o_code, d_code, o, d, block_min, dep_out=11.0, turn_h=2.0):
 
 
 def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft="A21X",
-                        freq=7, stimulation=None, growth=0.0, growth_years=0, econ_share=0.85,
+                        freq=7, stimulation=None, growth=0.0, growth_years=0, econ_share=None,
                         plan_lf=0.875, econ_fare=None, bus_fare=1400.0, fuel_price=None,
                         radius_km=220.0, with_econ=True, att_exponent=None, catchment_mult=1.0,
                         coverage_override=None, market_override=None, share_override=None,
@@ -514,6 +514,14 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
     """Any city pair through the CALIBRATED engine (route_forecast.forecast). season = annual (default)
     / summer / winter runs a seasonal service: demand scaled to the season's share of the year, capacity
     over the season's weeks.
+
+    econ_share left as None takes the MEASURED back-cabin share of this market from Sabre, business
+    and first excluded, which is the same definition as the seat counts it is compared against. The
+    old fixed 0.85 assumed 15% of every market travels in the front cabin. Measured on SJC-TPE the
+    figure is 18.06%, and China Airlines configures 10.5% of its A350-900 as business and first, so
+    the front cabin on this route is genuinely oversold and the assumption understated it. There is
+    no reason a single figure should hold across a Silicon Valley business market and a leisure
+    route. A caller who passes a number still wins, which is what the dashboard slider does.
 
     seats is the CARRIER'S OWN configuration of the type, each way, and overrides the generic seat
     count in aircraft_economics.AIRCRAFT. The generic table holds one configuration per type, but an
@@ -609,6 +617,16 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
     behind_list = _feed_list(r.get("behind_detail"), r.get("behind_pdew"))
     _feed_base = lambda dm: round(sum((v.get("base") or 0) for v in (dm or {}).values()))
     beyond_base = _feed_base(r.get("beyond_detail")); behind_base = _feed_base(r.get("behind_detail"))
+    # CABIN SPLIT. Measured front-cabin share, or the caller's figure, or the old assumption if the
+    # measurement is unavailable. Named in the payload so a reader can tell which was used.
+    _front = r.get("front_cabin_share")
+    if econ_share is None:
+        if _front is not None and 0.0 <= _front < 0.5:
+            econ_share, cabin_basis = 1.0 - float(_front), "measured, Sabre business and first"
+        else:
+            econ_share, cabin_basis = 0.85, "assumed 85/15, no measurement available"
+    else:
+        cabin_basis = "set by the caller"
     each_way = r["total_demand"]               # unconstrained market demand: drives the multi-year build + spill
     carried_ew = r["carried_forecast"]         # capacity-bound forecast: the headline total, economics, PDEW, band
     # MULTI-YEAR BUILD: grow demand at the MEASURED market CAGR (dest market this year vs 2 years back),
@@ -668,6 +686,10 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
         "demand": {"natural": r["natural_market"], "current": r["current_via_origin"],
                    "captured": r["captured_demand"], "qsi_share": r["qsi_share"], "dest_share": r["dest_share"],
                    "coverage_gross_up": r["coverage_gross_up"], "premium_share": r["premium_share"],
+                   # premium_share counts premium economy and drives the size pull; front_cabin_share
+                   # is business and first only and is the one comparable with a seat count.
+                   "front_cabin_share": r.get("front_cabin_share"),
+                   "econ_share": round(econ_share, 4), "cabin_basis": cabin_basis,
                    "feed_total": r["connecting_feed"], "feed_beyond": r["feed_beyond"],
                    "feed_behind": r["feed_behind"], "feed_beyond_base": beyond_base, "feed_behind_base": behind_base,
                    "p2p_carried": r.get("p2p_carried"), "connecting_carried": r.get("connecting_carried"),
@@ -1222,7 +1244,7 @@ def api_hubbank(origin: str = "", dest: str = "", airline: str = ""):
 
 @app.get("/api/optimise")
 def api_optimise(origin: str, dest: str, airline: str = "", carrier_type: str = "FSC",
-                 econ_share: float = 0.85, plan_lf: float = 0.875, bus_fare: float = 1400.0,
+                 econ_share: float = 0.0, plan_lf: float = 0.875, bus_fare: float = 1400.0,
                  season: str = "annual", aircraft: str = "", freq: int = 0):
     # CONSTRAINED OPTIMISE: any field the client fills is honoured, any left blank is optimised. A fixed aircraft
     # restricts the gauge; a fixed freq restricts the frequency; a fixed airline restricts the operator (handled below).
@@ -1276,6 +1298,11 @@ def api_optimise(origin: str, dest: str, airline: str = "", carrier_type: str = 
                                          induced_floor=False)   # measured demand for this operator + model + schedule
                 if not fc.get("ok"):
                     continue
+                # econ_share of 0 from the caller means "measure it". The gauge is chosen on how the
+                # demand splits between the cabins, so the split has to be this market's own rather
+                # than a flat 15% front cabin applied to Silicon Valley and to a leisure route alike.
+                es_i = econ_share if (econ_share and econ_share > 0) else \
+                    (fc["demand"].get("econ_share") or 0.85)
                 demand = fc["demand"].get("total_demand") or fc["demand"]["total"]   # TRUE demand, not the capacity-bound total
                 if demand <= 0:
                     continue
@@ -1302,7 +1329,7 @@ def api_optimise(origin: str, dest: str, airline: str = "", carrier_type: str = 
                             continue
                     try:
                         code, ranked = ASsel.select_aircraft(dist_nm, demand, f, plan_lf=plan_lf,
-                                        econ_share=econ_share, econ_fare_ow=fare, bus_fare_ow=bus_fare,
+                                        econ_share=es_i, econ_fare_ow=fare, bus_fare_ow=bus_fare,
                                         airline_type=ct_i, weeks=sea_weeks,
                                         airline_iata=(None if _fixed_ac else (cand or None)),
                                         fleet=([_fixed_ac] if _fixed_ac else None))   # honour a client-fixed gauge, else search
@@ -1343,7 +1370,8 @@ def api_optimise(origin: str, dest: str, airline: str = "", carrier_type: str = 
                       "the evidence; it is not a recommendation."
                       % (VIABLE_LF * 100, best["aircraft"], best["freq"], best["lf"] * 100))
     final = calibrated_forecast(origin, dest, airline=(best["airline"] or None), carrier_type=best.get("ctype", carrier_type),
-                                aircraft=best["aircraft"], freq=best["freq"], econ_share=econ_share,
+                                aircraft=best["aircraft"], freq=best["freq"],
+                                econ_share=(econ_share if (econ_share and econ_share > 0) else None),
                                 plan_lf=plan_lf, bus_fare=bus_fare, with_econ=True, season=best.get("season", "annual"),
                                 seats=best.get("seats"))
     _attach_airfield(final, best["aircraft"], plan_lf)

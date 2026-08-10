@@ -95,11 +95,24 @@ def evaluate(code, distance_nm, demand_each_way, freq, plan_lf=0.875, econ_share
     bus_seats_yr = _bus * freq * weeks
     econ_lf = (demand_each_way * econ_share) / econ_seats_yr if econ_seats_yr else 0.0
     bus_lf = (demand_each_way * (1 - econ_share)) / bus_seats_yr if bus_seats_yr else 0.0
-    if _bus == 0:              # single class: all demand into econ
-        econ_lf = demand_each_way / econ_seats_yr if econ_seats_yr else 0.0
-        bus_lf = 0.0
-    plan_econ, plan_bus = min(econ_lf, plan_lf), min(bus_lf, plan_lf)
-    served = plan_econ * econ_seats_yr + plan_bus * bus_seats_yr
+    # SELL-DOWN, 10 August 2026. Front-cabin demand beyond the front cabin books in the back; it does
+    # not evaporate. The previous version capped each cabin separately and threw the excess away, so
+    # on a route whose demand is more premium than the aeroplane the served total fell below what the
+    # aircraft plainly carries. Measured on SJC-TPE, where 18.1% of the market is business or first
+    # and China Airlines configures 10.5% of its A350-900 that way: at five weekly the old rule read
+    # 71.9% and route_forecast read 76.6% for the same schedule, and the optimiser chose a different
+    # frequency on the strength of the gap. With sell-down the two agree exactly, at 76.6% and 87.5%
+    # on the two frequencies either side. Revenue follows the seat, so a sold-down passenger pays the
+    # economy fare in the P&L, which is what happens.
+    bus_demand = demand_each_way * (1.0 - econ_share) if _bus else 0.0
+    econ_demand = demand_each_way - bus_demand
+    bus_served = min(bus_demand, bus_seats_yr * plan_lf) if bus_seats_yr else 0.0
+    econ_served = min(econ_demand + (bus_demand - bus_served), econ_seats_yr * plan_lf) \
+        if econ_seats_yr else 0.0
+    plan_econ = (econ_served / econ_seats_yr) if econ_seats_yr else 0.0
+    plan_bus = (bus_served / bus_seats_yr) if bus_seats_yr else 0.0
+    econ_lf, bus_lf = plan_econ, plan_bus
+    served = econ_served + bus_served
     spilled = max(demand_each_way - served, 0.0)
     # The fill this function reports is seats sold over seats flown, which is what
     # route_forecast reports and what a client reads off a slide. It used to be taken from the P&L's

@@ -284,8 +284,42 @@ def att_from_premium(prem):
     return ATT_LEISURE + (ATT_BUSINESS - ATT_LEISURE) * (prem - PREM_LO) / (PREM_HI - PREM_LO)
 
 
+def front_cabin_share(sabre_db, airports, dest_codes, year=None):
+    """Measured BUSINESS AND FIRST share of the market, from Sabre. Excludes premium economy.
+
+    Added 10 August 2026 for the economics, which splits demand between the front cabin and the back
+    and caps each separately. It could not use premium_share below, because that counts premium
+    economy as premium while OAG's business_seats + first_seats does not, and the store has no
+    premium economy column at all: it sits inside economy_seats. Measured on SJC-TPE, the two
+    definitions read 26.95% and 18.06% of the same market, against a China Airlines A350-900 cabin
+    that is 10.5% business and first. Comparing a demand share on one definition with a seat share
+    on another produces a spill figure that means nothing.
+
+    premium_share is deliberately left alone: it feeds att_from_premium, which is calibrated on its
+    current definition, and changing it would move every forecast for a reason that has nothing to
+    do with cabins.
+    """
+    ph_a = ",".join("?" * len(airports)); ph_d = ",".join("?" * len(dest_codes))
+    where = [f"origin_airport IN ({ph_a})", f"destination_airport IN ({ph_d})"]
+    params = list(airports) + list(dest_codes)
+    if year is not None:
+        where.append("source_year = ?"); params.append(year)
+    sql = ("SELECT COALESCE(SUM(CASE WHEN upper(cabin_class) LIKE '%BUSINESS%' "
+           "OR upper(cabin_class) LIKE '%FIRST%' THEN passengers ELSE 0 END),0), "
+           "COALESCE(SUM(passengers),0) "
+           f"FROM sabre WHERE {' AND '.join(where)}")
+    con = _con(sabre_db)
+    try:
+        p, t = con.execute(sql, params).fetchone()
+        return (float(p) / float(t)) if t else 0.0
+    finally:
+        con.close()
+
+
 def premium_share(sabre_db, airports, dest_codes, year=None):
-    """Measured premium-cabin share (business/first/premium-economy) of the market, from Sabre."""
+    """Measured premium-cabin share (business/first/premium-economy) of the market, from Sabre.
+    Feeds the att size-pull term ONLY. For a cabin split use front_cabin_share above, which is on
+    the same definition as the seat counts."""
     ph_a = ",".join("?" * len(airports)); ph_d = ",".join("?" * len(dest_codes))
     where = [f"origin_airport IN ({ph_a})", f"destination_airport IN ({ph_d})"]
     params = list(airports) + list(dest_codes)
@@ -446,6 +480,11 @@ def forecast(sabre_db, oag_db, week, origin, dest_codes, competing_airports, *, 
     # purpose-linked size pull: measure the route's premium share, map to att, unless overridden
     prem = premium_share(sabre_db, competing_airports, dest_codes, year=year)
     att = att_from_premium(prem) if att_exponent is None else att_exponent
+    # Measured on the seat-count definition, for the economics cabin split. Not used here.
+    try:
+        front = front_cabin_share(sabre_db, competing_airports, dest_codes, year=year)
+    except Exception:
+        front = None
     # catchment radius scaled to this sector's length (inverse of the block-time formula gcd_km ~
     # (block-20)*7*1.852), so short sectors use a tight catchment and long ones a wide one
     gcd_est = max((block_min - 20.0) * 7.0 * 1.852, 100.0)
@@ -703,6 +742,7 @@ def forecast(sabre_db, oag_db, week, origin, dest_codes, competing_airports, *, 
         "s_online": _qdiag.get("s_online"), "s_alliance": _qdiag.get("s_alliance"),
         "s_interline": _qdiag.get("s_interline"),
         "repatriated": round(repatriated), "premium_share": round(prem, 4), "att_exponent": round(att, 3),
+        "front_cabin_share": (round(front, 4) if front is not None else None),
         "coverage_gross_up": round(_cov, 3), "od_source": od_src, "haul_trim": round(haul_trim, 3),
         "freq_discount": round(freq_discount, 3),
         "captured_demand": round(captured), "connecting_feed": round(feed),
