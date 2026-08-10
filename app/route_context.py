@@ -22,15 +22,29 @@ WHERE EACH INPUT COMES FROM, and every one is knowable before the route flies.
                        are the base-strength features, plus the sister-airport flag from Sabre
   computed             gcd, dom, gauge, ncar, seats_ly
 
-THE ONE GAP, and it is named rather than worked around. BT2 needs qcx, the connection-competition
-strength, and legs_n, the schedule density at the endpoints. bt2_capture computes both from the
-engine's connection builder. The live engine reaches its feed through route_feed instead and returns
-neither, so today they must be supplied by the caller. build() FAILS CLOSED without them rather than
-substituting a neutral value, because a neutral value here is a wrong forecast that looks right.
+THE ONE GAP, and it is smaller than I first wrote it. BT2 needs qcx, the connection-competition
+strength, and legs_n, the schedule density at the endpoints. bt2_capture computes both by calling
+the engine's connection builder itself.
 
-    TO CLOSE IT: route_forecast.forecast should return qcx and legs_n alongside qsi_share, computed
-    where it already has the connection set. That is the change that makes this module complete, and
-    it belongs in the engine because that is where the connections are already built.
+I ORIGINALLY RECORDED THAT THE LIVE ENGINE DOES NOT USE THE CONNECTION BUILDER. THAT WAS WRONG and
+the correction matters, because a QSI forecast that did not build connections would not be a QSI
+forecast at all. route_forecast.forecast calls qsi_capture_share and dest_metro_share; both call
+route_qsi.airport_qsi_to_dest; that imports build_connections and load_mct_data from
+connection_builder and runs them with minimum connect times, alliances and low-cost handling. The
+capture share at the centre of every Meridian forecast is computed from built and scored
+connections. The mistake was searching route_forecast.py for the string and concluding from its
+absence, one level above where the call actually happens.
+
+What is true is narrower: the engine RETURNS neither aggregate. qcx and legs_n are summaries over a
+connection set the engine already builds and then discards. So closing the gap is not new
+computation, it is returning two numbers from work already done.
+
+    TO CLOSE IT: route_qsi.airport_qsi_to_dest should return the connection-competition components
+    and the leg count alongside the QSI it already returns, and route_forecast should pass them
+    through in its payload beside qsi_share.
+
+Until then build() FAILS CLOSED without them rather than substituting a neutral value, because a
+neutral value here is a wrong forecast that looks right.
 
 Avia Solutions Limited. All rights reserved.
 """
