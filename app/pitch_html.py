@@ -304,7 +304,7 @@ function turn(le,lb,ef,bf,fp){
   return {pax,gross,fuel,perpax,fixed,indirect,cost,profit,margin:gross?profit/gross:0,net,belf};
 }
 const SL=[['freq','Frequency (each way / week)',3,21,1,CM.freq||7,v=>v],
-  ['plf','Planning load-factor cap',0.6,0.92,0.01,CM.plan_lf||0.85,v=>Math.round(v*100)+'%'],
+  ['plf','Planning load-factor cap',0.6,0.92,0.01,CM.plan_lf||0.875,v=>Math.round(v*100)+'%'],
   ['ef','Economy fare (one-way)',120,1200,10,CM.econ_fare||300,v=>'$'+v],
   ['bf','Business fare (one-way)',600,5000,50,CM.bus_fare||1400,v=>'$'+(+v).toLocaleString()],
   ['fp','Jet fuel ($/kg)',0.55,1.4,0.01,CM.ref_fuel_price||0.9,v=>'$'+(+v).toFixed(2)],

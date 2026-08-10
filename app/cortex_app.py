@@ -257,7 +257,7 @@ def home():
 @app.get("/api/assess")
 def assess(capture: float = 0.65, freq: int = 7, econ_fare: float = 345.0,
            bus_fare: float = 750.0, aircraft: str = "A21X", econ_share: float = 0.90,
-           plan_lf: float = 0.85, incentive: bool = False):
+           plan_lf: float = 0.875, incentive: bool = False):
     b = RD.bounded_repatriation(S["natural"], S["current"], capture=capture)
     each_way = b["home_total"]
     out = {
@@ -307,7 +307,7 @@ def assess(capture: float = 0.65, freq: int = 7, econ_fare: float = 345.0,
 @app.get("/api/route")
 def api_route(origin: str, dest: str, capture: float = 0.30, freq: int = 7,
               econ_fare: float = 345.0, bus_fare: float = 1400.0, aircraft: str = "A21X",
-              econ_share: float = 0.80, plan_lf: float = 0.85, fuel_price: float = 0.90):
+              econ_share: float = 0.80, plan_lf: float = 0.875, fuel_price: float = 0.90):
     """The GENERAL path: enter ANY two cities and drive route_engine.assess. Genoa-New York uses
     its calibration cache + observed Sabre split (validated); any other pair is a first-cut
     ESTIMATE (transferred parameters, gravity propensity). Capture defaults to a prior; the
@@ -504,16 +504,25 @@ def _schedule_times(o_code, d_code, o, d, block_min, dep_out=11.0, turn_h=2.0):
 
 def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft="A21X",
                         freq=7, stimulation=None, growth=0.0, growth_years=0, econ_share=0.85,
-                        plan_lf=0.85, econ_fare=None, bus_fare=1400.0, fuel_price=None,
+                        plan_lf=0.875, econ_fare=None, bus_fare=1400.0, fuel_price=None,
                         radius_km=220.0, with_econ=True, att_exponent=None, catchment_mult=1.0,
                         coverage_override=None, market_override=None, share_override=None,
                         feed_behind_cap=0.10, feed_dom_gain=1.0, feed_dom_floor=1.0,
                         cnx_online=1.0, cnx_alliance=0.615, cnx_interline=0.25,
                         circuity=1.35, factor_indirect=1.044, mct_banking=False, season="annual",
-                        induced_floor=True, fixed_overrides=None):
+                        induced_floor=True, fixed_overrides=None, seats=None):
     """Any city pair through the CALIBRATED engine (route_forecast.forecast). season = annual (default)
     / summer / winter runs a seasonal service: demand scaled to the season's share of the year, capacity
-    over the season's weeks."""
+    over the season's weeks.
+
+    seats is the CARRIER'S OWN configuration of the type, each way, and overrides the generic seat
+    count in aircraft_economics.AIRCRAFT. The generic table holds one configuration per type, but an
+    airline configures a type to its own product. Measured from OAG 2025 on comparable sectors
+    (capacity_frame.frame), China Airlines flies the A350-900 at 306 seats and Starlux at 306 against
+    the table's 336, EVA flies the 787-9 at 278 against 320, and the 777-300ER is 333 at EVA and 358
+    at China Airlines against 380. Sizing a schedule on the generic number overstates the capacity by
+    8 to 13% on these carriers and understates the load factor by the same. Left as None the generic
+    table is used and nothing changes."""
     import route_forecast as RF, route_engine as RE, oag_served as OAS
     import geo_resolve as GEO, sabre_catchment as SC
     ctx = _live_ctx()
@@ -554,6 +563,7 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
                         att_exponent=att_exponent, catchment_mult=catchment_mult,
                         coverage_override=coverage_override, market_override=market_override,
                         share_override=share_override, max_plan_lf=plan_lf,
+                        annual_capacity=((float(seats) * freq * season_weeks) if seats else None),
                         market_factor=RF.market_factor_for(carrier_type),   # market-size-keyed P2P trim
                         season=season, season_share=season_share, season_weeks=season_weeks,
                         airline_type=ct, induced_floor=induced_floor,
@@ -670,7 +680,10 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
                    "beyond_pdew": beyond_list, "behind_pdew": behind_list},
         "capacity": {"carried": r["carried_forecast"], "spill": r["spill"], "load": r["planned_load_factor"],
                      "annual_capacity": r["annual_capacity"], "recommendation": r["recommendation"],
-                     "aircraft": aircraft, "freq": freq},
+                     "aircraft": aircraft, "freq": freq,
+                     # Named so a reader can tell a measured configuration from the generic table.
+                     "seats": (int(seats) if seats else None),
+                     "seats_source": ("carrier configuration, OAG" if seats else "generic type table")},
         "season": {"mode": r.get("season", "annual"), "share": r.get("season_share", 1.0),
                    "weeks": round(season_weeks)},
         "projection": {"cagr": round(_cagr, 4), "base_year": ctx["year"], "horizon": 5, "build": _build},
@@ -742,7 +755,7 @@ def api_route_status(origin: str = "", dest: str = "", airline: str = ""):
 
 
 
-def _attach_airfield(fc, aircraft, plan_lf=0.85):
+def _attach_airfield(fc, aircraft, plan_lf=0.875):
     """ADVISORY airfield check, on every path that returns a forecast.
 
     John, 4 July: advisory first, filtering later once trusted. Can the chosen
@@ -835,7 +848,7 @@ def _attach_viability(fc):
 @app.get("/api/forecast")
 def api_forecast(origin: str, dest: str, airline: str = "", carrier_type: str = "FSC",
                  aircraft: str = "A21X", freq: int = 7, econ_share: float = 0.85,
-                 plan_lf: float = 0.85, econ_fare: float = 0.0, bus_fare: float = 1400.0,
+                 plan_lf: float = 0.875, econ_fare: float = 0.0, bus_fare: float = 1400.0,
                  fuel_price: float = 0.0, growth_years: int = 0, econ: bool = True,
                  stimulation: float = 0.0, growth: float = 0.0, att_exponent: float = -1.0,
                  catchment_mult: float = 1.0, coverage_override: float = 0.0,
@@ -1059,7 +1072,7 @@ def _candidate_airlines(origin, dest, dist_km, limit=3):
         return []
 
 
-def _explain_infeasible(origin, dest, dist_km, plan_lf=0.85):
+def _explain_infeasible(origin, dest, dist_km, plan_lf=0.875):
     """A useful failure message instead of 'no range-feasible fleet' (John, 4 Jul 2026, BVI-JFK):
     name what the inputs RESOLVED to (misresolution is the usual surprise), separate aircraft
     RANGE from RUNWAY capability, and when the runway is the binding problem, say so and refer
@@ -1209,7 +1222,7 @@ def api_hubbank(origin: str = "", dest: str = "", airline: str = ""):
 
 @app.get("/api/optimise")
 def api_optimise(origin: str, dest: str, airline: str = "", carrier_type: str = "FSC",
-                 econ_share: float = 0.85, plan_lf: float = 0.85, bus_fare: float = 1400.0,
+                 econ_share: float = 0.85, plan_lf: float = 0.875, bus_fare: float = 1400.0,
                  season: str = "annual", aircraft: str = "", freq: int = 0):
     # CONSTRAINED OPTIMISE: any field the client fills is honoured, any left blank is optimised. A fixed aircraft
     # restricts the gauge; a fixed freq restricts the frequency; a fixed airline restricts the operator (handled below).
@@ -1266,7 +1279,27 @@ def api_optimise(origin: str, dest: str, airline: str = "", carrier_type: str = 
                 demand = fc["demand"].get("total_demand") or fc["demand"]["total"]   # TRUE demand, not the capacity-bound total
                 if demand <= 0:
                     continue
+                # The demand above is measured at SEVEN weekly and, with AVIA_FREQ_SENSITIVE off, it is
+                # the demand at every frequency, so sizing the whole sweep on it is correct. With the
+                # switch ON it is not: capture moves with frequency, so a single daily reading would
+                # size a 4x schedule on daily demand and a 14x schedule on the same, overstating the
+                # low end and understating the high end. The optimiser would then choose a schedule the
+                # forecast disagrees with, which is the /api/forecast against /api/optimise divergence
+                # this file has already been caught by twice. Re-read demand per frequency when the
+                # switch is on, and only then, so the default path costs nothing.
+                _freq_sensitive = os.environ.get("AVIA_FREQ_SENSITIVE", "").strip() in ("1", "true", "on")
+                _demand_7 = demand
                 for f in _freqs:
+                    demand = _demand_7
+                    if _freq_sensitive:
+                        _fcf = calibrated_forecast(origin, dest, airline=(cand or None), carrier_type=ct_i,
+                                                   aircraft="A21N", freq=f, with_econ=False, season=sea_i,
+                                                   induced_floor=False)
+                        if not _fcf.get("ok"):
+                            continue
+                        demand = _fcf["demand"].get("total_demand") or _fcf["demand"]["total"]
+                        if demand <= 0:
+                            continue
                     try:
                         code, ranked = ASsel.select_aircraft(dist_nm, demand, f, plan_lf=plan_lf,
                                         econ_share=econ_share, econ_fare_ow=fare, bus_fare_ow=bus_fare,
@@ -1364,7 +1397,7 @@ def _xlsx_to_csv_zip(xlsx_path, zip_path):
 
 @app.get("/api/report")
 def api_report(origin: str, dest: str, airline: str = "", carrier_type: str = "FSC",
-               aircraft: str = "A21X", freq: int = 7, econ_share: float = 0.85, plan_lf: float = 0.85,
+               aircraft: str = "A21X", freq: int = 7, econ_share: float = 0.85, plan_lf: float = 0.875,
                econ_fare: float = 0.0, bus_fare: float = 1400.0, fuel_price: float = 0.0, growth_years: int = 0,
                part: str = "both", season: str = "annual"):
     """Forecast deliverables from the live forecast: part='deck' returns the Forecast Summary PPTX,
@@ -1541,7 +1574,7 @@ def _run_pitch_job(job_id, p):
 @app.get("/api/pitch/start")
 def api_pitch_start(origin: str, dest: str, airline: str = "", carrier_type: str = "FSC",
                     aircraft: str = "A21X", freq: int = 7, econ_share: float = 0.85,
-                    plan_lf: float = 0.85, econ_fare: float = 0.0, bus_fare: float = 1400.0,
+                    plan_lf: float = 0.875, econ_fare: float = 0.0, bus_fare: float = 1400.0,
                     fuel_price: float = 0.0, season: str = "annual"):
     """Kick off a researched airline pitch as a background job (it runs web research + verification,
     which takes minutes, longer than the tunnel's request timeout). Returns a job_id to poll."""

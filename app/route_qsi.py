@@ -57,7 +57,15 @@ def airport_qsi_to_dest(db, week, dest_codes, catchment_airports, proposed_origi
     con = duckdb.connect(db, read_only=True)
     try:
         def q(where, params):
-            rows = con.execute(f"SELECT {_COLS} FROM oag WHERE week=? AND {where}",
+            # ORDER BY ALL is not cosmetic. DuckDB gives no row order without one, and on a parallel
+            # scan the order varies run to run. _dedupe_flights below keeps the FIRST row per
+            # (dep, arr, local dep time), so a different order keeps a different codeshare row and
+            # with it a different carrier and flying time. Measured 10 August 2026: three fresh runs
+            # of the same SJC-TPE call returned SFO's QSI as 24.47, 25.11 and 24.46, which moved the
+            # capture share by up to 2.7% on an unchanged input. Invisible while the measured airport
+            # factor overrides the QSI share; straight into the client number once AVIA_FREQ_SENSITIVE
+            # is on. The sort costs circa a second on this route.
+            rows = con.execute(f"SELECT {_COLS} FROM oag WHERE week=? AND {where} ORDER BY ALL",
                                [week] + params).fetchall()
             return [_row_to_leg(r, i) for i, r in enumerate(rows)]
         ph_cat = ",".join("?" * len(cat)); ph_dst = ",".join("?" * len(dst))

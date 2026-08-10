@@ -189,7 +189,7 @@ def mission_pax(code, tora_m, dist_nm, temp_c=DEFAULT_TEMP_C, elev_m=0.0, wet=Tr
     return max(0, min(seats, int(payload / pax_kg)))
 
 
-def capability(code, origin_iata, dist_km, temp_c=None, plan_lf=0.85,
+def capability(code, origin_iata, dist_km, temp_c=None, plan_lf=0.875,
                runway_override_m=None):
     """The three-band verdict for one type at one origin field.
     Returns dict(band, tora_m, tow_avail, max_pax, seats, lf_max, note). Band UNKNOWN when
@@ -236,7 +236,7 @@ def capability(code, origin_iata, dist_km, temp_c=None, plan_lf=0.85,
             "max_pax": pax, "seats": seats, "lf_max": round(lf_max, 3), "temp_c": t, "note": note}
 
 
-def max_sector_km(code, origin_iata, temp_c=None, plan_lf=0.85, runway_override_m=None):
+def max_sector_km(code, origin_iata, temp_c=None, plan_lf=0.875, runway_override_m=None):
     """Longest sector (km) the type can fly from this field with plan_lf of the cabin - the
     honest alternative shown when the asked route is NOT_FEASIBLE."""
     lo, hi = 100.0, 18000.0
@@ -250,7 +250,7 @@ def max_sector_km(code, origin_iata, temp_c=None, plan_lf=0.85, runway_override_
     return round(lo, -1)
 
 
-def screen(codes, origin_iata, dest_iata, dist_km, temp_c=None, plan_lf=0.85,
+def screen(codes, origin_iata, dest_iata, dist_km, temp_c=None, plan_lf=0.875,
            runway_override_m=None):
     """Both-ends check for a candidate list. Returns {code: worst-band capability dict};
     the binding end is whichever field gives the lower max_pax. UNKNOWN never filters."""

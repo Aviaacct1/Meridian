@@ -27,7 +27,7 @@ if HERE not in sys.path:
     sys.path.insert(0, HERE)
 
 DUMP = os.path.join(HERE, "cities5000.txt")
-MAX_PLAN_LF = 0.85
+MAX_PLAN_LF = 0.875
 DEFAULT_CAPTURE_RATE = 0.65
 DEMAND_RADIUS_KM = 110.0          # the origin's OWN residence catchment (tight; the hub is a
                                   # competitor it leaks to, not part of its demand)
@@ -483,8 +483,18 @@ def forecast(sabre_db, oag_db, week, origin, dest_codes, competing_airports, *, 
                 _apc = float(_apc)
                 if os.environ.get("AVIA_FREQ_SENSITIVE", "").strip() in ("1", "true", "on"):
                     try:
+                        # REFERENCE FREQUENCY. The anchor holds where the shape term is 1.0, so this
+                        # is the frequency at which the route reproduces the measured airport factor.
+                        # It stays at daily. airport_capture records SJC's 0.32 as "30-35% with
+                        # service" from the Avia survey and cell-phone data, with no frequency
+                        # attached, so the reference is a judgement rather than a measurement. Daily
+                        # is the one setting that leaves the verified case alone: SJC-TPE CI at 7x
+                        # returns 134,616 two-way with the switch on or off. Measured 10 August 2026,
+                        # a reference of 4.0 lifts the same 7x case to 159,784, which is 18.7% above
+                        # the figure the dashboard has been reproducing. Settable for testing only.
+                        _fref_sw = float(os.environ.get("AVIA_FREQ_REF", "7.0") or 7.0)
                         _ref = qsi_capture_share(oag_db, week, origin, dest_codes,
-                                                 competing_airports, 7.0, block_min,
+                                                 competing_airports, _fref_sw, block_min,
                                                  mct_file=mct_file, att_exponent=att,
                                                  radius_km=radius)[0]
                         if _ref and share and _ref > 0:

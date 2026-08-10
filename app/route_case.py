@@ -99,7 +99,7 @@ class RouteCase:
     seasonality_profile: Optional[List[float]] = None  # 12 monthly demand indices Jan-Dec (mean 1.0); seasonality default
     natural_override: Optional[float] = None         # residence-based home-catchment demand; bypasses catchment apportionment when the gencost model over-states a small origin next to a mega-hub
     fare_basis: str = "rt"                          # Sabre avg_total_fare: "rt" (halve) or "ow"
-    plan_lf: float = 0.85                           # planning load-factor cap (no route runs 95%)
+    plan_lf: float = 0.875                           # planning load-factor cap (no route runs 95%)
     stimulation: float = 1.15                       # new-nonstop market uplift
 
     # home-airport route-development support, applied only when --incentive is set
@@ -273,7 +273,7 @@ def genoa_nyc() -> RouteCase:
         # of 0.30 (not 0.65). POS shows current Genoa-area NYC ~10k; the apportionment's larger figure
         # is current + induced demand, and how much a nonstop induces is the open question the SJC
         # outturn back-test must settle before this capture is firmed.
-        plan_lf=0.85,
+        plan_lf=0.875,
         stimulation=1.15,
         incentive_waiver_pct=0.50,
         incentive_support_per_turn=1500.0,

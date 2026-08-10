@@ -140,7 +140,7 @@ def _load_index(served_index):
 
 def assess(origin, dest, *, served_index=None, dump=DUMP, sabre_db=None, observed_cache=None,
            drive_cache=None, qsi_db=None, qsi_week=None, qsi_mct=None, aircraft="A21X", freq=7,
-           capture=None, radius_km=220.0, econ_share=0.80, plan_lf=0.85, econ_fare=None,
+           capture=None, radius_km=220.0, econ_share=0.80, plan_lf=0.875, econ_fare=None,
            bus_fare=1400.0, fuel_price=None, propensity=None, exclude=None, same_country_only=True,
            economics=True, poo_country=None, year=None, min_pop=5000.0, stimulation=1.0,
            qsi_scale=100.0):

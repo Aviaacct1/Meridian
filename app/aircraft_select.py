@@ -53,7 +53,7 @@ def candidates(distance_km, fleet=None, airline_iata=None, margin=1.03):
     return inrange
 
 
-def evaluate(code, distance_nm, demand_each_way, freq, plan_lf=0.85, econ_share=0.85,
+def evaluate(code, distance_nm, demand_each_way, freq, plan_lf=0.875, econ_share=0.85,
              econ_fare_ow=360.0, bus_fare_ow=1300.0, airspace=None, airline_type="FSC",
              aircraft_age=5, block_min=None, fuel_price_usd_kg=None, weeks=52.0):
     """Run the validated economics for one aircraft on this route+demand. Returns the annual
@@ -94,7 +94,7 @@ def _block_min_for(distance_nm):
     return round(distance_nm / 460.0 * 60 + 35)
 
 
-def select_aircraft(distance_nm, demand_each_way, freq, plan_lf=0.85, econ_share=0.85,
+def select_aircraft(distance_nm, demand_each_way, freq, plan_lf=0.875, econ_share=0.85,
                     econ_fare_ow=360.0, bus_fare_ow=1300.0, airspace=None, airline_type="FSC",
                     aircraft_age=5, block_min=None, fuel_price_usd_kg=None,
                     fleet=None, airline_iata=None, weeks=52.0):
@@ -147,7 +147,7 @@ def gauge_annual_cost(code, distance_nm, total_lf, freq, econ_fare_ow=360.0, bus
 
 
 def select_aircraft_and_lopa(distance_nm, total_demand_each_way, freq, cabin_mix, econ_fare_ow=360.0,
-                             bus_fare_ow=1300.0, stim=1.0, plan_lf=0.85, airspace=None, airline_type="FSC",
+                             bus_fare_ow=1300.0, stim=1.0, plan_lf=0.875, airspace=None, airline_type="FSC",
                              aircraft_age=5, block_min=None, fuel_price_usd_kg=None, fleet=None,
                              airline_iata=None, store=None):
     """Pick the gauge AND the LOPA that maximise annual profit on the route's cabin demand.
