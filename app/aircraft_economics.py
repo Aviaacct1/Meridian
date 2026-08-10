@@ -58,10 +58,12 @@ AIRCRAFT: Dict[str, dict] = {
     # --- Regional / turboprop ---
     "ATR72":  dict(econ_seats=70, bus_seats=0,  mtow_kg=23000, cargo_cap_kg=0, fuel_burn_kg_per_bh=620,  maint_per_bh=380, crew_per_bh=470, ownership_per_bh=360, price_usd=20e6, annual_util_bh=2200, range_km=1500, category="Regional", src="EUROCONTROL Dash8 + turboprop benchmark; burn ATR factsheet"),
     "DH8D":   dict(econ_seats=78, bus_seats=0,  mtow_kg=30000, cargo_cap_kg=0, fuel_burn_kg_per_bh=720,  maint_per_bh=430, crew_per_bh=520, ownership_per_bh=440, price_usd=25e6, annual_util_bh=2200, range_km=2000, category="Regional", src="EUROCONTROL Dash8 $1,921/fh all-in; burn published"),
-    "CRJ900": dict(econ_seats=76, bus_seats=12, mtow_kg=38300, cargo_cap_kg=0, fuel_burn_kg_per_bh=1100, maint_per_bh=520, crew_per_bh=640, ownership_per_bh=560, price_usd=25e6, annual_util_bh=1900, range_km=2900, category="Regional", src="FAA YE2023 RJ61-99 category; burn published"),
-    "E170":   dict(econ_seats=62, bus_seats=10, mtow_kg=38600, cargo_cap_kg=0, fuel_burn_kg_per_bh=920,  maint_per_bh=470, crew_per_bh=650, ownership_per_bh=560, price_usd=25e6, annual_util_bh=1708, range_km=3900, category="Regional", src="Maverick Cost/BH + FAA RJ; burn published"),
-    "E190":   dict(econ_seats=88, bus_seats=10, mtow_kg=51800, cargo_cap_kg=0, fuel_burn_kg_per_bh=1105.5, maint_per_bh=529.1, crew_per_bh=712.9, ownership_per_bh=731.7, price_usd=6.27e6, annual_util_bh=1708, range_km=4500, category="Regional", src="Maverick LCY-EDI worked example, VALIDATED 0.3%"),
-    "E195":   dict(econ_seats=120,bus_seats=0,  mtow_kg=52300, cargo_cap_kg=0, fuel_burn_kg_per_bh=1200, maint_per_bh=540, crew_per_bh=720, ownership_per_bh=760, price_usd=27e6, annual_util_bh=1900, range_km=4800, category="Regional", src="FAA RJ category + E190 anchor; burn published"),
+    # REGIONAL JET FUEL BURN CORRECTED 10 August 2026 against reported actuals. See the note below
+    # the table. The previous figures ran at 0.51 to 0.75 of what US operators actually burned.
+    "CRJ900": dict(econ_seats=76, bus_seats=12, mtow_kg=38300, cargo_cap_kg=0, fuel_burn_kg_per_bh=1474, maint_per_bh=520, crew_per_bh=640, ownership_per_bh=560, price_usd=25e6, annual_util_bh=1900, range_km=2900, category="Regional", src="burn: US DOT Form 41 P-5.2 2023 fuel issued over airborne hours, blocked with the T-100 measured ratio 0.708 (was 1,100, 0.75x actual); rest FAA YE2023 RJ61-99 category"),
+    "E170":   dict(econ_seats=62, bus_seats=10, mtow_kg=38600, cargo_cap_kg=0, fuel_burn_kg_per_bh=1431, maint_per_bh=470, crew_per_bh=650, ownership_per_bh=560, price_usd=25e6, annual_util_bh=1708, range_km=3900, category="Regional", src="burn: US DOT Form 41 P-5.2 2023, T-100 block ratio 0.715 (was 920, 0.64x actual); rest Maverick Cost/BH + FAA RJ"),
+    "E190":   dict(econ_seats=88, bus_seats=10, mtow_kg=51800, cargo_cap_kg=0, fuel_burn_kg_per_bh=1950, maint_per_bh=529.1, crew_per_bh=712.9, ownership_per_bh=731.7, price_usd=6.27e6, annual_util_bh=1708, range_km=4500, category="Regional", src="burn: SCALED from the well-sampled E170/E175 Form 41 2023 cluster, NOT from the type's own row, which is JetBlue alone on 102 airborne hours during the year it retired the fleet and reads 46% above a heavier-per-tonne E175; corroborated by Aircraft Commerce Issue 64 at 1,923-1,980 block (was 1,105.5)"),
+    "E195":   dict(econ_seats=120,bus_seats=0,  mtow_kg=52300, cargo_cap_kg=0, fuel_burn_kg_per_bh=2116, maint_per_bh=540, crew_per_bh=720, ownership_per_bh=760, price_usd=27e6, annual_util_bh=1900, range_km=4800, category="Regional", src="burn: SCALED from the corrected E190 on the module's own prior E195/E190 ratio of 1.085; no US operator files P-5.2 for the type, so derived, not measured; rest FAA RJ category"),
     "SF34":   dict(econ_seats=50, bus_seats=0,  mtow_kg=22000, cargo_cap_kg=0, fuel_burn_kg_per_bh=600,  maint_per_bh=300, crew_per_bh=420, ownership_per_bh=300, price_usd=8e6,  annual_util_bh=2000, range_km=1700, category="Regional", src="turboprop benchmark; burn published"),
     # --- Narrowbody (LCC / FSC). FAA NB<165k non-fuel ~ maint1004/crew1336/own586 ---
     "A319":   dict(econ_seats=144,bus_seats=0,  mtow_kg=75500, cargo_cap_kg=0, fuel_burn_kg_per_bh=2200, maint_per_bh=900, crew_per_bh=1150, ownership_per_bh=700, price_usd=35e6, annual_util_bh=2300, range_km=6700, category="Narrowbody", src="FAA YE2023 NB<165k; burn published"),
@@ -77,7 +79,7 @@ AIRCRAFT: Dict[str, dict] = {
     # published maintenance reserves and thin appraiser coverage, so maint/ownership anchor to
     # the A320/E190 families with an early-type support premium. Seats/MTOW/range published. ---
     "C919":   dict(econ_seats=156,bus_seats=8,  mtow_kg=77900, cargo_cap_kg=0, fuel_burn_kg_per_bh=2400, maint_per_bh=1100, crew_per_bh=1300, ownership_per_bh=1100, price_usd=50e6, annual_util_bh=2300, range_km=5500, category="Narrowbody", src="PROXY: A320-family anchors + early-type premium; LEAP-1C burn ~ceo level; ER seats/MTOW/range published; value well below $99m list"),
-    "C909":   dict(econ_seats=90, bus_seats=0,  mtow_kg=43500, cargo_cap_kg=0, fuel_burn_kg_per_bh=1250, maint_per_bh=600, crew_per_bh=713, ownership_per_bh=500, price_usd=20e6, annual_util_bh=1708, range_km=3300, category="Regional", src="PROXY (ARJ21-700, renamed C909): E190 anchors + premium; CF34-10A burn ~E190+13%; seats/MTOW/range published"),
+    "C909":   dict(econ_seats=90, bus_seats=0,  mtow_kg=43500, cargo_cap_kg=0, fuel_burn_kg_per_bh=2204, maint_per_bh=600, crew_per_bh=713, ownership_per_bh=500, price_usd=20e6, annual_util_bh=1708, range_km=3300, category="Regional", src="PROXY (ARJ21-700, renamed C909): E190 anchors + premium; CF34-10A burn ~E190+13%, carried through the E190 correction of 10 Aug 2026; seats/MTOW/range published"),
     # --- Widebody / long-haul. RE-ANCHORED: Belobaba A330-200 2013 non-fuel ~$3,053 (x1.4
     # infl ~$4,300) => prior crew/ownership were too high; A330 maint $964 from LHLCC 2015 ---
     "B763":   dict(econ_seats=245,bus_seats=24, mtow_kg=186000,cargo_cap_kg=10000, fuel_burn_kg_per_bh=5200, maint_per_bh=1600, crew_per_bh=1500, ownership_per_bh=900, price_usd=30e6, annual_util_bh=3500, range_km=11000, category="Widebody", src="EUROCONTROL 767 $6,675/fh; old type low ownership; burn published"),
@@ -88,6 +90,66 @@ AIRCRAFT: Dict[str, dict] = {
     "A359":   dict(econ_seats=300,bus_seats=36, mtow_kg=280000,cargo_cap_kg=16000, fuel_burn_kg_per_bh=5800, maint_per_bh=1200, crew_per_bh=1700, ownership_per_bh=2700, price_usd=150e6, annual_util_bh=4400, range_km=15000, category="Widebody", src="A350 newest; FAA WB + lease; burn published"),
     "B77W":   dict(econ_seats=340,bus_seats=40, mtow_kg=351000,cargo_cap_kg=20000, fuel_burn_kg_per_bh=7500, maint_per_bh=1900, crew_per_bh=2000, ownership_per_bh=1900, price_usd=90e6, annual_util_bh=4500, range_km=13600, category="Widebody", src="EUROCONTROL 777 $9,507/fh; large WB; burn published"),
 }
+
+# ----------------------------------------------------- regional jet fuel burn, corrected 10 Aug 2026
+# The regional jet burns above were 0.51 to 0.75 of what US operators actually burned, and the fault
+# went unnoticed because the whole band was wrong together: an internal consistency check across the
+# module agreed with itself. It was found by going outside, to reported actuals.
+#
+# METHOD. US DOT Form 41 Schedule P-5.2 for calendar 2023 reports fuel ISSUED and AIRBORNE hours by
+# aircraft type. Fuel over hours at 3.039 kg per US gallon gives a per-airborne-hour rate; T-100 for
+# the same year gives air time over ramp-to-ramp time by the same aircraft type code, which converts
+# it to a per-block-hour rate without assuming a taxi allowance. Measured ratios run 0.65 to 0.75 on
+# the regionals against 0.88 to 0.92 on the widebodies, which is the taxi share of a short sector.
+#
+# THE SAME TEST VALIDATES EVERYTHING ELSE. Every mainline narrowbody and widebody in this table sits
+# between 0.99 and 1.13 of reported actual. The fault was confined to the regional jets.
+#
+# SAMPLE SIZE MATTERS AND CAUGHT US OUT ONCE. The first pass took each type's own Form 41 row. The
+# E190's row is JetBlue alone on 102 airborne hours, in the year it retired the fleet, and reads
+# 2,916 kg per airborne hour against a five-carrier E175 cluster spanning 1,828 to 2,133. An aircraft
+# a third heavier than an E175 does not burn 46% more, so that row is not a measurement of the type.
+# The E190 is therefore SCALED from the well-sampled E170 and E175 rows and lands at 1,950 block,
+# which Aircraft Commerce Issue 64 independently brackets at 1,923 to 1,980. John caught this by
+# holding the result against a route he knows is flown: read a row with fewer than a few hundred
+# hours or a single carrier as an indication, not a figure.
+#
+# NOT CORRECTED, and deliberately. ATR72, DH8D and SF34 are turboprops with no US Form 41 rows, so
+# there is no measurement. Their burns come from manufacturer published block figures rather than
+# from the worked example and the FAA category that produced the regional jet errors, and ATR's own
+# factsheet gives block fuel paired with block time, so they do not share the fault. They remain
+# unverified against reported actuals and should be checked if a European source ever allows it.
+#
+# WHAT THIS DOES TO A ROUTE. It roughly doubles the fuel line on a regional jet route. Every regional
+# P&L the tool produced before this date understated fuel by that much.
+
+# ----------------------------------------------------- where the ownership leg comes from
+# Added 10 August 2026. Four independent searches, three of them external, failed to find a single
+# current type-and-age market value or lease rate in free public form; appraiser licences permit
+# internal use but not publication. So Avia cannot defend an ownership figure in public, and must not
+# be the only public source of one.
+#
+# This records which of the ownership figures above rest on a citable source and which do not, from
+# the June 2026 assumptions register. It exists so a client-facing renderer can suppress an assumed
+# figure rather than print it silently, and so nobody has to guess later.
+#
+#   citable   an appraiser or manufacturer financing publication names the value or lease rate
+#   proxy     interpolated from a neighbouring type in the register, no direct source
+#   none      no entry in the register at all; the figure's origin is not recorded anywhere
+OWNERSHIP_PROVENANCE = {
+    "A320": "citable", "A20N": "citable", "A21N": "citable", "A333": "citable",
+    "A339": "citable", "A359": "citable", "B789": "citable", "B38M": "citable",
+    "A319": "proxy", "A321": "proxy", "A21X": "proxy",
+}
+for _k in AIRCRAFT:
+    OWNERSHIP_PROVENANCE.setdefault(_k, "none")
+del _k
+
+
+def ownership_is_publishable(code):
+    """True only where the ownership leg rests on a named public source. Everything else is an Avia
+    assumption and belongs in a break-even statement rather than on a slide."""
+    return OWNERSHIP_PROVENANCE.get(code) == "citable"
 
 # ----------------------------------------------------- sector-aware maintenance
 # HEAVY maintenance reserve, $/flight-hour, by Airbus type and sector length (FH/FC).

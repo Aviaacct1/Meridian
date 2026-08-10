@@ -400,6 +400,84 @@ def _live_ctx():
     return S["live"]
 
 
+def _ownership_view(y, annual, aircraft, freq, weeks, block_min, profit_key):
+    """Contribution before ownership, and the ownership cost at which the route breaks even.
+
+    WHY THIS EXISTS, decided 10 August 2026. A route profit rests on an ownership cost, and Avia
+    cannot source one: four independent searches, three of them external, found no current
+    type-and-age market value or lease rate in free public form, and appraiser licences allow
+    internal use but not publication. Publishing our own would make Avia the only public source of a
+    lease rate, which is a position we would spend years defending and which we have no business
+    holding. Hiding it is worse, because a margin with an invisible assumption breaks the source
+    attribution rule more thoroughly than a disclosed weak one.
+
+    So the ownership cost stops being an input we assert and becomes the question we put back. The
+    route covers its cash costs and contributes X towards ownership; above an ownership cost of Y it
+    does not work. The airline knows Y from its own book and we do not. This is also the same
+    reasoning that took profit out of the optimiser's objective on 8 August: nobody outside an
+    airline knows how it prices its own capital.
+
+    PURELY ADDITIVE. Every figure the block already returned is untouched, which econ_baseline.py
+    checks. profit and margin remain, for internal use and for the sliders; what changes is what a
+    client-facing renderer should print, and provenance says which types may show an ownership
+    figure at all.
+    """
+    try:
+        from aircraft_economics import OWNERSHIP_PROVENANCE
+        own_turn = (y.get("ownership") or 0.0) + (y.get("insurance") or 0.0)
+        turns = (freq or 0) * (weeks or 52.0)
+        # A turn is a round trip, so the block hours it consumes are twice the one-way block time.
+        bh_turn = 2.0 * (block_min or 0) / 60.0
+        contrib = (y.get("profit") or 0.0) + own_turn
+        util = 0.0
+        try:
+            from aircraft_economics import AIRCRAFT
+            util = float(AIRCRAFT.get(aircraft, {}).get("annual_util_bh") or 0.0)
+        except Exception:
+            util = 0.0
+        be_bh = (contrib / bh_turn) if bh_turn else None
+        assumed_bh = 0.0
+        try:
+            from aircraft_economics import AIRCRAFT
+            assumed_bh = float(AIRCRAFT.get(aircraft, {}).get("ownership_per_bh") or 0.0)
+        except Exception:
+            assumed_bh = 0.0
+        # THE READABLE FORM, and the one that carries a warning. A multiple near 1 says the route
+        # just covers its ownership. Well above 1 says either a strong route or a light cost base,
+        # and the cost base here IS light by construction: the sourcing reference notes that aircraft
+        # operating cost is the direct leg only, and full cost is roughly double once ground handling
+        # and system overhead are added. So read a multiple around 2 as ordinary and treat anything
+        # near 3 as a flag on the P&L rather than a finding about the route.
+        multiple = (be_bh / assumed_bh) if (be_bh and assumed_bh) else None
+        return {
+            "contribution_before_ownership": round(contrib),
+            "annual_contribution_before_ownership": round((annual.get(profit_key, 0) or 0)
+                                                          + own_turn * turns),
+            # The ownership cost per block hour at which this schedule exactly breaks even, and the
+            # equivalent monthly lease at the type's annual utilisation, which is the form an airline
+            # can check against its own book.
+            "ownership_breakeven_per_bh": (round(be_bh) if be_bh is not None else None),
+            "ownership_breakeven_per_month": (round(be_bh * util / 12.0)
+                                              if (be_bh is not None and util) else None),
+            "ownership_assumed_per_bh": (round(assumed_bh) or None),
+            "ownership_assumed_per_month": (round(assumed_bh * util / 12.0) if (assumed_bh and util)
+                                            else None),
+            "ownership_breakeven_multiple": (round(multiple, 2) if multiple else None),
+            "ownership_provenance": OWNERSHIP_PROVENANCE.get(aircraft, "none"),
+            # The renderer's instruction, so the judgement lives with the data rather than in a deck
+            # template somebody forgets to update.
+            "ownership_publishable": OWNERSHIP_PROVENANCE.get(aircraft) == "citable",
+            "ownership_note": (
+                "Ownership is excluded from the headline. The figure shown is what the route "
+                "contributes towards ownership after all cash operating costs; the break-even is the "
+                "ownership cost at which it stops working. Avia does not publish lease rates: current "
+                "type and age values are not available in public form and appraiser data may not be "
+                "republished."),
+        }
+    except Exception:
+        return {}
+
+
 def _econ_block(each_way, aircraft, freq, home, dest_airport, gcd, econ_share, plan_lf,
                 econ_fare, bus_fare, fuel_price, carrier_type, weeks=52.0, p2p_share=1.0, prorate=0.67,
                 fixed_overrides=None):
@@ -460,7 +538,8 @@ def _econ_block(each_way, aircraft, freq, home, dest_airport, gcd, econ_share, p
                                   + y["catering"] + y["admin"] + y["sales"]),
             "total_cost": y["total_cost"], "profit": y["profit"], "margin": y["margin"],
             "breakeven_lf": y["breakeven_lf"], "annual_profit": annual.get(pk, 0),
-            "aircraft_required": annual.get("aircraft_required"), "cost_model": cost_model, "raw": y}}
+            "aircraft_required": annual.get("aircraft_required"), "cost_model": cost_model, "raw": y,
+            **_ownership_view(y, annual, aircraft, freq, weeks, bmin, pk)}}
     except Exception as e:
         return {"economics_ok": False, "economics_error": str(e)}
 
