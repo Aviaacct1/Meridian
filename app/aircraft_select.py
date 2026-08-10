@@ -20,8 +20,12 @@ forecast number; it sets the equipment the economics and the deck then use.
 """
 from __future__ import annotations
 
-# Long-haul-capable fleets by airline (IATA). Extend from Egnyte fleet data as needed; an
-# unknown airline falls back to all in-range types. Codes are AIRCRAFT keys in aircraft_economics.
+# SUPERSEDED 10 August 2026 by the OAG measurement in capacity_frame.types_for, and kept only as the
+# last fallback for a carrier the schedule store cannot see. It is the SECOND hand-maintained fleet
+# table in this codebase: airline_fleets.FLEETS is the other, the two disagreed with each other and
+# both disagreed with OAG. CI read A359 and B789 here and A321, A359 and B789 there, while OAG 2025
+# on 10,000 km sectors shows China Airlines flying the A350-900 and the 777-300ER and no 787 at all.
+# Do not extend this table. Fix the mapping in capacity_frame or the entry in aircraft_economics.
 FLEET_BY_AIRLINE = {
     "BA": ["B788", "B789", "A359", "B77W"],
     "LH": ["A359", "B789", "A333", "A339"],
@@ -39,9 +43,24 @@ def _seats(ac):
 
 def candidates(distance_km, fleet=None, airline_iata=None, margin=1.03):
     """Range-feasible AIRCRAFT codes. Order of preference for the candidate set:
-    explicit fleet -> airline fleet -> all in-range. margin keeps a small range cushion."""
+    explicit fleet -> what the carrier is OBSERVED to fly at this sector length -> the hand tables ->
+    all in-range. margin keeps a small range cushion.
+
+    The observed step was added on 10 August 2026. Before it, this function read a hand table that
+    offered China Airlines a 787-9 on a 10,440 km sector, which China Airlines does not fly at that
+    length, and withheld the 777-300ER, which it does. Showing an airline the wrong aeroplane is the
+    fastest way to lose a room."""
     from aircraft_economics import AIRCRAFT
-    pool = fleet or (FLEET_BY_AIRLINE.get((airline_iata or "").upper()) if airline_iata else None) or list(AIRCRAFT)
+    pool = fleet
+    if pool is None and airline_iata:
+        try:
+            import airline_fleets as AFL           # OAG first, its own table second
+            pool = AFL.fleet_for(airline_iata, list(AIRCRAFT), distance_km)[0] or None
+        except Exception:
+            pool = None
+        if pool is None:
+            pool = FLEET_BY_AIRLINE.get((airline_iata or "").upper())
+    pool = pool or list(AIRCRAFT)
     inrange = [c for c in pool if c in AIRCRAFT and AIRCRAFT[c]["range_km"] >= distance_km * margin]
     # SECTOR REALISM: a widebody has no commercial place on a short/medium sector a narrowbody can fly, however
     # much profit a profit-max search claims from big demand (a 777 on San Jose-Boston is not a real option).
@@ -55,22 +74,40 @@ def candidates(distance_km, fleet=None, airline_iata=None, margin=1.03):
 
 def evaluate(code, distance_nm, demand_each_way, freq, plan_lf=0.875, econ_share=0.85,
              econ_fare_ow=360.0, bus_fare_ow=1300.0, airspace=None, airline_type="FSC",
-             aircraft_age=5, block_min=None, fuel_price_usd_kg=None, weeks=52.0):
+             aircraft_age=5, block_min=None, fuel_price_usd_kg=None, weeks=52.0,
+             seats_override=None):
     """Run the validated economics for one aircraft on this route+demand. Returns the annual
     profit and the fill detail, so the selector can rank by profit. weeks<52 = a seasonal service
-    (demand and supply both over the season's operating weeks)."""
+    (demand and supply both over the season's operating weeks).
+
+    seats_override is (total, premium) as the OPERATING CARRIER configures this type, measured from
+    OAG. It sets the fill, which is what the selection turns on, and the cost side stays on the
+    generic type because fuel burn and maintenance are properties of the aeroplane rather than of
+    its cabin. Left as None the generic configuration is used and nothing changes."""
     from aircraft_economics import AIRCRAFT, RoutePnL, AnnualRoutePnL
     ac = AIRCRAFT[code]
-    econ_seats_yr = ac["econ_seats"] * freq * weeks
-    bus_seats_yr = ac["bus_seats"] * freq * weeks
+    _econ, _bus = ac["econ_seats"], ac["bus_seats"]
+    if seats_override:
+        _tot, _prem = int(seats_override[0]), int(seats_override[1] or 0)
+        _bus = min(_prem, _tot)
+        _econ = max(_tot - _bus, 0)
+    econ_seats_yr = _econ * freq * weeks
+    bus_seats_yr = _bus * freq * weeks
     econ_lf = (demand_each_way * econ_share) / econ_seats_yr if econ_seats_yr else 0.0
     bus_lf = (demand_each_way * (1 - econ_share)) / bus_seats_yr if bus_seats_yr else 0.0
-    if ac["bus_seats"] == 0:   # single class: all demand into econ
+    if _bus == 0:              # single class: all demand into econ
         econ_lf = demand_each_way / econ_seats_yr if econ_seats_yr else 0.0
         bus_lf = 0.0
     plan_econ, plan_bus = min(econ_lf, plan_lf), min(bus_lf, plan_lf)
     served = plan_econ * econ_seats_yr + plan_bus * bus_seats_yr
     spilled = max(demand_each_way - served, 0.0)
+    # The fill this function reports is seats sold over seats flown, which is what
+    # route_forecast reports and what a client reads off a slide. It used to be taken from the P&L's
+    # own load_factor, computed on the generic cabin, so the optimiser could select on one fill and
+    # the forecast then print another. Two numbers for one quantity is how /api/optimise and
+    # /api/forecast drifted apart before.
+    seats_yr = econ_seats_yr + bus_seats_yr
+    total_lf = (served / seats_yr) if seats_yr else 0.0
     bm = block_min if block_min is not None else _block_min_for(distance_nm)
     fuel_kw = {"fuel_price_usd_kg": fuel_price_usd_kg} if fuel_price_usd_kg is not None else {}
     _chg = dict(landing_per_turn=2000.0, pax_charge_per_pax=20.0,
@@ -82,8 +119,10 @@ def evaluate(code, distance_nm, demand_each_way, freq, plan_lf=0.875, econ_share
     y = rp.compute()
     annual = AnnualRoutePnL(rp, freq, weeks).compute()
     ann_profit = annual.get("annual_profit", annual.get("profit", 0.0))
-    return {"aircraft": code, "seats": _seats(ac), "range_km": ac["range_km"], "category": ac["category"],
-            "econ_lf": plan_econ, "bus_lf": plan_bus, "total_lf": y.get("load_factor"),
+    return {"aircraft": code, "seats": _econ + _bus, "range_km": ac["range_km"], "category": ac["category"],
+            "seats_source": ("carrier configuration, OAG" if seats_override else "generic type table"),
+            "econ_lf": plan_econ, "bus_lf": plan_bus, "total_lf": total_lf,
+            "pnl_load_factor": y.get("load_factor"),
             "served_each_way": round(served), "spilled_each_way": round(spilled),
             "margin": y.get("margin"), "annual_profit": round(ann_profit),
             "breakeven_lf": y.get("breakeven_lf")}
@@ -106,9 +145,19 @@ def select_aircraft(distance_nm, demand_each_way, freq, plan_lf=0.875, econ_shar
     if not pool:
         raise ValueError(f"no aircraft in the pool can fly {distance_km:,.0f} km "
                          f"(airline={airline_iata}, fleet={fleet})")
+    # The named carrier's own cabin, measured, so the gauge is chosen on the metal it would actually
+    # fly rather than on the generic configuration of the type. Empty when there is no store or no
+    # named carrier, and the generic table then stands.
+    cfg = {}
+    if airline_iata:
+        try:
+            import capacity_frame as CF
+            cfg = CF.config_for(airline_iata, distance_km)
+        except Exception:
+            cfg = {}
     rows = [evaluate(c, distance_nm, demand_each_way, freq, plan_lf, econ_share, econ_fare_ow,
                      bus_fare_ow, airspace, airline_type, aircraft_age, block_min, fuel_price_usd_kg,
-                     weeks=weeks)
+                     weeks=weeks, seats_override=cfg.get(c))
             for c in pool]
     target_seats = demand_each_way / (freq * weeks * plan_lf) if (freq and plan_lf) else 0
     rows.sort(key=lambda r: (-r["annual_profit"], r["spilled_each_way"], abs(r["seats"] - target_seats)))

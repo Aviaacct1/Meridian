@@ -75,12 +75,47 @@ def _clean(codes):
 FLEETS = {k: _clean(v) for k, v in FLEETS.items()}
 
 
-def fleet_for(airline_iata, available_codes, distance_km=None, margin=1.03):
+_OBS_WARNED = set()
+
+
+def fleet_observed(airline_iata, distance_km, period="2025-%"):
+    """What the carrier is measured to fly at this sector length, from OAG, or [] if nothing.
+
+    The table below is hand-maintained and was wrong on every carrier checked on 10 August 2026:
+    China Airlines carried a 787-9 it does not fly on 10,000 km sectors and no 777-300ER, EVA carried
+    an A350-900 it does not fly, and Starlux was missing entirely so it fell back to every
+    range-feasible type. A schedule store answers this question directly, and a measured answer that
+    moves with the fleet beats a table someone has to remember to update.
+    """
+    if not airline_iata or not distance_km:
+        return []
+    try:
+        import capacity_frame as CF
+        keys, unmapped, sectors = CF.types_for(airline_iata, distance_km)
+    except Exception:
+        return []                      # no store, no measurement: the table below still stands
+    if unmapped and airline_iata not in _OBS_WARNED:
+        # Named, not swallowed. An observed type the economics module cannot cost is a gap in the
+        # economics module, and it silently narrows the option set the carrier is offered.
+        _OBS_WARNED.add(airline_iata)
+        print("fleet_observed: %s flies these at this sector length and the economics module has no "
+              "entry, so they are not offered: %s" % (airline_iata, ", ".join(unmapped)))
+    return keys if sectors else []
+
+
+def fleet_for(airline_iata, available_codes, distance_km=None, margin=1.03, observed=True):
     """The airline's fleet, intersected with the codes the economics module knows and (if given) the
-    sector range. Returns (codes, known): known=False means fall back to all range-feasible types."""
+    sector range. Returns (codes, known): known=False means fall back to all range-feasible types.
+
+    OAG is asked first when the sector length is known; the table is the fallback, not the source.
+    observed=False forces the old behaviour, for reproducing a run made before 10 August 2026."""
     from aircraft_economics import AIRCRAFT
     av = set(available_codes or AIRCRAFT.keys())
-    fleet = FLEETS.get((airline_iata or "").upper())
+    fleet = None
+    if observed and distance_km:
+        fleet = fleet_observed(airline_iata, distance_km) or None
+    if fleet is None:
+        fleet = FLEETS.get((airline_iata or "").upper())
     known = fleet is not None
     pool = [c for c in (fleet or av) if c in av and c in AIRCRAFT]
     if distance_km:

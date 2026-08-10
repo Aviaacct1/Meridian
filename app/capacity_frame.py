@@ -46,6 +46,106 @@ def _oag():
     return None
 
 
+# OAG equipment code to the aircraft_economics key, for the types the economics module knows.
+# Built 10 August 2026 from the codes actually present in the 2025 schedule, read with OAG's own
+# aircraft_name beside each one, rather than written from memory. Types with no economics entry are
+# absent ON PURPOSE and are reported by name by types_for rather than dropped in silence: the
+# 787-10 is one of EVA's three real options on this sector length and the module cannot cost it.
+OAG_TO_AIRCRAFT = {
+    "320": "A320", "32A": "A320", "32S": "A320", "32N": "A20N",
+    "321": "A321", "32B": "A321", "32Q": "A21N", "319": "A319",
+    "738": "B738", "73H": "B738", "7M8": "B38M", "757": "B752",
+    "AT7": "ATR72", "ATR": "ATR72", "DH4": "DH8D", "CR9": "CRJ900",
+    "E70": "E170", "E90": "E190", "E95": "E195", "SF3": "SF34",
+    "763": "B763", "76W": "B763",
+    "333": "A333", "339": "A339", "359": "A359",
+    "788": "B788", "789": "B789", "77W": "B77W",
+}
+
+
+def to_aircraft_key(code):
+    """The economics key for an OAG equipment code, or None when the module has no entry for it."""
+    return OAG_TO_AIRCRAFT.get((code or "").strip().upper())
+
+
+def types_for(carrier, gcd_km, period="2025-%", band=0.25, min_ops=6):
+    """What this carrier is OBSERVED to fly on sectors of comparable length, as economics keys.
+
+    The fleet the optimiser picks from was a hand-maintained table, and on 10 August 2026 it was
+    wrong on every carrier in the SJC-TPE frame: China Airlines was given a 787-9 it does not fly on
+    these sectors and denied the 777-300ER it does, EVA was given an A350-900 it does not fly, and
+    Starlux was absent altogether so it fell back to every range-feasible type. A schedule store
+    already records what each carrier flies at each sector length, so the table is not needed.
+
+    Returns (keys, unmapped, sectors): keys are economics keys sorted by how much the carrier flies
+    them, unmapped names the observed types the economics module cannot cost, and sectors is the
+    observed sector count behind the answer. An empty result means OAG has nothing at this length
+    for this carrier, and the caller should fall back rather than conclude the carrier flies nothing.
+    """
+    db = _oag()
+    if not db or not carrier or not gcd_km:
+        return [], [], 0
+    lo, hi = gcd_km * (1 - band), gcd_km * (1 + band)
+    con = duckdb.connect(db, read_only=True)
+    # The progress bar writes to stdout, which inside the app lands in the server log and in any
+    # captured output. Off here; frame() keeps it because it is run from the command line.
+    con.execute("SET memory_limit='3GB'; SET threads=3; SET enable_progress_bar=false")
+    try:
+        rows = con.execute("""
+          SELECT aircraft_code, any_value(aircraft_name) nm, count(*) ops
+          FROM oag
+          WHERE service_type='J' AND week LIKE ? AND try_cast(stops AS INT)=0
+            AND carrier = ? AND try_cast(gcd_km AS DOUBLE) BETWEEN ? AND ?
+          GROUP BY 1 HAVING count(*) >= ? ORDER BY ops DESC
+        """, [period, carrier.strip().upper(), lo, hi, min_ops]).fetchall()
+    finally:
+        con.close()
+    keys, unmapped, sectors = [], [], 0
+    for row in rows:
+        code, nm, ops = row[0], row[1], row[2]
+        sectors += int(ops)
+        k = to_aircraft_key(code)
+        if k is None:
+            unmapped.append("%s (%s)" % (code, (nm or "").strip()))
+        elif k not in keys:
+            keys.append(k)
+    return keys, unmapped, sectors
+
+
+def config_for(carrier, gcd_km, period="2025-%", band=0.25, min_ops=6):
+    """{aircraft key: (total seats, premium seats)} as THIS carrier configures the type on sectors of
+    comparable length. The generic table in aircraft_economics holds one configuration per type, and
+    an airline configures a type to its own product: measured 10 August 2026, China Airlines and
+    Starlux fly the A350-900 at 306 seats against the table's 336, EVA the 787-9 at 278 against 320,
+    and the 777-300ER is 333 at EVA and 358 at China Airlines against 380. Sizing a schedule on the
+    generic number overstates the capacity by 8 to 13% on these carriers."""
+    db = _oag()
+    if not db or not carrier or not gcd_km:
+        return {}
+    lo, hi = gcd_km * (1 - band), gcd_km * (1 + band)
+    con = duckdb.connect(db, read_only=True)
+    con.execute("SET memory_limit='3GB'; SET threads=3; SET enable_progress_bar=false")
+    try:
+        rows = con.execute("""
+          SELECT aircraft_code,
+                 median(try_cast(seats_total AS DOUBLE)) seats,
+                 median(try_cast(business_seats AS DOUBLE) + try_cast(first_seats AS DOUBLE)) prem,
+                 count(*) ops
+          FROM oag
+          WHERE service_type='J' AND week LIKE ? AND try_cast(stops AS INT)=0
+            AND carrier = ? AND try_cast(gcd_km AS DOUBLE) BETWEEN ? AND ?
+          GROUP BY 1 HAVING count(*) >= ? ORDER BY ops DESC
+        """, [period, carrier.strip().upper(), lo, hi, min_ops]).fetchall()
+    finally:
+        con.close()
+    out = {}
+    for code, seats, prem, _ops in rows:
+        k = to_aircraft_key(code)
+        if k and k not in out and seats:
+            out[k] = (int(seats), int(prem or 0))
+    return out
+
+
 def frame(a, b, period="2025-%", min_ops=6, band=0.25):
     """The option set for the unordered pair a-b.
 

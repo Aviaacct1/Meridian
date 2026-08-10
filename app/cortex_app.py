@@ -1311,7 +1311,13 @@ def api_optimise(origin: str, dest: str, airline: str = "", carrier_type: str = 
                     prof = ranked[0]["annual_profit"]; lf = ranked[0].get("total_lf") or 0.0
                     rows.append({"airline": cand, "aircraft": code, "freq": f, "ctype": ct_i,
                                  "season": sea_i, "annual_profit": prof, "demand": demand,
-                                 "lf": float(lf)})
+                                 "lf": float(lf),
+                                 # The seat count the gauge was CHOSEN on, carried through so the
+                                 # forecast fills the same aeroplane the optimiser sized. Sizing on
+                                 # one configuration and filling on another is the mismatch the plan
+                                 # load factor cap already had across three modules.
+                                 "seats": ranked[0].get("seats"),
+                                 "seats_source": ranked[0].get("seats_source")})
     if not rows:
         return JSONResponse({"ok": False, "error": _explain_infeasible(origin, dest, dist_km, plan_lf)})
 
@@ -1338,7 +1344,8 @@ def api_optimise(origin: str, dest: str, airline: str = "", carrier_type: str = 
                       % (VIABLE_LF * 100, best["aircraft"], best["freq"], best["lf"] * 100))
     final = calibrated_forecast(origin, dest, airline=(best["airline"] or None), carrier_type=best.get("ctype", carrier_type),
                                 aircraft=best["aircraft"], freq=best["freq"], econ_share=econ_share,
-                                plan_lf=plan_lf, bus_fare=bus_fare, with_econ=True, season=best.get("season", "annual"))
+                                plan_lf=plan_lf, bus_fare=bus_fare, with_econ=True, season=best.get("season", "annual"),
+                                seats=best.get("seats"))
     _attach_airfield(final, best["aircraft"], plan_lf)
     _attach_range_margin(final, best["aircraft"])
     _attach_viability(final)
