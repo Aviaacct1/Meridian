@@ -480,7 +480,7 @@ def _ownership_view(y, annual, aircraft, freq, weeks, block_min, profit_key):
 
 def _econ_block(each_way, aircraft, freq, home, dest_airport, gcd, econ_share, plan_lf,
                 econ_fare, bus_fare, fuel_price, carrier_type, weeks=52.0, p2p_share=1.0, prorate=0.67,
-                fixed_overrides=None):
+                fixed_overrides=None, charges_override=None):
     try:
         import route_engine as RE
         from aircraft_economics import AIRCRAFT, RoutePnL, AnnualRoutePnL
@@ -502,10 +502,34 @@ def _econ_block(each_way, aircraft, freq, home, dest_airport, gcd, econ_share, p
         at = carrier_type if carrier_type in ("FSC", "LCC", "ULCC") else "LCC"
         fp_used = fuel_price if (fuel_price and fuel_price > 0) else 0.90
         _fo = fixed_overrides or {}
+        # CHARGES FOR THIS AIRPORT PAIR, not the generic placeholder. Until 10 August 2026 both ends
+        # of every route were charged route_engine.DEFAULT_CHARGES even where the module already held
+        # real figures: LCY and EDI were both in aircraft_economics.AIRPORTS and both ignored, which
+        # charged 13,200 USD a turn against 5,130 held and dropped 3,320 USD of charges recovery. An
+        # 11,390 USD swing on a route the tool then called unprofitable and which BA flies daily.
+        # charges_override lets a caller pass a set straight from RDC for one engagement.
+        _mtow = ac.get("mtow_kg")
+        try:
+            import airport_charges as APC
+            _ch = APC.pair_charges(home, dest_airport, mtow_kg=_mtow)
+        except Exception:
+            _ch = {"origin": dict(RE.DEFAULT_CHARGES), "dest": dict(RE.DEFAULT_CHARGES),
+                   "origin_provenance": "generic", "dest_provenance": "generic",
+                   "origin_source": "fallback", "dest_source": "fallback",
+                   "provenance": "generic", "is_plug": True}
+        if charges_override:
+            for _end in ("origin", "dest"):
+                if charges_override.get(_end):
+                    _ch[_end] = dict(_ch[_end]); _ch[_end].update(charges_override[_end])
+                    _ch[_end + "_provenance"] = "set by the caller"
+                    _ch[_end + "_source"] = str(charges_override.get("source")
+                                                or "entered for this engagement")
+            _ch["provenance"] = "set by the caller"
+            _ch["is_plug"] = False
         rp = RoutePnL("New entrant", aircraft, home, dest_airport, dist_nm, bmin,
                       econ_lf=e_lf, bus_lf=b_lf, econ_fare_ow=fare, bus_fare_ow=bus_fare,
-                      airline_type=at, aircraft_age=2, origin_charges=RE.DEFAULT_CHARGES,
-                      dest_charges=RE.DEFAULT_CHARGES, fuel_price_usd_kg=fp_used,
+                      airline_type=at, aircraft_age=2, origin_charges=_ch["origin"],
+                      dest_charges=_ch["dest"], fuel_price_usd_kg=fp_used,
                       ownership_per_bh_override=_fo.get("own_bh"),
                       crew_per_bh_override=_fo.get("crew_bh"),
                       annual_util_bh_override=_fo.get("util_bh"))
@@ -531,7 +555,7 @@ def _econ_block(each_way, aircraft, freq, home, dest_airport, gcd, econ_share, p
             "other_fixed_per_turn": (y["maintenance"] + y["ownership"] + y["insurance"] + y["crew"]),
             "ownership_per_turn": (y["ownership"] + y["insurance"]),
             "catering_per_pax": (y["catering"] / _pax) if _pax else 0.0,
-            "charges_basis": "generic placeholder, not this airport pair",
+            "charges_basis": _ch["provenance"],
             "per_pax_cost": (y["catering"] + y["per_pax"]) / _pax,
             "recovery_per_pax": y["charges_recovery"] / _pax,
             "cargo_rev": y["cargo_rev"],
@@ -551,6 +575,11 @@ def _econ_block(each_way, aircraft, freq, home, dest_airport, gcd, econ_share, p
             "total_cost": y["total_cost"], "profit": y["profit"], "margin": y["margin"],
             "breakeven_lf": y["breakeven_lf"], "annual_profit": annual.get(pk, 0),
             "aircraft_required": annual.get("aircraft_required"), "cost_model": cost_model, "raw": y,
+            "charges_provenance": _ch["provenance"], "charges_is_plug": _ch["is_plug"],
+            "charges_origin": {"provenance": _ch["origin_provenance"], "source": _ch["origin_source"],
+                                **{k: round(v, 2) for k, v in _ch["origin"].items()}},
+            "charges_dest": {"provenance": _ch["dest_provenance"], "source": _ch["dest_source"],
+                              **{k: round(v, 2) for k, v in _ch["dest"].items()}},
             **_ownership_view(y, annual, aircraft, freq, weeks, bmin, pk)}}
     except Exception as e:
         return {"economics_ok": False, "economics_error": str(e)}
@@ -601,7 +630,7 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
                         feed_behind_cap=0.10, feed_dom_gain=1.0, feed_dom_floor=1.0,
                         cnx_online=1.0, cnx_alliance=0.615, cnx_interline=0.25,
                         circuity=1.35, factor_indirect=1.044, mct_banking=False, season="annual",
-                        induced_floor=True, fixed_overrides=None, seats=None):
+                        induced_floor=True, fixed_overrides=None, seats=None, charges_override=None):
     """Any city pair through the CALIBRATED engine (route_forecast.forecast). season = annual (default)
     / summer / winter runs a seasonal service: demand scaled to the season's share of the year, capacity
     over the season's weeks.
@@ -819,7 +848,8 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
     if with_econ:
         out.update(_econ_block(carried_ew, aircraft, freq, home, dest_airport, gcd, econ_share,
                                plan_lf, econ_fare, bus_fare, fuel_price, ct, weeks=season_weeks,
-                               p2p_share=r.get("p2p_share"), fixed_overrides=fixed_overrides))
+                               p2p_share=r.get("p2p_share"), fixed_overrides=fixed_overrides,
+                               charges_override=charges_override))
     return out
 
 
