@@ -507,14 +507,28 @@ attachTypeahead($("#airline"),"airline");
 // ---- live economics slider panel (recomputes in-browser from the cost model) ----
 let STATE={};
 const setTxt=(id,v)=>{const e=document.getElementById(id); if(e)e.textContent=v;};
-function econTurn(cm,le,lb,ef,bf,fp){
+// chg and own are multipliers on the charges plug and the ownership plug, both 1.0 by default.
+// Airport and handling charges here are a generic placeholder, not this airport pair, and on a short
+// sector they are the largest cost in the P&L. Ownership rests on a lease rate Avia cannot source.
+// Both are exposed so the client sets them to what they actually pay rather than reading ours.
+function econTurn(cm,le,lb,ef,bf,fp,chg,own){
+  chg=(chg===undefined?1:chg); own=(own===undefined?1:own);
   const eo=cm.econ_seats*le, bo=cm.bus_seats*lb, pax=2*(eo+bo);
   const net=2*eo*ef+2*bo*bf+cm.cargo_rev, recovery=cm.recovery_per_pax*pax, gross=net+recovery;
-  const fuel=cm.fuel_kg_per_turn*fp, perpax=cm.per_pax_cost*pax, indirect=cm.indirect_rate*net;
-  const total=fuel+perpax+cm.fixed_per_turn+indirect, profit=gross-total;
-  const pax_var=perpax+indirect, fixed_costs=total-pax_var, denom=gross-pax_var;
+  const fuel=cm.fuel_kg_per_turn*fp, indirect=cm.indirect_rate*net;
+  const charges=(cm.charges_per_turn||0)*chg + (cm.charges_per_pax||0)*chg*pax;
+  const catering=(cm.catering_per_pax||0)*pax;
+  const ownership=(cm.ownership_per_turn||0)*own;
+  const otherfixed=(cm.other_fixed_per_turn||0)-(cm.ownership_per_turn||0);
+  const perpax=catering+(cm.charges_per_pax||0)*chg*pax;
+  const total=fuel+catering+charges+otherfixed+ownership+indirect, profit=gross-total;
+  // Contribution before ownership, and the ownership cost per turn at which the route breaks even.
+  const contrib=profit+ownership;
+  const pax_var=catering+(cm.charges_per_pax||0)*chg*pax+indirect;
+  const fixed_costs=total-pax_var, denom=gross-pax_var;
   const lam=denom?fixed_costs/denom:0, seats=cm.econ_seats+cm.bus_seats, cur=(eo+bo)/seats;
-  return {profit,margin:gross?profit/gross:0,be:cur*lam,gross,fuel,perpax,indirect,net};
+  return {profit,margin:gross?profit/gross:0,be:cur*lam,gross,fuel,perpax,indirect,net,
+          charges,ownership,otherfixed,catering,contrib};
 }
 function econLFs(cm,dem,ps,freq,plf,weeks){
   weeks=weeks||52; const esy=cm.econ_seats*freq*weeks, bsy=cm.bus_seats*freq*weeks;
@@ -527,8 +541,20 @@ function buildSliders(cm){
     ['s_ef','Economy fare (one-way)','o_ef',80,900,5,cm.econ_fare,v=>'$'+v],
     ['s_bf','Business fare (one-way)','o_bf',400,3000,50,cm.bus_fare,v=>'$'+(+v).toLocaleString()],
     ['s_fp','Jet fuel price ($/kg)','o_fp',0.55,1.40,0.01,cm.ref_fuel_price,v=>'$'+(+v).toFixed(2)],
-    ['s_ps','Premium share of demand','o_ps',0,0.30,0.01, cm.bus_seats>0?0.15:0, v=>Math.round(v*100)+'%'],
+    // A MULTIPLIER on the measured front-cabin share, not an absolute. The server uses the share
+    // Sabre measures for this market; an absolute slider on a 0.01 step rounded a 0.5% share to zero
+    // on LCY-EDI and silently deleted the business cabin, so the panel disagreed with the headline
+    // it sits under. At 1.0 there is no rounding and the browser reproduces the server exactly.
+    ['s_ps','Premium share of demand (x measured)','o_ps',0,2.0,0.05, cm.bus_seats>0?1.0:0,
+      v=>Math.round(v*(1-(cm.econ_share!==undefined?cm.econ_share:0.85))*1000)/10+'%'
+         +(v==1?' (measured)':'')],
     ['s_mkt','Market adjustment','o_mkt',0.80,1.15,0.01,1.0,v=>v==1?'neutral':(v>1?'+':'')+Math.round((v-1)*100)+'%'],
+    // The two plugs. Set them to what you actually pay; the defaults are placeholders, not this
+    // airport pair and not your lease.
+    ['s_chg','Airport and handling charges (PLUG - set to yours)','o_chg',0.30,1.60,0.05,1.0,
+      v=>v==1?'generic placeholder':(v>1?'+':'')+Math.round((v-1)*100)+'% of placeholder'],
+    ['s_own','Ownership cost (PLUG - set to your lease)','o_own',0.30,2.00,0.05,1.0,
+      v=>v==1?'model assumption':(v>1?'+':'')+Math.round((v-1)*100)+'% of assumption'],
   ];
   STATE.fmts={};
   document.getElementById('controls').innerHTML='<div class="clab">Inputs</div>'+rows.map(s=>
@@ -541,21 +567,33 @@ function recomputeEcon(){
   const gv=id=>+document.getElementById(id).value;
   Object.entries(STATE.fmts||{}).forEach(([sid,[bid,fn]])=>setTxt(bid,fn(gv(sid))));
   const freq=gv('s_freq'), plf=gv('s_plf'), ef=gv('s_ef'), bf=gv('s_bf'), fp=gv('s_fp'), ps=gv('s_ps'), mkt=gv('s_mkt');
+  const chg=gv('s_chg'), own=gv('s_own');
+  // s_ps is a multiplier on the measured front-cabin share, so 1.0 reproduces the server exactly.
+  const psMeasured=1-(cm.econ_share!==undefined?cm.econ_share:0.85);
   const sel=(document.getElementById('season')||{}).value||'annual';
   const weeks=SEASON_WEEKS[sel]||52, demShare=seasonDemandShare(sel);
   const dem=STATE.each_way*mkt*demShare;
-  const [le,lb]=econLFs(cm,dem,ps,freq,plf,weeks), t=econTurn(cm,le,lb,ef,bf,fp);
+  const [le,lb]=econLFs(cm,dem,ps*psMeasured,freq,plf,weeks), t=econTurn(cm,le,lb,ef,bf,fp,chg,own);
   const annual=t.profit*freq*weeks, carried=Math.round(2*(cm.econ_seats*le+cm.bus_seats*lb)*freq*weeks);
+  const annContrib=t.contrib*freq*weeks;
+  // The headline is CONTRIBUTION BEFORE OWNERSHIP, not profit. Avia cannot source a lease rate and
+  // will not publish one, so the ownership cost is the question put back to the operator rather than
+  // an answer asserted to them: the route contributes this much towards ownership, and above the
+  // break-even it does not work. Profit is still shown, one line down and labelled with its plugs.
   document.getElementById('ecards').innerHTML=
-    `<div class="ecard big"><div class="l">Annual operating profit</div><div class="v" style="color:${annual>=0?'#F3EFE6':'var(--signal-soft)'}">${money(annual)}</div><div class="s">margin ${(t.margin*100).toFixed(1)}% · ${carried.toLocaleString()} pax/yr carried${sel!=='year'?' · '+(sel==='summer'?'summer schedule':'winter schedule'):''}</div></div>`+
-    `<div class="ecard"><div class="l">Profit per rotation</div><div class="v" style="color:${t.profit>=0?'var(--ink)':'var(--signal)'}">${money(t.profit)}</div><div class="s">out and back</div></div>`+
+    `<div class="ecard big"><div class="l">Annual contribution towards ownership</div><div class="v" style="color:${annContrib>=0?'#F3EFE6':'var(--signal-soft)'}">${money(annContrib)}</div><div class="s">after all cash operating costs · ${carried.toLocaleString()} pax/yr carried${sel!=='year'?' · '+(sel==='summer'?'summer schedule':'winter schedule'):''}</div></div>`+
+    `<div class="ecard"><div class="l">Breaks even at ownership of</div><div class="v" style="color:${t.contrib>=0?'var(--ink)':'var(--signal)'}">${money(t.contrib)}</div><div class="s">per rotation · model plug ${money(t.ownership)}</div></div>`+
     `<div class="ecard"><div class="l">Breakeven load</div><div class="v">${Math.round(t.be*100)}%</div><div class="s">flying ${Math.round(le*100)}% / ${Math.round(lb*100)}%</div></div>`;
   document.getElementById('pnl').innerHTML=[
     ["Revenue",money(t.gross)],["Fuel",money(-t.fuel)],
-    ["Fixed (maint, ownership, crew, charges)",money(-cm.fixed_per_turn)],
-    ["Per-passenger costs",money(-t.perpax)],["Overhead and sales",money(-t.indirect)]
+    ["Airport and handling charges (PLUG)",money(-t.charges)],
+    ["Maintenance and crew",money(-t.otherfixed)],
+    ["Catering",money(-t.catering)],["Overhead and sales",money(-t.indirect)]
   ].map(r=>`<div class="pl"><span class="k">${r[0]}</span><span class="vv">${r[1]}</span></div>`).join("")
-   +`<div class="pl tot"><span class="k">Operating profit per rotation</span><span class="vv" style="color:${t.profit>=0?'var(--s3)':'var(--signal)'}">${money(t.profit)}</span></div>`;
+   +`<div class="pl tot"><span class="k">Contribution towards ownership per rotation</span><span class="vv" style="color:${t.contrib>=0?'var(--s3)':'var(--signal)'}">${money(t.contrib)}</span></div>`
+   +`<div class="pl"><span class="k">Ownership (PLUG)</span><span class="vv">${money(-t.ownership)}</span></div>`
+   +`<div class="pl tot"><span class="k">Operating profit per rotation, both plugs as set</span><span class="vv" style="color:${t.profit>=0?'var(--s3)':'var(--signal)'}">${money(t.profit)}</span></div>`
+   +`<div class="pl" style="opacity:.72"><span class="k" style="font-style:italic">Two inputs here are plugs, not measurements. Airport and handling charges are a generic placeholder rather than this airport pair, and on a short sector they are the largest line in the P&amp;L. Ownership rests on a lease rate that is not available publicly and which Avia does not publish. Slide both to what you actually pay: the contribution line above is unaffected by the ownership plug.</span><span class="vv"></span></div>`;
   renderSeason();
 }
 const SEASON={leisure:[0.6,0.6,0.7,0.85,1.05,1.3,1.5,1.5,1.2,0.95,0.7,1.05],

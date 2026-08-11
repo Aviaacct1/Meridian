@@ -241,21 +241,47 @@ def build_workbook(out_path, fc, meta=None):
     prow("Passenger revenue (net)", raw.get("net_rev")); prow("Cargo", raw.get("cargo_rev"))
     prow("Charges recovery", raw.get("charges_recovery")); prow("Gross revenue", raw.get("gross_rev"), True, LFILL)
     _sec(ws, r, "OPERATING COST", 2); r += 1
-    for k, key in [("Fuel", "fuel"), ("Maintenance", "maintenance"), ("Crew", "crew"), ("Ownership", "ownership"),
-                   ("Insurance", "insurance"), ("Landing", "landing"), ("Passenger charges", "per_pax"),
-                   ("Ground handling", "handling"), ("En-route navigation", "nav"), ("Catering", "catering"),
+    # The two plug lines are labelled as such. Airport and handling charges are a generic placeholder
+    # rather than this airport pair, and on a short sector they are the largest cost in the P&L;
+    # ownership rests on a lease rate that is not publicly available and which Avia does not publish.
+    # A reader who cannot tell a measured line from a plug will quote the plug.
+    for k, key in [("Fuel", "fuel"), ("Maintenance", "maintenance"), ("Crew", "crew"),
+                   ("Landing (PLUG, generic)", "landing"),
+                   ("Passenger charges (PLUG, generic)", "per_pax"),
+                   ("Ground handling (PLUG, generic)", "handling"),
+                   ("En-route navigation (PLUG, generic)", "nav"), ("Catering", "catering"),
                    ("Admin", "admin"), ("Sales", "sales")]:
         prow(k, -abs(n0(raw.get(key))))
-    prow("Total operating cost", -abs(n0(raw.get("total_cost"))), True, LFILL)
-    prow("Operating profit per rotation", raw.get("profit"), True, TOTF)
+    prow("Cash operating cost before ownership", -abs(n0(raw.get("total_cost")))
+         + abs(n0(raw.get("ownership"))) + abs(n0(raw.get("insurance"))), True, LFILL)
+    prow("Contribution towards ownership per rotation", n0(ec.get("contribution_before_ownership")),
+         True, TOTF)
+    prow("Ownership and insurance (PLUG, not published)",
+         -abs(n0(raw.get("ownership"))) - abs(n0(raw.get("insurance"))))
+    prow("Operating profit per rotation, both plugs as set", raw.get("profit"), True, TOTF)
     r += 1
     _sec(ws, r, "SUMMARY", 2); r += 1
-    for k, v, fmt in [("Operating margin", n0(raw.get("margin")), "0.0%"),
+    for k, v, fmt in [("Breaks even at ownership per block hour",
+                       n0(ec.get("ownership_breakeven_per_bh")), "#,##0"),
+                      ("Equivalent monthly lease at type utilisation",
+                       n0(ec.get("ownership_breakeven_per_month")), "#,##0"),
+                      ("Multiple of the model's ownership plug",
+                       n0(ec.get("ownership_breakeven_multiple")), "0.00"),
+                      ("Operating margin, both plugs as set", n0(raw.get("margin")), "0.0%"),
                       ("Breakeven load factor", n0(raw.get("breakeven_lf")), "0.0%"),
                       ("Passengers per rotation", n0(raw.get("pax_turn")), "#,##0"),
-                      (f"{_padj} profit", n0(ec.get("annual_profit")), "#,##0"),
+                      (f"{_padj} contribution towards ownership",
+                       n0(ec.get("annual_contribution_before_ownership")), "#,##0"),
+                      (f"{_padj} profit, both plugs as set", n0(ec.get("annual_profit")), "#,##0"),
                       ("Aircraft required", ec.get("aircraft_required") or 0, "0.00")]:
         _c(ws, r, 1, k, font=BOLD, align=LFT); _c(ws, r, 2, v, fmt=fmt, align=RGT); r += 1
+    r += 1
+    _c(ws, r, 1, "Two inputs above are plugs, not measurements. Airport and handling charges are a "
+                 "generic placeholder, not this airport pair, and Avia does not hold a charges "
+                 "database; published charges are in any case a ceiling, since most carriers "
+                 "negotiate below them. Ownership rests on a lease rate that is not available in "
+                 "public form and which Avia does not publish. Set both to your own figures. The "
+                 "contribution line is unaffected by the ownership plug.", align=LFT); r += 2
 
     # ---- 6. Assumptions & methodology --------------------------------------
     ws = wb.create_sheet("Assumptions")

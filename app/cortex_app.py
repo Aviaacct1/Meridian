@@ -520,6 +520,18 @@ def _econ_block(each_way, aircraft, freq, home, dest_airport, gcd, econ_share, p
             "fuel_kg_per_turn": (y["fuel"] / fp_used) if fp_used else 0.0,
             "fixed_per_turn": (y["maintenance"] + y["landing"] + y["nav"] + y["handling"]
                                + y["ownership"] + y["insurance"] + y["crew"]),
+            # THE PLUG, BROKEN OUT so the user can slide it to their own. Airport and handling
+            # charges are a generic placeholder in this tool and on a short sector they dominate
+            # everything: on LCY-EDI they are 56% of cost against fuel at 15%. Avia does not hold a
+            # charges database, and published charges are a ceiling anyway because most carriers
+            # negotiate below them. So the charges come out of the fixed block as their own number,
+            # per turn and per passenger, and the client sets them to what they actually pay.
+            "charges_per_turn": (y["landing"] + y["nav"] + y["handling"]),
+            "charges_per_pax": (y["per_pax"] / _pax) if _pax else 0.0,
+            "other_fixed_per_turn": (y["maintenance"] + y["ownership"] + y["insurance"] + y["crew"]),
+            "ownership_per_turn": (y["ownership"] + y["insurance"]),
+            "catering_per_pax": (y["catering"] / _pax) if _pax else 0.0,
+            "charges_basis": "generic placeholder, not this airport pair",
             "per_pax_cost": (y["catering"] + y["per_pax"]) / _pax,
             "recovery_per_pax": y["charges_recovery"] / _pax,
             "cargo_rev": y["cargo_rev"],

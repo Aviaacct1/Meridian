@@ -148,23 +148,35 @@ def build_deck(out, forecast, pnl, meta):
     _txt(s, Inches(0.6), Inches(0.45), Inches(12.1), Inches(0.7),
          f"Route economics: {meta['aircraft']}, {meta['origin']} - {meta['dest']}", 32, bold=True)
     _txt(s, Inches(0.62), Inches(1.15), Inches(12.1), Inches(0.5), meta.get('pnl_subtitle', ''), 15, color=GREY)
-    pos = GREEN if pnl['profit'] >= 0 else RGBColor(0xB0, 0x00, 0x00)
-    _stat(s, Inches(0.6), Inches(1.95), Inches(3.0), _money(pnl['profit']), "operating profit per rotation", vcolor=pos)
-    _stat(s, Inches(3.7), Inches(1.95), Inches(3.0), f"{pnl['margin']:.1%}", "operating margin", vcolor=pos)
+    # THE HEADLINE IS CONTRIBUTION, NOT PROFIT. Avia cannot source a lease rate and does not publish
+    # one, and the airport charges here are a generic placeholder rather than this airport pair. So
+    # the slide leads with what the route contributes towards ownership after all cash costs, and
+    # states the ownership cost at which it stops working. Profit stays on the cost stack, below the
+    # contribution line and with both plugs labelled.
+    _own = pnl['ownership'] + pnl['insurance']
+    _contrib = pnl['profit'] + _own
+    pos = GREEN if _contrib >= 0 else RGBColor(0xB0, 0x00, 0x00)
+    _stat(s, Inches(0.6), Inches(1.95), Inches(3.0), _money(_contrib),
+          "contribution towards ownership, per rotation", vcolor=pos)
+    _stat(s, Inches(3.7), Inches(1.95), Inches(3.0), _money(_own),
+          "ownership plug in this case", vcolor=GREY)
     _stat(s, Inches(6.8), Inches(1.95), Inches(3.0), f"{pnl['breakeven_lf']:.0%}", "breakeven load factor")
-    _stat(s, Inches(9.9), Inches(1.95), Inches(3.0), _money(meta['annual_profit']), f"{_pnoun} profit ({meta['frequency']}x/week)", vcolor=pos)
+    _stat(s, Inches(9.9), Inches(1.95), Inches(3.0),
+          _money(meta['annual_profit'] + _own * float(meta.get('frequency') or 0) * 52.0),
+          f"{_pnoun} contribution ({meta['frequency']}x/week)", vcolor=pos)
     # cost stack table (left)
     _txt(s, Inches(0.6), Inches(3.3), Inches(5.7), Inches(0.4), "Per rotation (return)", 15, bold=True)
     rows = [("Revenue", pnl['gross_rev'], False),
             ("Fuel", -pnl['fuel'], False),
             ("Maintenance", -pnl['maintenance'], False),
             ("Crew", -pnl['crew'], False),
-            ("Ownership & insurance", -(pnl['ownership'] + pnl['insurance']), False),
-            ("Airport charges", -(pnl['landing'] + pnl['per_pax'] + pnl['handling']), False),
-            ("En-route (nav)", -pnl['nav'], False),
+            ("Airport charges (plug)", -(pnl['landing'] + pnl['per_pax'] + pnl['handling']), False),
+            ("En-route (nav, plug)", -pnl['nav'], False),
             ("Catering", -pnl['catering'], False),
             ("Overhead & sales", -(pnl['admin'] + pnl['sales']), False),
-            ("Operating profit", pnl['profit'], True)]
+            ("Contribution to ownership", _contrib, True),
+            ("Ownership & insurance (plug)", -_own, False),
+            ("Operating profit, plugs as set", pnl['profit'], True)]
     y = Inches(3.78)
     for k, v, hl in rows:
         _rect(s, Inches(0.6), y, Inches(5.6), Inches(0.4), NAVY if hl else LIGHT)
