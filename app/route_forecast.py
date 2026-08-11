@@ -594,6 +594,12 @@ def forecast(sabre_db, oag_db, week, origin, dest_codes, competing_airports, *, 
         try:
             import route_feed as RFEED
             g = (1 + growth) ** growth_years
+            # Name the route origin for the feed layer. competing_airports is the whole catchment and
+            # its order is the catchment builder's, so the QSI feed cannot take the first entry as the
+            # origin: on SJC-TPE that is Sonoma County. The timezone reference for the hub arrival and
+            # the circuity screen both key off it.
+            if feed_cfg is not None:
+                feed_cfg.setdefault("route_origin", origin)
             bt, beyond_pdew, beyond_detail = RFEED.feed_side(sabre_db, oag_db, week, competing_airports,
                                               dest_airport, year, beyond=True, airline=airline,
                                               feed_cfg=feed_cfg, detail=True)

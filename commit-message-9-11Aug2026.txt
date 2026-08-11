@@ -1,0 +1,451 @@
+The departure time now chooses itself, per airline, and it drives the demand
+
+Three things, and the third is the one that was asked for.
+
+1. THE QSI FEED WAS SCORING TAIPEI CONNECTIONS AT A QUARTER TO ONE IN THE MORNING
+
+qsi_feed.beyond_capture computed the arrival at the connecting hub as
+(dep_time_mins + flying_mins) % 1440. That adds block time to the ORIGIN's local departure
+and reads the answer as the HUB's local clock. On SJC-TPE it put China Airlines on the
+ground at Taipei at 00:45 instead of 16:45, a sixteen-hour error, while every competing
+leg came off the OAG board correctly in local time from local_arr_time. The new route was
+the only mistimed itinerary in its own competition.
+
+Eleven beyond markets carrying 37,785 passengers each way, 6.2% of the beyond base, scored
+zero for being "over MAX_CONNECT". The real connections are two to three hours: CA to
+Chongqing departs 19:20 against a 16:45 arrival, Etihad to Abu Dhabi 19:40, MU to Wuhan
+18:40. All were read as thirteen to nineteen hours. This is also the explanation for the
+QSI feed anti-correlating with the 2025 analyst at Pearson -0.46, which the handover
+recorded as a possible disagreement about method. It was not a disagreement about method.
+
+_hub_arrival_mins applies the timezone shift, using the same longitude approximation
+cortex_app._schedule_times uses, so the bank is scored against the arrival time on the page
+rather than a second estimate of it. Verified: SJC-TPE returns 16:45, matching the engine's
+own schedule payload.
+
+2. THE DEPARTURE TIME IS NOW AN INPUT TO THE DEMAND
+
+It was not one before, anywhere. _schedule_times placed the outbound at 11:00, ran AFTER
+the forecast and only decorated the payload, so no time of day could move a passenger.
+/api/optimise swept airline, aircraft, frequency, carrier type and season; departure time
+was not a dimension. Measured across the day on SJC-TPE the beyond capture runs 0.98% to
+5.43% and the behind capture 0.31% to 2.17%, so the placeholder was choosing the answer,
+and choosing it badly: no carrier flies an 11:00 departure from the Bay Area to Taipei.
+
+route_feed.optimise_departure searches the day on connecting passengers won across BOTH
+sides, because one departure time drives both: it sets which behind-origin feeders can
+make the flight, and with the block it sets which beyond-hub bank the aircraft connects
+into. Both markets are built once and held across the sweep. Coarse grid then a
+refinement, settable with AVIA_DEP_STEP and AVIA_DEP_REFINE.
+
+calibrated_forecast takes dep_time_mins. Named, it is honoured, which is the client
+testing their own schedule. Left blank with an airline named, it is optimised FOR THAT
+AIRLINE, because an airline connects online onto its own onward legs and only interlines
+onto everyone else's. Cached per route and operator: block time comes from distance rather
+than the aircraft, and frequency enters the score identically at every time of day, so
+both move the level and not the choice.
+
+VALIDATED AGAINST WHAT THE CARRIERS ACTUALLY FLY, OAG week 2026-05-25:
+
+  carrier   optimiser chose      actually flies to TPE      beyond / behind two-way
+  CI        00:30, arr 06:15     SFO 01:05, LAX 00:05       56,428 /  4,888
+  BR        02:00, arr 07:45     SFO 01:15 and 00:50        59,294 /  2,020
+  UA        00:30, arr 06:15     SFO 23:55                  51,894 /  9,422
+
+Every answer is within about an hour of the carrier's real schedule, from QSI scoring
+alone with nothing told to it about who flies what. The splits are right for the right
+reasons: EVA is heaviest beyond Taipei and almost absent behind San Jose, United is the
+reverse on the strength of its Bay Area domestic feed, China Airlines between them.
+
+3. RESTRICTED HOURS, AND THE COST OF THEM IS QUOTED
+
+The best connecting time is very often exactly the time the airport cannot take. San Jose
+is the case: the whole Taipei market leaves the west coast between midnight and two in the
+morning, which is inside the night restriction. optimise_departure takes `restricted`, one
+or more windows in the origin's local time ("23:00-06:00"), exposed as restricted_hours on
+calibrated_forecast and as AVIA_RESTRICTED_HOURS.
+
+It screens MOVEMENTS, not departures. A curfew stops the aircraft coming back as surely as
+it stops it leaving, so the return arrival is screened too; it falls out as dep + 2 x block
++ turnaround because the timezone shift cancels between the legs. The window boundaries are
+tested explicitly as candidates, because an optimum against a constraint lies on the
+constraint: an airline schedules right up against a curfew rather than near it.
+
+The unrestricted optimum is always computed and returned beside the permitted one, so the
+COST of the restriction is a number rather than an absence. SJC-TPE, China Airlines, 4x:
+
+  no restriction              departs 00:30, arrives TPE 06:15
+  SJC 23:00-06:00             departs 06:30, arrives TPE 12:15, returns SJC 12:00
+  cost of the restriction     42,655 connecting passengers two-way a year
+
+That figure is the argument an airport takes to a curfew review, and it is worth more than
+the forecast it came out of.
+
+4. THE BEHIND SIDE WAS SCORED AS AN INTERLINE WITH EVERYBODY
+
+_cnx_type compared alliance values raw. The OAG board carries "Star Alliance", "SkyTeam",
+"oneworld" or "0"; the proposed route's own leg was built with the short code the carrier
+map returns, "*A", "ST", "OW". "SkyTeam" is not "ST", so the new route was never in an
+alliance with anyone, on either side.
+
+On the beyond side it cost almost nothing: the route connects at its own hub onto its own
+onward flights and is ONLINE anyway. On the behind side it cost a factor of four on every
+market. A Delta arrival into San Jose feeding a China Airlines departure is a SkyTeam
+connection and was scored as an interline at 0.25, while a competing Korean Air routing
+over Seoul flies both legs itself, matches on carrier and scores 1.00. Competing pairs of
+real board legs compared raw string to raw string and were classified correctly, so the
+penalty fell on the proposed route alone.
+
+The tell was China Airlines and EVA returning an IDENTICAL behind capture of 2.0824%,
+which two carriers in different alliances cannot.
+
+Behind capture at the optimised departure, against the analyst's blended 4.172%:
+
+  carrier   before    after     of the analyst
+  CI        2.0824%   2.9582%   0.50x -> 0.71x
+  BR        2.0824%   2.7377%   0.50x -> 0.66x
+  UA        2.3605%   2.8256%   0.57x -> 0.68x
+
+Also fixed in _alli: "0" is OAG's not-in-an-alliance marker and was being returned as a
+code, so two unaligned carriers compared equal and scored as alliance partners.
+
+TESTED AND NOT TAKEN. The collapse key groups itineraries by the onward carrier alone,
+which merges every inbound carrier into one entry on the behind side and one per onward
+carrier on the beyond side. Keying on both operating carriers, measured on three carriers:
+behind moved 0.50x to 0.55x before the alliance fix and is neutral to slightly negative
+after it, while the beyond side falls 4.28x to 3.55x. Not the cause and not worth the
+change. Left behind AVIA_QSI_COLLAPSE_BOTH, default off, so the arm can be re-run.
+
+5. LIKE FOR LIKE AGAINST THE ANALYST, ON HIS SCHEDULE
+
+Comparing capture rates across two different departure times compares two different
+products. The Proposed Schedule sheet of the analyst's workbook carries a Korean Air
+Seoul-San Jose service marked "Proxy analysis", used to time the proposed China Airlines
+service: San Jose arrival 09:45 local, departure 11:45, two hour turnaround. So his San
+Jose departure is 11:45, which is also why Meridian's old 11:00 placeholder happened to
+land near his beyond rate.
+
+The arc on his 12:00 departure, China Airlines, each fix measured on the one before:
+
+  state                                  beyond            behind
+  flat rate, the engine this morning     3.846%   2.64x    4.638%   1.11x
+  QSI feed, timezone and alliance fixed  2.146%   1.48x    2.854%   0.68x
+  competitor-hub exclusion fixed         2.073%   1.43x    2.854%   0.68x
+  OAG boards deduped                     1.035%   0.71x    1.903%   0.46x
+
+The two sides no longer disagree in DIRECTION, which was the thing that said a defect was
+present. Both now read below the analyst, which is the direction the handover predicts for a
+fuller competitor set: Meridian scores every routing in the OAG week against his hand-built
+44 beyond markets and 31 behind. Whether 0.71x and 0.46x is the right amount below him is
+NOT SETTLED and is not settleable against him. BT2 is the test.
+
+6. SCHEDULE CONSTRAINTS AT BOTH ENDS, ON THE SCREEN, AND NONE ASSUMED
+
+The 2025 analyst's schedule note names both ends: it "seeks to mitigate night curfew
+restrictions at SJC and capacity constraints at TPE". A one-ended optimiser talks past
+that. Under the San Jose curfew alone Meridian picked 06:30, which is correct on its own
+objective and arrives Taipei at 12:15, and if Taipei cannot take that arrival the answer is
+worthless.
+
+So restricted hours now apply at BOTH ends, each in its own airport's local time, and BOTH
+DEFAULT TO NOTHING. A curfew is a fact about an airport that somebody has to know. The tool
+does not infer one and does not carry a table of them: an assumed restriction would move a
+forecast with no source behind it, which is worse than no restriction at all.
+
+  route_feed.optimise_departure   restricted, restricted_dest
+  calibrated_forecast             restricted_hours, restricted_hours_dest, dep_time_mins
+  /api/forecast and /api/optimise dep_time, curfew_origin, curfew_dest
+  dashboard                       Departure (origin local), Curfew at origin, Curfew at destination
+
+Each screens MOVEMENTS: at the origin the outbound departure and the return arrival, at the
+destination the arrival and the return departure. Window boundaries at both ends are tested
+as explicit candidates, since an optimum against a constraint lies on the constraint.
+
+Both the Run assessment and the Optimise paths carry all three fields. A check that lives
+on one path only is the /api/forecast against /api/optimise divergence this file has
+already been caught by twice, and it is written down here in the same terms.
+
+NOTED WHILE IN THERE, and it settles an open item: app/app_avia_style/ is referenced
+NOWHERE in cortex_app.py. DASH is app/cortex_dashboard.html. The duplicate is dead and only
+the live copy was edited.
+
+7. THE OAG BOARDS WERE NOT DEDUPED, AND THIS IS THE BIG ONE
+
+John's question: why are beyond and behind still so far out against the analyst, in OPPOSITE
+directions. Two answers, and the second is much larger than the first.
+
+(a) WHICH AIRPORTS MAY BE A COMPETING CONNECTING POINT. route_forecast passes the whole
+44-airport catchment to beyond_capture as origin_airports and the single route origin to
+behind_capture. Both excluded origin_airports from the candidate hub set, so the beyond side
+barred every Bay Area airport including San Francisco while the behind side barred only San
+Jose. Now only the route's own origin is excluded, which is the behind side's rule.
+Measured: beyond 1.48x the analyst to 1.43x. REAL BUT SMALL, and I predicted it would be
+the answer. It was not.
+
+(b) THE REGION DUPLICATION, FOURTH INSTANCE. wave_cache._Boards selected the board with a
+plain SELECT and no dedupe. The store holds each schedule record ONCE PER REGION LABEL:
+
+    TPE departures    2,495 rows for   448 distinct flights   x5.57
+    SJC arrivals        930 rows for   331 distinct flights   x2.81
+    SFO departures    4,524 rows for   810 distinct flights   x5.59
+    LAX departures    5,967 rows for 1,109 distinct flights   x5.38
+
+EVA's Taipei-Vancouver departure appeared fourteen times. qsi_feed accumulates connectable
+frequency across every pairing and then caps it, so the duplication did not cancel: it
+pushed itineraries onto the cap at rates that differ by airport, and Taipei duplicates twice
+as hard as San Jose. That is the mechanism that moved the two feed sides in opposite
+directions at once.
+
+The dedupe unions the DAYS-OF-OPERATION masks rather than taking the max or the sum. Most
+duplicates repeat the mask exactly, but 113 of the 443 Taipei flight groups carry more than
+one distinct mask and some are complementary: AE to Xiamen at 08:40 files "123 5 7" and
+"   4 6 ", which is a daily service. Max reads five, the union reads seven.
+
+Same store characteristic as the FREQ-BUG of 9 August, the T-100 double load of 5 August,
+and the region duplication bt2_base already dedupes. THREE MORE CALL SITES WERE COUNTING RAW
+ROWS and are now on one shared rule, wave_cache.carrier_flights:
+
+  route_feed.hub_dominance      CI at Taipei read 0.21002, true 0.18080; EVA 0.24690 vs 0.18527
+  cortex_app route carriers     reported as a carrier's WEEKLY frequency, straight to the user
+  cortex_app._candidate_airlines  the optimiser's airline shortlist, so the RANKING was distorted:
+                                Tigerair Taiwan reads 5.5% of Taipei movements against a true 11.2%
+
+STILL COUNTING RAW ROWS, not touched here: calibrate_share_longhaul.py, and route_feed's own
+hub_served / hub_fed_by / hub_onward_carriers, where a COUNT(*) >= 1 threshold makes the
+duplication harmless. app/app_avia_style is dead and was left alone.
+
+8. NAMED PARTNER CARRIERS, AND THE CONVERGENCE
+
+Two things were tested against the remaining gap. The first was wrong and is recorded so it
+is not re-proposed: the competitor set is NOT inflated. Measured against Sabre's
+connecting_airport1, Meridian models 8.5 competitor hubs per beyond market against 10.4
+actually observed carrying that market, and those hubs carry 90.5% of the real connecting
+traffic. The set is slightly NARROW, not wide. qsi_feed's docstring claim that the OAG
+serves-the-market test "does the same job" as narrowing to observed hubs is close to true
+and errs the other way.
+
+The second is the answer on the behind side. A carrier outside the three global alliances
+can only be an interline at 0.25. That is right in general and wrong wherever a commercial
+agreement exists, and here it decides the number: SOUTHWEST IS 77.3% OF THE DISTINCT
+ARRIVALS AT SAN JOSE. The 2025 analyst's own scope counts "SkyTeam carriers AND Southwest
+Airlines", naming Southwest separately from "basic interline onto other full service
+carriers", and the deck's commercial argument is the Southwest partnership.
+
+partner_carriers is now an input: qsi_feed.partner_map, feed_cfg, calibrated_forecast,
+"partners" on /api/forecast and /api/optimise, and a field on the assessment screen. EMPTY BY
+DEFAULT. A partnership is a fact about a deal, not a property of a schedule, and the tool
+must not assume one. It is reported in the schedule payload so a forecast that assumes a
+partnership says so.
+
+RAW QSI FEED against the analyst, his 12:00 schedule, two-way, before split_share:
+
+                            Meridian    analyst   ratio
+  no partner named
+    beyond                    12,583     12,007    1.05
+    behind                     5,967     13,992    0.43
+    connecting total          18,549     25,999    0.71
+  Southwest named a partner
+    beyond                    12,467     12,007    1.04
+    behind                    11,613     13,992    0.83
+    connecting total          24,080     25,999    0.93
+
+THE BEYOND SIDE HAS CONVERGED, from 3.9x this morning to 1.04x, and the connecting total is
+within 7%. Not one constant was tuned to get there: every step was a defect that could be
+shown wrong on its own terms, and the partner input is a modelling assumption the analyst
+made explicitly and the tool could not previously express.
+
+9. WHAT NOW DOMINATES THE REPORTED NUMBERS, AND IT IS NOT THE FEED
+
+split_share. On the same run the RAW beyond feed is 12,467 two-way and the PAYLOAD reports
+27,324, because the connectivity table floors the connecting side and the feed detail is
+rescaled to it. The feed now agrees with the analyst to within 4% and the reported figure
+does not, so the largest remaining error in what a client sees is downstream of everything
+fixed today. Four arms were measured this morning; it should move on the back-test.
+
+10. BT2 IS THE WRONG INSTRUMENT FOR THIS CHANGE
+
+Checked before running it, and it is the reason not to. BT2's production modules contain NO
+reference to feed_beyond, feed_behind, route_feed, qsi_feed, feed_side or behind_feed. Its
+feature vector is capacity, market, base strength, qcx and legs_n; the connecting feed is
+neither an input nor an output. A BT2 re-baseline would have cost thirty to sixty minutes
+and returned no movement, and "no movement" would have read as "the changes are neutral"
+when it actually means "the test does not touch them". That is precisely the shape of error
+this log keeps recording.
+
+app/backtest.py is the right instrument. It calls route_forecast.forecast WITH feed_cfg, and
+under --qsi-feed it takes dep_time_mins from the route's FLOWN schedule, which is the correct
+treatment for a back-test and removes the placeholder and the optimiser from the question
+entirely.
+
+VERIFIED WHILE CHECKING, and it bounds today's blast radius: route_qsi._dedupe_flights
+already collapses one physical flight per (dep, arr, local dep time), and bt2_capture selects
+DISTINCT. So the QSI engine's own capture share and BT2's features were ALREADY protected
+from the region duplication. It was confined to wave_cache and the three raw COUNT(*) sites.
+The wave cache itself is 3.95x duplicated, 3,095,534 rows for 783,889 distinct flights, and
+the fix applies at read, so the back-test now runs on clean boards.
+
+TO RUN, on the workstation. Sixty routes did not finish in 165 seconds on the dev box, so
+this is a workstation job in any case:
+
+  $env:AVIA_OAG   = "C:\Avia\oag.duckdb"
+  $env:AVIA_SABRE = "C:\Avia\sabre.duckdb"
+  $env:AVIA_LOCAL_CACHE = "C:\Avia"
+  $env:AVIA_FREQ_SENSITIVE = "1"
+
+  # arm 1, control: the flat feed
+  py -3.12 backtest.py --oag $env:AVIA_OAG --sabre $env:AVIA_SABRE --min-gcd 1500 `
+      --out backtest_control_11Aug2026.csv
+
+  # arm 2: the QSI feed, departure time from the flown schedule
+  py -3.12 backtest.py --oag $env:AVIA_OAG --sabre $env:AVIA_SABRE --min-gcd 1500 --qsi-feed `
+      --wave-cache qsi_wave_cache.duckdb --out backtest_qsifeed_11Aug2026.csv
+
+PRE-FLIGHT RUN ON THE MASTER TREE, so an hour is not spent on a command that fails. Both arms
+complete, select the same routes deterministically, and the QSI arm reports "0 in-run
+fallbacks (errors)". One of the three pilot routes moved, VNO-HRG 226 to 402, and the two
+that did not are the two with no flown schedule. The code path is sound.
+
+READ THIS LINE IN THE OUTPUT BEFORE READING THE SCORES:
+
+  "QSI feed: N routes without a flown schedule (V1 fallback), M in-run fallbacks (errors)"
+
+N is the dilution. A route with no flown schedule falls back to the flat feed, so it appears
+in BOTH arms unchanged and waters the comparison down. Two of three pilot routes fell back.
+The cache holds flown schedules for 3,602 dep-arr-year combinations across 2017-2019 and
+boards for the weeks 2016-05-30 to 2019-05-27, so CONFINE THE RUN TO --years 2017,2018,2019.
+If N is still more than about a third, rebuild the cache with wave_cache.py before drawing
+any conclusion from the arm comparison.
+
+The 3 July cache does NOT need rebuilding for the dedupe: it is 3.95x duplicated but
+CacheBoards inherits _Boards._rows, so the fix applies at read.
+
+Read the FSC-forecastable median fc/p2p and the +/-20% count on each, not the blended
+by-type medians. split_share should be a THIRD arm and not folded into these two: the feed
+changes are corrections and the floor is a judgement, and mixing them would leave no way to
+say which moved the score.
+
+11. WHERE THIS LANDED, AND TWO STALE COPIES THAT SHOULD NOT EXIST
+
+Every correction above is in the ONE master engine and nowhere else. Verified rather than
+assumed:
+
+  repo            C:\AviaDev, remote https://github.com/Aviaacct1/Meridian.git
+  working tree    clean before this session; HEAD 74fe5b6
+  all 8 edits     tracked and reported by git status as modified, all under app/
+                  cortex_app.py, cortex_dashboard.html, qsi_feed.py, qsi_score.py,
+                  route_feed.py, route_forecast.py, test_qsi_score.py, wave_cache.py
+
+Every RUN was the repo too, not only every edit, and that is checkable rather than assertable:
+AVIA_FREQ_SENSITIVE appears in 5 repo files and in ZERO files of either 3 July copy, so the
+qsi_share of 0.2510 that every measurement today rests on is not reachable on the old tree.
+_hub_arrival_mins and the board dedupe likewise appear only in the repo.
+
+app/verify_connecting_build.py IS THE PROOF, and it ships with this commit. It asserts every
+number quoted in this message against the engine and exits non-zero on any failure, so "the
+repo produces what was reported" is a measurement:
+
+    py -3.12 app\verify_connecting_build.py            # circa four minutes
+    py -3.12 app\verify_connecting_build.py --quick    # skips the optimiser, circa 75 seconds
+
+Run on this tree, 11 August 2026: ALL 35 CHECKS PASSED on --quick, and the optimiser section
+returns 00:30 departing and 06:15+1 arriving as reported. It checks the store vintage first
+and says so plainly if OAG or Sabre have moved past week 2026-05-25 and year 2025, because a
+difference against a newer store is a data change and must not be read as a regression.
+
+TWO COPIES OF THE APP EXIST OUTSIDE GIT AND ARE A SPLIT WAITING TO HAPPEN:
+
+  C:\Avia\qsi-tool\app
+  C:\Users\Carte\OneDrive\Documents\Claude\Projects\Avia QSI Tool\app
+
+They are byte-identical to each other on every engine file, both last written 3 July 2026,
+and NEITHER is a git repo. They are five weeks stale and are missing, among other things:
+
+  AVIA_FREQ_SENSITIVE   the frequency switch, decided ON 10 August   0 files against 5 in the repo
+  STEP_NOTES            the market build labels, 11 August           0 against 1
+  capacity_frame.py, traffic_rights.py, route_context.py, bt2_forecast.py,
+  compare_engines.py                                                 absent entirely
+
+So they cannot be what produced the 10 August dashboard screenshots, which means they are
+almost certainly abandoned rather than live. That is an INFERENCE and John should confirm
+which path the workstation actually serves before anything is removed. Nothing inside the
+repo references either path.
+
+C:\Avia is the DATA root under the tool standard. An app tree living there is wrong twice
+over: data belongs on the workstation, tools come from git.
+
+Also still present: app/app_avia_style/, a duplicate dashboard referenced nowhere in
+cortex_app.py, inside both the repo and the C:\Avia copy.
+
+RECOMMENDED, once John confirms the service path:
+  - delete C:\Avia\qsi-tool and the app/ tree under the OneDrive project folder, or if the
+    workstation genuinely serves from C:\Avia\qsi-tool, replace it with a git clone so a
+    deploy is a pull and a restart rather than a copy
+  - delete app/app_avia_style from the repo
+  - add both to the platform audit so they cannot come back
+
+12. TWO-STOP SERVICE COEFFICIENT CORRECTED, 0.40 to 0.04
+
+The analyst's DOT source gives the three service levels as 10 / 2 / 0.4, which rebases on
+the nonstop to 1.00 / 0.20 / 0.04. Verified dormant before changing it: qsi_feed passes
+n_stops=1 throughout and nothing in the engine builds a two-stop itinerary. test_qsi_score
+updated in step; six tests pass including the analyst ET curve reproduction.
+
+WHAT MOVES, SJC-TPE, CI, A350-900 at 306 seats, 4x, AVIA_FREQ_SENSITIVE=1, two-way:
+
+                        flat rate     QSI feed,      QSI feed, SJC
+                        (before)      unrestricted   23:00-06:00
+  departure             11:00 fixed   00:30          06:30
+  beyond feed            46,772        56,428         59,470
+  behind feed            14,542         4,888          1,846
+  TOTAL                 111,384       111,384        111,384
+
+The total does not move because split_share floors the connecting side at the connectivity
+table's figure and the seat ceiling caps the rest, so the QSI feed sets the SHAPE across
+markets and between the two sides while the LEVEL is still decided elsewhere. That is the
+next piece of work and it is not resolved here. On a route where neither binds, the total
+will move.
+
+The total does not move because split_share floors the connecting side at the connectivity
+table's figure and the seat ceiling caps the rest, so the QSI feed sets the SHAPE across
+markets and the two sides while the LEVEL is still decided elsewhere. That is the next
+piece of work and it is not resolved here.
+
+OPEN, and stated so it is not mistaken for finished:
+  - the behind side still reads 0.71x the analyst after the alliance fix. Part of that is
+    expected, since Meridian scores a fuller competitor set than a hand-built sheet, and
+    part may not be. Not closed.
+  - split_share still overrides the connecting level. Four arms were measured; it should
+    move on the back-test rather than on one route against one hand-built comparison.
+  - restricted_hours is on calibrated_forecast and the environment. It is NOT yet on
+    /api/forecast, /api/optimise or the dashboard, and there is no per-airport curfew
+    reference, so today it has to be typed in.
+  - calibrated_forecast still defaults cnx_alliance to 0.615 against qsi_score's 0.75.
+  - the optimiser is circa 60 to 90 seconds per airline on a cold cache.
+  - NOTHING HERE IS BACK-TESTED. BT2 has not been re-baselined and the connecting change
+    has not been measured against outturn.
+
+Files: app/qsi_feed.py, app/route_feed.py, app/route_forecast.py, app/cortex_app.py,
+app/qsi_score.py, app/test_qsi_score.py, and diagnostics under bt2/.
+
+TO COMMIT AND PROVE IT, in this order. Nothing else should be built on top until step 4 is
+green, because five corrections are stacked and none of them is back-tested yet.
+
+  1.  cd C:\AviaDev
+      git add app/qsi_feed.py app/route_feed.py app/route_forecast.py app/cortex_app.py `
+              app/qsi_score.py app/test_qsi_score.py app/wave_cache.py `
+              app/cortex_dashboard.html app/verify_connecting_build.py bt2
+      git commit -F commit-message-9-11Aug2026.txt
+      git push
+
+  2.  on the WORKSTATION: git pull
+
+  3.  py -3.12 app\test_qsi_score.py                    # 6 tests, the frozen QSI method
+      py -3.12 app\econ_baseline.py                     # the golden-file rollback record
+
+  4.  py -3.12 app\verify_connecting_build.py           # 35+ checks, all of today's numbers
+
+  5.  only then the back-test, three arms, per section 10.
+
+If step 4 fails on a machine where step 3 passed, the difference is the environment and not
+the code: check AVIA_FREQ_SENSITIVE is set to 1 and that the stores are OAG week 2026-05-25
+and Sabre 2025.

@@ -630,7 +630,9 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
                         feed_behind_cap=0.10, feed_dom_gain=1.0, feed_dom_floor=1.0,
                         cnx_online=1.0, cnx_alliance=0.615, cnx_interline=0.25,
                         circuity=1.35, factor_indirect=1.044, mct_banking=False, season="annual",
-                        induced_floor=True, fixed_overrides=None, seats=None, charges_override=None):
+                        induced_floor=True, fixed_overrides=None, seats=None, charges_override=None,
+                        dep_time_mins=None, restricted_hours=None, restricted_hours_dest=None,
+                        partner_carriers=None):
     """Any city pair through the CALIBRATED engine (route_forecast.forecast). season = annual (default)
     / summer / winter runs a seasonal service: demand scaled to the season's share of the year, capacity
     over the season's weeks.
@@ -676,6 +678,73 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
     feed_cfg = {"behind_cap": feed_behind_cap, "dom_gain": feed_dom_gain, "dom_floor": feed_dom_floor,
                 "cnx_online": cnx_online, "cnx_alliance": cnx_alliance, "cnx_interline": cnx_interline,
                 "circuity": circuity, "factor_indirect": factor_indirect, "mct_banking": bool(mct_banking)}
+    # NAMED PARTNER CARRIERS, empty by default. A carrier outside the three global alliances can only
+    # be an interline at 0.25, which is right in general and wrong wherever a commercial agreement
+    # exists. On SJC-TPE it decides the answer: Southwest is 77.3% of the distinct arrivals at San
+    # Jose, and the 2025 analyst's scope counts "SkyTeam carriers AND Southwest Airlines". A
+    # partnership is a fact about a deal rather than a property of a schedule, so it is named by the
+    # person running the forecast and reported on the page beside the number.
+    _partners = partner_carriers
+    if isinstance(_partners, str):
+        _partners = [x.strip().upper() for x in _partners.replace(";", ",").split(",") if x.strip()]
+    _partners = [x for x in (_partners or []) if x]
+    if _partners:
+        feed_cfg["partner_carriers"] = _partners
+    # THE DEPARTURE TIME, and it is an INPUT to the demand rather than a decoration on the output.
+    #
+    # It was neither before. _schedule_times placed the outbound at 11:00, ran after the forecast and
+    # only dressed the payload, so no time of day could move a passenger. Measured on SJC-TPE the
+    # beyond capture runs 0.98% to 5.43% across the day and the behind capture 0.31% to 2.17%, so the
+    # placeholder was quietly choosing the answer, and choosing it badly: no carrier flies an 11:00
+    # departure from the Bay Area to Taipei. China Airlines leaves San Francisco at 01:05 and Los
+    # Angeles at 00:05, and every Taipei carrier on the west coast departs between 00:15 and 01:50.
+    #
+    # A caller who names a time gets that time: that is the client testing their own schedule. A
+    # caller who names an AIRLINE and no time gets the best time for that airline, because connection
+    # strength is carrier-specific - an airline connects online onto its own onward legs and only
+    # interlines onto everyone else's, so the best arrival into Taipei for China Airlines is not the
+    # best arrival for a Star carrier.
+    #
+    # The optimum is cached per route and operator, not per gauge. Frequency and block time enter the
+    # score identically at every time of day, so they move the level and not the choice, and running
+    # the search once per airline is what keeps /api/optimise affordable when it sweeps seven
+    # frequencies and three seasons.
+    dep_mins, feed_opt = dep_time_mins, None
+    dep_basis = ("set by the caller" if dep_time_mins is not None else
+                 "indicative only, no operator named so no connecting feed is built")
+    if airline:
+        if dep_mins is None:
+            # restricted_hours is part of the cache key: a curfew changes the answer, so a run with
+            # one must never read a cached optimum taken without it.
+            # No restriction is assumed at either end. A curfew is a fact about an airport that
+            # somebody has to know, so it is entered rather than inferred.
+            _rh = restricted_hours or os.environ.get("AVIA_RESTRICTED_HOURS") or None
+            _rd = restricted_hours_dest or os.environ.get("AVIA_RESTRICTED_HOURS_DEST") or None
+            _dk = ("dep", home, dest_airport, airline, ctx["week"], ctx["year"], str(_rh), str(_rd),
+                   ",".join(_partners))
+            if _dk not in S:
+                try:
+                    import route_feed as _RFD
+                    _b, _i = _RFD.optimise_departure(
+                        ctx["sabre_db"], ctx["oag_db"], ctx["week"], competing, home, dest_airport,
+                        dest_codes, ctx["year"], airline, bmin, freq, feed_cfg,
+                        step=int(os.environ.get("AVIA_DEP_STEP", 120)),
+                        refine=int(os.environ.get("AVIA_DEP_REFINE", 30)),
+                        restricted=_rh, restricted_dest=_rd)
+                    S[_dk] = (_b, _i)
+                except Exception as _e:
+                    S[_dk] = (None, {"error": str(_e)})
+            dep_mins, feed_opt = S[_dk]
+            # Say what actually happened. An optimiser that failed and fell back to the placeholder
+            # must not leave the page reading "optimised": that is the silent-default shape this
+            # codebase has been caught by four times, and here it would put a schedule nobody flies
+            # in front of an airline under a label claiming it was chosen.
+            dep_basis = ("optimised for this airline's connections" if dep_mins is not None
+                         else f"NOT OPTIMISED, placeholder 11:00 - {(feed_opt or {}).get('error', 'no result')}")
+        if dep_mins is not None:
+            feed_cfg.update({"qsi_feed": True, "dep_time_mins": int(dep_mins),
+                             "flying_mins": int(bmin), "route_freq": freq,
+                             "route_origin": home, "qsi_k": 1.0, "qsi_k_behind": 1.0})
     # SEASONAL: scale annual demand by the season's share (haul + type profile) and run capacity over the
     # season's weeks. season='annual' leaves everything unchanged.
     import seasonality_engine as SE
@@ -838,7 +907,13 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
                    "weeks": round(season_weeks)},
         "projection": {"cagr": round(_cagr, 4), "base_year": ctx["year"], "horizon": 5, "build": _build},
         "confidence": confidence,
-        "schedule": _schedule_times(home, dest_airport, o, d, bmin),
+        # The schedule shown is the schedule forecast. It was the other way round: the page drew an
+        # 11:00 departure while the demand behind it knew nothing of any departure time at all.
+        "schedule": dict(_schedule_times(home, dest_airport, o, d, bmin,
+                                         dep_out=((dep_mins / 60.0) if dep_mins is not None else 11.0)),
+                         basis=dep_basis, partners=(_partners or None),
+                         optimised=(feed_opt or {}) if feed_opt else None,
+                         indicative=(dep_mins is None)),
         "distance_nm": round(gcd / 1.852), "block_min": bmin, "week": ctx["week"], "year": ctx["year"],
     }
     # THE COMPETITION BUCKET. Every Avia forecast in the client format splits connecting markets into
@@ -919,9 +994,11 @@ def api_route_status(origin: str = "", dest: str = "", airline: str = ""):
         ph = ",".join("?" * len(dest_codes))
         con = duckdb.connect(ctx["oag_db"], read_only=True)
         try:
-            rows = con.execute(f"SELECT carrier, COUNT(*) FROM oag WHERE week=? AND dep_airport=? "
-                               f"AND arr_airport IN ({ph}) GROUP BY carrier ORDER BY 2 DESC",
-                               [ctx["week"], home] + list(dest_codes)).fetchall()
+            # "weekly" here is shown to the user, so it must be distinct flights and not raw rows:
+            # the store repeats each schedule record per region label, which read Taipei-Vancouver
+            # as fourteen weekly against a true seven. One rule, in wave_cache.
+            from wave_cache import carrier_flights
+            rows = carrier_flights(con, ctx["week"], [home], list(dest_codes))
         finally:
             con.close()
         total = sum(int(n or 0) for _, n in rows)
@@ -1037,10 +1114,19 @@ def api_forecast(origin: str, dest: str, airline: str = "", carrier_type: str = 
                  feed_behind_cap: float = 0.10, feed_dom_gain: float = 1.0, feed_dom_floor: float = 1.0,
                  cnx_online: float = 1.0, cnx_alliance: float = 0.615, cnx_interline: float = 0.25,
                  circuity: float = 1.35, factor_indirect: float = 1.044, mct_banking: int = 0,
-                 season: str = "annual", own_bh: float = 0.0, crew_bh: float = 0.0, util_bh: float = 0.0):
+                 season: str = "annual", own_bh: float = 0.0, crew_bh: float = 0.0, util_bh: float = 0.0,
+                 dep_time: str = "", curfew_origin: str = "", curfew_dest: str = "", partners: str = ""):
     """The CALIBRATED any-city-pair forecast (coverage + feed + alliance). ~10s per call. The
     override args (default sentinels = off) are the Expert hooks: adjust any stage of the engine.
-    own_bh/crew_bh/util_bh are the airline-specific fixed-cost overrides ($/block-hour, $/block-hour, BH/yr)."""
+    own_bh/crew_bh/util_bh are the airline-specific fixed-cost overrides ($/block-hour, $/block-hour, BH/yr).
+
+    dep_time is the outbound departure in the ORIGIN's local time, "12:00" or "1200". Left blank with
+    an airline named, the departure is optimised for that airline's connections at both ends.
+
+    curfew_origin and curfew_dest are restricted-hours windows in each airport's own local time,
+    "23:00-06:00", several separated by commas. BOTH DEFAULT TO NONE: no restriction is assumed
+    anywhere, because a curfew is a fact about an airport that has to be known rather than guessed.
+    They screen movements, so a curfew blocks the return arrival as well as the outbound departure."""
     _fixed = {k: v for k, v in (("own_bh", own_bh), ("crew_bh", crew_bh), ("util_bh", util_bh)) if v and v > 0}
     # AUTO GAUGE: a blank / "AUTO" / "Unselected" aircraft sizes the metal to MEASURED demand at this frequency
     # (demand first, then the gauge), so an over-large aircraft can never be handed to the engine to fill. Optimise
@@ -1076,7 +1162,9 @@ def api_forecast(origin: str, dest: str, airline: str = "", carrier_type: str = 
         feed_behind_cap=feed_behind_cap, feed_dom_gain=feed_dom_gain, feed_dom_floor=feed_dom_floor,
         cnx_online=cnx_online, cnx_alliance=cnx_alliance, cnx_interline=cnx_interline,
         circuity=circuity, factor_indirect=factor_indirect, mct_banking=bool(mct_banking),
-        season=season, fixed_overrides=(_fixed or None))
+        season=season, fixed_overrides=(_fixed or None),
+        dep_time_mins=_hhmm_to_mins(dep_time),
+        restricted_hours=(curfew_origin or None), restricted_hours_dest=(curfew_dest or None), partner_carriers=(partners or None))
     if isinstance(fc, dict) and fc.get("ok"):
         if _auto_ac:
             fc["auto_aircraft"] = _auto_ac      # UI shows which gauge the demand sized to
@@ -1203,6 +1291,23 @@ def api_catchment(place: str = "", origin: str = ""):
         return JSONResponse({"ok": False, "error": str(e)})
 
 
+def _hhmm_to_mins(t):
+    """"12:00" or "1200" to minutes past local midnight. Blank returns None, which means optimise."""
+    t = str(t or "").strip()
+    if not t:
+        return None
+    try:
+        if ":" in t:
+            h, m = t.split(":")[:2]
+        elif len(t) == 4:
+            h, m = t[:2], t[2:]
+        else:
+            h, m = t, "0"
+        return (int(h) * 60 + int(m)) % 1440
+    except Exception:
+        return None
+
+
 def _route_distance_km(origin, dest):
     """Cheap great-circle distance for the pair (resolve airports, no forecast)."""
     try:
@@ -1232,8 +1337,10 @@ def _candidate_airlines(origin, dest, dist_km, limit=3):
             ph = ",".join("?" * len(codes))
             con = duckdb.connect(ctx["oag_db"], read_only=True)
             try:
-                rows = con.execute(f"SELECT carrier, COUNT(*) FROM oag WHERE week=? AND dep_airport IN ({ph}) "
-                                   f"GROUP BY carrier ORDER BY 2 DESC LIMIT ?", [ctx["week"]] + codes + [n]).fetchall()
+                # Which airlines the optimiser shortlists. On raw rows Tigerair Taiwan reads 5.5%
+                # of Taipei movements against a true 11.2%, so the ranking itself was distorted.
+                from wave_cache import carrier_flights
+                rows = carrier_flights(con, ctx["week"], codes)[:n]
             finally:
                 con.close()
             return [r[0] for r in rows if r[0]]
@@ -1404,7 +1511,8 @@ def api_hubbank(origin: str = "", dest: str = "", airline: str = ""):
 @app.get("/api/optimise")
 def api_optimise(origin: str, dest: str, airline: str = "", carrier_type: str = "FSC",
                  econ_share: float = 0.0, plan_lf: float = 0.875, bus_fare: float = 1400.0,
-                 season: str = "annual", aircraft: str = "", freq: int = 0):
+                 season: str = "annual", aircraft: str = "", freq: int = 0,
+                 dep_time: str = "", curfew_origin: str = "", curfew_dest: str = "", partners: str = ""):
     # CONSTRAINED OPTIMISE: any field the client fills is honoured, any left blank is optimised. A fixed aircraft
     # restricts the gauge; a fixed freq restricts the frequency; a fixed airline restricts the operator (handled below).
     """Blank inputs choose the best PATH. The operating airline changes the demand (its connecting
@@ -1413,6 +1521,9 @@ def api_optimise(origin: str, dest: str, airline: str = "", carrier_type: str = 
     always within the chosen airline's real fleet (so no Ryanair on a widebody). A seasonal service
     (season=summer/winter) sizes the gauge on the season's demand over its operating weeks."""
     al = (airline or "").strip().upper()
+    # A departure time the client fixed is honoured through the whole sweep; blank means each
+    # candidate airline gets its own best time. The curfews apply either way and default to none.
+    _dep_fixed = _hhmm_to_mins(dep_time)
     dist_km = _route_distance_km(origin, dest)
     if not dist_km:
         return JSONResponse({"ok": False, "error": "could not resolve the city pair"})
@@ -1454,7 +1565,9 @@ def api_optimise(origin: str, dest: str, airline: str = "", carrier_type: str = 
                 sea_weeks = 28.0 if sea_i == "summer" else 24.0 if sea_i == "winter" else 52.0
                 fc = calibrated_forecast(origin, dest, airline=(cand or None), carrier_type=ct_i,
                                          aircraft="A21N", freq=7, with_econ=False, season=sea_i,
-                                         induced_floor=False)   # measured demand for this operator + model + schedule
+                                         induced_floor=False, dep_time_mins=_dep_fixed,
+                                         restricted_hours=(curfew_origin or None),
+                                         restricted_hours_dest=(curfew_dest or None), partner_carriers=(partners or None))   # measured demand for this operator + model + schedule
                 if not fc.get("ok"):
                     continue
                 # econ_share of 0 from the caller means "measure it". The gauge is chosen on how the
@@ -1480,7 +1593,9 @@ def api_optimise(origin: str, dest: str, airline: str = "", carrier_type: str = 
                     if _freq_sensitive:
                         _fcf = calibrated_forecast(origin, dest, airline=(cand or None), carrier_type=ct_i,
                                                    aircraft="A21N", freq=f, with_econ=False, season=sea_i,
-                                                   induced_floor=False)
+                                                   induced_floor=False, dep_time_mins=_dep_fixed,
+                                                   restricted_hours=(curfew_origin or None),
+                                                   restricted_hours_dest=(curfew_dest or None), partner_carriers=(partners or None))
                         if not _fcf.get("ok"):
                             continue
                         demand = _fcf["demand"].get("total_demand") or _fcf["demand"]["total"]
@@ -1532,7 +1647,9 @@ def api_optimise(origin: str, dest: str, airline: str = "", carrier_type: str = 
                                 aircraft=best["aircraft"], freq=best["freq"],
                                 econ_share=(econ_share if (econ_share and econ_share > 0) else None),
                                 plan_lf=plan_lf, bus_fare=bus_fare, with_econ=True, season=best.get("season", "annual"),
-                                seats=best.get("seats"))
+                                seats=best.get("seats"), dep_time_mins=_dep_fixed,
+                                restricted_hours=(curfew_origin or None),
+                                restricted_hours_dest=(curfew_dest or None), partner_carriers=(partners or None))
     _attach_airfield(final, best["aircraft"], plan_lf)
     _attach_range_margin(final, best["aircraft"])
     _attach_viability(final)

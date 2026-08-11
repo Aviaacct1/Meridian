@@ -13,7 +13,7 @@ The established Avia QSI score, validated against the analyst SJC QSI@SJC workbo
     0.90->0.158, 1.00->0.147, 6.10->0.037. The nonstop advantage comes through ET
     (nonstop = minimum elapsed -> ET 1.0).
   connection-type-coeff: ONLINE 1.00 / ALLIANCE 0.75 / INTERLINING 0.25
-  service-level-coeff:   nonstop 1.00 / one-stop 0.20 / two-stop 0.40
+  service-level-coeff:   nonstop 1.00 / one-stop 0.20 / two-stop 0.04
 
 Fair share = route_qsi / market_qsi. The full method computes QSI1 (outbound) and
 QSI2 (the reverse) and reports the AVERAGE of the two fair shares; callers holding
@@ -31,9 +31,15 @@ ET_INTERVAL = 0.1
 CNX_COEFF = {'ONLINE': 1.00, 'ALLIANCE': 0.75, 'INTERLINING': 0.25, 'INTERLINE': 0.25}
 
 # Service-level coefficient by number of connection stops (nonstop 0 / one-stop 1 / two-stop 2).
+# The two-stop figure was 0.40 and is wrong by a factor of ten. The analyst's DOT source gives the
+# three service levels as 10 / 2 / 0.4, which rebases on the nonstop to 1.00 / 0.20 / 0.04. Corrected
+# 11 August 2026. It changes no number today because nothing in the engine builds a two-stop
+# itinerary: qsi_feed calls itinerary_qsi with n_stops=1 throughout and route_qsi does the same. It
+# would have bitten the moment one was built, and a two-stop scored at twice a one-stop is the kind of
+# defect that shows up as a forecast nobody can explain.
 NONSTOP_COEFF = 1.00
 ONESTOP_COEFF = 0.20
-TWOSTOP_COEFF = 0.40
+TWOSTOP_COEFF = 0.04
 SERVICE_COEFF = {0: NONSTOP_COEFF, 1: ONESTOP_COEFF, 2: TWOSTOP_COEFF}
 
 

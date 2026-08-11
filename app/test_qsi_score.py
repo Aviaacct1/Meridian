@@ -39,7 +39,9 @@ ANALYST_ET_LOOKUP = {0.10: 0.574, 0.20: 0.415, 0.50: 0.238,
 
 # Coefficients the engine and the runners must agree on (2024 SJC workbook).
 EXPECTED_CNX = {'ONLINE': 1.00, 'ALLIANCE': 0.75, 'INTERLINE': 0.25, 'INTERLINING': 0.25}
-EXPECTED_SERVICE = {0: 1.00, 1: 0.20, 2: 0.40}
+# Two-stop corrected from 0.40 to 0.04 on 11 August 2026: the analyst's DOT source gives the three
+# service levels as 10 / 2 / 0.4, which rebases on the nonstop to 1.00 / 0.20 / 0.04.
+EXPECTED_SERVICE = {0: 1.00, 1: 0.20, 2: 0.04}
 
 
 def test_et_lookup_exact():
@@ -70,7 +72,7 @@ def test_connection_coefficients():
 def test_service_coefficients():
     for stops, val in EXPECTED_SERVICE.items():
         assert Q.service_coeff(stops) == val, f"service_coeff({stops}) = {Q.service_coeff(stops)}, expected {val}"
-    assert Q.service_coeff(3) == 0.40             # >=2 stops clamps to the two-stop weight
+    assert Q.service_coeff(3) == 0.04             # >=2 stops clamps to the two-stop weight
 
 
 def test_itinerary_qsi_product():
@@ -88,7 +90,7 @@ def test_alliance_open_decision_is_flagged():
     this fails, the frozen method was changed - re-check against the analyst workbook."""
     assert Q.CNX_COEFF['ALLIANCE'] == 0.75
     assert Q.ET_FACTOR == 0.8 and Q.ET_INTERVAL == 0.1
-    assert Q.NONSTOP_COEFF == 1.00 and Q.ONESTOP_COEFF == 0.20 and Q.TWOSTOP_COEFF == 0.40
+    assert Q.NONSTOP_COEFF == 1.00 and Q.ONESTOP_COEFF == 0.20 and Q.TWOSTOP_COEFF == 0.04
 
 
 def _run_all():

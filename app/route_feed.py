@@ -170,8 +170,10 @@ def hub_dominance(oag_db, week, airport, airline):
         return 0.0
     con = _con(oag_db)
     try:
-        rows = con.execute("SELECT carrier, COUNT(*) FROM oag WHERE week=? AND dep_airport=? "
-                           "GROUP BY carrier", [week, airport]).fetchall()
+        # Distinct flights, not raw rows: the store repeats each record per region label and the
+        # factor varies by carrier, so a raw count mis-states dominance. One rule, in wave_cache.
+        from wave_cache import carrier_flights
+        rows = carrier_flights(con, week, [airport])
     finally:
         con.close()
     tot = sum(int(n or 0) for _, n in rows)
@@ -431,6 +433,236 @@ def behind_feed(sabre_db, oag_db, week, origin_airports, dest_airports, year, ca
                        "captured": cv, "pdew": round(cv / WORK_DAYS / 2.0, 1)}
         return total, pdew, dmap
     return total, pdew
+
+
+def parse_windows(spec):
+    """Restricted-hours windows as minutes past local midnight: [(start, end), ...].
+
+    Accepts "23:00-06:00", "2300-0600", a comma-separated list of either, or a list of pairs already
+    in minutes. A window that crosses midnight is kept as given and handled by in_window.
+    """
+    if not spec:
+        return []
+    if isinstance(spec, (list, tuple)) and spec and isinstance(spec[0], (list, tuple)):
+        return [(int(a) % 1440, int(b) % 1440) for a, b in spec]
+
+    def _m(t):
+        t = str(t).strip()
+        if ":" in t:
+            h, m = t.split(":")[:2]
+        elif len(t) == 4:
+            h, m = t[:2], t[2:]
+        else:
+            h, m = t, "0"
+        return (int(h) * 60 + int(m)) % 1440
+
+    out = []
+    for part in str(spec).replace(";", ",").split(","):
+        part = part.strip()
+        if not part:
+            continue
+        a, b = part.split("-")[:2]
+        out.append((_m(a), _m(b)))
+    return out
+
+
+def in_window(mins, windows):
+    """Is this local clock time inside any restricted window? Midnight-crossing handled."""
+    m = int(mins) % 1440
+    for a, b in windows or []:
+        if a == b:
+            continue
+        if (a < b and a <= m < b) or (a > b and (m >= a or m < b)):
+            return True
+    return False
+
+
+def optimise_departure(sabre_db, oag_db, week, origin_airports, origin, hub, dest_airports, year,
+                       airline, flying_mins, freq=7, feed_cfg=None, step=60, refine=15,
+                       restricted=None, restricted_dest=None, turn_mins=120, check_return=True):
+    """Choose the outbound departure time that maximises the connecting traffic the route wins.
+
+    WHY THIS EXISTS. The departure time drives BOTH feed sides and it drives them against each other:
+    the time the aircraft leaves the origin sets which behind-origin feeders can make it, and that
+    same time plus the block sets the arrival at the hub, which sets which beyond-hub bank it
+    connects into. It is also carrier-specific, because an airline connects online onto its own
+    onward legs and only interlines onto everyone else's, so the best time for China Airlines at
+    Taipei is not the best time for a Star carrier. Until now no departure time existed in the demand
+    path at all: cortex_app._schedule_times placed the outbound at 11:00 by default, ran AFTER the
+    forecast, and only decorated the payload. Measured across the day on SJC-TPE the beyond capture
+    runs 0.98% to 5.43% and the behind capture 0.31% to 2.17%, so the placeholder was choosing the
+    answer.
+
+    The objective is connecting passengers, demand-weighted across both sides. Point to point does
+    not move with departure time in this engine, so maximising connecting and maximising total demand
+    are the same search.
+
+    Both markets are built ONCE and held across the sweep, because the Sabre queries behind them are
+    the expensive part and they do not depend on the time of day.
+
+    RESTRICTED HOURS. Many airports cannot take a movement at night, and the best connecting time is
+    very often exactly the time they cannot take. San Jose is the case in point: the whole Taipei
+    market departs the west coast between midnight and two in the morning, which is inside a night
+    restriction. A route is usually constrained at BOTH ends, and the 2025 analyst's schedule note
+    says so in as many words: it "seeks to mitigate night curfew restrictions at SJC and capacity
+    constraints at TPE".
+
+    `restricted` is one or more windows in the ORIGIN's local time, "23:00-06:00" or a list of them.
+    `restricted_dest` is the same in the DESTINATION's local time. BOTH DEFAULT TO NOTHING, because a
+    curfew is a fact about an airport that somebody has to know. The tool must not invent one: an
+    assumed restriction would move a forecast with no source behind it, which is worse than no
+    restriction at all. They are entered when they are known.
+
+    Both screen MOVEMENTS rather than departures, since a curfew stops the aircraft coming back as
+    surely as it stops it leaving. At the origin that means the outbound departure and the return
+    arrival, which falls out as dep + 2 x block + turnaround because the timezone shift cancels
+    between the two legs. At the destination it means the arrival and the return departure, both
+    taken off the hub arrival, which carries the shift. check_return turns the second movement off at
+    both ends.
+
+    The unrestricted optimum is always computed and returned beside the permitted one, so the cost of
+    the restriction can be quoted rather than hidden. That figure is the argument an airport takes to
+    a curfew review, and it is worth more than the forecast it comes from.
+
+    Coarse grid at `step` minutes, then a refinement at `refine` minutes either side of the winner.
+    Returns (best_dep_mins, {"beyond", "behind", "score", "tried", "restricted",
+    "unrestricted_dep", "unrestricted_score", "cost_pax", "return_arrival"}).
+    """
+    step, refine = max(int(step), 5), max(int(refine or 0), 0)
+    cfg = dict(feed_cfg or {})
+    cfg.setdefault("route_origin", origin)
+    cfg.setdefault("route_flying_mins", flying_mins)
+    cfg.setdefault("route_freq", freq)
+    _fac = cfg.get("factor_indirect", 1.044)
+    _circ = cfg.get("circuity", 1.35)
+
+    # BEYOND market: the catchment's already-connecting demand to everything the hub serves.
+    scope = [x for x in hub_served(oag_db, week, hub) if x not in origin_airports]
+    scope = on_the_way(origin_airports, hub, scope, circuity=_circ)
+    b_mkt = connecting_market(sabre_db, origin_airports, scope, year, _fac)
+
+    # BEHIND market: the feeders' already-connecting demand to the route destination. The specific
+    # route origin, not the catchment, because feeders physically connect at the airport being flown.
+    feeders = [y for y in feeders_to(oag_db, week, [origin])
+               if y not in (origin,) and y not in dest_airports]
+    ocen, dcen = _centroid([origin]), _centroid(dest_airports)
+    od = _gc(ocen, dcen) or 0
+    if ocen and dcen:
+        kept = []
+        for y in feeders:
+            yc = _coords(y)
+            if not yc:
+                continue
+            yd = _gc(yc, dcen)
+            if yd and yd > 100 and ((_gc(yc, ocen) or 0) + od) <= _circ * yd:
+                kept.append(y)
+        feeders = kept
+    h_mkt = behind_market(sabre_db, feeders, dest_airports, year, _fac)
+
+    if not b_mkt and not h_mkt:
+        return None, {"beyond": 0.0, "behind": 0.0, "score": 0.0, "tried": 0}
+
+    import qsi_feed as QF
+    from wave_cache import CacheBoards, OagBoards
+    wc = cfg.get("wave_cache")
+    boards = cfg.get("_boards") or (CacheBoards(wc) if (wc and os.path.exists(wc)) else OagBoards(oag_db))
+    cfg["_boards"] = boards                      # the board grouping memoises here, so hold it
+    mctm = cfg.get("_mct_master")
+    if mctm is None:
+        import mct_bank as MB
+        mctm = MB.load_mct()
+        cfg["_mct_master"] = mctm
+
+    b_keys, h_keys = list(b_mkt.keys()), list(h_mkt.keys())
+
+    def score(dep):
+        """Connecting passengers won at this departure time, both sides, before any capture scaling."""
+        bs = QF.beyond_capture(boards, week, origin_airports, hub, b_keys, airline,
+                               dep, flying_mins, freq, mct=mctm, cfg=cfg) if b_keys else {}
+        hs = QF.behind_capture(boards, week, [origin], dest_airports, h_keys, airline,
+                               dep, mct=mctm, cfg=cfg) if h_keys else {}
+        b_pax = sum(b_mkt[m] * bs.get(m, 0.0) for m in b_mkt)
+        h_pax = sum(h_mkt[y] * hs.get(y, 0.0) for y in h_mkt)
+        return b_pax + h_pax, b_pax, h_pax
+
+    windows = parse_windows(restricted)
+    windows_d = parse_windows(restricted_dest)
+
+    def permitted(dep):
+        """Movements both airports can take: outbound departure and return arrival at the origin,
+        arrival and return departure at the destination."""
+        if in_window(dep, windows):
+            return False
+        if check_return and windows:
+            # timezone cancels across the two legs, so the return lands dep + 2 x block + turn later
+            if in_window(dep + 2 * int(flying_mins) + int(turn_mins), windows):
+                return False
+        if windows_d:
+            import qsi_feed as _QF
+            arr_hub = _QF._hub_arrival_mins(origin, hub, dep, flying_mins, cfg)
+            if in_window(arr_hub, windows_d):
+                return False
+            if check_return and in_window(arr_hub + int(turn_mins), windows_d):
+                return False
+        return True
+
+    tried = {}
+    for dep in range(0, 1440, step):
+        tried[dep] = score(dep)
+    # An optimum against a constraint lies ON the constraint: an airline schedules right up against a
+    # curfew, not near it. Test the boundaries explicitly rather than hope the grid lands on them.
+    # Both the moment the restriction lifts and the last minute before it bites, on the outbound and
+    # on the return, since either movement can be the binding one.
+    _bound = []
+    for a, b in windows:                          # origin: the departure and the return arrival
+        _bound += [b, a - 1,
+                   b - 2 * int(flying_mins) - int(turn_mins),
+                   a - 1 - 2 * int(flying_mins) - int(turn_mins)]
+    if windows_d:                                 # destination: the arrival and the return departure
+        _shift = 0
+        try:
+            import qsi_feed as _QF
+            _shift = (_QF._utc_offset_h(hub) - _QF._utc_offset_h(origin)) * 60
+        except Exception:
+            pass
+        for a, b in windows_d:
+            _bound += [b - int(flying_mins) - _shift, a - 1 - int(flying_mins) - _shift,
+                       b - int(flying_mins) - _shift - int(turn_mins),
+                       a - 1 - int(flying_mins) - _shift - int(turn_mins)]
+    for cand in _bound:
+        c = int(cand) % 1440
+        if c not in tried:
+            tried[c] = score(c)
+
+    def pick(only_permitted):
+        pool = [d for d in tried if (permitted(d) if only_permitted else True)]
+        return max(pool, key=lambda d: tried[d][0]) if pool else None
+
+    best, free_best = pick(True), pick(False)
+    if refine and refine < step:                 # walk the neighbourhood of each winner
+        for anchor in {b for b in (best, free_best) if b is not None}:
+            for dep in range(anchor - step + refine, anchor + step, refine):
+                d = dep % 1440
+                if d not in tried:
+                    tried[d] = score(d)
+        best, free_best = pick(True), pick(False)
+    _fmt = lambda ws: [f"{a // 60:02d}:{a % 60:02d}-{b // 60:02d}:{b % 60:02d}" for a, b in ws]
+    if best is None:                             # every hour of the day is restricted
+        return None, {"beyond": 0.0, "behind": 0.0, "score": 0.0, "tried": len(tried),
+                      "restricted": _fmt(windows), "restricted_dest": _fmt(windows_d),
+                      "error": "the restrictions leave no permitted departure time in the day"}
+
+    tot, b_pax, h_pax = tried[best]
+    b_base, h_base = sum(b_mkt.values()) or 1.0, sum(h_mkt.values()) or 1.0
+    ret = (best + 2 * int(flying_mins) + int(turn_mins)) % 1440
+    info = {"beyond": b_pax / b_base, "behind": h_pax / h_base, "score": tot, "tried": len(tried),
+            "restricted": _fmt(windows), "restricted_dest": _fmt(windows_d),
+            "return_arrival": f"{ret // 60:02d}:{ret % 60:02d}"}
+    if (windows or windows_d) and free_best is not None:
+        info["unrestricted_dep"] = f"{free_best // 60:02d}:{free_best % 60:02d}"
+        info["unrestricted_score"] = tried[free_best][0]
+        info["cost_pax"] = tried[free_best][0] - tot        # each way, what the restriction costs
+    return best, info
 
 
 def route_feed(sabre_db, oag_db, week, origin_airports, hub, year, capture=DEFAULT_CONN_CAPTURE,

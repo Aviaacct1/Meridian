@@ -50,6 +50,11 @@ MAX_CONNECT = 720        # analyst Connection Builder window; scoring makes long
                          # worthless anyway, so this cap is about compute, not methodology
 DEFAULT_CIRCUITY = 1.35  # same screen as route_feed.on_the_way
 
+# Collapse a one-stop itinerary by both operating carriers rather than by the onward carrier alone.
+# See the note in _collapse. Default OFF pending the back-test; settable so an arm can be measured
+# without editing the module.
+COLLAPSE_BY_BOTH_LEGS = os.environ.get("AVIA_QSI_COLLAPSE_BOTH", "0") == "1"
+
 # Alliance code normalisation: OAG alliance strings -> the short codes route_feed uses.
 _ALLIANCE_NORM = {
     "ONEWORLD": "OW", "OW": "OW",
@@ -59,11 +64,16 @@ _ALLIANCE_NORM = {
 
 
 def _alli(carrier, alliance_str=""):
-    """Alliance code for a leg: the OAG alliance column when present, else the carrier map."""
+    """Alliance code for a leg: the OAG alliance column when present, else the carrier map.
+
+    "0" is OAG's not-in-an-alliance marker and must fall through to the carrier map rather than be
+    treated as a code. Left as a code it compares equal to itself, so two unaligned carriers would
+    have scored as alliance partners.
+    """
     s = str(alliance_str or "").strip().upper()
     if s in _ALLIANCE_NORM:
         return _ALLIANCE_NORM[s]
-    if s and s not in ("NONE", "-", "N/A", "NULL"):
+    if s and s not in ("NONE", "-", "N/A", "NULL", "0", "0.0", "NAN"):
         return s                                   # unrecognised but named: still comparable
     try:
         from route_feed import ALLIANCE
@@ -73,10 +83,26 @@ def _alli(carrier, alliance_str=""):
 
 
 def _cnx_type(c1, a1, c2, a2):
-    """ONLINE / ALLIANCE / INTERLINING, as classify_connection in the analyst Connection Builder."""
+    """ONLINE / ALLIANCE / INTERLINING, as classify_connection in the analyst Connection Builder.
+
+    BOTH sides are normalised here, and that is the fix rather than a tidy-up. The OAG board carries
+    alliance as "Star Alliance", "SkyTeam", "oneworld" or "0", while the proposed route's own leg is
+    built with the short code the carrier map returns, "*A", "ST", "OW". Comparing the two raw meant
+    the new route was never in an alliance with anybody: "SkyTeam" is not "ST".
+
+    It cost almost nothing on the beyond side, where the new route connects at its own hub onto its
+    own onward flights and is ONLINE anyway. On the behind side it cost a factor of four on every
+    market: a United or Alaska arrival into San Jose feeding a China Airlines departure is a SkyTeam
+    interline as far as the code was concerned, scored at 0.25, while a competing Korean Air routing
+    over Seoul flies both legs itself, matches on carrier, and scores 1.00. Competing pairs of real
+    board legs compared raw string to raw string and were classified correctly throughout, so the
+    penalty fell on the proposed route alone. The tell was China Airlines and EVA returning an
+    identical behind capture of 2.0824%, which two carriers in different alliances cannot.
+    """
     if c1 and c1 == c2:
         return "ONLINE"
-    if a1 and a2 and a1 == a2:
+    n1, n2 = _alli(c1, a1), _alli(c2, a2)
+    if n1 and n2 and n1 == n2:
         return "ALLIANCE"
     return "INTERLINING"
 
@@ -85,6 +111,42 @@ def _gap(arr_mins, dep_mins):
     """Connection time in minutes, overnight-aware (dep before arr rolls to the next day)."""
     g = dep_mins - arr_mins
     return g + 1440 if g < 0 else g
+
+
+def _utc_offset_h(code):
+    """Approximate UTC offset in whole hours from longitude.
+
+    This is the SAME approximation cortex_app._schedule_times uses to build the schedule the client
+    sees on the page, and it is here rather than imported so qsi_feed keeps no engine dependency at
+    module level. Holding the two together matters: the connection bank has to be scored against the
+    arrival time the product shows, not against a second and slightly different estimate of it. A
+    caller that knows the real arrival passes hub_arr_mins and this is not used.
+    """
+    try:
+        from route_feed import _coords
+        c = _coords(code)
+        return round((c[1] or 0.0) / 15.0) if c else 0
+    except Exception:
+        return 0
+
+
+def _hub_arrival_mins(origin, hub, dep_time_mins, flying_mins, cfg):
+    """Local clock time of the proposed arrival AT THE HUB, in minutes past midnight.
+
+    THE DEFECT THIS FIXES, found 11 August 2026. This was `(dep_time_mins + flying_mins) % 1440`,
+    which adds the block time to the ORIGIN's local departure and reads the answer as if it were the
+    hub's local clock. On SJC-TPE that put the aircraft on the ground at Taipei at 00:45 instead of
+    16:45, a sixteen-hour error, while every competing leg came off the OAG board correctly in local
+    time. Eleven beyond markets carrying 6% of the base then scored zero for being "over MAX_CONNECT"
+    when the real connections are two to three hours, and the surviving markets were scored against
+    the wrong bank. It is also the explanation for the QSI feed anti-correlating with the 2025
+    analyst at Pearson -0.46: not a disagreement about method, a time zone.
+    """
+    explicit = (cfg or {}).get("hub_arr_mins")
+    if explicit is not None:
+        return int(explicit) % 1440
+    shift = (_utc_offset_h(hub) - _utc_offset_h(origin)) * 60
+    return (int(dep_time_mins) + int(flying_mins) + shift) % 1440
 
 
 _COORD_FAIL = False
@@ -110,7 +172,37 @@ def _circuity_ok(a, via, b, factor):
         return True
 
 
-def _collapse(leg1s, leg2s, cnx_apt, cnx_country, mct, max_connect, freq_cap):
+def partner_map(airline, partners):
+    """{carrier: the route airline's alliance code} for carriers named as its partners.
+
+    WHY THIS EXISTS. A connection is priced online, alliance or interline, and a carrier outside the
+    three global alliances can only ever be an interline at 0.25. That is right in general and wrong
+    wherever a specific commercial agreement exists, which is exactly the case a route pitch is built
+    on. The 2025 analyst's own scope says so: behind San Jose he counts "SkyTeam carriers AND
+    Southwest Airlines", naming Southwest separately from "basic interline onto other full service
+    carriers", and the deck's argument is the Southwest partnership.
+
+    It matters here more than anywhere: Southwest is 77.3% of the distinct arrivals at San Jose, so
+    the whole behind-origin feed turns on how its connections are priced. Modelled as an interline
+    the behind feed is 5,967 two-way; as a partner it is 11,613, against the analyst's 13,992.
+
+    DEFAULT EMPTY. A partnership is a commercial fact about a deal, not a property of a schedule, and
+    the tool must not assume one. It is named by the person running the forecast and it belongs on
+    the page beside the number, because a forecast that assumes a partnership and does not say so is
+    a different product from one that does not.
+    """
+    if not airline or not partners:
+        return {}
+    code = _alli(airline) or f"PARTNERS-{str(airline).upper()}"
+    out = {}
+    for c in partners:
+        c = str(c or "").strip().upper()
+        if c and c != str(airline).upper():
+            out[c] = code
+    return out
+
+
+def _collapse(leg1s, leg2s, cnx_apt, cnx_country, mct, max_connect, freq_cap, partners=None):
     """Collapsed one-stop itineraries over cnx_apt: for each (onward carrier, connection type)
     keep the best legal pairing (minimum elapsed) with the connectable weekly frequency, capped.
     This is the containment that keeps enumeration to tens of itineraries per market: the full
@@ -139,9 +231,21 @@ def _collapse(leg1s, leg2s, cnx_apt, cnx_country, mct, max_connect, freq_cap):
             if g < need or g > max_connect:
                 continue
             elapsed = f1 + g + f2
-            ct = _cnx_type(l1.get("carrier"), l1.get("alliance"),
-                           l2.get("carrier"), l2.get("alliance"))
-            key = (l2.get("carrier"), ct)
+            # A named partner is priced as an alliance connection on that leg, and only there.
+            _p = partners or {}
+            ct = _cnx_type(l1.get("carrier"), _p.get(str(l1.get("carrier") or "").upper()) or l1.get("alliance"),
+                           l2.get("carrier"), _p.get(str(l2.get("carrier") or "").upper()) or l2.get("alliance"))
+            # COLLAPSE KEY. Keying on the second leg's carrier alone merges every inbound carrier
+            # into one entry, keeps the best elapsed of the set and sums their frequency to a single
+            # cap. That is not symmetric between the two feed sides: on the beyond side leg 2 is the
+            # hub's onward bank and varies across carriers, so the new route gets several entries; on
+            # the behind side leg 2 IS the new route, so every feeder arrival collapses into exactly
+            # one entry against thirty to ninety competing ones. Keying on both legs treats a
+            # distinct pair of operating carriers as the distinct product it is. Under test, not yet
+            # the default: it moves the competitor sets on both sides, so it is a change to the
+            # scoring and belongs to the back-test rather than to a judgement call.
+            key = ((l1.get("carrier"), l2.get("carrier"), ct) if COLLAPSE_BY_BOTH_LEGS
+                   else (l2.get("carrier"), ct))
             f = min(l1.get("freq") or 1, l2.get("freq") or 1)
             cur = out.get(key)
             if cur is None:
@@ -249,6 +353,7 @@ def beyond_capture(boards, week, origin_airports, hub, markets, airline,
     lam = cfg.get("logit_lambda", 1.0)
     if mct is None:
         mct = MB.load_mct()
+    partners = partner_map(airline, cfg.get("partner_carriers"))
 
     hub_rows = boards.dep_rows(week, hub)
     hub_country = _board_country(hub_rows, "dep")
@@ -257,8 +362,11 @@ def beyond_capture(boards, week, origin_airports, hub, markets, airline,
         if r.get("arr"):
             onward.setdefault(r["arr"], []).append(r)
 
-    arr_mins = (int(dep_time_mins) + int(flying_mins)) % 1440
-    o0 = origin_airports[0] if origin_airports else None
+    # The route origin, for the timezone reference and the circuity screen. origin_airports is the
+    # whole catchment and its first entry is whichever airport the catchment builder happened to
+    # return first, which on SJC-TPE is Sonoma County rather than San Jose, so the caller names it.
+    o0 = (cfg.get("route_origin") or (origin_airports[0] if origin_airports else None))
+    arr_mins = _hub_arrival_mins(o0, hub, dep_time_mins, flying_mins, cfg)
     leg1_new = {"arr_mins": arr_mins, "flying": int(flying_mins),
                 "carrier": (airline or "").upper(), "alliance": _alli(airline),
                 "freq": min(float(freq or 7), fcap), "dep_country": None}
@@ -273,7 +381,23 @@ def beyond_capture(boards, week, origin_airports, hub, markets, airline,
         pass
 
     origin_boards = _dep_boards(boards, week, list(origin_airports))
-    cand = _candidate_hubs(origin_boards, exclude=set(origin_airports), min_hub_freq=minhf)
+    # WHICH AIRPORTS MAY BE A COMPETING CONNECTING POINT, and this was wrong in a way that pushed the
+    # two feed sides apart. `origin_airports` means different things on the two sides: route_forecast
+    # passes the WHOLE 44-airport catchment to the beyond side and the SINGLE route origin to the
+    # behind side. Excluding all of origin_airports therefore barred every Bay Area airport from
+    # being a connecting point on the beyond side, while the behind side barred only San Jose.
+    #
+    # San Francisco is the dominant Bay Area gateway, with nonstops to Taipei, Seoul, Tokyo, Hong
+    # Kong, Shanghai and Singapore. Removing it from the beyond competition deletes the strongest
+    # rival set a San Jose passenger actually has, so the new route's beyond share reads high; keeping
+    # it in the behind competition, correctly, made the behind share read low by comparison. Two
+    # errors in opposite directions from one inconsistent exclusion.
+    #
+    # Only the route's own origin is excluded now, which is the behind side's rule and the right one:
+    # a passenger does not connect at the airport the flight departs from.
+    _ro = cfg.get("route_origin")
+    _excl = ({_ro} if (_ro and not cfg.get("exclude_whole_catchment")) else set(origin_airports))
+    cand = _candidate_hubs(origin_boards, exclude=_excl, min_hub_freq=minhf)
     # one pass per board: group every candidate hub's board by onward destination, hoist the
     # origin->hub legs and the hub's country out of the market loop (this is what makes the
     # 4000-route pre-test minutes, not hours)
@@ -295,7 +419,7 @@ def beyond_capture(boards, week, origin_airports, hub, markets, airline,
         rows_m = onward.get(m)
         new_itins = []
         if rows_m:
-            new_itins = _collapse([leg1_new], rows_m, hub, hub_country, mct, maxc, fcap)
+            new_itins = _collapse([leg1_new], rows_m, hub, hub_country, mct, maxc, fcap, partners)
         comp_itins = []
         for h, (leg1s, by_arr, hc) in hub_info.items():
             if h == m:
@@ -305,7 +429,7 @@ def beyond_capture(boards, week, origin_airports, hub, markets, airline,
                 continue
             if not _circuity_ok(o0, h, m, circ):
                 continue
-            comp_itins.extend(_collapse(leg1s, rows_hm, h, hc, mct, maxc, fcap))
+            comp_itins.extend(_collapse(leg1s, rows_hm, h, hc, mct, maxc, fcap, partners))
         s = _share(new_itins, comp_itins, lam)
         shares[m] = s
         if detail:
@@ -329,6 +453,7 @@ def behind_capture(boards, week, origin_airports, dest_airports, feeders, airlin
     lam = cfg.get("logit_lambda", 1.0)
     if mct is None:
         mct = MB.load_mct()
+    partners = partner_map(airline, cfg.get("partner_carriers"))
 
     o0 = origin_airports[0] if origin_airports else None
     d0 = dest_airports[0] if dest_airports else None
@@ -357,7 +482,7 @@ def behind_capture(boards, week, origin_airports, dest_airports, feeders, airlin
         rows_y = inbound.get(y)
         new_itins = []
         if rows_y:
-            new_itins = _collapse(rows_y, [leg2_new], o0, org_country, mct, maxc, fcap)
+            new_itins = _collapse(rows_y, [leg2_new], o0, org_country, mct, maxc, fcap, partners)
         comp_itins = []
         if y not in feeder_boards:
             yb_by_arr, _yc = _grouped_dep_board(boards, week, y)
@@ -375,7 +500,7 @@ def behind_capture(boards, week, origin_airports, dest_airports, feeders, airlin
                 continue
             if not _circuity_ok(y, h, d0, circ):
                 continue
-            comp_itins.extend(_collapse(yb_by_arr.get(h) or [], rows_hd, h, hc, mct, maxc, fcap))
+            comp_itins.extend(_collapse(yb_by_arr.get(h) or [], rows_hd, h, hc, mct, maxc, fcap, partners))
         s = _share(new_itins, comp_itins, lam)
         shares[y] = s
         if detail:

@@ -72,8 +72,34 @@ def _row_to_leg(r):
         "dep_mins": _mins(dt), "arr_mins": _mins(at),
         "flying": _flying_mins(ft, et),
         "freq": float(_dow(days)),
+        "_dop": "".join(c for c in str(days or "") if c in "1234567"),   # kept for the dedupe union
         "dep_country": str(dc or "").strip(), "arr_country": str(ac or "").strip(),
     }
+
+
+def carrier_flights(con, week, dep_airports, arr_airports=None):
+    """{carrier: distinct flights} at an airport or on a route, with the region duplication removed.
+
+    THE RULE LIVES HERE, once. The store holds each schedule record ONCE PER REGION LABEL, so a plain
+    COUNT(*) over oag counts one flight many times and the factor is not constant: on the Taipei
+    departure board Tigerair Taiwan reads 5.5% of movements against a true 11.2%, and EVA reads 24.7%
+    against a true 18.5%. Anything that ranks or shares carriers off a raw count is therefore wrong
+    in a way that varies by carrier, which is worse than being wrong by a constant.
+
+    Callers wanting a WEEKLY FREQUENCY rather than a flight count should read the boards, which union
+    the days-of-operation masks; this counts distinct flights in the schedule.
+    """
+    dep = list(dep_airports) if isinstance(dep_airports, (list, tuple, set)) else [dep_airports]
+    ph = ",".join("?" * len(dep))
+    where, args = f"week=? AND dep_airport IN ({ph})", [week] + dep
+    if arr_airports:
+        arr = list(arr_airports)
+        where += f" AND arr_airport IN ({','.join('?' * len(arr))})"
+        args += arr
+    sql = ("SELECT carrier, COUNT(*) FROM (SELECT DISTINCT carrier, dep_airport, arr_airport, "
+           "local_dep_time, local_arr_time, flying_time FROM oag WHERE " + where +
+           ") GROUP BY carrier ORDER BY 2 DESC")
+    return con.execute(sql, args).fetchall()
 
 
 class _Boards:
@@ -96,13 +122,47 @@ class _Boards:
             rows = self._con.execute(
                 f"SELECT {_BOARD_COLS} FROM {self._TABLE} WHERE week=? AND {col}=?",
                 [week, airport]).fetchall()
-            legs = []
+            # DEDUPE. The store holds the same schedule record ONCE PER REGION LABEL, so a plain
+            # select returns one flight many times: the Taipei departure board is 2,495 rows for 448
+            # distinct flights, a factor of 5.57, and EVA's Taipei-Vancouver service appears
+            # fourteen times. This board fed qsi_feed's itinerary builder, which accumulates
+            # connectable frequency across every pairing and then caps it, so the duplication did not
+            # cancel: it pushed itineraries onto the cap at different rates depending on how heavily
+            # each airport's board was duplicated. Taipei duplicates 5.57x and San Jose 2.81x, which
+            # pushed the beyond side up and the behind side down at the same time.
+            #
+            # Same store characteristic as the FREQ-BUG of 9 August (United reading 420 weekly
+            # frequencies), the T-100 double load of 5 August, and the region duplication bt2_base
+            # already dedupes with max. This is the fourth instance and the first in this module.
+            #
+            # A carrier cannot depart the same airport for the same airport at the same minute twice,
+            # so carrier + route + times + flying time identifies the flight.
+            #
+            # Frequency is the UNION of the days-of-operation masks, not the max and not the sum.
+            # Most duplicates repeat the mask exactly, where all three agree. But 113 of the 443
+            # flight groups on the Taipei board carry more than one distinct mask and some are
+            # COMPLEMENTARY: AE to Xiamen at 08:40 files "123 5 7" and "   4 6 ", which is a daily
+            # service. Max would call it five weekly and the sum would call it seven from two rows
+            # that might equally have been duplicates. Unioning the day letters is the only reading
+            # that is right in both cases.
+            legs = {}
             for r in rows:
                 leg = _row_to_leg(r)
-                if leg["flying"] > 0 and (leg["dep_mins"] is not None
-                                          or leg["arr_mins"] is not None):
-                    legs.append(leg)
-            self._cache[key] = legs
+                if not (leg["flying"] > 0 and (leg["dep_mins"] is not None
+                                               or leg["arr_mins"] is not None)):
+                    continue
+                k = (leg["carrier"], leg["dep"], leg["arr"], leg["dep_mins"],
+                     leg["arr_mins"], leg["flying"])
+                cur = legs.get(k)
+                if cur is None:
+                    leg["_dop"] = set(leg.get("_dop") or "")
+                    legs[k] = leg
+                else:
+                    cur["_dop"] |= set(leg.get("_dop") or "")
+            for leg in legs.values():
+                if leg["_dop"]:
+                    leg["freq"] = float(len(leg["_dop"]))
+            self._cache[key] = list(legs.values())
         return self._cache[key]
 
     def dep_rows(self, week, airport):
