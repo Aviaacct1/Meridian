@@ -177,7 +177,19 @@ def main():
                                aircraft="A359", seats=306, freq=4, dep_time_mins=720,
                                forecast_year=EXPECTED_YEAR)
     d = r["demand"]
-    check("qsi_share", round(d["qsi_share"], 4), 0.2510, tol=0.0001)
+    # qsi_share IS KEYED TO THE airportsdata RELEASE, deliberately, rather than hidden behind a
+    # loose tolerance. The library supplies every coordinate the engine uses, so a corrected airport
+    # position shifts a circuity screen and moves the share: 0.2510 on 20260315 and 0.2513 on
+    # 20260803, same commit, same stores, measured 11 August 2026. requirements.txt pins 20260803.
+    # A tolerance wide enough to swallow both would also swallow a real regression, and this file
+    # already carries three instances of a scoring basis drifting because a band was loosened.
+    try:
+        _adv = str(__import__("airportsdata").__version__)
+    except Exception:
+        _adv = "?"
+    _want_qsi = 0.2513 if _adv >= "20260803" else 0.2510
+    check("qsi_share", round(d["qsi_share"], 4), _want_qsi, tol=0.0001,
+          note=f"expected for airportsdata {_adv}")
     check("measured market, each way", round(d["natural"]), 160915, tol=1)
     check("beyond base, each way", round(d["feed_beyond_base"]), 608084, tol=1)
     check("behind base, each way", round(d["feed_behind_base"]), 156765, tol=1)

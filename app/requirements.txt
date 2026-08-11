@@ -13,7 +13,14 @@
 fastapi
 uvicorn
 duckdb>=1.0
-airportsdata
+# PINNED, and it is not housekeeping. airportsdata supplies every coordinate the engine uses, so a
+# release that corrects one airport's position shifts a great-circle distance, which shifts the
+# circuity screen, which can add or drop a competing hub, which moves the QSI share. Measured on
+# 11 August 2026: the same commit reading the same stores returned qsi_share 0.2510 on 20260315 and
+# 0.2513 on 20260803. That is small and it is a forecast changing because a library was updated,
+# which is not acceptable in a number a client is shown. The version is an INPUT and belongs beside
+# the store vintage. bt2/coord_check.py names which airport moved when two machines disagree.
+airportsdata==20260803
 global-land-mask       # water-boundary catchment check; without it island catchments over-read
 
 # --- deliverable generators (report / workbook / deck endpoints) ---

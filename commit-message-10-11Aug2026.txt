@@ -175,6 +175,42 @@ What is ready:
 
 Commands in commit-and-verify-11Aug2026.ps1, part 3.
 
+8. THE ASIA PART-MONTH LABELS ARE FOLDED, AND airportsdata IS PINNED
+
+OAG exports Asia in half-months while the other six regions come as whole months, so the
+store carried monthly labels with SIX regions and separate p01/p16/p23 labels with Asia only.
+Three modules coded around it - bt2_capture falls back from p16 to p01, bt2_months classifies
+"week LIKE '%p__'", fy_capacity notes two fortnights make a month - and it cost a wrong
+reading on 11 August: the monthly labels alone show Taipei serving 26 destinations across a
+year against 98 in one week, which first read as the store having no Asia at all.
+
+Checked before recommending it: the halves are complementary in TIME, not overlapping. Cathay
+451, Taipei to Hong Kong at 19:30 in May 2025, is 15 rows in p01 and 16 in p16, which is 31,
+the days of May. Each row is a dated instance carrying the weekly mask that applied on that
+date, and the reader dedupes by flight and unions the masks anyway.
+
+bt2/migrate_oag_asia_labels.py folds them, --check first and --apply second, verifying row
+count, that no part label survives, and that every parent month reaches the full region set,
+then stamping _store_meta as the T-100 repair did. RUN AND VERIFIED on E:\Avia, 11 August:
+
+    rows before 332,978,415, after 332,978,415        OK
+    part-month labels remaining 0                     OK
+    parent months short of 7 regions 0                OK
+    53 labels folded, 27,397,091 rows, 26 months now complete worlds
+
+The basis correctly did NOT move: 2026-05-25 is still the newest complete-world label, so the
+engine behaves identically. Verified afterwards, 40 of 40.
+
+airportsdata IS NOW PINNED at 20260803 in requirements.txt. It supplies every coordinate the
+engine uses, so a release that corrects one airport shifts a great-circle distance, shifts the
+circuity screen, and can add or drop a competing hub. Measured: the same commit on the same
+stores returns qsi_share 0.2510 on 20260315 and 0.2513 on 20260803. Small, and a forecast
+moving because a library was updated is not acceptable in a client number, so the version is
+an input and sits beside the store vintage. The acceptance test keys the expected share off
+the installed release and says which, rather than hiding both behind a wide tolerance - this
+file already carries three cases of a scoring basis drifting because a band was loosened.
+bt2/coord_check.py names which airport moved when two machines disagree.
+
 OPEN, unchanged from the previous commit and not addressed here:
   - split_floor and the QSI feed are NOT back-tested. Three arms, per section 10 of
     commit-message-9.
@@ -182,17 +218,40 @@ OPEN, unchanged from the previous commit and not addressed here:
     monthly labels carry six regions, the p-labels carry Asia) but the frequency question
     has to be settled first: days_of_op is a weekly mask and unioning it across twelve
     months would inflate frequency twelvefold. See the OAG basis note in the project folder.
-  - qsi_share reads 0.2510 here and 0.2513 on the Dev PC. Not today's work: only n_stops 0
-    and 1 ever reach itinerary_qsi, measured. airportsdata 20260315 against 20260803 is the
-    remaining difference.
+  - qsi_share 0.2510 against 0.2513 is CLOSED as a cause and OPEN as a question: airportsdata
+    is now pinned so both machines agree, but WHICH airport moved is not yet known. Run
+    bt2/coord_check.py on 20260803 and it will name it, and then it is a judgement whether
+    the new position is a correction worth adopting.
   - installing global-land-mask in the Cowork sandbox moved the measured market 20%; the Dev
     PC has it installed and does not show that. Unexplained and worth its own look, since it
     is Jessica's catchment fix.
 
 Files: app/cortex_app.py, app/cortex_dashboard.html, app/route_forecast.py,
-app/verify_connecting_build.py, bt2/compare_backtest_arms.py,
-commit-and-verify-11Aug2026.ps1, commit-message-10-11Aug2026.txt
+app/requirements.txt, app/verify_connecting_build.py, bt2/compare_backtest_arms.py,
+bt2/coord_check.py, bt2/migrate_oag_asia_labels.py, commit-and-verify-11Aug2026.ps1,
+commit-message-10-11Aug2026.txt
 
-  git add app/cortex_app.py app/cortex_dashboard.html app/route_forecast.py app/verify_connecting_build.py bt2/compare_backtest_arms.py commit-and-verify-11Aug2026.ps1 commit-message-10-11Aug2026.txt
+THE TWO MACHINES, written down because it was reconstructed wrongly twice on 11 August:
+
+  DEV PC        C:\AviaDev         where the code is EDITED. Cowork attaches here, so every
+                                   file a Cowork session writes lands here and nowhere else.
+  WORKSTATION   C:\src\meridian    where everything RUNS, against the data root E:\Avia.
+
+CODE MOVES ONE WAY AND BY ONE MEANS: git push on the Dev PC, git pull on the Workstation.
+Never by copying. Copying is what produced the three out-of-git app trees dated 3 July that
+are still on disk. A file written by Cowork DOES NOT EXIST on the Workstation until it has
+been pushed and pulled, which cost two rounds today when the migration script was written to
+C:\AviaDev and the Workstation was told to run it before it had it.
+
+COMMIT AND PUSH FROM C:\AviaDev. Then pull on C:\src\meridian and run there.
+
+  cd C:\AviaDev
+  git status --short
+  git add app/cortex_app.py app/cortex_dashboard.html app/route_forecast.py app/requirements.txt app/verify_connecting_build.py bt2/compare_backtest_arms.py bt2/coord_check.py bt2/migrate_oag_asia_labels.py commit-and-verify-11Aug2026.ps1 commit-message-10-11Aug2026.txt
   git commit -F commit-message-10-11Aug2026.txt
   git push
+
+If git refuses with "Unable to create index.lock: File exists", a Cowork session left a stale
+lock. Check nothing is running, then remove it:
+  Get-Process git -ErrorAction SilentlyContinue
+  Remove-Item C:\AviaDev\.git\index.lock
