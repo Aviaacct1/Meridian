@@ -430,8 +430,11 @@ CONFLICTS = {
 #      is solid; the E190 on 102 hours at one carrier and is indicative. Hours are carried below so a
 #      reader can see which is which.
 F41_2023 = {
+    # Keyed on the MODULE key wherever one exists, not on a display name: keying "ERJ-145" while the
+    # module calls it ERJ145 meant the fill-in pack showed no burn for a type that had been measured.
     # name: (kg per airborne hour, kg per block hour as adjusted, airborne hours in the sample)
-    "ERJ-145":    (1552, 1214, 184),
+    "ERJ145":     (1552, 1012, 184),
+    "CRJ200":     (1544, 1029, 173),
     "CRJ700":     (1938, 1542, 245),
     "E175":       (1957, 1581, 1329),
     "E170":       (2001, 1616, 80),

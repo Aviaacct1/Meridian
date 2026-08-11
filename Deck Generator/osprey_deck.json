@@ -1,0 +1,390 @@
+{
+ "codename": "OSPREY",
+ "route": "SJC-TPE",
+ "origin": "San Jose",
+ "dest": "Taipei",
+ "date": "10 August 2026",
+ "lead": {
+  "airline": "CI",
+  "name": "China Airlines",
+  "aircraft": "A359",
+  "ac_name": "A350-900",
+  "seats": 306,
+  "freq": 5,
+  "market2w": 321830,
+  "current2w": 556,
+  "total2w": 121918,
+  "p2p2w": 54804,
+  "feed2w": 67114,
+  "beyond2w": 51196,
+  "behind2w": 15918,
+  "capture": 0.2756,
+  "stim": 1.15,
+  "lf": 76.6,
+  "seats2w": 159120,
+  "pdew": 334.0,
+  "low2w": 48768,
+  "high2w": 262124,
+  "cagr": 0.2,
+  "build": [
+   {
+    "year": 2025,
+    "demand": 60959,
+    "carried": 60959,
+    "load": 0.766
+   },
+   {
+    "year": 2026,
+    "demand": 73151,
+    "carried": 69615,
+    "load": 0.875
+   },
+   {
+    "year": 2027,
+    "demand": 87781,
+    "carried": 69615,
+    "load": 0.875
+   },
+   {
+    "year": 2028,
+    "demand": 100363,
+    "carried": 69615,
+    "load": 0.875
+   },
+   {
+    "year": 2029,
+    "demand": 109061,
+    "carried": 69615,
+    "load": 0.875
+   },
+   {
+    "year": 2030,
+    "demand": 112333,
+    "carried": 69615,
+    "load": 0.875
+   }
+  ],
+  "sched": {
+   "outbound": {
+    "sector": "SJC-TPE",
+    "dep": "11:00",
+    "arr": "16:45+1"
+   },
+   "inbound": {
+    "sector": "TPE-SJC",
+    "dep": "18:45",
+    "arr": "16:30"
+   },
+   "block_min": 825,
+   "indicative": true
+  },
+  "nm": 5637,
+  "block": 825,
+  "premium": 0.1806,
+  "year": 2025,
+  "week": "2026-05-25",
+  "beyond_pdew": [
+   {
+    "code": "MNL",
+    "name": "Manila",
+    "country": "PH",
+    "base": 67945,
+    "share": 0.0303,
+    "forecast": 3202,
+    "pdew": 4.4
+   },
+   {
+    "code": "SGN",
+    "name": "Ho Chi Minh City",
+    "country": "VN",
+    "base": 66743,
+    "share": 0.0303,
+    "forecast": 3145,
+    "pdew": 4.4
+   },
+   {
+    "code": "BKK",
+    "name": "Bangkok",
+    "country": "TH",
+    "base": 57636,
+    "share": 0.0303,
+    "forecast": 2716,
+    "pdew": 3.7
+   },
+   {
+    "code": "PVG",
+    "name": "Shanghai",
+    "country": "CN",
+    "base": 40189,
+    "share": 0.0303,
+    "forecast": 1894,
+    "pdew": 2.6
+   },
+   {
+    "code": "HKG",
+    "name": "Hong Kong",
+    "country": "HK",
+    "base": 27451,
+    "share": 0.0303,
+    "forecast": 1294,
+    "pdew": 1.7
+   },
+   {
+    "code": "ICN",
+    "name": "Seoul",
+    "country": "KR",
+    "base": 24892,
+    "share": 0.0303,
+    "forecast": 1173,
+    "pdew": 1.6
+   },
+   {
+    "code": "PEK",
+    "name": "Beijing",
+    "country": "CN",
+    "base": 24262,
+    "share": 0.0303,
+    "forecast": 1143,
+    "pdew": 1.6
+   },
+   {
+    "code": "CAN",
+    "name": "Guangzhou",
+    "country": "CN",
+    "base": 22995,
+    "share": 0.0303,
+    "forecast": 1084,
+    "pdew": 1.6
+   }
+  ],
+  "behind_pdew": [
+   {
+    "code": "LAX",
+    "name": "Los Angeles",
+    "country": "US",
+    "base": 13169,
+    "share": 0.0615,
+    "forecast": 1262,
+    "pdew": 1.7
+   },
+   {
+    "code": "PHX",
+    "name": "Phoenix",
+    "country": "US",
+    "base": 30913,
+    "share": 0.025,
+    "forecast": 1204,
+    "pdew": 1.7
+   },
+   {
+    "code": "ATL",
+    "name": "Atlanta",
+    "country": "US",
+    "base": 7132,
+    "share": 0.0615,
+    "forecast": 683,
+    "pdew": 0.9
+   },
+   {
+    "code": "DFW",
+    "name": "Dallas-Fort Worth",
+    "country": "US",
+    "base": 16162,
+    "share": 0.025,
+    "forecast": 629,
+    "pdew": 0.9
+   },
+   {
+    "code": "SLC",
+    "name": "Salt Lake City",
+    "country": "US",
+    "base": 5331,
+    "share": 0.0615,
+    "forecast": 511,
+    "pdew": 0.6
+   },
+   {
+    "code": "MSP",
+    "name": "Minneapolis",
+    "country": "US",
+    "base": 4361,
+    "share": 0.0615,
+    "forecast": 418,
+    "pdew": 0.6
+   },
+   {
+    "code": "LAS",
+    "name": "Las Vegas",
+    "country": "US",
+    "base": 10371,
+    "share": 0.025,
+    "forecast": 404,
+    "pdew": 0.6
+   },
+   {
+    "code": "AUS",
+    "name": "Austin",
+    "country": "US",
+    "base": 10246,
+    "share": 0.025,
+    "forecast": 399,
+    "pdew": 0.6
+   }
+  ]
+ },
+ "alts": [
+  {
+   "airline": "BR",
+   "name": "EVA Air",
+   "aircraft": "B77W",
+   "ac_name": "777-300ER",
+   "seats": 333,
+   "freq": 4,
+   "total2w": 115456,
+   "p2p2w": 51900,
+   "feed2w": 63558,
+   "lf": 83.3,
+   "seats2w": 138528,
+   "pdew": 316.3
+  },
+  {
+   "airline": "BR",
+   "name": "EVA Air",
+   "aircraft": "B781",
+   "ac_name": "787-10",
+   "seats": 342,
+   "freq": 4,
+   "total2w": 115456,
+   "p2p2w": 51900,
+   "feed2w": 63558,
+   "lf": 81.2,
+   "seats2w": 142272,
+   "pdew": 316.3
+  },
+  {
+   "airline": "JX",
+   "name": "Starlux",
+   "aircraft": "A359",
+   "ac_name": "A350-900",
+   "seats": 306,
+   "freq": 4,
+   "total2w": 103524,
+   "p2p2w": 46536,
+   "feed2w": 56988,
+   "lf": 81.3,
+   "seats2w": 127296,
+   "pdew": 283.6
+  }
+ ],
+ "curve": [
+  {
+   "freq": 3,
+   "demand2w": 107238,
+   "carried2w": 83538,
+   "capture": 0.2243,
+   "lf": 87.5
+  },
+  {
+   "freq": 4,
+   "demand2w": 114876,
+   "carried2w": 111384,
+   "capture": 0.251,
+   "lf": 87.5
+  },
+  {
+   "freq": 5,
+   "demand2w": 121918,
+   "carried2w": 121918,
+   "capture": 0.2756,
+   "lf": 76.6
+  },
+  {
+   "freq": 6,
+   "demand2w": 128472,
+   "carried2w": 128472,
+   "capture": 0.2985,
+   "lf": 67.3
+  },
+  {
+   "freq": 7,
+   "demand2w": 134616,
+   "carried2w": 134616,
+   "capture": 0.32,
+   "lf": 60.4
+  },
+  {
+   "freq": 10,
+   "demand2w": 151108,
+   "carried2w": 151108,
+   "capture": 0.3777,
+   "lf": 47.5
+  },
+  {
+   "freq": 14,
+   "demand2w": 169770,
+   "carried2w": 169770,
+   "capture": 0.4429,
+   "lf": 38.1
+  }
+ ],
+ "frame": {
+  "CI": [
+   {
+    "ac": "A350-900",
+    "seats": 306,
+    "prem": 32,
+    "routes": 24,
+    "sectors": 7498,
+    "km": "8,964-11,409"
+   },
+   {
+    "ac": "777-300ER",
+    "seats": 358,
+    "prem": 40,
+    "routes": 16,
+    "sectors": 6422,
+    "km": "8,964-12,540"
+   }
+  ],
+  "BR": [
+   {
+    "ac": "777-300ER",
+    "seats": 333,
+    "prem": 39,
+    "routes": 22,
+    "sectors": 20736,
+    "km": "9,202-12,752"
+   },
+   {
+    "ac": "787-9",
+    "seats": 278,
+    "prem": 26,
+    "routes": 10,
+    "sectors": 2822,
+    "km": "8,964-12,397"
+   },
+   {
+    "ac": "787-10",
+    "seats": 342,
+    "prem": 34,
+    "routes": 6,
+    "sectors": 2578,
+    "km": "8,446-9,754"
+   }
+  ],
+  "JX": [
+   {
+    "ac": "A350-900",
+    "seats": 306,
+    "prem": 30,
+    "routes": 8,
+    "sectors": 5504,
+    "km": "9,754-10,969"
+   }
+  ]
+ },
+ "gcd_km": 10440,
+ "oag_year": 2025,
+ "sabre_year": 2025,
+ "oag_week": "2026-05-25"
+}

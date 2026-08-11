@@ -128,10 +128,20 @@ def build(path):
     from aircraft_economics import AIRCRAFT
 
     cen = {r["code"]: r for r in census()}
+    # STATUS IS DERIVED, NOT DECLARED. The MAP's HELD and ADD labels were written on 10 August 2026
+    # and were stale within hours of seventeen types being added. What is held is whatever is in
+    # AIRCRAFT right now, so that is what is asked. FAMILY, REVIEW and EXCLUDE stay in the MAP
+    # because they are judgements about the OAG code rather than facts about the module.
+    def status_of(code):
+        key, declared = MAP.get(code, (None, "UNMAPPED"))
+        if declared in ("FAMILY", "REVIEW", "EXCLUDE", "UNMAPPED"):
+            return key, declared
+        return key, ("HELD" if key in AIRCRAFT else "ADD")
+
     # aggregate the OAG evidence up to the economics key
     by_key = {}
     for code, r in cen.items():
-        key, status = MAP.get(code, (None, "UNMAPPED"))
+        key, status = status_of(code)
         if not key:
             continue
         b = by_key.setdefault(key, {"sectors": 0, "codes": [], "carriers": 0,
@@ -238,8 +248,9 @@ def build(path):
 
     # ---------------------------------------------------------------- to add
     adds = {}
-    for code, (key, status) in MAP.items():
-        if status != "ADD" or code not in cen:
+    for code in MAP:
+        key, status = status_of(code)
+        if status != "ADD" or code not in cen or not key:
             continue
         adds.setdefault(key, []).append(code)
     heads = ["key", "type", "OAG codes", "2025 sectors", "carriers", "OAG median seats",
@@ -276,7 +287,7 @@ def build(path):
     ws = sheet("Code map", heads, [10, 42, 12, 10, 12, 9, 14, 16, 18])
     r = 2
     for rec in sorted(cen.values(), key=lambda x: -x["sectors"]):
-        key, status = MAP.get(rec["code"], (None, "UNMAPPED"))
+        key, status = status_of(rec["code"])
         if status == "EXCLUDE":
             continue
         ws.cell(row=r, column=1, value=rec["code"]).font = Font(name=ARIAL, bold=True, size=10)
@@ -301,7 +312,7 @@ def build(path):
                [10, 42, 12, 9, 13, 70])
     r = 2
     for rec in sorted(cen.values(), key=lambda x: -x["sectors"]):
-        key, status = MAP.get(rec["code"], (None, "UNMAPPED"))
+        key, status = status_of(rec["code"])
         if status not in ("EXCLUDE", "REVIEW"):
             continue
         for j, v in ((1, rec["code"]), (2, rec["name"]), (3, rec["sectors"]),

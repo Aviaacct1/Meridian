@@ -803,6 +803,14 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
                       "coords": {c: [ap[c]["lat"], ap[c]["lon"]] for c in competing
                                  if c in ap and ap[c].get("lat") is not None},
                       "origin_ll": [o.get("lat"), o.get("lon")], "dest_ll": [d.get("lat"), d.get("lon")]},
+        # THE MARKET BUILD, exposed 11 August 2026. "natural" is the SERVICE AREA market to the
+        # destination, every airport its residents use today, not the origin's own market. On SJC-TPE
+        # 99.3% of it boards at San Francisco. The origin capture step is what converts one into the
+        # other, and it does allocation and capture in a single measured factor, so it must never be
+        # read as "the share of San Jose's own catchment we would win".
+        "market_build": r.get("market_build"),
+        "market_measured_pre_grossup": r.get("market_measured_pre_grossup"),
+        "board_point_split": None,     # filled below, once the observed split is computed
         "demand": {"natural": r["natural_market"], "current": r["current_via_origin"],
                    "captured": r["captured_demand"], "qsi_share": r["qsi_share"], "dest_share": r["dest_share"],
                    "coverage_gross_up": r["coverage_gross_up"], "premium_share": r["premium_share"],
@@ -833,6 +841,36 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
         "schedule": _schedule_times(home, dest_airport, o, d, bmin),
         "distance_nm": round(gcd / 1.852), "block_min": bmin, "week": ctx["week"], "year": ctx["year"],
     }
+    # THE COMPETITION BUCKET. Every Avia forecast in the client format splits connecting markets into
+    # O&Ds that already have a nonstop and O&Ds that do not, and shows a separate capture rate for
+    # each. It is the first split an airline planner looks for. The anchor differs by side: a BEYOND
+    # market is competed by a nonstop from the origin service area to that city, a BEHIND market by a
+    # nonstop from that city to the destination.
+    try:
+        import direct_competition as DC
+        _bey_rows, _bey_tot = DC.bucket(r.get("beyond_detail"), ctx["oag_db"], ctx["week"], competing)
+        _beh_rows, _beh_tot = DC.bucket(r.get("behind_detail"), ctx["oag_db"], ctx["week"], dest_codes)
+        out["competition_split"] = {
+            "beyond": {"rows": _bey_rows, "totals": _bey_tot,
+                       "test": "nonstop from the origin service area to the market"},
+            "behind": {"rows": _beh_rows, "totals": _beh_tot,
+                       "test": "nonstop from the market to the destination airport"},
+            "week": ctx["week"],
+        }
+    except Exception as _e:
+        out["competition_split"] = {"error": str(_e)}
+
+    # WHERE THE MARKET FLIES FROM TODAY. The single most useful line on a leakage pitch, and it was
+    # computed and then only used to draw a map. On SJC-TPE it reads San Francisco 99.3%, San Jose
+    # 0.2%: the market exists, it just does not use the airport.
+    try:
+        _bp = sorted(((c, v) for c, v in (shares or {}).items() if v and v > 0.0005),
+                     key=lambda kv: -kv[1])
+        out["board_point_split"] = [{"airport": c, "name": names.get(c, c), "share": round(v, 4)}
+                                    for c, v in _bp]
+    except Exception:
+        out["board_point_split"] = None
+
     # REVENUE LEG FARE, in priority: (1) a user-set fare always wins; (2) an induced route uses the low
     # stimulation fare that buys the fill; (3) otherwise the MEASURED Sabre market fare/yield, not a
     # distance proxy. This makes the P&L revenue reflect what the market actually pays.
