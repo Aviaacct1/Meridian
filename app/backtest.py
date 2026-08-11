@@ -196,11 +196,36 @@ def discover_new_routes(oag, start_year=None, min_freq=3.0):
 
 
 def gcd_km(oag, dep, arr):
+    """Great-circle km for one pair, from OAG's own gcd_km column.
+
+    NOTE THE COST. There is no week filter here, so this is a FULL SCAN of the whole oag table -
+    332m rows, 16.8GB - for a single pair. One call is tolerable. The --min-gcd filter calls it ONCE
+    PER DISCOVERED ROUTE, which on the 2016-2019 set is 14,015 full scans and twenty to forty minutes
+    of doing nothing visible before the run starts. Use gcd_km_many for any loop.
+    """
+    return gcd_km_many(oag, [(dep, arr)]).get((dep, arr))
+
+
+def gcd_km_many(oag, pairs):
+    """{(dep, arr): km} for many pairs in ONE scan instead of one scan each.
+
+    Same column, same ANY_VALUE, same values - this is purely the loop turned inside out. Written
+    11 August 2026 after the --min-gcd filter spent over half an hour on 14,015 sequential full
+    scans while the console showed nothing, which reads exactly like a hang and is why the run was
+    killed twice.
+    """
+    pairs = [(d, a) for d, a in pairs if d and a]
+    if not pairs:
+        return {}
     con = _con(oag)
     try:
-        r = con.execute("SELECT ANY_VALUE(TRY_CAST(gcd_km AS DOUBLE)) FROM oag "
-                        "WHERE dep_airport=? AND arr_airport=?", [dep, arr]).fetchone()
-        return float(r[0]) if r and r[0] else None
+        con.execute("CREATE OR REPLACE TEMP TABLE _gcd_want (dep VARCHAR, arr VARCHAR)")
+        con.executemany("INSERT INTO _gcd_want VALUES (?, ?)", pairs)
+        rows = con.execute(
+            "SELECT o.dep_airport, o.arr_airport, ANY_VALUE(TRY_CAST(o.gcd_km AS DOUBLE)) "
+            "FROM oag o JOIN _gcd_want w ON o.dep_airport = w.dep AND o.arr_airport = w.arr "
+            "GROUP BY 1, 2").fetchall()
+        return {(d, a): (float(g) if g else None) for d, a, g in rows}
     finally:
         con.close()
 
@@ -927,9 +952,13 @@ def main():
             routes = [r for r in routes if r["year"] in keep_years]
             print(f"{len(routes)} in launch years {sorted(keep_years)}")
         if a.min_gcd:
+            # ONE scan for every route, not one scan per route. See gcd_km_many.
+            print(f"  resolving great-circle distance for {len(routes):,} routes (one pass)...",
+                  flush=True)
+            _g = gcd_km_many(a.oag, [(r["dep"], r["arr"]) for r in routes])
             kept = []
             for r in routes:
-                g = gcd_km(a.oag, r["dep"], r["arr"])
+                g = _g.get((r["dep"], r["arr"]))
                 r["gcd_km"] = g
                 if g is None or g >= a.min_gcd:
                     kept.append(r)
