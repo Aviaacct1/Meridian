@@ -774,9 +774,23 @@ def forecast(sabre_db, oag_db, week, origin, dest_codes, competing_airports, *, 
         _bld.append(("Limited to what the aircraft and frequency can seat; the rest is turned away",
                      captured * carried / _rawtot, carried / _rawtot))
     conn_carried = carried - p2p_carried
+    # THE CONNECTIVITY FLOOR, and whether it should still be applied.
+    #
+    # It exists because the engine's leg split under-credited transfer traffic at non-US hubs, where
+    # the US GDS misses Asian transfer bookings. That was true of the FLAT feed. It is no longer
+    # obviously true of the QSI feed: measured on SJC-TPE against the 2025 analyst on his own 12:00
+    # schedule, the raw QSI feed reads 1.04x his beyond and 0.83x his behind, while the floor then
+    # rescales the reported beyond from 12,467 to 27,324 two-way. A correction sized for a feed that
+    # under-read is an over-correction on a feed that does not.
+    #
+    # So it is now a switch rather than an assumption. DEFAULT ON, because it is what shipped and
+    # what every previous number was produced with, and because retiring it moves the headline. Set
+    # feed_cfg["split_floor"] = False to run without it. The back-test decides which ships; this
+    # exists so the two can be measured against each other rather than argued about.
+    _floor_on = True if feed_cfg is None else bool(feed_cfg.get("split_floor", True))
     try:
         import split_share as _SS
-        if _SS.available():                              # only re-split when a real connectivity table is loaded
+        if _floor_on and _SS.available():                # only re-split when a real connectivity table is loaded
             _dref = dest_airport or (dest_codes[0] if dest_codes else "")
             _sh = _SS.p2p_share(origin, _dref)
             _engine_conn = carried * (feed / _rawtot)    # the engine's own connecting, scaled to carried

@@ -366,6 +366,66 @@ def _db_paths():
             os.environ.get("AVIA_OAG", r"C:\Avia\oag.duckdb"))
 
 
+def resolve_oag_week(con, want=None):
+    """Choose the OAG schedule basis DELIBERATELY, and return (label, n_regions, why).
+
+    THE DEFECT THIS REPLACES. This was `SELECT max(week) FROM oag`. `week` is a VARCHAR, so that is
+    a STRING maximum: it returned 2026-05-25 because the label sorts highest in the alphabet, not
+    because anyone chose it or because it is the newest by date. The day a partial 2026-06 extract
+    lands, the basis changes underneath every forecast with no notice.
+
+    It matters more than a tie-break, because the labels are not interchangeable. The store holds
+    three forms and only one of them is a complete world:
+
+        single week   2026-05-25          ALL SEVEN regions, week commencing
+        monthly       2025-05             SIX regions, whole month, NO ASIA
+        part-month    2025-05p01/p16      ASIA ONLY, the month in halves
+
+    Asia is exported in half-months while the rest come as whole months. So `max(week)` landing on a
+    monthly label would silently drop Asia from every forecast, and a route over Taipei would lose
+    most of its competition without anything failing. Taipei serves 98 destinations in a week label
+    and 26 across the monthly labels alone.
+
+    The rule: take AVIA_OAG_WEEK if the caller set one, else the newest label carrying the FULL
+    region set. Never a partial. The region count is returned so the caller can print it.
+    """
+    rows = con.execute("SELECT week, region FROM oag GROUP BY 1, 2").fetchall()
+    if not rows:
+        return None, 0, "store empty"
+    by_label = {}
+    for w, r in rows:
+        by_label.setdefault(w, set()).add(r)
+    every = set().union(*by_label.values())
+    nmax = len(every)
+
+    def _why_short(w, have):
+        """Name the regions this label lacks, and the sibling labels that carry them.
+
+        "6 of 7 regions" is true and useless: it reads as though the STORE were short, when it is
+        this LABEL that is. May 2025 is the case - the monthly extract carries the six non-Asia
+        regions and Asia arrives separately as 2025-05p01 and 2025-05p16 - so the message has to say
+        which region and where it went, or the reader is left to work it out from the store.
+        """
+        missing = sorted(every - have)
+        found = []
+        for other, regs in by_label.items():
+            if other != w and other.startswith(w) and (regs & set(missing)):
+                found.append(other)
+        where = (f"; {'/'.join(missing)} for this month is in " + ", ".join(sorted(found))
+                 if found else f"; no sibling label carries {'/'.join(missing)}")
+        return (f"WARNING, {len(have)} of {nmax} regions, missing {', '.join(missing)}{where}")
+
+    if want:
+        if want in by_label:
+            have = by_label[want]
+            return want, len(have), (f"AVIA_OAG_WEEK={want}" if len(have) >= nmax
+                                     else f"AVIA_OAG_WEEK={want} - " + _why_short(want, have))
+        return None, 0, f"AVIA_OAG_WEEK={want} is not in the store"
+    full = sorted(w for w, regs in by_label.items() if len(regs) >= nmax)
+    return (full[-1] if full else max(by_label)), nmax, \
+        f"newest of {len(full)} complete-world labels, all {nmax} regions"
+
+
 def _live_ctx():
     """Latest OAG week + Sabre year + served index, resolved once and cached in S."""
     if "live" in S:
@@ -373,9 +433,11 @@ def _live_ctx():
     import duckdb, oag_served as OAS
     sabre_db, oag_db = _db_paths()
     week = year = None; served_obj = None
+    week_basis = None
     try:
         c = duckdb.connect(oag_db, read_only=True)
-        week = c.execute("SELECT max(week) FROM oag").fetchone()[0]; c.close()
+        week, _nreg, week_basis = resolve_oag_week(c, os.environ.get("AVIA_OAG_WEEK"))
+        c.close()
     except Exception:
         pass
     try:
@@ -396,7 +458,7 @@ def _live_ctx():
         except Exception:
             served_codes = set()
     S["live"] = dict(sabre_db=sabre_db, oag_db=oag_db, week=week, year=year,
-                     served=served_obj, served_codes=served_codes)
+                     served=served_obj, served_codes=served_codes, week_basis=week_basis)
     return S["live"]
 
 
@@ -632,7 +694,7 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
                         circuity=1.35, factor_indirect=1.044, mct_banking=False, season="annual",
                         induced_floor=True, fixed_overrides=None, seats=None, charges_override=None,
                         dep_time_mins=None, restricted_hours=None, restricted_hours_dest=None,
-                        partner_carriers=None):
+                        partner_carriers=None, split_floor=True, forecast_year=None):
     """Any city pair through the CALIBRATED engine (route_forecast.forecast). season = annual (default)
     / summer / winter runs a seasonal service: demand scaled to the season's share of the year, capacity
     over the season's weeks.
@@ -690,6 +752,49 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
     _partners = [x for x in (_partners or []) if x]
     if _partners:
         feed_cfg["partner_carriers"] = _partners
+    feed_cfg["split_floor"] = bool(split_floor)   # the connectivity floor; see route_forecast
+
+    # THE FORECAST YEAR. A forecast is for a future year, not for the year the data was collected.
+    # Every Meridian output was a CURRENT-YEAR figure because growth_years defaulted to zero, while
+    # the client format forecasts a maturity year: the 2025 analyst's SJC-TPE deck is YE Jun 2028,
+    # grown 33% from a YE Jun 2025 base on a +16% / +7% / +7% build. Comparing the two directly was
+    # comparing 2025 with 2028, which is most of why Meridian read low against his total.
+    #
+    # forecast_year names the year wanted. It DEFAULTS to the base data year plus one, so with Sabre
+    # 2025 loaded the default output is 2026 rather than 2025. An explicit growth/growth_years from
+    # the caller still wins, so every existing call is unchanged.
+    base_year = int(ctx["year"] or 0)
+    fy = int(forecast_year) if forecast_year else (base_year + 1 if base_year else None)
+    growth_basis = "set by the caller"
+    if fy and base_year and not growth_years:
+        growth_years = max(0, fy - base_year)
+        if not growth:
+            # The measured market CAGR, same two-year Sabre measure the projection build uses and
+            # the same clamp: a two-year burst is not a sustained rate.
+            try:
+                _mk = SC.destination_market_split(ctx["sabre_db"], competing, dest_codes, year=base_year)[1] or 0.0
+                _mk2 = SC.destination_market_split(ctx["sabre_db"], competing, dest_codes, year=base_year - 2)[1] or 0.0
+                growth = ((float(_mk) / _mk2) ** 0.5 - 1.0) if (_mk and _mk2 > 0) else 0.03
+            except Exception:
+                growth = 0.03
+            growth = max(min(growth, 0.20), -0.05)
+            # TAPER, and use the SAME taper the projection build uses further down rather than a
+            # second rule. A measured two-year CAGR on this route reads 20%, which is the clamp
+            # ceiling and a post-COVID recovery burst rather than a sustained rate; compounded flat
+            # over five years it would give 2.5x and an absurd forecast. The projection holds the
+            # measured rate for two years then decays it to a 3% long run, which is the same shape
+            # as the 2025 analyst's own +16% / +7% / +7% build. Two growth rules in one file is how
+            # /api/forecast and /api/optimise came apart twice before.
+            _cum, _lr = 1.0, 0.03
+            for _n in range(1, growth_years + 1):
+                _r = growth if _n <= 2 else max(_lr, growth - (growth - _lr) * (_n - 2) / 3.0)
+                _cum *= (1.0 + _r)
+            # Hand the engine the single equivalent rate, since it applies (1+growth)**growth_years.
+            growth = (_cum ** (1.0 / growth_years) - 1.0) if growth_years else 0.0
+            growth_basis = (f"measured market CAGR tapered to a 3% long run: {_cum - 1:+.1%} "
+                            f"over {growth_years} yr from {base_year}")
+        else:
+            growth_basis = f"{growth:.2%} over {growth_years} yr from {base_year}, rate set by the caller"
     # THE DEPARTURE TIME, and it is an INPUT to the demand rather than a decoration on the output.
     #
     # It was neither before. _schedule_times placed the outbound at 11:00, ran after the forecast and
@@ -912,6 +1017,7 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
         "schedule": dict(_schedule_times(home, dest_airport, o, d, bmin,
                                          dep_out=((dep_mins / 60.0) if dep_mins is not None else 11.0)),
                          basis=dep_basis, partners=(_partners or None),
+                         forecast_year=fy, growth_basis=growth_basis,
                          optimised=(feed_opt or {}) if feed_opt else None,
                          indicative=(dep_mins is None)),
         "distance_nm": round(gcd / 1.852), "block_min": bmin, "week": ctx["week"], "year": ctx["year"],
@@ -964,6 +1070,22 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
                                p2p_share=r.get("p2p_share"), fixed_overrides=fixed_overrides,
                                charges_override=charges_override))
     return out
+
+
+@app.get("/api/basis")
+def api_basis():
+    """What the engine is standing on: the store vintage and the forecast years on offer.
+
+    The page must not hard-code a year. The base is whatever Sabre year is loaded, so the default
+    forecast year moves on its own when the store is refreshed, and the OAG week is reported beside
+    it because that is the schedule basis and it is currently chosen by a string max.
+    """
+    ctx = _live_ctx()
+    base = int(ctx.get("year") or 0)
+    return JSONResponse({"ok": bool(base), "sabre_year": base, "oag_week": ctx.get("week"),
+                         "oag_week_basis": ctx.get("week_basis"),
+                         "default_forecast_year": (base + 1) if base else None,
+                         "years": [base + i for i in range(1, 11)] if base else []})
 
 
 @app.get("/api/fleet")
@@ -1115,7 +1237,8 @@ def api_forecast(origin: str, dest: str, airline: str = "", carrier_type: str = 
                  cnx_online: float = 1.0, cnx_alliance: float = 0.615, cnx_interline: float = 0.25,
                  circuity: float = 1.35, factor_indirect: float = 1.044, mct_banking: int = 0,
                  season: str = "annual", own_bh: float = 0.0, crew_bh: float = 0.0, util_bh: float = 0.0,
-                 dep_time: str = "", curfew_origin: str = "", curfew_dest: str = "", partners: str = ""):
+                 dep_time: str = "", curfew_origin: str = "", curfew_dest: str = "", partners: str = "",
+                 forecast_year: int = 0, split_floor: int = 1):
     """The CALIBRATED any-city-pair forecast (coverage + feed + alliance). ~10s per call. The
     override args (default sentinels = off) are the Expert hooks: adjust any stage of the engine.
     own_bh/crew_bh/util_bh are the airline-specific fixed-cost overrides ($/block-hour, $/block-hour, BH/yr).
@@ -1164,7 +1287,7 @@ def api_forecast(origin: str, dest: str, airline: str = "", carrier_type: str = 
         circuity=circuity, factor_indirect=factor_indirect, mct_banking=bool(mct_banking),
         season=season, fixed_overrides=(_fixed or None),
         dep_time_mins=_hhmm_to_mins(dep_time),
-        restricted_hours=(curfew_origin or None), restricted_hours_dest=(curfew_dest or None), partner_carriers=(partners or None))
+        restricted_hours=(curfew_origin or None), restricted_hours_dest=(curfew_dest or None), partner_carriers=(partners or None), forecast_year=(forecast_year or None), split_floor=bool(split_floor))
     if isinstance(fc, dict) and fc.get("ok"):
         if _auto_ac:
             fc["auto_aircraft"] = _auto_ac      # UI shows which gauge the demand sized to
@@ -1512,7 +1635,8 @@ def api_hubbank(origin: str = "", dest: str = "", airline: str = ""):
 def api_optimise(origin: str, dest: str, airline: str = "", carrier_type: str = "FSC",
                  econ_share: float = 0.0, plan_lf: float = 0.875, bus_fare: float = 1400.0,
                  season: str = "annual", aircraft: str = "", freq: int = 0,
-                 dep_time: str = "", curfew_origin: str = "", curfew_dest: str = "", partners: str = ""):
+                 dep_time: str = "", curfew_origin: str = "", curfew_dest: str = "", partners: str = "",
+                 forecast_year: int = 0, split_floor: int = 1):
     # CONSTRAINED OPTIMISE: any field the client fills is honoured, any left blank is optimised. A fixed aircraft
     # restricts the gauge; a fixed freq restricts the frequency; a fixed airline restricts the operator (handled below).
     """Blank inputs choose the best PATH. The operating airline changes the demand (its connecting
@@ -1567,7 +1691,7 @@ def api_optimise(origin: str, dest: str, airline: str = "", carrier_type: str = 
                                          aircraft="A21N", freq=7, with_econ=False, season=sea_i,
                                          induced_floor=False, dep_time_mins=_dep_fixed,
                                          restricted_hours=(curfew_origin or None),
-                                         restricted_hours_dest=(curfew_dest or None), partner_carriers=(partners or None))   # measured demand for this operator + model + schedule
+                                         restricted_hours_dest=(curfew_dest or None), partner_carriers=(partners or None), forecast_year=(forecast_year or None), split_floor=bool(split_floor))   # measured demand for this operator + model + schedule
                 if not fc.get("ok"):
                     continue
                 # econ_share of 0 from the caller means "measure it". The gauge is chosen on how the
@@ -1595,7 +1719,7 @@ def api_optimise(origin: str, dest: str, airline: str = "", carrier_type: str = 
                                                    aircraft="A21N", freq=f, with_econ=False, season=sea_i,
                                                    induced_floor=False, dep_time_mins=_dep_fixed,
                                                    restricted_hours=(curfew_origin or None),
-                                                   restricted_hours_dest=(curfew_dest or None), partner_carriers=(partners or None))
+                                                   restricted_hours_dest=(curfew_dest or None), partner_carriers=(partners or None), forecast_year=(forecast_year or None), split_floor=bool(split_floor))
                         if not _fcf.get("ok"):
                             continue
                         demand = _fcf["demand"].get("total_demand") or _fcf["demand"]["total"]
@@ -1649,7 +1773,7 @@ def api_optimise(origin: str, dest: str, airline: str = "", carrier_type: str = 
                                 plan_lf=plan_lf, bus_fare=bus_fare, with_econ=True, season=best.get("season", "annual"),
                                 seats=best.get("seats"), dep_time_mins=_dep_fixed,
                                 restricted_hours=(curfew_origin or None),
-                                restricted_hours_dest=(curfew_dest or None), partner_carriers=(partners or None))
+                                restricted_hours_dest=(curfew_dest or None), partner_carriers=(partners or None), forecast_year=(forecast_year or None), split_floor=bool(split_floor))
     _attach_airfield(final, best["aircraft"], plan_lf)
     _attach_range_margin(final, best["aircraft"])
     _attach_viability(final)

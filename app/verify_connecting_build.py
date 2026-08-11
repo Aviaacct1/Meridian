@@ -56,8 +56,26 @@ def section(t):
 def main():
     import duckdb
     oag, sabre = os.environ.get("AVIA_OAG"), os.environ.get("AVIA_SABRE")
+    # The environment wins where it is set and correct. Where it is not, look in the two places the
+    # stores actually live and SAY which was used. Written 11 August after the run was pointed at
+    # C:\Avia on the dev PC, where there are no stores at all: the workstation keeps them on E:.
+    # Silence here would read as a code failure when it is a path.
+    if not (oag and os.path.exists(oag)) or not (sabre and os.path.exists(sabre)):
+        for root in (r"E:\Avia", r"C:\Avia", "/mnt/e/Avia"):
+            o, s = os.path.join(root, "oag.duckdb"), os.path.join(root, "sabre.duckdb")
+            if os.path.exists(o) and os.path.exists(s):
+                if oag or sabre:
+                    print(f"  NOTE: AVIA_OAG / AVIA_SABRE did not resolve; using {root}")
+                oag, sabre = o, s
+                break
     if not (oag and sabre and os.path.exists(oag) and os.path.exists(sabre)):
-        print("AVIA_OAG and AVIA_SABRE must point at the two stores."); return 2
+        print("Could not find the stores. Set AVIA_OAG and AVIA_SABRE, or place oag.duckdb and")
+        print("sabre.duckdb under E:\\Avia (workstation) or C:\\Avia.")
+        print(f"  AVIA_OAG   = {os.environ.get('AVIA_OAG')!r}")
+        print(f"  AVIA_SABRE = {os.environ.get('AVIA_SABRE')!r}")
+        return 2
+    os.environ["AVIA_OAG"], os.environ["AVIA_SABRE"] = oag, sabre
+    print(f"stores: {oag}\n        {sabre}")
     week = duckdb.connect(oag, read_only=True).execute("SELECT max(week) FROM oag").fetchone()[0]
     year = duckdb.connect(sabre, read_only=True).execute(
         "SELECT max(source_year) FROM sabre").fetchone()[0]
@@ -69,6 +87,29 @@ def main():
         print("      Differences below are a data change, NOT a regression. Re-baseline the")
         print("      expected values before reading any failure as a fault.")
     print(f"AVIA_FREQ_SENSITIVE = {os.environ.get('AVIA_FREQ_SENSITIVE')!r}")
+
+    # The environment fingerprint, printed with every run. Written 11 August after this test
+    # returned qsi_share 0.2513 on one machine against 0.2510 on another, reading the same stores
+    # and the same commit. A failing number without the environment beside it costs an hour to
+    # place; with it, the diff is one line. Same reason env_report.py exists.
+    import platform
+    vers = []
+    for mod in ("duckdb", "airportsdata"):
+        try:
+            vers.append(f"{mod} {__import__(mod).__version__}")
+        except Exception:
+            try:
+                from importlib.metadata import version as _v
+                vers.append(f"{mod} {_v(mod)}")
+            except Exception:
+                vers.append(f"{mod} ?")
+    try:
+        import global_land_mask  # noqa: F401
+        water = "ON"
+    except Exception:
+        water = "OFF"
+    print(f"environment: python {platform.python_version()}, {', '.join(vers)}, "
+          f"water check {water}")
 
     section("1. QSI coefficients, the frozen method")
     import qsi_score as Q
@@ -127,9 +168,14 @@ def main():
     check("Southwest named as CI's partner", QF.partner_map("CI", ["WN"]), {"WN": "ST"})
 
     section("8. Engine anchors that must NOT have moved")
+    # forecast_year is PINNED TO THE BASE YEAR here so growth_years is zero. These anchors measure
+    # the engine core on the data as it stands; the default output is now the year AFTER the base,
+    # which grows the market and every figure derived from it. Leaving the year unpinned made all
+    # three read 1.20x on 11 August, which is the growth working, not a regression.
     import cortex_app as CA
     r = CA.calibrated_forecast("SJC", "TPE", airline="CI", carrier_type="FSC",
-                               aircraft="A359", seats=306, freq=4, dep_time_mins=720)
+                               aircraft="A359", seats=306, freq=4, dep_time_mins=720,
+                               forecast_year=EXPECTED_YEAR)
     d = r["demand"]
     check("qsi_share", round(d["qsi_share"], 4), 0.2510, tol=0.0001)
     check("measured market, each way", round(d["natural"]), 160915, tol=1)
@@ -176,6 +222,24 @@ def main():
         check("the unrestricted optimum is reported", o2.get("unrestricted_dep"), "00:30")
     else:
         print("\n--- 10. departure optimiser SKIPPED (--quick)")
+
+    section("11. The forecast year, and the analyst's total on his own basis")
+    import json as _json
+    basis = _json.loads(CA.api_basis().body.decode())
+    check("/api/basis reports the Sabre base year", basis.get("sabre_year"), EXPECTED_YEAR)
+    check("default forecast year is base + 1", basis.get("default_forecast_year"), EXPECTED_YEAR + 1)
+    check("ten years offered", len(basis.get("years") or []), 10)
+
+    # The analyst's SJC-TPE deck is YE Jun 2028 at 4x: 107,857 two-way at 86.4% on 124,800 seats.
+    # Run on HIS basis - his 12:00 schedule, Southwest counted as a partner as his scope states, the
+    # connectivity floor off because the QSI feed no longer under-reads, and grown to his year.
+    r = CA.calibrated_forecast("SJC", "TPE", airline="CI", carrier_type="FSC", aircraft="A359",
+                               seats=306, freq=4, dep_time_mins=720, partner_carriers="WN",
+                               split_floor=False, forecast_year=2028)
+    tot = 2 * r["demand"]["total"]
+    check("total two-way, YE2028 basis", round(tot), 111384, tol=2,
+          note=f"analyst 107,857 = {tot / 107857:.2f}x")
+    check("within 10% of the analyst deck, and OVER", 1.0 <= tot / 107857 <= 1.10, True)
 
     print(f"\n{'=' * 74}")
     if FAILS:

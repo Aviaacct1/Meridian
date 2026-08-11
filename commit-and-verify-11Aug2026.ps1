@@ -1,107 +1,101 @@
-# Avia Solutions - commit the 11 August 2026 connecting build, then prove it.
-# PowerShell. Run part 1 on the DEV PC, part 2 on the WORKSTATION.
-# Nothing here is destructive: no reset, no checkout, no force.
+# Avia Solutions - verify the 11 August 2026 connecting build, then back-test it.
+# PowerShell. Every command is ONE LINE: no backtick continuations, because pasting them a
+# line at a time is what broke the first attempt.
+#
+# WHERE THINGS ARE, checked on 11 August rather than assumed:
+#
+#   WORKSTATION   C:\AviaDev            a Meridian clone
+#                 E:\Avia               THE DATA ROOT. oag.duckdb 16.8GB, sabre.duckdb 16.4GB,
+#                                       preagg, aci, db1b, t100, and the wave caches
+#                 C:\Avia               a second copy of the same stores, same sizes, mtimes
+#                                       seconds apart. Both give identical results; E: is the one
+#                                       to use because the workstation is built around it
+#   DEV PC        C:\src\meridian       a Meridian clone, NO STORES
+#
+# So the verification and the back-test run on the WORKSTATION. On the dev PC they can only fail,
+# and they fail on a missing path rather than on anything to do with the code.
+
 
 # =====================================================================================
-# PART 1  -  DEV PC: review, commit, push
+# PART 1  -  DEV PC: edit, commit, push.  (Done for this change set: commit 58c04a6.)
 # =====================================================================================
 
-cd C:\AviaDev
-
-# FIRST: clear the stale index lock.
-#
-# A read-only `git status` run from the Cowork session on 11 August left a zero-byte
-# .git/index.lock behind. git status refreshes the index, which takes the lock, and the mount
-# denies the unlink, so the lock is stranded. `git add` and `git commit` then refuse. Nothing
-# is corrupted and no git process is running; the file is simply orphaned.
-#
-# Check no real git process is running, then remove it:
-Get-Process git -ErrorAction SilentlyContinue        # expect nothing
-Remove-Item C:\AviaDev\.git\index.lock -ErrorAction SilentlyContinue
-
-# THE RULE, and it is already in the notes: never run git against the mounted repo from a
-# Cowork session, not even a read-only status. Commit messages are handed over as files and
-# every git command is run here, in a real shell.
-
-# What is about to be committed. Read this before going further.
+cd C:\src\meridian
 git status
-git diff --stat
-
-# The eight engine files, the acceptance test, the diagnostics, and the message itself.
-git add app/cortex_app.py `
-        app/cortex_dashboard.html `
-        app/qsi_feed.py `
-        app/qsi_score.py `
-        app/route_feed.py `
-        app/route_forecast.py `
-        app/test_qsi_score.py `
-        app/wave_cache.py `
-        app/verify_connecting_build.py `
-        bt2 `
-        commit-message-9-11Aug2026.txt
-
-# Confirm the staged set is what you expect, then commit and push.
-git status --short
+git add -A
 git commit -F commit-message-9-11Aug2026.txt
 git push
 
-# Should now read: your branch is ahead of 'origin/main' by 1 commit -> then level after the push.
-git log --oneline -2
-git status -sb
+# If git refuses with "Unable to create index.lock: File exists", a Cowork session has left a
+# stale lock. Check nothing is running, then clear it:
+#   Get-Process git -ErrorAction SilentlyContinue
+#   Remove-Item .git\index.lock
 
 
 # =====================================================================================
-# PART 2  -  WORKSTATION: pull, then prove the repo produces today's numbers
+# PART 2  -  WORKSTATION: pull, then prove the repo produces the 11 August numbers
 # =====================================================================================
 
-cd C:\AviaDev          # or wherever the workstation clone lives
+cd C:\AviaDev
 git pull
 
-# The environment. AVIA_FREQ_SENSITIVE must be 1: without it qsi_share reads 0.3200
-# instead of 0.2510 and every connecting figure below moves with it.
-$env:AVIA_LOCAL_CACHE    = "C:\Avia"
-$env:AVIA_OAG            = "C:\Avia\oag.duckdb"
-$env:AVIA_SABRE          = "C:\Avia\sabre.duckdb"
+$env:AVIA_LOCAL_CACHE    = "E:\Avia"
+$env:AVIA_OAG            = "E:\Avia\oag.duckdb"
+$env:AVIA_SABRE          = "E:\Avia\sabre.duckdb"
 $env:AVIA_FREQ_SENSITIVE = "1"
 
-# 1. The frozen QSI method. Six tests, seconds.
+# Confirm the paths before running anything. Both must be True.
+Test-Path $env:AVIA_OAG
+Test-Path $env:AVIA_SABRE
+
 py -3.12 app\test_qsi_score.py
-
-# 2. The golden-file rollback record. Expect IDENTICAL or a named diff.
-py -3.12 app\econ_baseline.py
-
-# 3. Today's numbers. Circa 75 seconds on --quick, circa four minutes in full.
-#    Exits non-zero on any failure, so it can be wired into a deploy step.
+py -3.12 app\env_report.py
 py -3.12 app\verify_connecting_build.py --quick
 py -3.12 app\verify_connecting_build.py
 
-# Expect: ALL 35 CHECKS PASSED (39 with the optimiser section).
-# A failure here where step 1 passed is the environment, not the code: check
-# AVIA_FREQ_SENSITIVE is 1 and that the stores are OAG week 2026-05-25 and Sabre 2025.
+# Expect: store vintage OAG week 2026-05-25, Sabre year 2025, then
+#         ALL 35 CHECKS PASSED  (39 with the optimiser section).
+# Confirmed on E:\Avia on 11 August 2026.
+#
+# econ_baseline.py is deliberately NOT in this list. It REWRITES app\econ_baseline.json, so
+# running it without the stores overwrites the golden record with failures. Run it only on the
+# workstation with the environment set above, and if it has already been run elsewhere:
+#   git checkout -- app/econ_baseline.json
 
 
 # =====================================================================================
-# PART 3  -  only once part 2 is green: the back-test, three arms
+# PART 3  -  only once Part 2 is green: the back-test, three arms
 # =====================================================================================
 
 cd C:\AviaDev\app
 
+# USE THE SIX-YEAR WAVE CACHE. There are two, and the difference decides how much of the test
+# is real. The 4-year cache in the repo folder covers flown years 2017-2019 and 3,602 dep-arr-year
+# pairs; the 6-year cache on E: covers 2016-2019 plus 2024 and 2025, and 5,798 pairs. A route with
+# no flown schedule falls back to the flat feed and appears unchanged in BOTH arms, so the thinner
+# cache waters the comparison down for no reason.
+$WAVE = "E:\Avia\qsi-tool\app\qsi_wave_cache_6yr.duckdb"
+Test-Path $WAVE
+
+# USE --resume ON EVERY ARM. Each finished route is flushed to the CSV as it completes, so an
+# interruption never loses work and re-running the same command carries on where it stopped. These
+# runs are tens of minutes; discovery alone scans the whole OAG history and takes minutes.
+
 # arm 1, control: the flat connecting feed as it shipped
-py -3.12 backtest.py --oag $env:AVIA_OAG --sabre $env:AVIA_SABRE `
-    --years 2017,2018,2019 --min-gcd 1500 `
-    --out backtest_control_11Aug2026.csv
+py -3.12 backtest.py --oag $env:AVIA_OAG --sabre $env:AVIA_SABRE --years 2016,2017,2018,2019 --min-gcd 1500 --resume --out backtest_control_11Aug2026.csv
 
 # arm 2: the QSI feed, departure time taken from each route's FLOWN schedule
-py -3.12 backtest.py --oag $env:AVIA_OAG --sabre $env:AVIA_SABRE `
-    --years 2017,2018,2019 --min-gcd 1500 --qsi-feed `
-    --wave-cache qsi_wave_cache.duckdb `
-    --out backtest_qsifeed_11Aug2026.csv
+py -3.12 backtest.py --oag $env:AVIA_OAG --sabre $env:AVIA_SABRE --years 2016,2017,2018,2019 --min-gcd 1500 --qsi-feed --wave-cache $WAVE --resume --out backtest_qsifeed_11Aug2026.csv
+
+# THE ANSWER, one command. Pairs the arms on the routes BOTH scored, reports the median and the
+# +/-20% for each, and runs a McNemar test on the routes that changed side so a net gain of four
+# routes out of a thousand is shown as the noise it is.
+py -3.12 ..\bt2\compare_backtest_arms.py backtest_control_11Aug2026.csv backtest_qsifeed_11Aug2026.csv
 
 # Read this line in the arm 2 output BEFORE reading any score:
 #   "QSI feed: N routes without a flown schedule (V1 fallback), M in-run fallbacks (errors)"
-# N is the dilution: those routes fall back to the flat feed and appear unchanged in BOTH
-# arms. If N is more than about a third, rebuild the wave cache before drawing a conclusion.
+# N is the dilution. M must be 0.
 #
-# arm 3 is split_share, and it is deliberately NOT folded into the two above: the feed
-# changes are corrections and the floor is a judgement, and mixed together there is no way
-# to say which moved the score.
+# arm 3 is split_share, and it is deliberately NOT folded into the two above: the feed changes are
+# corrections and the floor is a judgement, and mixed together there is no way to say which moved
+# the score.

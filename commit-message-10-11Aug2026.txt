@@ -1,0 +1,198 @@
+The forecast is for a year, the schedule is a choice, and the total lands on the analyst
+
+Three additions on top of commit 58c04a6, which fixed the connecting feed. That commit made
+the feed read correctly against the 2025 analyst. This one makes the TOTAL land, and gives
+the tool the two things a planner asks it for: what year, and what time of day.
+
+1. THE FORECAST YEAR, WITH A YEAR TO CHOOSE
+
+Every Meridian output was a CURRENT-YEAR figure, because growth_years defaulted to zero,
+while the client format forecasts a maturity year: the analyst's SJC-TPE deck is YE Jun 2028
+grown 33% from a YE Jun 2025 base on a +16% / +7% / +7% build. Comparing the two directly
+was comparing 2025 with 2028, and that is most of why Meridian read low on the total.
+
+forecast_year now names the year wanted, on calibrated_forecast, on /api/forecast and
+/api/optimise, and as a dropdown on the assessment screen. It DEFAULTS to the base data year
+plus one, so with Sabre 2025 loaded the default output is 2026. An explicit growth or
+growth_years from the caller still wins, so no existing call changes.
+
+/api/basis is added so the page never hard-codes a year: it reports the Sabre base year, the
+OAG week, the default forecast year and the ten years on offer, and the dropdown is built
+from that. Refresh the store and the years move on their own.
+
+THE GROWTH IS TAPERED, AND IT IS THE SAME TAPER THE PROJECTION BUILD ALREADY USED. The
+measured two-year market CAGR on SJC-TPE reads 20.00%, which is the clamp ceiling and a
+post-COVID recovery burst rather than a sustained rate; compounded flat over five years it
+gives 2.5x and an absurd forecast. The rate is held for two years then decayed to a 3% long
+run, which is the same shape as the analyst's own +16% / +7% / +7%. Two growth rules in one
+file is how /api/forecast and /api/optimise came apart twice before, so there is one.
+
+  forecast year   growth applied from 2025
+  2026            +20.0%
+  2027            +44.0%
+  2028            +64.6%
+  2030            +84.3%
+
+2. THE CONNECTIVITY FLOOR IS NOW A SWITCH, DEFAULT UNCHANGED
+
+split_share exists because the engine's leg split under-credited transfer traffic at non-US
+hubs. That was true of the FLAT feed. It is no longer true of the QSI feed: measured against
+the analyst on his own 12:00 schedule the raw QSI feed reads 1.04x his beyond and 0.83x his
+behind, and the floor then rescales the reported beyond from 12,467 to 27,324 two-way. A
+correction sized for a feed that under-read is an over-correction on one that does not.
+
+feed_cfg["split_floor"], and split_floor on calibrated_forecast, DEFAULT TRUE so nothing
+shipped changes. The floor is total-preserving, so it moves the split and not the headline:
+
+  SJC-TPE CI 4x, analyst 12:00, Southwest a partner, two-way
+    floor ON    P2P 43,096   connecting 52,776   total 95,872
+    floor OFF   P2P 71,792   connecting 24,082   total 95,872
+
+With the floor off the connecting total is 24,082 against the analyst's 25,999, or 0.93x.
+With it on it is 52,776, or 2.03x. The back-test decides which ships; this exists so the two
+can be measured rather than argued about.
+
+3. WHERE IT LANDS
+
+SJC-TPE, China Airlines, A350-900 at 306 seats, 4x weekly, his 12:00 schedule, Southwest
+counted as a partner as his own scope states, floor off, grown to his year. Two-way:
+
+  forecast year 2028    P2P 82,796   connecting 39,646   TOTAL 111,384
+  analyst deck YE2028                                    TOTAL 107,857
+                                                         Meridian 1.03x, 3.3% OVER
+  load factor 87.5% against his 86.4% on 124,800 seats
+
+Close, and over, which is the way round to be wrong on a pitch.
+
+AND THE TOOL NOW CHOOSES THE SCHEDULE, which is the point of a QSI. At 4x on a 306-seat A350
+the aircraft is full at maturity whatever the departure time, so the schedule moves the MIX
+rather than the total, and that is the planning answer:
+
+  departure          P2P      connecting   total
+  12:00 (analyst)    83,408   31,982       111,384
+  00:30 (optimised)  55,306   96,680       111,384
+  06:30 (SJC curfew) 78,468   39,994       111,384
+
+A midnight departure fills the aircraft with connecting traffic; the curfew-permitted 06:30
+fills it with local. Same metal, same total, a completely different revenue mix and a
+completely different conversation with the airline.
+
+4. THE ROUTE IS CAPACITY BOUND, AND THE TOOL NOW SAYS SO
+
+John's question on seeing an 87.5% load factor at every departure time: if it is full, there
+must be a better aircraft or frequency. There is, and the answer validates the analyst at
+launch while showing the route outgrows him.
+
+SJC-TPE CI, his 12:00 schedule, Southwest a partner, floor off. Two-way:
+
+  year  option                seats     demand   carried     LF    spill
+  2026  A359 306 seats 4x   127,296    115,048   111,384  87.5%    3,664
+  2028  A359 306 seats 4x   127,296    154,466   111,384  87.5%   43,082
+  2028  A359 306 seats 5x   159,120    167,856   139,230  87.5%   28,626
+  2028  A359 306 seats 6x   190,944    180,372   167,076  87.5%   13,296
+  2028  A359 306 seats 7x   222,768    192,134   192,134  86.2%        0
+  2028  B77W 358 seats 5x   186,160    167,856   162,890  87.5%    4,966
+
+FOUR TIMES WEEKLY IS RIGHT FOR LAUNCH AND WRONG FOR MATURITY. In 2026 it spills 3,664, so
+the analyst sized year one correctly. By 2028 it turns away 43,082 two-way and the route fits
+DAILY at 86.2% with nothing spilled, carrying 192,134. The 777-300ER at 5x is the gauge
+alternative. That is the pitch: launch at 4x, build to daily by year three.
+
+Note the mechanism, because it is the frequency switch doing real work: demand RISES with
+frequency, 154,466 at 4x to 192,134 at 7x, because a better schedule wins a larger QSI share.
+Capacity and demand are not independent on this route and the tool now models that.
+
+split_floor is exposed on /api/forecast AND /api/optimise, and on the screen. Both, because
+an optimiser that sizes the aircraft on one basis while the forecast reports on another is
+the /api/forecast against /api/optimise divergence this file has been caught by twice.
+
+5. ACCEPTANCE TEST NOW 40 CHECKS, ALL PASSING
+
+app/verify_connecting_build.py covers the above and prints its own environment fingerprint.
+Two things it caught, both worth recording:
+
+  - The anchors in section 8 now PIN forecast_year to the base year. Left unpinned they read
+    1.20x on 11 August, which is the new default growth working correctly and not a
+    regression. A test that does not pin its year cannot tell the two apart.
+  - The store resolution falls back to E:\Avia then C:\Avia when AVIA_OAG does not resolve,
+    and says which it used. The dev PC has no stores at all; the workstation keeps them on E.
+
+Verified on E:\Avia, 11 August 2026: ALL 40 CHECKS PASSED, python 3.10.12, duckdb 1.5.5,
+airportsdata 20260315.
+
+6. THE OAG BASIS IS NOW CHOSEN, NOT ACCIDENTAL
+
+`SELECT max(week) FROM oag` is gone. `week` is a VARCHAR, so that was a STRING maximum: it
+returned 2026-05-25 because the label sorts highest in the alphabet, not because anyone chose
+it or because it is the newest by date.
+
+It matters more than a tie-break, because the three label forms are not interchangeable:
+
+    single week   2026-05-25          ALL SEVEN regions, week commencing
+    monthly       2025-05             SIX regions, whole month, NO ASIA
+    part-month    2025-05p01/p16      ASIA ONLY, the month in halves
+
+Asia is exported in half-months while the rest come as whole months. So a `max(week)` landing
+on a monthly label would silently drop Asia from every forecast and a route over Taipei would
+lose most of its competition with nothing failing. Taipei serves 98 destinations on a week
+label and 26 across the monthly labels alone.
+
+cortex_app.resolve_oag_week takes AVIA_OAG_WEEK if set, else the newest label carrying the
+FULL region set, and returns the region count with it. /api/basis reports the choice and the
+reason. Measured on E:\Avia:
+
+    default        2026-05-25, 7 regions, "newest of 51 complete-world labels"
+    2025-05-26     honoured, 7 regions
+    2025-05        honoured with "WARNING, 6 of 7 regions"
+    2099-01        refused by name
+
+Same answer as before, for a reason that can be checked. A partial 2026-06 extract can no
+longer become the basis by arriving.
+
+A FULL-YEAR basis is still not wired, deliberately. It is assemblable (monthly label plus its
+p-labels gives seven regions) but days_of_op is a WEEKLY mask, so unioning it across twelve
+months would inflate every frequency up to twelvefold, and frequency drives the QSI score
+directly. That is its own piece of work and it is written up in the project folder as
+"OAG basis - one week against a full year - 11Aug2026.md".
+
+7. THE BACK-TEST IS READY TO RUN AND CANNOT BE RUN FROM COWORK
+
+Established rather than assumed, three times: 60 routes did not finish in 165 seconds, 40 did
+not, and DISCOVERY ALONE takes 2m48 because it scans the whole OAG history. The Cowork sandbox
+has two cores and a 175-second ceiling per call. This is a workstation job and forcing it here
+would produce an underpowered number nobody could place afterwards.
+
+What is ready:
+  - both arms pre-flighted end to end, same routes selected deterministically, and the QSI arm
+    reporting "0 in-run fallbacks (errors)"
+  - --resume on both, so each finished route is flushed and an interruption never loses work
+  - the SIX-YEAR wave cache named: E:\Avia\qsi-tool\app\qsi_wave_cache_6yr.duckdb, flown years
+    2016-2019 plus 2024 and 2025, 5,798 dep-arr-year pairs against 3,602 in the 4-year one
+  - bt2/compare_backtest_arms.py, which pairs the arms on the routes BOTH scored and runs a
+    McNemar test on the routes that changed side. Self-tested on synthetic arms with a known
+    shift. Pairing matters: the relaxed-sample work of 9 August is the record of two headline
+    rates saying one thing and the paired routes saying another
+
+Commands in commit-and-verify-11Aug2026.ps1, part 3.
+
+OPEN, unchanged from the previous commit and not addressed here:
+  - split_floor and the QSI feed are NOT back-tested. Three arms, per section 10 of
+    commit-message-9.
+  - the OAG basis is one week chosen by a STRING max. A full year is assemblable (the
+    monthly labels carry six regions, the p-labels carry Asia) but the frequency question
+    has to be settled first: days_of_op is a weekly mask and unioning it across twelve
+    months would inflate frequency twelvefold. See the OAG basis note in the project folder.
+  - qsi_share reads 0.2510 here and 0.2513 on the Dev PC. Not today's work: only n_stops 0
+    and 1 ever reach itinerary_qsi, measured. airportsdata 20260315 against 20260803 is the
+    remaining difference.
+  - installing global-land-mask in the Cowork sandbox moved the measured market 20%; the Dev
+    PC has it installed and does not show that. Unexplained and worth its own look, since it
+    is Jessica's catchment fix.
+
+Files: app/cortex_app.py, app/cortex_dashboard.html, app/route_forecast.py,
+app/verify_connecting_build.py, bt2/compare_backtest_arms.py,
+commit-and-verify-11Aug2026.ps1, commit-message-10-11Aug2026.txt
+
+  git add app/cortex_app.py app/cortex_dashboard.html app/route_forecast.py app/verify_connecting_build.py bt2/compare_backtest_arms.py commit-and-verify-11Aug2026.ps1 commit-message-10-11Aug2026.txt
+  git commit -F commit-message-10-11Aug2026.txt
+  git push
