@@ -226,9 +226,16 @@ OPEN, unchanged from the previous commit and not addressed here:
     PC has it installed and does not show that. Unexplained and worth its own look, since it
     is Jessica's catchment fix.
 
-Files: app/cortex_app.py, app/cortex_dashboard.html, app/route_forecast.py,
-app/requirements.txt, app/verify_connecting_build.py, bt2/compare_backtest_arms.py,
-bt2/coord_check.py, bt2/migrate_oag_asia_labels.py, commit-and-verify-11Aug2026.ps1,
+app/backtest.py gains --no-split-floor, WITHOUT WHICH THE THIRD ARM COULD NOT BE RUN AT ALL.
+feed_cfg was only built for --feed-fix, --mct-banking or --qsi-feed and never carried
+split_floor, so the floor arm this message keeps calling for had no way to exist. Found by
+writing the runbook rather than by reading the code, which is the argument for writing the
+runbook.
+
+Files, twelve: app/backtest.py, app/cortex_app.py, app/cortex_dashboard.html,
+app/requirements.txt, app/route_forecast.py, app/verify_connecting_build.py,
+bt2/compare_backtest_arms.py, bt2/coord_check.py, bt2/migrate_oag_asia_labels.py,
+commit-and-verify-11Aug2026.ps1, run-backtest-11Aug2026.ps1,
 commit-message-10-11Aug2026.txt
 
 THE TWO MACHINES, written down because it was reconstructed wrongly twice on 11 August:
@@ -247,9 +254,19 @@ COMMIT AND PUSH FROM C:\AviaDev. Then pull on C:\src\meridian and run there.
 
   cd C:\AviaDev
   git status --short
-  git add app/cortex_app.py app/cortex_dashboard.html app/route_forecast.py app/requirements.txt app/verify_connecting_build.py bt2/compare_backtest_arms.py bt2/coord_check.py bt2/migrate_oag_asia_labels.py commit-and-verify-11Aug2026.ps1 commit-message-10-11Aug2026.txt
+  git add app/backtest.py app/cortex_app.py app/cortex_dashboard.html app/requirements.txt app/route_forecast.py app/verify_connecting_build.py bt2/compare_backtest_arms.py bt2/coord_check.py bt2/migrate_oag_asia_labels.py commit-and-verify-11Aug2026.ps1 run-backtest-11Aug2026.ps1 commit-message-10-11Aug2026.txt
   git commit -F commit-message-10-11Aug2026.txt
   git push
+  git log --oneline -3
+
+THEN, and only then, on the WORKSTATION:
+
+  cd C:\src\meridian
+  git pull
+  git log --oneline -3          # if this does not name the commit, STOP
+  py -3.12 -m pip install -r app\requirements.txt
+  py -3.12 app\verify_connecting_build.py --quick
+  .\run-backtest-11Aug2026.ps1  # or paste its commands one at a time
 
 If git refuses with "Unable to create index.lock: File exists", a Cowork session left a stale
 lock. Check nothing is running, then remove it:

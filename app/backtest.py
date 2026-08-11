@@ -767,6 +767,10 @@ def main():
     ap.add_argument("--feed-behind-cap", type=float, default=0.10, help="behind base capture under --feed-fix")
     ap.add_argument("--feed-dom-gain", type=float, default=1.0, help="dominance gain under --feed-fix")
     ap.add_argument("--feed-dom-floor", type=float, default=0.5, help="dominance floor under --feed-fix")
+    ap.add_argument("--no-split-floor", action="store_true",
+                    help="run WITHOUT the split_share connectivity floor (arm 3). The floor is "
+                         "total-preserving, so it moves the P2P/connecting split rather than the "
+                         "headline; read fc_over_out for its effect.")
     ap.add_argument("--mct-banking", action="store_true",
                     help="schedule-bank the beyond feed via MCT + the OAG onward wave (opt-in; test vs baseline)")
     ap.add_argument("--qsi-feed", action="store_true",
@@ -856,7 +860,14 @@ def main():
             print(f"WARNING --preagg {a.preagg} missing/invalid - falling back to full Sabre scans")
     feed_cfg = ({"behind_cap": a.feed_behind_cap, "dom_gain": a.feed_dom_gain,
                  "dom_floor": a.feed_dom_floor}
-                if (a.feed_fix or a.mct_banking or a.qsi_feed) else None)
+                if (a.feed_fix or a.mct_banking or a.qsi_feed or a.no_split_floor) else None)
+    # THE CONNECTIVITY FLOOR AS ITS OWN ARM. split_share re-splits the carried total using an
+    # airport connectivity table and can only ever lift connecting, never cut it. It was sized for
+    # the FLAT feed, which under-credited transfer traffic at non-US hubs. Whether it is still right
+    # under the QSI feed is a separate question from whether the QSI feed is right, and folding the
+    # two into one arm would leave no way to say which moved the score. Hence a third arm.
+    if feed_cfg is not None and a.no_split_floor:
+        feed_cfg["split_floor"] = False
     if feed_cfg is not None and a.preagg:
         feed_cfg["preagg"] = a.preagg
     if feed_cfg is not None and a.mct_banking:
