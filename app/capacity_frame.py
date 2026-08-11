@@ -60,6 +60,15 @@ OAG_TO_AIRCRAFT = {
     "763": "B763", "76W": "B763",
     "333": "A333", "339": "A339", "359": "A359",
     "788": "B788", "789": "B789", "77W": "B77W",
+    # Added 10 August 2026 with the seventeen new economics entries. Until these existed the codes
+    # were deliberately absent, because mapping a code to a type the economics cannot cost would have
+    # offered an airline an aeroplane with no P&L behind it. EVA's 787-10 is the case that mattered.
+    "781": "B781", "772": "B772", "77L": "B772", "773": "B773", "74H": "B748",
+    "753": "B753", "764": "B764",
+    "332": "A332", "388": "A388",
+    "221": "A221", "223": "A223",
+    "733": "B733", "734": "B734", "735": "B735", "73E": "B735",
+    "73W": "B737", "73G": "B737", "739": "B739", "73J": "B739", "7M9": "B39M", "717": "B717",
 }
 
 
