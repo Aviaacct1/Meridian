@@ -232,6 +232,23 @@ split_floor, so the floor arm this message keeps calling for had no way to exist
 writing the runbook rather than by reading the code, which is the argument for writing the
 runbook.
 
+9. TWO ADDITIONS OF 12 AUGUST, BOTH IN FILES ALREADY IN THIS COMMIT
+
+app/backtest.py ALSO CARRIES gcd_km_many, which is not described above and is the largest
+runtime fix in the commit. gcd_km full-scanned 332m rows once per pair, measured at 29.6
+seconds a scan, and the --min-gcd filter called it once per route: 14,015 sequential scans,
+which is days rather than minutes. gcd_km_many does one pass and returns identical values.
+Recorded here because a reader of this message would otherwise not know the fix is in it.
+
+run-backtest-11Aug2026.ps1 IS REVISED. As written on 11 August it omitted --jobs (which
+defaults to 1, so all three arms would have run single-process), --preagg (so every route
+would have full-scanned Sabre), and --routes-file. The third is a correctness fault rather
+than a speed one: backtest.py records at line 928 that discovery does not return identical
+membership run to run, 145 routes against 83 on the case that proved it, and
+compare_backtest_arms.py pairs on the routes ALL arms scored. Three unpinned discoveries
+would have shrunk the paired sample invisibly. The runbook now discovers once with
+--discover-only, pins the set, and runs all three arms against the pin.
+
 Files, twelve: app/backtest.py, app/cortex_app.py, app/cortex_dashboard.html,
 app/requirements.txt, app/route_forecast.py, app/verify_connecting_build.py,
 bt2/compare_backtest_arms.py, bt2/coord_check.py, bt2/migrate_oag_asia_labels.py,
