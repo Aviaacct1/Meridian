@@ -29,6 +29,44 @@ if HERE not in sys.path:
 DUMP = os.path.join(HERE, "cities5000.txt")
 MAX_PLAN_LF = 0.875
 DEFAULT_CAPTURE_RATE = 0.65
+
+# Plain-English explanation of each market-build step, keyed on the step label. The label says what the
+# line is; the note says why it is there. Written for an airline planner reading the table on a slide
+# for the first time, not for someone who knows the model, because that is who the table is shown to.
+STEP_NOTES = {
+    "Passengers flying to the destination from the whole service area today":
+        "Everyone within reach of this airport who already flies to the destination, whichever airport "
+        "they use today. Measured from Sabre bookings, grossed up for the bookings Sabre does not see.",
+    "Of those, the share a nonstop from this airport would win":
+        "Most of these passengers drive past this airport to a larger one. This is the share who would "
+        "switch once the nonstop exists, from how far they live from each airport and what each offers.",
+    "Of those, the share using this destination airport":
+        "Where the destination city has more than one airport, the share whose journey ends at this one.",
+    "Extra passengers created by having a direct service":
+        "Journeys nobody makes today because the connection is too long, which a nonstop makes worth "
+        "taking. A full-service long-haul launch is assumed to add 15%.",
+    "Trim applied because one new service wins less of a very large market":
+        "In a very large market a single new service takes proportionally less than in a small one. "
+        "Measured on past launches and applied only to the local traffic.",
+    "Adjustment for how this airport has performed on its own past launches":
+        "Some airports repeatedly hold more or less of their own catchment than the general model "
+        "expects. This factor is learned from that airport's own launch history.",
+    "Uplift where the destination airport serves a thin market":
+        "Inbound demand to a genuine secondary airport is under-allocated by a catchment model. The "
+        "uplift applies only where the market is thin enough for that to be the reason.",
+    "Adjustment for airports of this size and distance, from past launches":
+        "A correction fitted across every launch in the back-test for airports of this size flying "
+        "this distance, so a route is not forecast in isolation from what comparable routes did.",
+    "Limited to what the aircraft and frequency can seat; the rest is turned away":
+        "Demand above what the chosen aircraft and weekly frequency can carry at a sensible load "
+        "factor cannot be flown. It is removed here rather than counted as traffic.",
+    "Re-split between local and connecting passengers; the total does not change":
+        "How the same total divides between passengers flying only this route and those connecting at "
+        "either end, set by how much of each airport's traffic is transfer traffic.",
+    "Point to point passengers carried each year":
+        "Passengers flying only this route, both directions. Connecting passengers are added to this "
+        "to reach the route total.",
+}
 DEMAND_RADIUS_KM = 110.0          # the origin's OWN residence catchment (tight; the hub is a
                                   # competitor it leaks to, not part of its demand)
 def _resolve_friction():
@@ -582,19 +620,25 @@ def forecast(sabre_db, oag_db, week, origin, dest_codes, competing_airports, *, 
     # Francisco's market, and the meeting stops there. The chain has to be visible so the base each
     # rate applies to is unambiguous, and so the combined allocation-and-capture step is not mistaken
     # for a capture of San Jose's own catchment.
-    _bld = [("service area market to the destination, measured", market, None),
-            ("origin capture with a nonstop", market * share, share),
-            ("destination airport share of its metro", market * share * dshare, dshare),
-            ("stimulation from direct service", captured, stimulation)]
+    # The labels below are the ones a client sees. They are written for a reader meeting the model for
+    # the first time, because this table goes on a slide: every line says what it is in words, and
+    # STEP_NOTES carries one sentence of explanation for each. Shorthand a modeller understands
+    # ("dshare", "market-size trim") reads as jargon to an airline planner and gets queried.
+    _bld = [("Passengers flying to the destination from the whole service area today", market, None),
+            ("Of those, the share a nonstop from this airport would win", market * share, share),
+            ("Of those, the share using this destination airport", market * share * dshare, dshare),
+            ("Extra passengers created by having a direct service", captured, stimulation)]
     if market_factor:
         _msz = _market_size_mult(market, market_factor)
         captured *= _msz
-        _bld.append(("market-size trim on point to point", captured, _msz))
+        _bld.append(("Trim applied because one new service wins less of a very large market",
+                     captured, _msz))
     # PER-AIRPORT CAPTURE CALIBRATION (T7): an origin that consistently captures more/less than the
     # general catchment model gets a factor learned from its own past launches (build_airport_factors.py).
     if airport_capture and airport_capture != 1.0:
         captured *= float(airport_capture)
-        _bld.append(("per-airport capture calibration", captured, float(airport_capture)))
+        _bld.append(("Adjustment for how this airport has performed on its own past launches",
+                     captured, float(airport_capture)))
     # DESTINATION thin-market lift: a genuine secondary (SJC) has its INBOUND demand under-allocated by the
     # catchment model, but ONLY where the O&D is thin/catchment-fed; a big directly-measured market (LHR-SJC)
     # needs no help. Conditioned on the measured market so it can't over-forecast a mature large route.
@@ -603,7 +647,8 @@ def forecast(sabre_db, oag_db, week, origin, dest_codes, competing_airports, *, 
             _dtf = __import__("airport_capture").dest_thin_factor(dest_airport, market)
             captured *= _dtf
             if _dtf != 1.0:
-                _bld.append(("destination thin-market lift", captured, _dtf))
+                _bld.append(("Uplift where the destination airport serves a thin market",
+                             captured, _dtf))
         except Exception:
             pass
     # HAUL recalibration (opt-in, default OFF): a TWO-SIDED distance-response correction around a healthy
@@ -698,7 +743,8 @@ def forecast(sabre_db, oag_db, week, origin, dest_codes, competing_airports, *, 
         if _bf and _bf != 1.0:
             captured *= _bf; feed *= _bf; feed_beyond *= _bf; feed_behind *= _bf
             total_demand = captured + feed
-            _bld.append(("airport-bucket calibration", captured, _bf))
+            _bld.append(("Adjustment for airports of this size and distance, from past launches",
+                         captured, _bf))
             for _dm in (beyond_detail, behind_detail):
                 for _c in _dm.values():
                     if _c.get("captured") is not None: _c["captured"] *= _bf
@@ -719,7 +765,7 @@ def forecast(sabre_db, oag_db, week, origin, dest_codes, competing_airports, *, 
     p2p_share_v = captured / _rawtot
     p2p_carried = carried * p2p_share_v
     if carried < total_demand:
-        _bld.append(("bounded by the aircraft, demand above it is spilled",
+        _bld.append(("Limited to what the aircraft and frequency can seat; the rest is turned away",
                      captured * carried / _rawtot, carried / _rawtot))
     conn_carried = carried - p2p_carried
     try:
@@ -752,8 +798,9 @@ def forecast(sabre_db, oag_db, week, origin, dest_codes, competing_airports, *, 
     # way: on SJC-TPE it takes P2P from 62% of the carried total to 45%, because a route into a hub
     # like Taipei is mostly transfer traffic and the engine's own leg split under-credits that.
     if abs(p2p_carried - captured * carried / max(_rawtot, 1.0)) > 1.0:
-        _bld.append(("re-split by endpoint connectivity, total unchanged", p2p_carried, None))
-    _bld.append(("point to point carried", p2p_carried, None))
+        _bld.append(("Re-split between local and connecting passengers; the total does not change",
+                     p2p_carried, None))
+    _bld.append(("Point to point passengers carried each year", p2p_carried, None))
 
     rec = "demand fits the aircraft"
     if spill > 0.02 * max(total_demand, 1):
@@ -775,7 +822,8 @@ def forecast(sabre_db, oag_db, week, origin, dest_codes, competing_airports, *, 
         "freq_discount": round(freq_discount, 3),
         "captured_demand": round(captured), "connecting_feed": round(feed),
         # The point-to-point chain, step by step, each with the multiplier that produced it. Each-way.
-        "market_build": [{"step": n, "value": round(v), "factor": (round(m, 4) if m else None)}
+        "market_build": [{"step": n, "value": round(v), "factor": (round(m, 4) if m else None),
+                          "note": STEP_NOTES.get(n)}
                          for n, v, m in _bld],
         "market_measured_pre_grossup": round(market / _cov) if _cov else round(market),
         "p2p_carried": round(p2p_carried), "connecting_carried": round(conn_carried),
