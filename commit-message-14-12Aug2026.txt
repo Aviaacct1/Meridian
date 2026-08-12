@@ -1,0 +1,47 @@
+Delete the three out-of-git app trees, in a script rather than in an instruction
+
+Open item 3 of the 11 August handover, written down twice and never actioned, has now cost real
+time twice. On 11 August two rounds were lost writing a file to one place and running it from
+another. On 12 August a whole Cowork session was lost: Cowork attaches the OneDrive project folder
+automatically, that folder holds an app\ tree dated 7 August, and a fresh session reasonably took
+it for the working copy. Its cortex_app.py is 1,627 lines against the real 2,154 and predates the
+connecting build entirely.
+
+It has stayed open because it was carried as a note asking someone to delete some folders. It is
+now a script.
+
+WHAT IT DOES
+
+  1. moves any *.duckdb out of E:\Avia\qsi-tool\app to E:\Avia\ BEFORE deleting the tree that holds
+     them. They are data and must not live inside an app tree. run-backtest-11Aug2026.ps1 already
+     points at E:\Avia\qsi_wave_cache_pin_12Aug2026.duckdb, so nothing in the runbook breaks, and
+     the six-year cache is kept because it is expensive to rebuild and is still valid.
+  2. removes C:\Avia\qsi-tool\app, E:\Avia\qsi-tool\app and the app\ inside the OneDrive project
+     folder.
+  3. removes app_avia_style, referenced nowhere.
+  4. removes the three superseded kickoff prompts, so nobody pastes the wrong one.
+  5. prints the line count of cortex_app.py in each live tree, which is the check that the right
+     tree survived.
+
+HOW IT REFUSES TO DELETE THE WRONG THING
+
+  - DRY RUN BY DEFAULT. It prints what it would do and changes nothing. -Execute to act.
+  - C:\AviaDev and C:\src\meridian are protected by name, at any depth.
+  - ANY tree carrying a .git is refused, whatever the target list says. A repo is never a stale copy.
+  - A path not on the machine is skipped rather than failing, so the same command is correct on the
+    Dev PC and on the Workstation. The targets are split across the two.
+
+  .\cleanup-stale-copies-12Aug2026.ps1              dry run
+  .\cleanup-stale-copies-12Aug2026.ps1 -Execute     apply
+
+Run it on both machines and read section 5 of the output before anything else.
+
+  cleanup-stale-copies-12Aug2026.ps1
+  commit-message-14-12Aug2026.txt
+
+  cd C:\AviaDev
+  git add cleanup-stale-copies-12Aug2026.ps1 commit-message-14-12Aug2026.txt
+  git commit -F commit-message-14-12Aug2026.txt
+  git push
+
+Avia Solutions Limited. All rights reserved.
