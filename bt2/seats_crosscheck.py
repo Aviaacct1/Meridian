@@ -54,6 +54,10 @@ def parse_args():
                    help="longhaul is gcd>=2500km, international, not LCC, which is bt2_claimset's "
                         "own definition and the segment the engine is weakest on")
     p.add_argument("--min-pax", type=float, default=100.0)
+    p.add_argument("--min-months", type=int, default=0,
+                   help="keep only routes operating at least this many months in the launch year. "
+                        "11 selects year-round services, where annualising the seats is nearly a "
+                        "no-op and the launch-year schedule is a fair estimate of the graded year")
     p.add_argument("--out", default=None)
     return p.parse_args()
 
@@ -124,9 +128,18 @@ def main():
         # six with nothing but the launch month, and it inflated the spread enough that seats x k on
         # the sector total scored 21.1% here against the 74.5% the null control gave for the same
         # segment on a matched basis. months_operated was in launch_profile the whole time.
+        # ANNUALISING IS NOT ENOUGH ON ITS OWN, and the first corrected run showed it. Median months
+        # operated is 6 and p10 is 2, so scaling by 12/months assumes a route that flew six months
+        # in its launch year goes on to fly twelve. On a genuinely SEASONAL service those months are
+        # the operating pattern rather than a partial view of it, annualising overstates the seats,
+        # and the ratio is dragged down: k for the local leg read 0.347 against the null control's
+        # 0.673, almost exactly the factor of two the median implies. --min-months 11 isolates the
+        # year-round services, where the scaling is nearly a no-op and the launch-year schedule is a
+        # fair estimate of the graded year. If seats x k on the sector total then approaches the
+        # null control's 74.5%, seasonality was the whole of the residual.
         _m = float(pr.get("months_operated") or 0)
         seats = float(pr.get("seats_ly") or 0)
-        if _m <= 0:
+        if _m <= 0 or _m < a.min_months:
             continue
         seats = seats * 12.0 / _m
         gcd = float(pr.get("gcd_km") or 0)
@@ -239,13 +252,14 @@ def main():
     if a.out and rows:
         with open(a.out, "w", newline="", encoding="utf-8") as f:
             w = csv.writer(f)
-            w.writerow(["route", "cohort", "gcd_km", "seats_ly", "engine_local", "seats_x_k",
-                        "p2p_outturn", "sector_outturn", "engine_over_ref"])
+            w.writerow(["route", "cohort", "gcd_km", "months_operated", "seats_annualised",
+                        "engine_local", "seats_x_k", "p2p_outturn", "sector_outturn",
+                        "engine_over_ref"])
             for r in rows:
                 k = ks.get(r["cohort"]) or 0
                 ref = r["seats"] * k
-                w.writerow([r["route"], r["cohort"], round(r["gcd"]), round(r["seats"]),
-                            round(r["engine"]), round(ref), round(r["actual"]),
+                w.writerow([r["route"], r["cohort"], round(r["gcd"]), int(r["months"]),
+                            round(r["seats"]), round(r["engine"]), round(ref), round(r["actual"]),
                             round(r["sector"]), round(r["engine"] / ref, 4) if ref else ""])
         print("\nwrote %s" % a.out)
 
