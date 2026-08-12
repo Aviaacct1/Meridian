@@ -1,0 +1,81 @@
+Task 1 harness, and the wiring fault it found before anything was wired
+
+WHAT THIS COMMIT DOES NOT DO. It does not wire the calibrated model into cortex_app. Task 3 is
+held, and the reason is in the first section below.
+
+THE WIRING IS NOT PROVED. app/route_context.py line 194 sets capa, the model's third feature,
+to the engine's qsi_share. That is not the quantity the model was trained on. Training capa is
+bt2_capture.cap_from line 86: qns / (qns + qcx), where qns is the proposed nonstop's frequency
+times an elapsed-time penalty and qcx is 0.20 x (online + 0.75 alliance + 0.25 interline) over
+the one-stop itineraries between the same two airports, averaged over the two directions. It is
+a nonstop-versus-connecting share of the pair's own service. The engine's qsi_share is the share
+of the catchment's traffic to the destination won at the origin airport, which is a different
+quantity with a different meaning and a different scale.
+
+MEASURED, not argued. Training capa on the four pin cohorts, n=4,287: median 0.9168, p10 0.4896,
+p90 1.0000. The engine's qsi_share reads 0.059 at daily on SJC-TPE against a measured airport
+factor of 0.32. So the live path would feed feature 3 a value below the tenth percentile of
+training on essentially every route, silently, and the published accuracy would describe nothing
+the client is shown.
+
+Two more of the twenty-one inputs are built by different code in the live path than in training
+and neither has been compared. qcx sums BOTH directions in training, bt2_lib line 60; route_context
+line 207 builds it from one set of engine sums. legs_n in training is every OAG leg touching either
+endpoint in the pre-launch week; the live value is the connection-set leg count from route_qsi.
+
+bt2_wiring_test.py did not catch this and could not have. It proved that bt2_forecast._vec and
+bt2_g12_exp.X_of build the same vector FROM THE SAME INPUTS, feeding both from the training rows.
+It never called route_context.
+
+THE FIX IS ONE IMPLEMENTATION RATHER THAN TWO: load_legs, components and cap_from move into app/
+and both the training chain and the live path import them. That is John's ruling of 9 August
+applied to the three inputs it was not applied to.
+
+THE TWO PUBLISHED FIGURES ARE NOT A COMPARISON, and it is not only the sample. Population: the
+calibrated rule takes virgin pairs, at least 1,500 nonstop passengers in the launch year and under
+500 in each of the two years before, with a market floor and a capacity-ratio ceiling; the pin is
+OAG new services at a minimum frequency of 3, a minimum sector of 1,500 km and a minimum outturn of
+3,000. Target: the calibrated model is graded against Sabre itinerary='NON-STOP' passengers on the
+pair, bt2_discover line 64, which is the local market and excludes every connecting passenger,
+while fc_over_out is graded against sector traffic, backtest lines 246 to 264, which counts the
+connecting feed. Year: launch year against launch year plus one.
+
+So the published 92% and 86% describe a LOCAL NONSTOP forecast, not the sector total a client is
+shown. That has to be settled before the calibrated layer produces the client number, because
+otherwise an accuracy claim is attached to a different quantity from the one it was measured on.
+
+FILES
+
+  bt2/bt2_pin_score.py          NEW. Task 1. Reads a back-test arm CSV and the training artefacts,
+                                refits leave-one-cohort-out on the pin's four cohorts, and reports
+                                both engines on both of the pin's denominators plus the calibrated
+                                model on its native terms, with McNemar on each. No engine run and
+                                no store scans. Its binomial reproduces the three p-values already
+                                in bt2_experiments.log exactly: 68/113 to 0.001, 43/112 below
+                                0.001, 98/74 to 0.079.
+
+  run-pin-score-12Aug2026.ps1   NEW. The Workstation run, one line per command, all four
+                                environment variables set, and how to read the output.
+
+  bt2/bt2_experiments.log       five entries: CAPA-IS-NOT-QSI-SHARE, THREE-INPUTS-UNCHECKED,
+                                GRADE-BASIS, PIN-SCORE-TOOL, CAPA-DISTRIBUTION, BLIND-ON-PIN-COHORTS.
+
+  app/warm_demo.py              AVIA_FREQ_SENSITIVE set in the server environment. It was not, so
+                                unless the launching shell carried it the portal ran with the
+                                frequency switch off, against the decision of 10 August. setdefault,
+                                so a shell that names it still wins.
+
+MEASURED ON THE DEV PC, 12 August 2026
+
+  The calibrated model refit leave-one-cohort-out on the pin's four cohorts only, 2016/2017/2018/
+  2024, relaxed sample, Sabre throughout: 59.8% within +-20%, n=4,287, in 14 seconds on two cores.
+  Against the published 60.4%, which uses six cohorts and regrades US domestic launches onto the
+  DOT. Dropping 2019 and 2025 and staying on Sabre costs about a point.
+
+  THE MODEL DOES NOT WEAKEN IN THIN MARKETS, which bears on the leakage retrain. By base market:
+  under 500 66.9%, 500-1,000 59.7%, 1,000-2,000 61.1%, 2,000-5,000 62.7%, 5,000-20,000 58.1%,
+  above 20,000 53.1%. The thin end is its best band. The 250 floor is a property of the discovery
+  rule, not of the model's competence, so widening the rule is the change Task 2 needs and the
+  domain guard's premise is narrower than it reads.
+
+Avia Solutions Limited. All rights reserved.

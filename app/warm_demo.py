@@ -67,6 +67,12 @@ def _server_env(a):
     env = dict(os.environ)
     env.setdefault("AVIA_DUCKDB_THREADS", "1")   # deterministic live forecasts on the stand
     env.setdefault("PYTHONHASHSEED", "0")
+    # THE FREQUENCY SWITCH, set here on 12 August 2026. It was not, so unless the launching shell
+    # happened to carry it the portal ran with frequency sensitivity OFF, against the decision of
+    # 10 August. With it off the route returns the same demand at 3, 5, 7, 10 and 14 weekly and only
+    # the load factor moves, so a planner asking what the seventh frequency buys gets no answer.
+    # setdefault, so a shell that names it still wins and a deliberate off is still possible.
+    env.setdefault("AVIA_FREQ_SENSITIVE", "1")
     if a.sabre:
         env["AVIA_SABRE"] = a.sabre
     if a.oag:
