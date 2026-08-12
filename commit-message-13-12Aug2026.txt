@@ -1,37 +1,112 @@
-A baseline of failures reads as a pass, so refuse to write one
+The engine reconciles to the 2025 analyst leg by leg, and the growth taper was the whole gap
 
-Two guards on econ_baseline.py capture, both found by running it.
+No engine code. Two guards on econ_baseline.py found by running it, and the record of an evening
+that produced the reconciliation this project has claimed since Monday and never demonstrated.
 
-1. IT WROTE A FILE IN WHICH EVERY CASE HAD FAILED
+1. THE RECONCILIATION, AND WHY THE OLD ONE WAS NOT ONE
 
-The first capture ran in a fresh shell with AVIA_OAG and AVIA_SABRE unset. All three SJC-TPE cases
-returned "OAG/Sabre databases not found" and the file was written anyway, with those strings as the
-frozen figures. A later check would have compared error against error, found them identical, and
-reported that nothing had moved.
+The "1.03x the analyst on total, 1.01x on P2P" quoted in the handover, in commit-message-10 and in
+verify_connecting_build section 11 compares Meridian's CAPPED CARRIED figure against the analyst's
+UNCAPPED DEMAND. They agree because our plan cap of 87.5% sits near his DERIVED 86.4% and the
+aircraft are similar sizes. That is arithmetic on seats agreeing with arithmetic on seats. His
+86.4% was an output of his forecast; our 87.5% is an input to ours. WITHDRAWN.
 
-That is the failure this file exists to prevent, occurring inside the file itself. capture now
-refuses to write when any case fails, and names each one.
+Read uncapped on both sides, on his 12:00 schedule, his A359 at 306 seats, Southwest counted as a
+partner as his scope states, floor off so the connecting leg is comparable with his, two-way:
 
-2. AND IT WOULD HAVE FROZEN THE WRONG BASIS
+  2027, post-recovery 7/7      P2P  82,196  vs 81,858 = 1.004x
+                               cnx  27,570  vs 25,999 = 1.060x
+                               tot 109,764  vs 107,857 = 1.018x
+  2028, post-recovery 7/7/7    P2P 1.074x   cnx 1.135x   tot 1.089x
+  2028, analyst 16/7/7         P2P 1.165x   cnx 1.230x   tot 1.181x
 
-AVIA_FREQ_SENSITIVE was decided ON on 10 August. With it off the capture share reads 0.32 rather
-than 0.2513 and the route returns the same demand at 3, 5, 7, 10 and 14 weekly, so only the load
-factor moves. A baseline captured that way describes a configuration Avia does not use. capture now
-refuses to write without it and says what it costs.
+AND THE MIX AGREES. His connecting share is 24.1%. Ours reads 25.1% at 4x, 24.3% at 5x, 23.8% at 6x.
 
-The check side already blocked on a switch difference. The capture side did not, which left the
-asymmetry where a bad baseline could be created and only its comparison would complain.
+2. THE GAP WAS THE GROWTH TAPER, NOT THE MARKET BUILD
 
-3. ALSO
+On the default taper the same case reads 154,466 two-way, 1.43x the analyst. The taper measures a
+20.00% market CAGR, which is the CLAMP CEILING and a post-COVID recovery burst, holds it for two
+years and decays to 3%, giving +64.6% to 2028. The analyst built +16% / +7% / +7% = +32.8%.
+1.646 / 1.328 = 1.239, so 25 of the 43 points are that one assumption.
 
-datetime.utcnow() is deprecated in python 3.12 and printed a warning across the first line of the
-capture output. Replaced with the timezone-aware form.
+DECIDED: the recovery is over and the default taper is not appropriate for client work. Scenarios
+carry an explicit post-recovery growth path. The taper should not be a silent default on a route
+that has not launched.
 
-  app/econ_baseline.py
+3. THE FREQUENCY FINDING, WHICH IS WHAT AN AIRLINE ACTUALLY BUYS
+
+Two-way demand against two-way seats, post-recovery growth:
+
+  2027  4x   109,764 / 127,296 = 86.2%
+  2027  5x   119,306 / 159,120 = 75.0%
+  2028  4x   117,448 / 127,296 = 92.3%
+  2028  5x   127,658 / 159,120 = 80.2%
+  2028  6x   137,200 / 190,944 = 71.9%
+
+The analyst's 4x is validated for launch. The route outgrows it: at 2028 it spills circa 6,064
+two-way, 5% of demand, and the fifth frequency clears that at 80.2%. Six weekly is too thin.
+
+4. AND THE FLOOR IS NOW EVIDENCED, WHICH CHANGES WHAT AGREEMENT MEANS
+
+Actual connecting per route is outturn_pax less p2p_outturn. The multiplier the flat feed needs to
+reach it: all routes x0.94 (n=2,339), hub destination x1.03 (n=1,510), long haul over 6,000km
+x2.50 (n=476), touching a major Asian hub x2.07 (n=335), long haul AND Asian hub x2.82 (n=147).
+On SJC-TPE, 10,440km into Taipei, split_share applies x2.19.
+
+THE FLOOR IS SIZED CORRECTLY FOR THE CASE IT WAS WRITTEN FOR, and it is conservative against the
+closest comparator. Its design is right too: it only ever LIFTS, and where the feed already reads
+0.94 to 1.03 it has nothing to lift.
+
+The uncomfortable consequence: our raw feed agrees with the analyst at circa 25% connecting because
+BOTH ARE BUILT ON THE SAME UNDER-COUNTING SOURCE. Agreeing with him on the mix is not validation.
+
+5. TWO GUARDS ON econ_baseline.py, BOTH FOUND BY RUNNING IT
+
+The first capture ran in a fresh shell with AVIA_OAG and AVIA_SABRE unset. All three cases returned
+"OAG/Sabre databases not found" and the file was written anyway, with those strings as the frozen
+figures. A later check would have compared error against error and reported that nothing moved.
+capture now refuses to write when any case fails, and names each one.
+
+It would also have frozen the wrong basis. AVIA_FREQ_SENSITIVE was decided ON on 10 August; with it
+off the capture share reads 0.32 rather than 0.2513 and the route returns the same demand at every
+frequency. capture now refuses to write without it. The check side already blocked on a switch
+difference; the capture side did not.
+
+datetime.utcnow() is deprecated in python 3.12 and printed a warning across the first line of
+output. Replaced with the timezone-aware form.
+
+6. TWO THINGS OPENED, NEITHER RESOLVED
+
+THE DEPARTURE OPTIMISER SCORES CONNECTING PASSENGERS ONLY. route_feed.optimise_departure returns
+b_pax + h_pax and picks the maximum; local demand and yield are not in the objective. On SJC-TPE it
+chooses 00:30, taking P2P from 83,408 to 55,306 while taking connecting from 31,982 to 96,680.
+AGAINST THAT: it picks 00:30 CI, 02:00 BR and 00:30 UA against actual SFO departures of 01:05,
+01:15 and 23:55, three carriers within 35 minutes. On a 13-hour sector local demand is close to
+time-indifferent and the connecting bank is not, so the objective may be capturing the binding
+constraint. Test by weighting connecting at 0.7 of a local passenger and seeing whether the answer
+moves. Airline-specific prorates are not obtainable and are not needed for that test.
+
+THE 87.5% PLAN CAP IS ONE GLOBAL NUMBER for every carrier type and haul, and it can only ever
+reduce carried, so it can only ever under-forecast. ULCCs routinely exceed 90% and some full-service
+long-haul runs in the sixties. The attempt to set it from the back-test FAILED and its numbers must
+not be used: capacity is annualised at 52 weeks in both directions from a schedule snapshot while
+outturn_pax is what actually flew, so the ratio is not a load factor. Carry months-operated into the
+back-test row and re-cut.
+
+7. FOUR OF MY OWN CONCLUSIONS WITHDRAWN IN ONE DAY
+
+Capped carried against uncapped demand, twice. The analyst's connecting figure treated as a target
+when it inherits the same under-count our raw feed does. And annualised capacity against actual
+outturn. Identical pattern in all four: reaching for a measurement without first establishing that
+the two quantities were comparable. The three findings that survived all came from checking the
+basis before reading the number.
+
+  bt2/bt2_experiments.log        10 further entries for 12 August, 48 for the day
+  app/econ_baseline.py           the two capture guards and the timestamp fix
   commit-message-13-12Aug2026.txt
 
   cd C:\AviaDev
-  git add app/econ_baseline.py commit-message-13-12Aug2026.txt
+  git add bt2/bt2_experiments.log app/econ_baseline.py commit-message-13-12Aug2026.txt
   git commit -F commit-message-13-12Aug2026.txt
   git push
 
