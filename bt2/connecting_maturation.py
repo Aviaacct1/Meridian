@@ -69,6 +69,98 @@ def _usable(y):
     return 2015 <= y <= SABRE_LAST and y not in BAD_YEARS
 
 
+def _sector_by_pair(sabre, rows, usable):
+    """Sector traffic for every pinned pair and needed year, ONE GROUPED PASS PER YEAR.
+
+    build_preagg.SQL_SECTOR_ADJ verbatim, including the DISTINCT on (year, rid, pax) that counts an
+    itinerary once per distinct pair rather than once per leg occurrence, then joined to the pin
+    pairs. Per year rather than all at once because the explosion is up to four rows per itinerary
+    and a 16GB box has been caught by that before; a year at a time is bounded and shows progress.
+    """
+    import time
+    import duckdb
+
+    pins, years = set(), set()
+    for r in rows:
+        dep, arr = (r.get("dep") or "").strip(), (r.get("arr") or "").strip()
+        try:
+            L = int(float(r.get("year")))
+        except (TypeError, ValueError):
+            continue
+        if not dep or not arr:
+            continue
+        pins.add((min(dep, arr), max(dep, arr)))
+        for h in (1, 2, 3):
+            if usable(L + h):
+                years.add(L + h)
+    print("sector leg-explosion: %d pinned pairs over years %s"
+          % (len(pins), ", ".join(str(y) for y in sorted(years))))
+
+    con = duckdb.connect(sabre, read_only=True)
+    try:
+        try:
+            from db_registry import apply_limits
+            apply_limits(con)          # memory cap and a named temp directory, per the run rules
+        except Exception:              # noqa: BLE001
+            con.execute("SET memory_limit='8GB'")
+        con.execute("CREATE TEMP TABLE pins(u VARCHAR, v VARCHAR)")
+        con.executemany("INSERT INTO pins VALUES (?,?)", sorted(pins))
+        con.execute("CREATE TEMP TABLE aps AS SELECT u AS a FROM pins UNION SELECT v FROM pins")
+
+        # rowid is only exposed on BASE tables, which build_preagg's own comment records, and it is
+        # what makes the DISTINCT count an itinerary once. If sabre is a view in this store the
+        # explosion would double-count a two-leg itinerary onto the same pair, so the fallback is
+        # named rather than silent.
+        try:
+            con.execute("SELECT rowid FROM sabre LIMIT 1").fetchone()
+            rid = "rowid"
+        except Exception:                                  # noqa: BLE001
+            rid = "ROW_NUMBER() OVER ()"
+            print("   sabre exposes no rowid (a view?), using a window row number instead")
+
+        sql = """
+        WITH r AS (
+            SELECT source_year AS year, %s AS rid, CAST(passengers AS DOUBLE) AS pax,""" % rid + """
+                   origin_airport AS o, destination_airport AS d,
+                   NULLIF(connecting_airport1, '') AS c1,
+                   NULLIF(connecting_airport2, '') AS c2,
+                   NULLIF(connecting_airport3, '') AS c3
+            FROM sabre
+            WHERE source_year = ?
+              AND (origin_airport IN (SELECT a FROM aps)
+                OR destination_airport IN (SELECT a FROM aps)
+                OR connecting_airport1 IN (SELECT a FROM aps)
+                OR connecting_airport2 IN (SELECT a FROM aps)
+                OR connecting_airport3 IN (SELECT a FROM aps))
+        ),
+        legs AS (
+            SELECT year, rid, pax, o  AS f, COALESCE(c1, d) AS t FROM r
+            UNION ALL
+            SELECT year, rid, pax, c1 AS f, COALESCE(c2, d) AS t FROM r WHERE c1 IS NOT NULL
+            UNION ALL
+            SELECT year, rid, pax, c2 AS f, COALESCE(c3, d) AS t FROM r WHERE c2 IS NOT NULL
+            UNION ALL
+            SELECT year, rid, pax, c3 AS f, d              AS t FROM r WHERE c3 IS NOT NULL
+        ),
+        pr AS (
+            SELECT DISTINCT year, rid, pax, LEAST(f, t) AS u, GREATEST(f, t) AS v
+            FROM legs WHERE f IS NOT NULL AND t IS NOT NULL
+        )
+        SELECT pr.year, pr.u, pr.v, SUM(pr.pax)
+        FROM pr JOIN pins ON pins.u = pr.u AND pins.v = pr.v
+        GROUP BY 1, 2, 3"""
+
+        out = {}
+        for y in sorted(years):
+            t0 = time.time()
+            for yr, u, v, pax in con.execute(sql, [y]).fetchall():
+                out[(u, v, int(yr))] = float(pax or 0)
+            print("   %d: %6.1fs, %d pair rows so far" % (y, time.time() - t0, len(out)))
+        return out
+    finally:
+        con.close()
+
+
 def _summarise(name, pairs):
     """pairs is a list of (earlier, later). Reports the ratio later/earlier."""
     r = sorted(later / earlier for earlier, later in pairs if earlier > 0 and later > 0)
@@ -93,14 +185,22 @@ def main():
     if store is None:
         sys.exit("preagg store not usable: %r. Build it with build_preagg.py rather than "
                  "full-scanning Sabre 9,000 times." % a.preagg)
-    if not preagg.has_sector(store):
-        sys.exit("the preagg store has no sector_adj table, so connecting cannot be read without a "
-                 "full Sabre scan per route. Build it before running this.")
+    # od_p2p is present (preagg.available checks for it), so the local leg is an indexed lookup.
+    # sector_adj is optional and this store was built with --skip-sector, so the connecting leg is
+    # computed here instead, ONE GROUPED PASS PER YEAR rather than one full scan per route. The
+    # explosion is build_preagg's SQL_SECTOR_ADJ verbatim, including its DISTINCT on (year, rid,
+    # pax), which counts an itinerary ONCE per distinct pair rather than once per leg occurrence.
+    # Reproducing that exactly is the point: a different counting rule here would produce a number
+    # that cannot be held against anything else in this programme.
+    sector = None if preagg.has_sector(store) else {}
 
     with open(a.arm, newline="", encoding="utf-8") as f:
         rows = list(csv.DictReader(f))
     print("arm %s: %d rows" % (os.path.basename(a.arm), len(rows)))
     print("preagg %s, sector table present" % os.path.basename(store))
+
+    if sector is not None:
+        sector = _sector_by_pair(a.sabre, rows, _usable)
 
     seen, out = set(), []
     for r in rows:
@@ -122,7 +222,10 @@ def main():
                 rec["why_y%d" % h] = ("covid" if y in BAD_YEARS else "no sabre")
                 continue
             p2p = preagg.p2p_traffic(store, dep, arr, y)
-            sec = preagg.sector_traffic(store, dep, arr, y)
+            if sector is None:
+                sec = preagg.sector_traffic(store, dep, arr, y)
+            else:
+                sec = sector.get((min(dep, arr), max(dep, arr), y), 0.0)
             cnx = sec - p2p
             rec["p2p_y%d" % h] = round(p2p)
             # RULER-SOUND checked that total outturn is never below pure P2P on the graded year. It
