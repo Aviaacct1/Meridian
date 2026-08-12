@@ -236,27 +236,42 @@ def main():
             # RULER-SOUND checked that total outturn is never below pure P2P on the graded year. It
             # is checked again here rather than assumed, because this reads two further years the
             # earlier check never looked at.
-            rec["cnx_y%d" % h] = round(cnx) if cnx >= 0 else ""
-            # THE MAGNITUDE IS CARRIED, not just the flag. On the first run 163 route-years of circa
-            # 9,216 read sector below pure P2P, which is impossible, and RULER-SOUND found ZERO of
-            # 3,072 on the graded year. The difference is that the arm built BOTH quantities from
-            # one source while this mixes preagg's od_p2p with the explosion computed here, so a
-            # small negative is a rounding difference between two builds and a large one is a basis
-            # mismatch. Without the size nobody can tell which, so it is written out.
-            rec["why_y%d" % h] = "" if cnx >= 0 else "sector below p2p by %d" % round(-cnx)
+            # A HALF-PASSENGER TOLERANCE, and the reason is measured rather than assumed. The first
+            # two runs flagged 163 and then 166 route-years as sector-below-P2P on identical inputs,
+            # and the shortfall on every one of them read median 0, p90 0 and max 0 passengers. So
+            # sector equals pure P2P to floating point and the route simply carries NO connecting
+            # traffic; it is not an impossible value. The count moved between runs because DuckDB
+            # sums in parallel and the order of a float addition decides whether the difference
+            # lands at exactly zero or a hair below it, which is the unordered-result trap in a new
+            # costume. Anything below half a passenger is zero. A real shortfall still reports its
+            # size, because that would be a basis mismatch between preagg's od_p2p and the
+            # explosion computed here and would put the whole comparison in question.
+            if cnx < -0.5:
+                rec["cnx_y%d" % h] = ""
+                rec["why_y%d" % h] = "sector below p2p by %d" % round(-cnx)
+            else:
+                rec["cnx_y%d" % h] = round(max(cnx, 0.0))
+                rec["why_y%d" % h] = "" if cnx > 0.5 else "no connecting traffic"
         out.append(rec)
 
     negs = [float(str(r.get("why_y%d" % h)).rsplit(" ", 1)[-1])
             for r in out for h in (1, 2, 3)
             if str(r.get("why_y%d" % h) or "").startswith("sector below p2p")]
-    print("%d routes, %d route-years where sector read below pure P2P (impossible, and excluded)"
-          % (len(out), len(negs)))
+    zero = sum(1 for r in out for h in (1, 2, 3)
+               if r.get("why_y%d" % h) == "no connecting traffic")
+    print("%d routes | %d route-years carrying NO connecting traffic, which is legitimate"
+          % (len(out), zero))
     if negs:
         n = sorted(negs)
-        print("   shortfall in passengers: median %d, p90 %d, max %d. A handful of passengers is a"
+        print("   %d route-years read sector BELOW pure P2P by more than half a passenger, which is"
+              % len(negs))
+        print("   impossible: median %d, p90 %d, max %d. That is a basis mismatch between preagg's"
               % (n[len(n) // 2], n[min(int(0.9 * len(n)), len(n) - 1)], n[-1]))
-        print("   rounding difference between two builds; thousands is a basis mismatch between")
-        print("   preagg's od_p2p and the explosion computed here, and would need settling first.")
+        print("   od_p2p and the explosion computed here, and it needs settling before anything")
+        print("   below is quoted.")
+    else:
+        print("   no route-year reads sector below pure P2P by more than half a passenger, so the")
+        print("   two builds agree and the figures below rest on one basis.")
 
     def pick(r, h):
         v = r.get("cnx_y%d" % h)
