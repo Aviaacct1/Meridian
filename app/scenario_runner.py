@@ -60,7 +60,7 @@ import econ_baseline as EB                                  # noqa: E402
 CASE_KEYS = {
     "name", "origin", "dest", "airline", "carrier_type", "aircraft", "seats", "freq",
     "forecast_year", "growth", "dep_time", "partners", "split_floor", "plan_lf", "season",
-    "curfew_origin", "curfew_dest", "traffic_rights",
+    "curfew_origin", "curfew_dest", "traffic_rights", "qsi_k", "qsi_k_behind",
 }
 REQUIRED_KEYS = ("origin", "dest")
 
@@ -104,6 +104,7 @@ COLUMNS = (
     "capture_share", "natural_market_2w",
 ) + tuple(ECON_COLUMN.get(f, f) for f in ECON_FIELDS) + (
     "growth_basis", "dep_time", "dep_basis", "partners", "split_floor", "plan_lf_cap", "season",
+    "qsi_k", "qsi_k_behind", "feed_level_basis",
     "traffic_rights", "engine", "freq_sensitive", "oag_week", "sabre_year",
 )
 
@@ -200,6 +201,15 @@ def run_case(case):
         kw["forecast_year"] = _num(case["forecast_year"])
     if growth is not None:
         kw["growth"] = growth
+    # THE CONNECTING FEED LEVEL. Left out of a case, the shipped 1.0 applies and the row is identical
+    # to every row this runner has produced. Named in a case, it moves the multiplier on the whole
+    # connecting capture, which is what makes the shipped level testable against the 0.06 the
+    # back-test graded. qsi_k_behind is passed only when named, so it falls back to qsi_k inside
+    # route_feed rather than arriving as a None the fallback cannot see past.
+    if case.get("qsi_k") is not None:
+        kw["qsi_k"] = _num(case["qsi_k"], cast=float)
+    if case.get("qsi_k_behind") is not None:
+        kw["qsi_k_behind"] = _num(case["qsi_k_behind"], cast=float)
 
     r = CA.calibrated_forecast(case["origin"], case["dest"], **kw)
     if not r.get("ok"):
@@ -250,6 +260,12 @@ def run_case(case):
         "dep_time": _hhmm(dep), "dep_basis": sch.get("basis") or "",
         "partners": ",".join(partners), "split_floor": split_floor, "plan_lf_cap": plan_lf,
         "season": season,
+        # Read from the payload rather than from the case, so the column records what the engine
+        # actually applied. A case that names no level and a row that reports no level are two
+        # different things: the second means no operator was named and no connecting feed was built.
+        "qsi_k": (r.get("feed_level") or {}).get("qsi_k"),
+        "qsi_k_behind": (r.get("feed_level") or {}).get("qsi_k_behind"),
+        "feed_level_basis": (r.get("feed_level") or {}).get("basis") or "no feed",
         "engine": os.environ.get("AVIA_FORECAST_ENGINE", "") or "qsi (default)",
         "freq_sensitive": os.environ.get("AVIA_FREQ_SENSITIVE", "") or "OFF",
         "oag_week": r.get("week") or "", "sabre_year": r.get("year") or "",

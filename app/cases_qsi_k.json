@@ -1,0 +1,28 @@
+{
+  "note": "SMOKE TEST FOR THE qsi_k PARAMETER, 13 August 2026. THIS FILE DOES NOT TEST THE FEED LEVEL and an earlier version of it claimed to. route_feed line 261 is captured = pax x k x qshare, so running ONE path at two values of k returns their ratio by construction unless something caps or floors it. That is arithmetic and it says nothing about the scale of qshare between the live path and the back-test, which is the question. See K-CANNOT-BE-TESTED-WITHIN-A-PATH and NEVER-BACK-TESTED of 13 August. WHAT THIS FILE IS FOR: confirming that the new parameter is plumbed through and that its default moves nothing. Case 1 is the shipped default and must reproduce cases_sjc_tpe.json to the passenger, 119,306 demand two-way with connecting 29,048 at 2027 5x. Case 2 names a level and must differ, which proves the parameter reaches route_feed rather than being silently dropped, and both must report their level in the qsi_k and feed_level_basis columns. If case 1 moves, exposing qsi_k moved a figure and that is the finding. If case 2 does not move, the parameter is not reaching the feed, which is the silent-default shape this codebase has been caught by five times. 2027 5x is used because the plan cap does not bind there, 119,306 against 159,120 seats at 75.0%, so a change in the connecting leg is visible rather than pinned at seats x 0.875. split_floor is false so the connectivity floor does not re-split the legs on top of it.",
+  "defaults": {
+    "origin": "SJC",
+    "dest": "TPE",
+    "airline": "CI",
+    "carrier_type": "FSC",
+    "aircraft": "A359",
+    "seats": 306,
+    "freq": 5,
+    "forecast_year": 2027,
+    "growth": 0.07,
+    "split_floor": false,
+    "partners": [
+      "WN"
+    ],
+    "dep_time": "12:00"
+  },
+  "cases": [
+    {
+      "name": "5x 2027 at the shipped default. Must reproduce 119,306 demand and 29,048 connecting"
+    },
+    {
+      "name": "5x 2027 with the level named. Must differ, and must report qsi_k 0.5 and basis caller",
+      "qsi_k": 0.5
+    }
+  ]
+}

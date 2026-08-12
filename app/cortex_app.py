@@ -694,7 +694,8 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
                         circuity=1.35, factor_indirect=1.044, mct_banking=False, season="annual",
                         induced_floor=True, fixed_overrides=None, seats=None, charges_override=None,
                         dep_time_mins=None, restricted_hours=None, restricted_hours_dest=None,
-                        partner_carriers=None, split_floor=True, forecast_year=None):
+                        partner_carriers=None, split_floor=True, forecast_year=None,
+                        qsi_k=1.0, qsi_k_behind=None):
     """Any city pair through the CALIBRATED engine (route_forecast.forecast). season = annual (default)
     / summer / winter runs a seasonal service: demand scaled to the season's share of the year, capacity
     over the season's weeks.
@@ -847,9 +848,30 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
             dep_basis = ("optimised for this airline's connections" if dep_mins is not None
                          else f"NOT OPTIMISED, placeholder 11:00 - {(feed_opt or {}).get('error', 'no result')}")
         if dep_mins is not None:
+            # THE FEED LEVEL. route_feed line 261 is captured = pax x k x qshare, so k multiplies the
+            # whole connecting capture. It was hardcoded at 1.0 here and nowhere else, which made the
+            # level invisible and untestable: no caller, no case file and no API route could move it.
+            #
+            # It is exposed because the level the live path runs and the level the back-test measured
+            # are NOT THE SAME NUMBER. backtest.py --qsi-k defaults to 0.06 and route_feed falls back
+            # to 0.06 when the key is absent, so QSI-FEED-CLEAN of 12 August graded a feed running at
+            # 6% of the QSI share. LEVEL-VS-SHAPE measured that same arm as still under-reading actual
+            # connecting traffic by a median 1.62x, which puts the level that reaches outturn near
+            # 0.10. Whether 1.0 here is on that scale is NOT established: the arm read its boards from
+            # the pin wave cache at the route's actual flown time, this path reads OagBoards at the
+            # optimiser's chosen time, and two different board sources need not return a comparable
+            # qshare. That is the measurement this parameter exists to make.
+            #
+            # DEFAULT IS 1.0, so every existing call, the frozen baseline cases and the SJC-TPE ladder
+            # return exactly what they returned before. Nothing here moves a published figure.
             feed_cfg.update({"qsi_feed": True, "dep_time_mins": int(dep_mins),
                              "flying_mins": int(bmin), "route_freq": freq,
-                             "route_origin": home, "qsi_k": 1.0, "qsi_k_behind": 1.0})
+                             "route_origin": home, "qsi_k": float(qsi_k)})
+            # Set only when named. route_feed line 407 reads qsi_k_behind with qsi_k as the fallback,
+            # and a None sitting in the dict would be returned rather than falling back, taking the
+            # behind side to the bare 0.06 default by a different route.
+            if qsi_k_behind is not None:
+                feed_cfg["qsi_k_behind"] = float(qsi_k_behind)
     # SEASONAL: scale annual demand by the season's share (haul + type profile) and run capacity over the
     # season's weeks. season='annual' leaves everything unchanged.
     import seasonality_engine as SE
@@ -1020,6 +1042,17 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
                          forecast_year=fy, growth_basis=growth_basis,
                          optimised=(feed_opt or {}) if feed_opt else None,
                          indicative=(dep_mins is None)),
+        # THE FEED LEVEL, REPORTED RATHER THAN ASSUMED. A connecting figure built at k=1.0 and one
+        # built at k=0.06 are different forecasts and the page said nothing about which it was.
+        # "basis" names where the level came from, so a case can be read a year from now: "default"
+        # is the shipped 1.0, "caller" is a level somebody chose and should be able to justify.
+        # back_test_k is carried beside it because the two are the comparison, and quoting either
+        # without the other is how this figure went a week without anybody noticing the difference.
+        "feed_level": ({"qsi_k": float(qsi_k),
+                        "qsi_k_behind": float(qsi_k_behind) if qsi_k_behind is not None else float(qsi_k),
+                        "basis": ("default" if (qsi_k == 1.0 and qsi_k_behind is None) else "caller"),
+                        "back_test_k": 0.06}
+                       if dep_mins is not None else None),
         "distance_nm": round(gcd / 1.852), "block_min": bmin, "week": ctx["week"], "year": ctx["year"],
     }
     # THE COMPETITION BUCKET. Every Avia forecast in the client format splits connecting markets into
