@@ -1,0 +1,38 @@
+A baseline of failures reads as a pass, so refuse to write one
+
+Two guards on econ_baseline.py capture, both found by running it.
+
+1. IT WROTE A FILE IN WHICH EVERY CASE HAD FAILED
+
+The first capture ran in a fresh shell with AVIA_OAG and AVIA_SABRE unset. All three SJC-TPE cases
+returned "OAG/Sabre databases not found" and the file was written anyway, with those strings as the
+frozen figures. A later check would have compared error against error, found them identical, and
+reported that nothing had moved.
+
+That is the failure this file exists to prevent, occurring inside the file itself. capture now
+refuses to write when any case fails, and names each one.
+
+2. AND IT WOULD HAVE FROZEN THE WRONG BASIS
+
+AVIA_FREQ_SENSITIVE was decided ON on 10 August. With it off the capture share reads 0.32 rather
+than 0.2513 and the route returns the same demand at 3, 5, 7, 10 and 14 weekly, so only the load
+factor moves. A baseline captured that way describes a configuration Avia does not use. capture now
+refuses to write without it and says what it costs.
+
+The check side already blocked on a switch difference. The capture side did not, which left the
+asymmetry where a bad baseline could be created and only its comparison would complain.
+
+3. ALSO
+
+datetime.utcnow() is deprecated in python 3.12 and printed a warning across the first line of the
+capture output. Replaced with the timezone-aware form.
+
+  app/econ_baseline.py
+  commit-message-13-12Aug2026.txt
+
+  cd C:\AviaDev
+  git add app/econ_baseline.py commit-message-13-12Aug2026.txt
+  git commit -F commit-message-13-12Aug2026.txt
+  git push
+
+Avia Solutions Limited. All rights reserved.

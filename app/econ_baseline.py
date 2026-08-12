@@ -87,6 +87,13 @@ def _run(case):
     return out
 
 
+def _now_utc():
+    """Timestamp. datetime.utcnow() is deprecated in python 3.12 and printed a warning over the
+    output of the first capture, so the timezone-aware form is used."""
+    from datetime import datetime, timezone
+    return datetime.now(timezone.utc).isoformat(timespec="seconds")
+
+
 def _provenance():
     """WHAT PRODUCED THE NUMBERS, recorded beside them.
 
@@ -143,10 +150,26 @@ def capture(path=DEFAULT_PATH):
                     "reproduced exactly by any change that is not intended to move the forecast, "
                     "and any change that IS intended to move it must be able to say which fields "
                     "and by how much. Provenance records what produced the numbers.",
-            "captured_utc": __import__("datetime").datetime.utcnow().isoformat(timespec="seconds"),
+            "captured_utc": _now_utc(),
             "provenance": _provenance(), "env": _env(), "cases": {}}
     for c in CASES:
         data["cases"][c["name"]] = _run(c)
+    # REFUSE TO WRITE A BASELINE THAT DID NOT RUN. On 12 August 2026 a capture in a fresh shell,
+    # with AVIA_OAG and AVIA_SABRE unset, wrote a file in which all three cases were the string
+    # "OAG/Sabre databases not found". A later check would have compared errors against errors and
+    # reported that nothing had moved. A baseline of failures is worse than no baseline, because it
+    # reads as a pass.
+    bad = {n: v["error"] for n, v in data["cases"].items() if "error" in v}
+    if bad:
+        raise SystemExit("NOT WRITTEN. %d of %d cases failed, so there is nothing to freeze:\n  %s"
+                         % (len(bad), len(CASES), "\n  ".join(f"{n}: {e}" for n, e in bad.items())))
+    # AND REFUSE TO FREEZE THE WRONG BASIS. AVIA_FREQ_SENSITIVE was decided ON on 10 August; with it
+    # off the capture share reads 0.32 rather than 0.2513 and the route returns the same demand at
+    # every frequency. A baseline captured that way describes a configuration Avia does not use.
+    if os.environ.get("AVIA_FREQ_SENSITIVE", "").strip() not in ("1", "true", "on"):
+        raise SystemExit("NOT WRITTEN. AVIA_FREQ_SENSITIVE is not set. Set it to \"1\" and re-run: "
+                         "with it off the capture share reads 0.32 instead of 0.2513 and the "
+                         "forecast does not respond to frequency at all.")
     with open(path, "w", encoding="utf-8") as fh:
         json.dump(data, fh, indent=2, sort_keys=True)
     return path, data
