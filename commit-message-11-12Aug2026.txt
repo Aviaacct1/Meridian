@@ -1,125 +1,144 @@
-The connecting arm compared four changes at once, and the QSI feed remains untested
+The QSI connecting feed is measurably worse than the flat feed, tested cleanly, and does not ship
 
 No engine code in this commit. It is the record of a day of measurement, a correction to the
-runbook found by running it, and a finding about how the arms are wired that has to be fixed
-before any connecting A/B can mean anything.
+runbook found by running it, and two defects in how the arms are wired that have to be fixed
+before the next connecting A/B.
 
-1. WHAT WAS RUN
+1. THE RESULT
 
-Control (flat feed) against --qsi-feed, both with split_floor ON, on a PINNED set of 4,342
-routes, launch years 2016, 2017, 2018 and 2024, graded against 2017, 2018, 2019 and 2025.
-The pin matters: backtest.py line 928 records that discovery membership is not stable run to
-run, and compare_backtest_arms pairs on the routes all arms scored.
+The feed tested with everything else held constant. Both arms carry feed_cfg, so the
+point-to-point carrier zeroing, the dominance scaling and the behind rate are on in BOTH and
+cancel; the only difference that can move a number is the feed itself.
 
-  FORECAST over PURE P2P     identical to three decimals, +0 -0
-  FORECAST over TOTAL, n=2,963
-      control      median 0.469   within +-20%  14.2%
-      --qsi-feed   median 0.412   within +-20%  12.7%
-      +68 -113, p=0.001
+  FORECAST over TOTAL OUTTURN, n=2,963 paired
+      flat feed    median 0.489   within +-20%  15.1%
+      QSI feed     median 0.412   within +-20%  12.7%
+      +43 -112, p<0.001                          MEASURABLE AND WORSE
 
-2. AND THAT NUMBER CANNOT BE ATTRIBUTED TO THE QSI FEED
+  FORECAST over PURE P2P     +0 -0, identical, as it must be: the feed cannot move that column
 
-feed_cfg is None in the control, because backtest.py builds it only under --feed-fix,
---mct-banking, --qsi-feed or --no-split-floor. THREE behaviours in route_feed.py gate on
+THE SWITCH DOES NOT SHIP.
+
+Pinned route set, 4,342 routes, launch years 2016, 2017, 2018 and 2024, graded against 2017,
+2018, 2019 and 2025. The pin matters: backtest.py line 928 records that discovery membership is
+not stable run to run, and compare_backtest_arms pairs on the routes all arms scored.
+
+2. k COULD NOT HAVE RESCUED IT
+
+The obvious objection is that the feed ran at an uncalibrated k of 0.06. Actual connecting per
+route is outturn_pax less p2p_outturn; each feed's error is log(actual / feed), n=1,881:
+
+  flat feed    needs x1.28    IQR of log error 2.666
+  QSI feed     needs x1.62    IQR of log error 2.840
+
+k fixes the multiplier and cannot touch the IQR, and the QSI IQR is WIDER. Do not spend time
+calibrating k on this evidence.
+
+3. THE ARM WAS CONFOUNDED, AND THE CONFOUND TURNED OUT NOT TO MATTER
+
+The first comparison run was the QSI arm against a BARE control, and it was not a test of the
+feed. feed_cfg is None in a bare control, because backtest.py builds it only under --feed-fix,
+--mct-banking, --qsi-feed or --no-split-floor, and THREE behaviours in route_feed.py gate on
 feed_cfg merely EXISTING rather than on qsi_feed:
 
-  - P2P_CARRIERS zeroing, lines 223 and 362. Twenty-eight low-cost airlines have both sides
-    of the feed returned as 0.0, outright.
+  - P2P_CARRIERS zeroing, lines 223 and 362. Twenty-eight low-cost airlines have both sides of
+    the feed returned as 0.0, outright.
   - dominance scaling in _cap_eff: base x (0.5 + dominance), so a carrier holding 10% of the
-    hub gets 0.6x the feed and only a carrier holding half of it gets 1.0x.
+    hub gets 0.6x the feed and only one holding half of it gets 1.0x.
   - behind_cap 0.10 replacing the default capture on the behind side.
 
-So the arm compared FOUR changes and the p=0.001 belongs to none of them individually.
+Measured separately, control against the same configuration with no QSI feed, n=2,974: median
+0.465 to 0.482, within +-20% 14.2% to 15.0%, +98 -74, p=0.079. NOT MEASURABLE, and pointing the
+right way. So the bundle is worth about +0.8 points and cannot be told from noise, while the
+feed is worth -2.4 and can. The confound was real and immaterial.
 
-MEASURED, NOT INFERRED. Of the 944 routes where the QSI arm returned a zero feed, 817 carry a
-P2P_CARRIERS airline, and of the 2,128 non-zero routes NOT ONE does. The rule is absolute.
-Removing those 817 leaves 2,255 routes the feed actually processed, of which it zeroed 127,
-5.6%, against the flat feed's 5.4%.
+It was found through the zeros. The QSI arm returned a zero feed on 944 of 3,072 routes against
+the flat feed's 166, and of those 944, 817 carry a P2P_CARRIERS airline while of the 2,128
+non-zero routes NOT ONE does. Removing them leaves 2,255 routes the feed actually processed, of
+which it zeroed 127, 5.6%, against the flat feed's 5.4%. THERE IS NO SILENT-ZERO DEFECT IN THE
+QSI FEED.
 
-THERE IS NO SILENT-ZERO DEFECT IN THE QSI FEED. The zeros are the carrier list.
+4. THE CONNECTIVITY FLOOR CANNOT BE MEASURED BY THIS BACK-TEST
 
-3. THE CLEAN TEST, AND IT NEEDS NO NEW CODE
+route_forecast line 760 computes carried = min(total_demand, capacity x max_plan_lf) BEFORE the
+floor block, and the floor only re-splits carried into P2P and connecting. The code states it at
+line 767: "WITHOUT changing the total". forecast_pax is the carried total, so both ratio columns
+are identical with the floor on or off, and the third arm would have reported nothing.
 
---feed-fix builds feed_cfg with the same behind_cap, dom_gain and dom_floor and leaves
-qsi_feed off. So --feed-fix against --qsi-feed differs in the feed alone, and one 45-minute
-run produces the comparison this day was supposed to produce.
+TO TEST IT, the row dict must carry the POST-SPLIT p2p and connecting forecast. That is a small
+change to backtest.py, not a new experiment. Open item 2 stays open.
 
-Arms 2 and 3 are ALREADY a clean pair for a different question: both carry feed_cfg with
-identical settings and differ only in split_floor, so arm 2 against arm 3 isolates the
-connectivity floor. That is the one single-variable comparison the day produced.
+And because the floor is invisible, --no-split-floor with no --qsi-feed IS the --feed-fix arm as
+far as either ratio column can see. The arm run on the instinct to complete the three turned out
+to be the clean control the day needed, and the planned --feed-fix run was cancelled.
 
-THE ARM THIS MESSAGE'S EARLIER DRAFT RECOMMENDED, the control with --no-split-floor, would NOT
-have worked: --no-split-floor itself builds feed_cfg and brings the carrier zeroing and the
-dominance scaling with it. Another four-variable arm dressed as a one-variable one.
-
-4. TWO DEFECTS FOUND BY RUNNING THE RUNBOOK
+5. TWO DEFECTS FOUND BY RUNNING THE RUNBOOK
 
 THE M COUNTER CANNOT FIRE UNDER --jobs. "QSI feed: N without a flown schedule, M in-run
-fallbacks" reads feed_cfg in the PARENT, while backtest.py line 455 and route_feed.py lines
-273 and 420 increment those counters inside worker processes holding their own pickled copy
-from _worker_init. Under --jobs 12 both are structurally 0, and the arm duly reported N=0
-where the coverage check said circa 1,450. The gate set for this run could not have fired.
+fallbacks" reads feed_cfg in the PARENT, while backtest.py line 455 and route_feed.py lines 273
+and 420 increment those counters inside worker processes holding their own pickled copy from
+_worker_init. Under --jobs 12 both are structurally 0, and the arm duly reported N=0 where the
+coverage check said circa 1,450. The gate set for this run could not have fired. FIX IT OR
+DELETE IT: a gate that cannot fire reads as a pass.
 
-The replacement is better than the counter: diff fc_over_out between the two arm CSVs. Routes
-where the feed fired differ; routes that fell back are identical. 2,460 of 3,072 differ,
-80.1%, matching the independent coverage check.
+The replacement is better than the counter: diff fc_over_out between two arm CSVs. Routes where
+the feed fired differ; routes that fell back are identical. 2,460 of 3,072 differ, 80.1%,
+matching the independent coverage check.
 
 THE WAVE CACHE MUST BE REBUILT WHENEVER THE PIN CHANGES. The six-year cache covered 16.7% of
-this pin, 727 of 4,342, because its flown table holds only the routes it was built from.
-Rebuilt against the pin: 66.6% on the pin, 80.1% on routes that produce a gradeable row. The
-residual third is SEASONAL: wave_cache takes each route's flown schedule from ONE week, the
-first single-week label of Y+1, and every such label in the store is late May. Winter and
-shoulder-season services have no flown schedule, so the feed is tested on summer operators.
+this pin, 727 of 4,342, because its flown table holds only the routes it was built from. Rebuilt
+against the pin: 66.6% on the pin, 80.1% on routes that produce a gradeable row. The residual
+third is SEASONAL and is a limit on what was tested: wave_cache takes each route's flown schedule
+from ONE week, the first single-week label of Y+1, and every such label in the store is late May.
+Winter and shoulder-season services have no flown schedule, so the feed was tested on summer
+operators.
 
-5. THE RULER WAS CHECKED BEFORE ANYTHING WAS WRITTEN DOWN
+6. THE RULER WAS CHECKED BEFORE ANYTHING WAS WRITTEN DOWN
 
-Everything rests on fc_over_out. ZERO routes of 3,072 have outturn_pax below p2p_outturn, so
-the grading quantity is valid. 635 routes, 20.7%, have them exactly equal, which is a route
-carrying no connecting traffic at all and is legitimate.
+Everything rests on fc_over_out. ZERO routes of 3,072 have outturn_pax below p2p_outturn, so the
+grading quantity is valid. 635 routes, 20.7%, have them exactly equal, which is a route carrying
+no connecting traffic at all and is legitimate.
 
-6. THE FINDING WORTH MORE THAN THE ARM RESULT
+7. THE FINDING WORTH MORE THAN THE ARM RESULT
 
-Actual connecting per route is outturn_pax less p2p_outturn; each feed's error is
-log(actual / feed), n=1,881:
+An IQR of 2.666 in logs is a factor of FOURTEEN across the middle half of routes, and it applies
+to BOTH feeds. Neither the flat feed nor the QSI feed carries much information about how much
+connecting traffic an individual new route will carry. The argument between them has been an
+argument about which of two uninformative estimates to prefer.
 
-  control    needs x1.28    IQR of log error 2.666
-  QSI feed   needs x1.62    IQR of log error 2.840
+The open question is not which feed. It is whether route-level connecting traffic is forecastable
+from this data at all, and that belongs in how the connecting number is presented to a client,
+not only in the backlog.
 
-An IQR of 2.666 in logs is a factor of FOURTEEN across the middle half of routes. Both feeds
-are close to uninformative about how much connecting traffic an individual new route carries.
-The open question is not which feed; it is whether route-level connecting traffic is
-forecastable from this data at all. That belongs in how the connecting number is presented to
-a client, not only in the backlog.
+8. TWO THINGS ON THE SHIPPED PATH
 
-7. ONE THING ON THE SHIPPED PATH
+The flat feed hands a connecting forecast to 567 of the 635 routes that carry none, 89% of them,
+while under-reading volume by 28% where traffic does exist. That is where a client's number comes
+from today.
 
-The flat feed hands a connecting forecast to 567 of the 635 routes that carry none, 89% of
-them, while under-reading volume by 28% where traffic exists. That is where a client's number
-comes from today.
+P2P_CARRIERS is NOT costing accuracy: the bundle containing it scores slightly better than the
+control. Open item 7 stands as an improvement candidate, weight rather than zero, since Ryanair
+and Wizz passengers self-connect in volume. It is the largest component of the bundle, 817 of
+3,072 routes.
 
-8. THREE OF MY OWN CONCLUSIONS, WITHDRAWN THE SAME DAY
+9. WHAT THE RESULT DOES NOT COVER
 
-  - that the flat feed was running LARGE and compensating for the P2P under-read. It needs
-    x1.28, so it under-reads too. Dead.
-  - that the QSI feed had a silent-zero defect on 22% of routes carrying connecting traffic.
-    It is the P2P_CARRIERS list, and at least 419 of those 546 routes are the list.
-  - that the zeros' 42.2% precision showed the QSI feed discriminating. It is the carrier
-    list discriminating, which is why precision held across 944 firings instead of decaying
-    to the 20.7% base rate.
+k was not calibrated. Only summer-operating routes were tested. Both feeds are near-uninformative
+at route level. And the engine under-reads total outturn by more than half in every arm, so this
+is a comparison between two poor options rather than a search for a good one.
 
-The pattern in all three: reasoning from a mechanism before measuring it.
-
-9. THE LESSON THAT SHOULD OUTLIVE THE DAY
+10. THE LESSON THAT SHOULD OUTLIVE THE DAY
 
 A config object that is None in one arm and a dict in the other is not one switch, it is four.
-Three behaviours in route_feed key off "if feed_cfg" rather than off the named flag, so any
-flag that creates the object turns all of them on. Worth a sweep for the same shape elsewhere
-before the next A/B is designed.
+Three behaviours in route_feed key off "if feed_cfg" rather than off the named flag, so any flag
+that creates the object turns all of them on. Worth a sweep for the same shape elsewhere before
+the next A/B is designed.
 
-10. FILES
+11. FILES
 
   bt2/bt2_experiments.log        the 11 August connecting build, which had never been logged,
-                                 plus the whole of 12 August including the withdrawals. 41 entries.
+                                 plus the whole of 12 August including the entries withdrawn
+                                 within the day. 47 entries.
   run-backtest-11Aug2026.ps1     wave cache path moved to the pin-matched rebuild, with the
                                  coverage reason recorded above it.
   commit-message-11-12Aug2026.txt
