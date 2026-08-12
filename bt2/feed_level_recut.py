@@ -165,6 +165,16 @@ def main():
                                 else "no"))
     _cut(rows, "BY THE ARM'S OWN hub_dest FLAG, which is a different question from the list above.",
          lambda r: "hub_dest %s" % str(r.get("hub_dest")).strip().lower())
+    # THE SJC-TPE CELL. The single cuts each move the level the right way and neither reaches the
+    # shipped 1.0, so the question is whether the two together do. SJC-TPE is 10,440km into Taipei,
+    # long haul AND an Asian hub, and it is the one route where the live feed at k=1.0 has an
+    # independent human comparator. If this cell approaches 1.0 the conflict between the back-test
+    # and FEED-LEVELS resolves as a population difference. If it sits with the rest, SJC-TPE agrees
+    # with the analyst for a reason that is not the feed level and the agreement carries no weight.
+    _cut(rows, "LONG HAUL AND HUB TOGETHER. This is the SJC-TPE cell.",
+         lambda r: "%s / %s" % ("over 6000km" if _f(r, "gcd_km") >= 6000 else "under 6000km",
+                                "hub" if str(r.get("arr", "")).strip().upper() in ASIAN_HUBS
+                                else "not a hub"))
     _cut(rows, "BY CARRIER TYPE.", lambda r: str(r.get("type") or "unknown"))
     _cut(rows, "BY REGION, as the store partitions it.", lambda r: str(r.get("region") or "unknown"))
     _cut(rows, "BY COHORT, to see whether the level drifts with the schedule vintage.",
