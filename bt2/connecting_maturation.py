@@ -197,7 +197,12 @@ def main():
     with open(a.arm, newline="", encoding="utf-8") as f:
         rows = list(csv.DictReader(f))
     print("arm %s: %d rows" % (os.path.basename(a.arm), len(rows)))
-    print("preagg %s, sector table present" % os.path.basename(store))
+    # SAY WHICH PATH RAN. This line read "sector table present" unconditionally on its first outing,
+    # which is the label-asserting-what-the-code-did-not-check fault recorded three times today in
+    # other files and once, here, in mine.
+    print("preagg %s, sector_adj %s" % (os.path.basename(store),
+                                        "present, using it" if sector is None
+                                        else "ABSENT, computing the connecting leg here"))
 
     if sector is not None:
         sector = _sector_by_pair(a.sabre, rows, _usable)
@@ -232,12 +237,26 @@ def main():
             # is checked again here rather than assumed, because this reads two further years the
             # earlier check never looked at.
             rec["cnx_y%d" % h] = round(cnx) if cnx >= 0 else ""
-            rec["why_y%d" % h] = "" if cnx >= 0 else "sector below p2p"
+            # THE MAGNITUDE IS CARRIED, not just the flag. On the first run 163 route-years of circa
+            # 9,216 read sector below pure P2P, which is impossible, and RULER-SOUND found ZERO of
+            # 3,072 on the graded year. The difference is that the arm built BOTH quantities from
+            # one source while this mixes preagg's od_p2p with the explosion computed here, so a
+            # small negative is a rounding difference between two builds and a large one is a basis
+            # mismatch. Without the size nobody can tell which, so it is written out.
+            rec["why_y%d" % h] = "" if cnx >= 0 else "sector below p2p by %d" % round(-cnx)
         out.append(rec)
 
-    neg = sum(1 for r in out for h in (1, 2, 3) if r.get("why_y%d" % h) == "sector below p2p")
+    negs = [float(str(r.get("why_y%d" % h)).rsplit(" ", 1)[-1])
+            for r in out for h in (1, 2, 3)
+            if str(r.get("why_y%d" % h) or "").startswith("sector below p2p")]
     print("%d routes, %d route-years where sector read below pure P2P (impossible, and excluded)"
-          % (len(out), neg))
+          % (len(out), len(negs)))
+    if negs:
+        n = sorted(negs)
+        print("   shortfall in passengers: median %d, p90 %d, max %d. A handful of passengers is a"
+              % (n[len(n) // 2], n[min(int(0.9 * len(n)), len(n) - 1)], n[-1]))
+        print("   rounding difference between two builds; thousands is a basis mismatch between")
+        print("   preagg's od_p2p and the explosion computed here, and would need settling first.")
 
     def pick(r, h):
         v = r.get("cnx_y%d" % h)
