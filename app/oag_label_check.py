@@ -150,6 +150,7 @@ def main():
         aps = [x.strip().upper() for x in a.coverage.replace(";", ",").split(",") if x.strip()]
         print("\ndepartures and DISTINCT flights at %s, by label:" % ", ".join(aps))
         print("   %-14s %s" % ("label", "  ".join("%-22s" % x for x in aps)))
+        flts = {}
         for w in sorted({r[0] for r in rows}):
             cells = []
             for x in aps:
@@ -157,12 +158,48 @@ def main():
                   SELECT count(*), count(DISTINCT carrier || flight_no || arr_airport)
                   FROM oag WHERE week = ? AND service_type='J' AND dep_airport = ?""",
                                    [w, x]).fetchone()
+                flts.setdefault(x, {})[w] = int(d or 0)
                 cells.append("%8s rows %6s flts" % ("{:,}".format(n or 0), "{:,}".format(d or 0)))
             print("   %-14s %s" % (w, "  ".join(cells)))
-        print("\nRead the DISTINCT flight column, not the rows. Rows carry the region duplication; "
-              "distinct flights do not. A normal month at these airports in 2017 means the world is "
-              "there and the five-against-seven is the partitioning, and my reading of a coverage "
-              "gap is wrong.")
+
+        # THE VERDICT IS COMPUTED, NOT PRINTED REGARDLESS. This block previously closed with an
+        # unconditional sentence saying a normal month means the world is there and the reading of a
+        # coverage gap is wrong. It was written for TPE, PVG and HKG, which do come back normal, and
+        # it then printed itself unchanged over DXB, DOH, JNB and CAI, where Johannesburg reads 24
+        # distinct departures in 2017-08 against 402 in 2019-08. A label that asserts what the code
+        # did not check is the shape this codebase has been caught by five times, and here it told
+        # the reader to withdraw a finding its own table supports.
+        #
+        # THE RULE, stated so it can be argued with: each label is scored against that airport's OWN
+        # BEST label, so the comparison is within one airport and needs no external traffic figure.
+        # Anything below 75% of its own best is called SHORT. Schedules at these airports did not
+        # grow by a quarter in a year, so a quarter missing is not growth.
+        print("\nRead the DISTINCT flight column, not the rows. Rows carry the region duplication;"
+              " distinct flights do not.")
+        print("Each label as a share of that airport's own best label. Below 75%% is called SHORT,"
+              " because these airports did not grow by a quarter in a year.")
+        short = {}
+        for x in aps:
+            best = max(flts.get(x, {}).values() or [0])
+            if not best:
+                continue
+            marks = []
+            for w in sorted(flts[x]):
+                sh = flts[x][w] / best
+                if sh < 0.75:
+                    short.setdefault(x, []).append(w)
+                marks.append("%s %3.0f%%%s" % (w, 100 * sh, " SHORT" if sh < 0.75 else ""))
+            print("   %-5s best %s flts | %s" % (x, "{:,}".format(best), "  ".join(marks)))
+        if short:
+            print("\nSHORT LABELS FOUND. A five-against-seven region count is a partition count and"
+                  " says nothing on its own, but these airports are missing flights, not files:")
+            for x in sorted(short):
+                print("   %-5s %s" % (x, ", ".join(short[x])))
+            print("Any BT2 capture written against one of these measured connecting competition"
+                  " against a world missing those flights.")
+        else:
+            print("\nNo label falls short of its airport's own best, so on these airports the"
+                  " five-against-seven is the partitioning and not a coverage gap.")
 
     # THE SIZE OF THE PROBLEM, and it is the number that matters. bt2_input_check compares the two
     # chains and can only ever see a DISAGREEMENT, which happens where the store has changed since
