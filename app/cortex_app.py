@@ -879,6 +879,53 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
     _ds = "leisure" if ct in ("LCC", "ULCC") else "mixed"
     season_share = SE.season_share_for(season, route_type=_rt, demand_split=_ds)
     season_weeks = 28.0 if season == "summer" else 24.0 if season == "winter" else 52.0
+
+    # THE CALIBRATED MODEL, behind AVIA_FORECAST_ENGINE and OFF BY DEFAULT. bt2_forecast reads the
+    # switch itself and returns None when it is not set, so the block below costs nothing on the
+    # shipped path and cannot move a client number until somebody sets it deliberately.
+    #
+    # WHY IT IS WORTH WIRING, measured on 13 August: the QSI local leg reads 11.3% within +-20% on
+    # 2,948 back-test routes and local_level_fit established that no multiplier rescues it, because
+    # a perfect level fitted on its own routes scores BELOW doing nothing. The calibrated model reads
+    # 22.4% against the same engine's 12.6% on the same 1,555 pin routes, p<0.0001.
+    #
+    # SCHEDULED AGAINST INDICATIVE is bt2_forecast's own distinction and it decides the confidence
+    # rather than the number. The model is anchored on seats, so when the CALLER named a carrier
+    # configuration the seat count is the airline's own judgement and the back-test measured exactly
+    # that case. When seats is None the gauge comes from the generic type table, which is Meridian's
+    # choice, and anchoring on it is circular. Answered either way, labelled differently.
+    _bt2 = None
+    _bt2_note = None
+    _ENGINE_SWITCH = os.environ.get("AVIA_FORECAST_ENGINE", "qsi").strip().lower()
+    try:
+        import bt2_forecast as _BF
+        if _BF.ENGINE == "bt2" and airline and dest_airport:
+            import route_context as _RC
+            from aircraft_economics import AIRCRAFT as _AC
+            _seats_each_way = float(seats) if seats else float(
+                (_AC.get(aircraft) or {}).get("econ_seats", 0)
+                + (_AC.get(aircraft) or {}).get("bus_seats", 0))
+            if _seats_each_way > 0:
+                # months=12 with launch_mon=1 is the only twelve-month point on the training
+                # manifold: months_operated = 13 - launch_month in every one of 6,810 rows, and
+                # route_context refuses any other pair by name.
+                _ctx = _RC.build(home, dest_airport, airline, aircraft_seats=_seats_each_way,
+                                 freq=freq, months=12, launch_mon=1, year=ctx["year"])
+                if not _ctx.get("ok"):
+                    _bt2_note = "route context incomplete: " + "; ".join(_ctx.get("missing", []))
+                else:
+                    _out = _BF.forecast(_ctx, mode=("scheduled" if seats else "indicative"))
+                    if _out and _out.get("ok"):
+                        _bt2 = _out
+                    elif _out:
+                        _bt2_note = _out.get("reason")
+            else:
+                _bt2_note = "no seat count for aircraft %r, so the model cannot be anchored" % aircraft
+    except Exception as _e:                                  # noqa: BLE001
+        # NAMED, NOT SWALLOWED. A silent except here would drop the model and leave the page saying
+        # nothing, which is the failure this codebase has been caught by seven times.
+        _bt2_note = "%s: %s" % (type(_e).__name__, _e)
+
     try:
         r = RF.forecast(ctx["sabre_db"], ctx["oag_db"], ctx["week"], home, dest_codes, competing,
                         year=ctx["year"], aircraft=aircraft, freq=freq, block_min=bmin,
@@ -887,6 +934,7 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
                         att_exponent=att_exponent, catchment_mult=catchment_mult,
                         coverage_override=coverage_override, market_override=market_override,
                         share_override=share_override, max_plan_lf=plan_lf,
+                        p2p_demand_override=(_bt2["pax"] if _bt2 else None),
                         annual_capacity=((float(seats) * freq * season_weeks) if seats else None),
                         market_factor=RF.market_factor_for(carrier_type),   # market-size-keyed P2P trim
                         season=season, season_share=season_share, season_weeks=season_weeks,
@@ -1048,6 +1096,25 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
         # is the shipped 1.0, "caller" is a level somebody chose and should be able to justify.
         # back_test_k is carried beside it because the two are the comparison, and quoting either
         # without the other is how this figure went a week without anybody noticing the difference.
+        # WHICH ENGINE ANSWERED, and why not when it did not. A page that does not say which engine
+        # produced the number is the silent-default shape this codebase has been caught by seven
+        # times, and here it would be the difference between a figure carrying an accuracy claim and
+        # one that does not. "declined" is never empty when the engine is qsi and the switch is on.
+        "forecast_engine": {
+            "local_leg": ("calibrated model" if _bt2 else "qsi engine"),
+            "switch": _ENGINE_SWITCH,
+            "mode": (_bt2 or {}).get("mode"),
+            "tier": (_bt2 or {}).get("tier"),
+            "model": (_bt2 or {}).get("model"),
+            "population": (_bt2 or {}).get("population"),
+            "range_low": round((_bt2 or {}).get("lo")) if _bt2 else None,
+            "range_high": round((_bt2 or {}).get("hi")) if _bt2 else None,
+            "declined": _bt2_note,
+            # Stated because it is the one thing a reader would otherwise assume wrongly: when the
+            # model answers, the seven QSI calibration factors are NOT applied on top of it, since
+            # every one of them was fitted against the engine it replaces. route_forecast line 609.
+            "qsi_corrections_applied": (not _bt2),
+        },
         "feed_level": ({"qsi_k": float(qsi_k),
                         "qsi_k_behind": float(qsi_k_behind) if qsi_k_behind is not None else float(qsi_k),
                         "basis": ("default" if (qsi_k == 1.0 and qsi_k_behind is None) else "caller"),
