@@ -7,6 +7,38 @@ wiring on the grading basis. Questions 1 and 2 of that basis are now answered in
 `GRADING-BASIS-ANSWER-13Aug2026.md` and the answer changes what the wiring can claim. Read that
 document and the 13 August entries in `bt2/bt2_experiments.log` before starting.
 
+## The baseline this is measured against, established 13 August evening
+
+Both machines now agree on every line, on byte-identical data and a declared environment.
+Reproduce this before changing anything; if it does not come back, stop and find out why.
+
+```
+$env:AVIA_BT2_DIR = "E:\Avia\bt2_relaxed"
+$env:AVIA_BT2_COHORTS = "2016,2017,2018,2019,2024,2025"
+$env:AVIA_BT2_TARGET = "nonstop"
+py -3.12 bt2_claimset.py
+```
+
+| | figure |
+|---|---|
+| calibrated ±20% | 83.2% |
+| calibrated ±10% | 70.0% |
+| blind, route level | 60.9% |
+| tier A | 88.2% |
+| portfolios of 10 | 87.7% |
+| portfolios of 20 | 93.2% |
+| short-haul, domestic or LCC | 72.6% |
+| long-haul, international, FSC | 39.8% |
+| sister flag set | 424 of 6,524 |
+
+Build: python 3.12.10, sklearn 1.9.0, numpy 2.3.5, scipy 1.18.0, airportsdata 20260803. Both
+`DESKTOP-3R7OQVJ` and `Donatello`. `bt2_claimset` stamps all of it on every run.
+
+**This is not the published pair.** The site's 92 and 86 sit on the mixed basis, 595 routes graded
+on US DOT DB1B and 5,929 on Sabre MIDT, per V1.3-MIXED of 9 August. Everything above is Sabre
+throughout, and nothing in `bt2_claimset` produces the mixed basis. Find what built it before any
+restatement is attempted.
+
 ## The one sentence
 
 Wire the calibrated model to `captured`, the local demand leg, before the plan cap; keep it behind
