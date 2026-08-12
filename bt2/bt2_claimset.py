@@ -26,6 +26,7 @@ blind figures are the ones that carry information.
 Avia Solutions Limited. All rights reserved.
 """
 import math
+import os
 import random
 import statistics
 from collections import defaultdict
@@ -40,11 +41,44 @@ BLIND_KW = dict(lr=0.04, it=600, minleaf=60, l2=5.0)
 FITTED_KW = dict(lr=0.06, it=800, minleaf=5, l2=0.0, leaves=63)   # reconstructed, see docstring
 
 
+def _provenance():
+    """Stamp what produced these figures, because two of them move with a library version.
+
+    VERSION-SENSITIVE, 12 August 2026: the same script on the same artefacts returned 59.8% on the
+    Dev PC and 60.2% on the Workstation, n=4,287 both times, because aviaremote1 is a different
+    Windows user with its own site-packages. On 13 August the calibrated pair on this sample read
+    1.4 and 2.4 points below its 9 August value with no capture rebuilt and no input changed.
+
+    The FITTED config runs minleaf=5 with no l2, which is essentially unregularised and therefore
+    sensitive to how a library splits a tie; the BLIND config runs minleaf=60 and l2=5.0 and did not
+    move. So the figures most likely to drift are the ones on the website. A published number needs
+    the version that produced it recorded beside it, and printing it here is cheaper than
+    reconstructing it afterwards.
+    """
+    import platform
+    bits = ["python %s" % platform.python_version()]
+    for mod in ("sklearn", "numpy", "scipy"):
+        try:
+            bits.append("%s %s" % (mod, __import__(mod).__version__))
+        except Exception:                                    # noqa: BLE001
+            bits.append("%s absent" % mod)
+    try:
+        bits.append("user %s" % (os.environ.get("USERNAME") or os.environ.get("USER") or "?"))
+        bits.append("host %s" % platform.node())
+    except Exception:                                        # noqa: BLE001
+        pass
+    return " | ".join(bits)
+
+
 def main():
     rows = G.rows
     F.attach(rows)
     print("\nsample: n=%d, cohorts %s, from %s"
           % (len(rows), ",".join(str(c) for c in B.COHORTS), B.BT2))
+    print("target: %s" % B.TARGET)
+    print("build:  %s" % _provenance())
+    print("config: fitted %s" % ", ".join("%s=%s" % kv for kv in sorted(FITTED_KW.items())))
+    print("        blind  %s" % ", ".join("%s=%s" % kv for kv in sorted(BLIND_KW.items())))
 
     X, y = F.X_of(rows, G12), G.y_of(rows)
     m = G.make(SPEC, **FITTED_KW)
