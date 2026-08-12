@@ -16,6 +16,26 @@ from bt2_paths import BT2, find_app
 import os as _os
 COHORTS = tuple(int(c) for c in _os.environ.get(
     "AVIA_BT2_COHORTS", "2016,2017,2018,2019").split(",") if c.strip())
+
+# THE GRADING TARGET, added 13 August 2026. Q1-ANSWERED-NO established that the engine's p2p_carried
+# is not launch_pax: the plan cap, the cap's pro-rating of the local leg and the connectivity floor
+# all sit between them, and on the frozen SJC-TPE case the two differ by a factor of 1.757. So the
+# published claim describes a quantity no client is shown, and the question is what each candidate
+# basis does to the claim set.
+#
+#   nonstop      launch_pax, itinerary='NON-STOP'. THE DEFAULT and what every published figure means
+#   p2p_outturn  backtest.py's local definition, screening the connecting column rather than the
+#                itinerary label. It ought to equal the above and nobody has checked
+#   sector       the whole sector a client is shown, P2P and connecting feed together
+#
+# Anything other than the default reads alt_targets_L.csv, written by build_alt_targets.py, and
+# REFITS EVERYTHING DOWNSTREAM because the model's target is log(actual / seats_ly). A figure
+# produced under a non-default target is not comparable with a published one and the loader says so
+# on every run rather than leaving it to whoever reads the output.
+TARGET = (_os.environ.get("AVIA_BT2_TARGET") or "nonstop").strip().lower()
+if TARGET not in ("nonstop", "p2p_outturn", "sector"):
+    raise SystemExit("AVIA_BT2_TARGET must be nonstop, p2p_outturn or sector, not %r" % TARGET)
+
 STIM = 1.30
 
 LCC_SET = None
@@ -44,13 +64,28 @@ def load_master():
                     gro[(r["a"], r["b"])] = float(r["base_mkt_m2"] or 0)
         except FileNotFoundError:
             pass
+        # THE ALTERNATIVE TARGETS. Missing file is a HARD STOP rather than a fall back to the
+        # default: a run that silently graded on launch_pax while the operator believed it was
+        # grading on sector would produce the published figure under a heading that says otherwise,
+        # which is the silent-default shape this codebase has been caught by six times.
+        alt = {}
+        if TARGET != "nonstop":
+            p = f"{BT2}/alt_targets_{L}.csv"
+            if not _os.path.exists(p):
+                raise SystemExit("AVIA_BT2_TARGET=%s needs %s. Run build_alt_targets.py first."
+                                 % (TARGET, p))
+            with open(p) as f:
+                for r in csv.DictReader(f):
+                    alt[(r["a"], r["b"])] = float(r[TARGET] or 0)
         with open(f"{BT2}/launch_profile_{L}.csv") as f:
             for r in csv.DictReader(f):
                 c = caps.get((r["a"], r["b"]))
                 if not c or not c.get("cap_f5"):
                     continue
                 d = dict(r)
-                d.update(cohort=L, actual=float(r["launch_pax"]), base_mkt=float(r["base_mkt"]),
+                _act = float(r["launch_pax"]) if TARGET == "nonstop" \
+                    else alt.get((r["a"], r["b"]), 0.0)
+                d.update(cohort=L, actual=_act, base_mkt=float(r["base_mkt"]),
                          gcd=float(r["gcd_km"] or 0), months=int(r["months_operated"]),
                          seats_ly=float(r["seats_ly"]), freq=float(r["wk_freq_dir"]),
                          gauge=float(r["gauge"] or 0), ncar=int(r["n_carriers"]),
@@ -70,7 +105,19 @@ def load_clean():
     """Master minus pax>1.1x seats artifacts (flagged exclusion, reported once)."""
     rows = load_master()
     n_art = sum(1 for r in rows if r["artifact"])
-    print(f"excluded {n_art} pax>1.1x-seats artifacts (Sabre/OAG mismatch), kept {len(rows)-n_art}")
+    # SAY THE TARGET ON EVERY RUN, and say it beside the exclusion count rather than apart from it.
+    # The artifact rule drops a route whose actual exceeds 1.1x its operated seats, and how many
+    # routes that catches DEPENDS ON THE TARGET: sector counts the connecting feed on the leg and so
+    # runs higher than launch_pax on the same route. Two targets therefore produce two populations,
+    # and a figure quoted without both numbers cannot be held against another one.
+    print(f"target {TARGET}: excluded {n_art} pax>1.1x-seats artifacts (Sabre/OAG mismatch), "
+          f"kept {len(rows)-n_art}")
+    if TARGET != "nonstop":
+        print(f"  NOT THE PUBLISHED BASIS. Every figure below is graded against {TARGET} and is not "
+              f"comparable with a published number, which describes nonstop.")
+    zero = sum(1 for r in rows if r["actual"] <= 0)
+    if zero:
+        print(f"  {zero} rows carry no {TARGET} traffic at all and will not score")
     return [r for r in rows if not r["artifact"]]
 
 def haul_band(g):
