@@ -62,6 +62,19 @@ def _provenance():
             bits.append("%s %s" % (mod, __import__(mod).__version__))
         except Exception:                                    # noqa: BLE001
             bits.append("%s absent" % mod)
+    # AIRPORTSDATA BELONGS HERE MORE THAN ANY OF THE ABOVE, and it was the one missing. It is
+    # already PINNED in requirements.txt because a release that corrects one airport's position
+    # shifts a great-circle distance and moves the QSI share, measured at 0.2510 against 0.2513 on
+    # 11 August 2026. It reaches the CLAIM SET too: bt2_g12_exp.metro_map builds the sister key from
+    # airportsdata's city and country fields, so a different release changes a metro grouping,
+    # changes the prior lookup, and flips the sister flag. On 13 August the two machines reported
+    # the flag on 428 rows against 424 with all 36 data files byte-identical, and this is the only
+    # input that could do it. It has no __version__ attribute, so ask the installed distribution.
+    try:
+        from importlib.metadata import version as _v
+        bits.append("airportsdata %s" % _v("airportsdata"))
+    except Exception:                                        # noqa: BLE001
+        bits.append("airportsdata unknown")
     try:
         bits.append("user %s" % (os.environ.get("USERNAME") or os.environ.get("USER") or "?"))
         bits.append("host %s" % platform.node())
