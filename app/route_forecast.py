@@ -474,7 +474,8 @@ def forecast(sabre_db, oag_db, week, origin, dest_codes, competing_airports, *, 
              dest_airport=None, airline=None, catchment_mult=1.0, feed_cfg=None,
              coverage_override=None, market_override=None, share_override=None,
              market_factor=None, season="annual", season_share=1.0, season_weeks=52.0,
-             airline_type=None, induced_floor=False, airport_capture=1.0, **_ignore):
+             airline_type=None, induced_floor=False, airport_capture=1.0,
+             p2p_demand_override=None, **_ignore):
     """The connected loop, the calibrated way. The WIDE market = the whole service area's measured
     O&D to the destination (Sabre, all competing airports - board-point, which is what Sabre gives).
     The origin's forecast = that measured market x its QSI SHARE (its schedule quality vs the field,
@@ -585,6 +586,29 @@ def forecast(sabre_db, oag_db, week, origin, dest_codes, competing_airports, *, 
     # route into a secondary metro airport is not credited the whole metro market (1.0 if single-airport).
     dshare = dest_metro_share(oag_db, week, origin, dest_airport, dest_codes, freq, block_min, mct_file)
     captured = market * share * dshare * stimulation
+
+    # THE CALIBRATED MODEL, when the caller has one. p2p_demand_override is BT2's own local nonstop
+    # forecast for this route, and it REPLACES the whole line above rather than scaling it.
+    #
+    # NONE OF THE FOUR MULTIPLIERS IS REAPPLIED, and that is the part to get right. BT2's training
+    # target is launch_pax, the actual nonstop passengers a new route carried, so the market, the
+    # origin's capture share, the destination metro share and the stimulation uplift are all already
+    # inside the number it returns. Multiplying by them again would count each of them twice.
+    #
+    # GROWTH IS THE ONE THING THAT MUST BE ADDED. Line 489 grows `market` to the forecast year before
+    # this point, so `captured` above is a forecast-year figure. BT2 is anchored on base_mkt, the
+    # measured O&D in the latest full year, so its output is a CURRENT-year figure and has to be
+    # carried forward the same way or the two are a year apart. That is the basis fault that cost 13
+    # August twice over.
+    #
+    # AND NO SEPARATE MATURITY FACTOR, which is a decision rather than an omission. BT2 predicts a
+    # route's FIRST year. connecting_maturation of 13 August measured the local leg on the same
+    # routes at x1.013 from year one to year two and x1.104 to year three, and market growth alone
+    # over two years accounts for most of that, so a route-specific ramp is not separable from the
+    # growth already applied here. Applying both would double count the same 10%.
+    _model_p2p = p2p_demand_override is not None
+    if _model_p2p:
+        captured = float(p2p_demand_override) * ((1 + growth) ** growth_years)
     # CONNECTING FEED (beyond the destination hub), alliance-weighted for the named airline - the other
     # half of a QSI total. Grown with the market. 0 unless an airline is given (feed is carrier-specific).
     feed_beyond = feed_behind = 0.0
@@ -630,25 +654,44 @@ def forecast(sabre_db, oag_db, week, origin, dest_codes, competing_airports, *, 
     # the first time, because this table goes on a slide: every line says what it is in words, and
     # STEP_NOTES carries one sentence of explanation for each. Shorthand a modeller understands
     # ("dshare", "market-size trim") reads as jargon to an airline planner and gets queried.
-    _bld = [("Passengers flying to the destination from the whole service area today", market, None),
-            ("Of those, the share a nonstop from this airport would win", market * share, share),
-            ("Of those, the share using this destination airport", market * share * dshare, dshare),
-            ("Extra passengers created by having a direct service", captured, stimulation)]
-    if market_factor:
+    # THE BUILD LIST MUST DESCRIBE THE DERIVATION THAT ACTUALLY HAPPENED. This table goes on a slide,
+    # and when the calibrated model produced the local number none of the four QSI steps below took
+    # place: there was no catchment market, no capture share, no destination metro share and no
+    # stimulation uplift. Printing them anyway would be a client-facing explanation of arithmetic
+    # that was not performed, which is the same fault as a status line that says what the code did
+    # not check, on the one page where it would be read by an airline.
+    if _model_p2p:
+        _bld = [("Passengers flying to the destination from the whole service area today", market, None),
+                ("Local passengers forecast by the calibrated model, from this airport's own "
+                 "record and the proposed schedule", float(p2p_demand_override), None)]
+        if growth_years:
+            _bld.append(("Carried forward to the forecast year at the stated market growth",
+                         captured, (1 + growth) ** growth_years))
+    else:
+        _bld = [("Passengers flying to the destination from the whole service area today", market, None),
+                ("Of those, the share a nonstop from this airport would win", market * share, share),
+                ("Of those, the share using this destination airport", market * share * dshare, dshare),
+                ("Extra passengers created by having a direct service", captured, stimulation)]
+    # THE CALIBRATION FACTORS BELOW ARE QSI'S AND ARE NOT APPLIED TO THE MODEL. market_factor is a
+    # trim learned to correct the QSI capture on large markets, and airport_capture is a per-airport
+    # correction learned from the same engine's past errors. BT2 was trained on outturn directly, so
+    # both are corrections to a derivation it did not use, and applying them would be correcting a
+    # different engine's bias on this one's number.
+    if market_factor and not _model_p2p:
         _msz = _market_size_mult(market, market_factor)
         captured *= _msz
         _bld.append(("Trim applied because one new service wins less of a very large market",
                      captured, _msz))
     # PER-AIRPORT CAPTURE CALIBRATION (T7): an origin that consistently captures more/less than the
     # general catchment model gets a factor learned from its own past launches (build_airport_factors.py).
-    if airport_capture and airport_capture != 1.0:
+    if airport_capture and airport_capture != 1.0 and not _model_p2p:
         captured *= float(airport_capture)
         _bld.append(("Adjustment for how this airport has performed on its own past launches",
                      captured, float(airport_capture)))
     # DESTINATION thin-market lift: a genuine secondary (SJC) has its INBOUND demand under-allocated by the
     # catchment model, but ONLY where the O&D is thin/catchment-fed; a big directly-measured market (LHR-SJC)
     # needs no help. Conditioned on the measured market so it can't over-forecast a mature large route.
-    if dest_airport:
+    if dest_airport and not _model_p2p:
         try:
             _dtf = __import__("airport_capture").dest_thin_factor(dest_airport, market)
             captured *= _dtf
@@ -665,7 +708,7 @@ def forecast(sabre_db, oag_db, week, origin, dest_codes, competing_airports, *, 
     # (_sbeta 0) so the DB1B source test - which may close the short side as a data gap, not a factor - is
     # tried first. AVIA_HAUL_TRIM=1 enables. Old AVIA_HAUL_TRIM_FLOOR/BETA still work as the long-side names.
     haul_trim = 1.0
-    if os.environ.get("AVIA_HAUL_TRIM", "").strip().lower() in ("1", "true", "on", "yes"):
+    if (not _model_p2p) and os.environ.get("AVIA_HAUL_TRIM", "").strip().lower() in ("1", "true", "on", "yes"):
         _hk = gcd_est if (gcd_est and gcd_est > 0) else max((block_min - 20.0) * 7.0 * 1.852, 100.0)
         _sfloor = float(os.environ.get("AVIA_HAUL_SHORT_FLOOR", "800"))
         _sbeta  = float(os.environ.get("AVIA_HAUL_SHORT_BETA", "0"))      # 0 = short uplift OFF (test DB1B first)
@@ -687,7 +730,7 @@ def forecast(sabre_db, oag_db, week, origin, dest_codes, competing_airports, *, 
     # and forecast-time-knowable (proposed frequency is an input). AVIA_FREQ_DISCOUNT=1 enables; FLOOR
     # (2500 km), REF (7/wk = daily), BETA (0.5), CAP (0.4 floor on the discount) tune it on the hold-out.
     freq_discount = 1.0
-    if os.environ.get("AVIA_FREQ_DISCOUNT", "").strip().lower() in ("1", "true", "on", "yes"):
+    if (not _model_p2p) and os.environ.get("AVIA_FREQ_DISCOUNT", "").strip().lower() in ("1", "true", "on", "yes"):
         _ffloor = float(os.environ.get("AVIA_FREQ_DISC_FLOOR", "2500"))
         _fref = float(os.environ.get("AVIA_FREQ_DISC_REF", "7"))
         _fbeta = float(os.environ.get("AVIA_FREQ_DISC_BETA", "0.5"))
@@ -730,7 +773,18 @@ def forecast(sabre_db, oag_db, week, origin, dest_codes, competing_airports, *, 
     induced = False
     induced_lf_used = None
     induced_fare_used = None
-    if induced_floor and annual_capacity and (airline_type or "").upper() in INDUCED_TYPES:
+    # THE INDUCED FLOOR IS A QSI CORRECTION TOO, and it is the least obvious of the six. It exists
+    # because the engine anchors on the MEASURED O&D and an induced route carries far more than a
+    # market that did not pre-exist, so demand is floored at capacity times an achieved load factor.
+    # BT2 is trained on outturn, which already contains whatever the induced routes in its sample
+    # actually carried, so flooring its output would add the correction a second time.
+    #
+    # And it would do so in the most damaging place: INDUCED-MODELLING of the memory records the
+    # flagship under-read on new markets at circa 0.10, which is exactly the population where a
+    # double correction is largest. If BT2 turns out to under-read induced routes as well, that is
+    # measured on BT2 and corrected on BT2, not inherited from the engine it replaced.
+    if induced_floor and annual_capacity and not _model_p2p \
+            and (airline_type or "").upper() in INDUCED_TYPES:
         if (market / annual_capacity) < INDUCED_MKT_CAP_MAX:
             _lf = _induced_lf(gcd_est, airline_type)
             if _lf:
@@ -743,9 +797,18 @@ def forecast(sabre_db, oag_db, week, origin, dest_codes, competing_airports, *, 
                     total_demand = captured + feed
     # ALL-DATA BUCKET CALIBRATION (bucket_model.json): nudge total demand by the airport-bucket factor fitted on
     # the whole launch history (the all-data calibration). Bounded; flows through the cap, split and economics.
+    # SUPPRESSED WHEN THE CALIBRATED MODEL PRODUCED THE LOCAL LEG, and this one is suppressed WHOLE
+    # rather than on the captured term alone. bucket_correct is fitted on TOTAL demand against the
+    # whole launch history, so it corrects the QSI engine's total error. When the local leg comes
+    # from BT2 the total is no longer that engine's, and a factor fitted against one engine's bias
+    # applied to another engine's number is not a calibration, it is noise with a provenance.
+    #
+    # The feed loses its share of the correction too. That is a real cost and it is stated rather
+    # than worked around: the honest way back is to refit bucket_correct on whichever engine ships,
+    # not to apply half of an old fit to half of a new number.
     try:
         import bucket_correct as _BC
-        _bf = _BC.forecast_factor(origin, dest_airport, market, gcd_est)
+        _bf = 1.0 if _model_p2p else _BC.forecast_factor(origin, dest_airport, market, gcd_est)
         if _bf and _bf != 1.0:
             captured *= _bf; feed *= _bf; feed_beyond *= _bf; feed_behind *= _bf
             total_demand = captured + feed
