@@ -120,11 +120,18 @@ def main():
               "migrate_oag_asia_labels.py folded 53 of them on 11 August 2026." % len(part))
     thin = [w for w, reg, _n in rows if reg < FULL_REGIONS and not str(w).endswith(("p01", "p16"))]
     if thin:
-        print("\n%d label(s) carry fewer than %d region names. That is a REASON TO RUN --coverage "
-              "and not a finding on its own: a region count counts download partitions. Measured on "
-              "these labels, Asia is complete and intra-Africa and intra-Middle-East flying is "
-              "largely absent, Johannesburg running 24 distinct departures in 2017-08 against 402 "
-              "in 2019-08." % (len(thin), FULL_REGIONS))
+        # NAMED, AND MARKED AS RECORDED RATHER THAN MEASURED HERE. This sentence carried the
+        # Johannesburg finding unconditionally, so it would have printed the 2015-2017 result over a
+        # thin 2023 label the user was actually asking about. The finding is real and belongs in the
+        # tool; reading it across to labels it was not measured on is what had to stop.
+        _shown = ", ".join(str(w) for w in thin[:8]) + (" and %d more" % (len(thin) - 8) if len(thin) > 8 else "")
+        print("\n%d label(s) carry fewer than %d region names: %s. That is a REASON TO RUN "
+              "--coverage and not a finding on its own, because a region count counts download "
+              "partitions rather than flights." % (len(thin), FULL_REGIONS, _shown))
+        print("RECORDED on the 2015 to 2017 labels and NOT re-measured here: Asia is complete, "
+              "intra-Africa and intra-Middle-East flying is largely absent, and Johannesburg runs "
+              "24 distinct departures in 2017-08 against 402 in 2019-08. Run --coverage on the "
+              "labels above rather than reading that result across to them.")
 
     # WHICH REGIONS ARE ACTUALLY MISSING. A count of five says two are absent and does not say
     # which, and the answer decides whether the gap can be closed from the extract or not.
@@ -176,7 +183,7 @@ def main():
         # grow by a quarter in a year, so a quarter missing is not growth.
         print("\nRead the DISTINCT flight column, not the rows. Rows carry the region duplication;"
               " distinct flights do not.")
-        print("Each label as a share of that airport's own best label. Below 75%% is called SHORT,"
+        print("Each label as a share of that airport's own best label. Below 75% is called SHORT,"
               " because these airports did not grow by a quarter in a year.")
         short = {}
         for x in aps:
