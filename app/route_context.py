@@ -15,16 +15,27 @@ WHERE EACH INPUT COMES FROM, and every one is knowable before the route flies.
   from the CALLER      the schedule being tested: carrier, seats per departure, weekly frequency,
                        months operating, launch month. capacity_frame.py enumerates the credible
                        options so the caller picks from evidence rather than inventing one
-  from the ENGINE      capa, the QSI capture at that frequency, read from qsi_share
+  from bt2_capture_core capa, qcx and legs_n, built by the SAME code the training chain used. These
+                       three are NOT read from the engine. They were until 12 August 2026 and it was
+                       wrong: see capture_inputs below for the measurement
   from SABRE           base_mkt, the measured O&D on the pair in the latest full year, and
                        mkt_growth, that year over the one before
   from OAG             the carrier's departing seats at each endpoint and the airport totals, which
                        are the base-strength features, plus the sister-airport flag from Sabre
   computed             gcd, dom, gauge, ncar, seats_ly
 
-THE ONE GAP, and it is smaller than I first wrote it. BT2 needs qcx, the connection-competition
-strength, and legs_n, the schedule density at the endpoints. bt2_capture computes both by calling
-the engine's connection builder itself.
+THE RULING HAS A LIMIT, AND 12 AUGUST 2026 FOUND IT. "Read it from the engine" is right wherever the
+engine computes the same quantity. It is wrong wherever the engine computes a quantity that merely
+shares a name, and capa was exactly that: the model was trained on a nonstop-versus-connecting share
+of the pair's own service and the engine's qsi_share is the share of the catchment's traffic won at
+the origin airport. Reading it from the engine fed the model a number below the tenth percentile of
+its training on essentially every route, in silence. So capa, qcx and legs_n are now built from
+app/bt2_capture_core, which the training chain imports too. One implementation, not one source.
+
+WHAT FOLLOWS IS THE HISTORY OF THAT MISTAKE, kept because the reasoning is still instructive.
+
+BT2 needs qcx, the connection-competition strength, and legs_n, the schedule density at the
+endpoints. bt2_capture computes both by calling the engine's connection builder itself.
 
 I ORIGINALLY RECORDED THAT THE LIVE ENGINE DOES NOT USE THE CONNECTION BUILDER. THAT WAS WRONG and
 the correction matters, because a QSI forecast that did not build connections would not be a QSI
@@ -51,6 +62,7 @@ Avia Solutions Limited. All rights reserved.
 import json
 import math
 import os
+import re
 
 import duckdb
 
@@ -184,39 +196,80 @@ def sister_flag(a, b, year, con=None):
             con.close()
 
 
+_MONTH_LABEL = re.compile(r"^\d{4}-\d{2}$")
+
+
+def capture_inputs(a, b, freq, gcd_km, pre_month, con=None):
+    """capa, qcx and legs_n, built by the SAME code the training chain used.
+
+    THIS IS THE FAULT OF 12 AUGUST 2026 CLOSED. capa was set to the engine's qsi_share, which is the
+    share of the catchment's traffic to the destination won at the origin airport and reads 0.059 at
+    daily on SJC-TPE. The model was trained on a nonstop-versus-connecting share of the pair's own
+    service, median 0.9168 and tenth percentile 0.4896. Every live route would have entered the model
+    below the tenth percentile of training, silently, and the published accuracy would have described
+    nothing a client is shown. qcx and legs_n were wrong in the same way and for the same reason.
+
+    All three now come from app/bt2_capture_core, which bt2/bt2_capture.py also imports, so the two
+    chains cannot build them differently again.
+
+    THE MONTH LABEL IS NOT NEGOTIABLE. Training read a MONTH, "2025-06", and took the schedule rows
+    covering the 15th to the 21st. The engine resolves a single-week label such as "2026-05-25", and
+    handing one of those to load_legs would build the date window "2026-05-25-15", which is not a
+    date. It is refused by name rather than allowed to return nothing, because a route with no legs
+    reads as a route with no competition and would score a capa of 1.0.
+    """
+    import bt2_capture_core as CORE
+    if not _MONTH_LABEL.match(str(pre_month or "")):
+        return None, ("pre_month must be a MONTH label such as '2025-06'. Got %r. The training "
+                      "chain read a month and took the week of the 15th to the 21st; a single-week "
+                      "OAG label is a different construction and cannot be substituted." % pre_month)
+    db = _store("oag")
+    if not db:
+        return None, "no OAG store found, so capa, qcx and legs_n cannot be built"
+    close = con is None
+    con = con or duckdb.connect(db, read_only=True)
+    try:
+        con.execute("SET memory_limit='3GB'; SET threads=3")
+        legs = CORE.load_legs(con, pre_month, {a, b})
+        if not legs:
+            return None, ("no OAG legs touch %s or %s in %s, so the connection competition cannot "
+                          "be measured. An empty leg set is not a route without competition."
+                          % (a, b, pre_month))
+        import connection_builder as CB
+        import schedule_chain as SC
+        alliances = SC.alliances_from_legs(legs) or CB.load_alliance_data()
+        lcc = SC.lcc_from_legs(legs) or CB.DEFAULT_LCC_LIST
+        coords = SC.load_airport_coords()
+        mct = {}
+        try:
+            from config import MCT_MASTER
+            mct = CB.load_mct_data(str(MCT_MASTER), 90)
+        except Exception:                                   # noqa: BLE001
+            mct = {}
+        block = CORE.block_minutes(gcd_km)
+        comp = CORE.components(legs, a, b, alliances, mct, lcc, coords, block)
+        return {"capa": CORE.capa_from_components(comp, block, float(freq)),
+                "qcx": CORE.qcx_feature_from_components(comp),
+                "legs_n": len(legs),
+                "block": block, "pre_month": pre_month,
+                "components": [list(c) for c in comp],
+                "mct_loaded": bool(mct)}, None
+    finally:
+        if close:
+            con.close()
+
+
 def build(a, b, carrier, aircraft_seats, freq, months=12, launch_mon=6, year=None,
-          engine_payload=None, qcx=None, legs_n=None, ncar=1, pre_month=None):
-    """The BT2 route dict, or a dict with ok=False naming exactly what is missing."""
+          engine_payload=None, qcx=None, legs_n=None, capa=None, ncar=1, pre_month=None):
+    """The BT2 route dict, or a dict with ok=False naming exactly what is missing.
+
+    engine_payload is still accepted and is still read for anything the engine works out that BT2
+    needs, but capa, qcx and legs_n are NO LONGER TAKEN FROM IT. They are the three the model is most
+    sensitive to and the three the engine computes on a different definition; see capture_inputs.
+    Passing capa, qcx or legs_n explicitly overrides the computation and is for testing only.
+    """
     a, b, carrier = a.upper(), b.upper(), carrier.upper()
     miss = []
-
-    capa = None
-    if engine_payload is not None:
-        capa = engine_payload.get("qsi_share")
-        if legs_n is None:
-            legs_n = engine_payload.get("legs_n")
-        if qcx is None:
-            # The three connection-type sums come from the engine, computed over the connection set
-            # it already builds. The weighting is BT2's definition, so it is applied HERE and not in
-            # the engine: online counts in full, alliance at three quarters, interline at a quarter,
-            # exactly as bt2_lib combines the capture components.
-            so = engine_payload.get("s_online")
-            sa = engine_payload.get("s_alliance")
-            si = engine_payload.get("s_interline")
-            if so is not None or sa is not None or si is not None:
-                qcx = float(so or 0.0) + 0.75 * float(sa or 0.0) + 0.25 * float(si or 0.0)
-    if capa is None:
-        miss.append("capa: pass the engine payload, whose qsi_share is the capture BT2 needs")
-    if qcx is None:
-        miss.append("qcx: the engine payload carries no s_online/s_alliance/s_interline. Call route_forecast.forecast, which now returns them from the connection set it builds.")
-    if legs_n is None:
-        miss.append("legs_n: the engine payload carries none. Call route_forecast.forecast, which now returns it.")
-
-    bm, growth, err = market(a, b, year)
-    if err:
-        miss.append(err)
-    if miss:
-        return {"ok": False, "missing": miss}
 
     import airportsdata
     M = airportsdata.load("IATA")
@@ -233,6 +286,24 @@ def build(a, b, carrier, aircraft_seats, freq, months=12, launch_mon=6, year=Non
         import datetime
         y = yr or datetime.date.today().year
         pre_month = "%04d-%02d" % (y, max(1, min(12, int(launch_mon))))
+
+    cap_prov = {}
+    if capa is None or qcx is None or legs_n is None:
+        got, err = capture_inputs(a, b, freq, gcd, pre_month)
+        if err:
+            miss.append(err)
+        else:
+            capa = got["capa"] if capa is None else capa
+            qcx = got["qcx"] if qcx is None else qcx
+            legs_n = got["legs_n"] if legs_n is None else legs_n
+            cap_prov = {k: got[k] for k in ("block", "pre_month", "components", "mct_loaded")}
+
+    bm, growth, err = market(a, b, year)
+    if err:
+        miss.append(err)
+    if miss:
+        return {"ok": False, "missing": miss}
+
     bs = base_strength(carrier, a, b, pre_month) or {}
     sf = sister_flag(a, b, (yr or 0) + 1) if yr else None
 
@@ -252,14 +323,15 @@ def build(a, b, carrier, aircraft_seats, freq, months=12, launch_mon=6, year=Non
             "base_seats_a": bs.get("base_seats_a"), "base_seats_b": bs.get("base_seats_b"),
             "airport_seats_a": bs.get("airport_seats_a"), "airport_seats_b": bs.get("airport_seats_b"),
             "sister_flag": bool(sf),
-            "_provenance": {"base_mkt_year": year, "pre_month": pre_month,
-                            "capa_from": "engine qsi_share",
-                            "sister_flag_resolved": sf is not None}}
+            "_provenance": dict({"base_mkt_year": year, "pre_month": pre_month,
+                                 "capa_from": "bt2_capture_core, the training implementation",
+                                 "sister_flag_resolved": sf is not None}, **cap_prov)}
 
 
 if __name__ == "__main__":
     import sys
     a, b, car = (sys.argv[1:4] + ["SJC", "TPE", "BR"])[:3]
-    print(json.dumps(build(a, b, car, aircraft_seats=333, freq=7,
-                           engine_payload={"qsi_share": 0.42, "qcx": 2.3, "legs_n": 1800},
-                           year=2024, launch_mon=6), indent=2, default=str))
+    # No engine payload and no overrides: capa, qcx and legs_n are built from the store by the
+    # training implementation, which is the point of the file.
+    print(json.dumps(build(a, b, car, aircraft_seats=333, freq=7, year=2024, launch_mon=6,
+                           pre_month="2024-06"), indent=2, default=str))

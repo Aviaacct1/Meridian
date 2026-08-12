@@ -1,0 +1,154 @@
+{
+  "note": "Edit and re-run. Seat counts are the carriers' own configurations measured from OAG 2025 on comparable sectors by capacity_frame.frame, not the generic type table: China Airlines and Starlux fly the A350-900 at 306 against the table's 336, EVA flies the 787-9 at 278 against 320, and the 777-300ER is 333 at EVA and 358 at China Airlines against 380. Sizing on the generic figure overstates capacity by 8 to 13% on these carriers. Growth is the post-recovery path at 7% a year: the engine's default taper measures a 20.00% CAGR, which is the clamp ceiling and a recovery burst, and is not to be used for client work. split_floor false makes the connecting leg comparable with the 2025 analyst; true is what ships.",
+  "defaults": {
+    "origin": "SJC",
+    "dest": "TPE",
+    "carrier_type": "FSC",
+    "growth": 0.07,
+    "split_floor": false,
+    "partners": [
+      "WN"
+    ],
+    "dep_time": "12:00"
+  },
+  "cases": [
+    {
+      "name": "SJC-TPE CI A359 306 4x 2027, the analyst's case",
+      "airline": "CI",
+      "aircraft": "A359",
+      "seats": 306,
+      "freq": 4,
+      "forecast_year": 2027
+    },
+    {
+      "name": "SJC-TPE CI A359 306 5x 2027",
+      "airline": "CI",
+      "aircraft": "A359",
+      "seats": 306,
+      "freq": 5,
+      "forecast_year": 2027
+    },
+    {
+      "name": "SJC-TPE CI A359 306 4x 2028",
+      "airline": "CI",
+      "aircraft": "A359",
+      "seats": 306,
+      "freq": 4,
+      "forecast_year": 2028
+    },
+    {
+      "name": "SJC-TPE CI A359 306 5x 2028",
+      "airline": "CI",
+      "aircraft": "A359",
+      "seats": 306,
+      "freq": 5,
+      "forecast_year": 2028
+    },
+    {
+      "name": "SJC-TPE CI A359 306 6x 2028",
+      "airline": "CI",
+      "aircraft": "A359",
+      "seats": 306,
+      "freq": 6,
+      "forecast_year": 2028
+    },
+    {
+      "name": "SJC-TPE BR B789 278 4x 2028",
+      "airline": "BR",
+      "aircraft": "B789",
+      "seats": 278,
+      "freq": 4,
+      "forecast_year": 2028
+    },
+    {
+      "name": "SJC-TPE BR B77W 333 4x 2028",
+      "airline": "BR",
+      "aircraft": "B77W",
+      "seats": 333,
+      "freq": 4,
+      "forecast_year": 2028
+    },
+    {
+      "name": "SJC-TPE BR B77W 333 7x 2028",
+      "airline": "BR",
+      "aircraft": "B77W",
+      "seats": 333,
+      "freq": 7,
+      "forecast_year": 2028
+    },
+    {
+      "name": "SJC-TPE JX A359 306 4x 2028, Starlux",
+      "airline": "JX",
+      "aircraft": "A359",
+      "seats": 306,
+      "freq": 4,
+      "forecast_year": 2028
+    },
+    {
+      "name": "SJC-TPE JX A359 306 7x 2028, Starlux",
+      "airline": "JX",
+      "aircraft": "A359",
+      "seats": 306,
+      "freq": 7,
+      "forecast_year": 2028
+    },
+    {
+      "name": "SJC-TPE UA B789 257 7x 2028",
+      "airline": "UA",
+      "aircraft": "B789",
+      "seats": 257,
+      "freq": 7,
+      "forecast_year": 2028
+    },
+    {
+      "name": "SJC-TPE DL A359 306 5x 2028",
+      "airline": "DL",
+      "aircraft": "A359",
+      "seats": 306,
+      "freq": 5,
+      "forecast_year": 2028
+    },
+    {
+      "name": "SJC-TPE CI A359 306 4x 2028, floor ON as shipped",
+      "airline": "CI",
+      "aircraft": "A359",
+      "seats": 306,
+      "freq": 4,
+      "forecast_year": 2028,
+      "split_floor": true
+    },
+    {
+      "name": "SFO-TPE BR B77W 333 7x 2028, the served control",
+      "origin": "SFO",
+      "airline": "BR",
+      "aircraft": "B77W",
+      "seats": 333,
+      "freq": 7,
+      "forecast_year": 2028,
+      "dep_time": "01:15"
+    },
+    {
+      "name": "SJC-LHR BA B789 216 7x 2028",
+      "dest": "LHR",
+      "airline": "BA",
+      "aircraft": "B789",
+      "seats": 216,
+      "freq": 7,
+      "forecast_year": 2028,
+      "partners": [],
+      "dep_time": "optimise"
+    },
+    {
+      "name": "GOA-JFK DL B739 180 7x 2028",
+      "origin": "GOA",
+      "dest": "JFK",
+      "airline": "DL",
+      "aircraft": "B739",
+      "seats": 180,
+      "freq": 7,
+      "forecast_year": 2028,
+      "partners": [],
+      "dep_time": "optimise"
+    }
+  ]
+}

@@ -1,0 +1,105 @@
+The scenario runner, and the three mismatched inputs put on one implementation
+
+WHAT THIS COMMIT DOES NOT DO. It does not wire the calibrated model into cortex_app. Task 4 stays
+held: the input fault below is now fixed in code and UNMEASURED, and the grading-basis question is
+with John.
+
+NOTHING HERE HAS BEEN RUN. Cowork attaches the Dev PC and cannot execute on either machine, so
+every figure in this commit is a prediction until the Workstation produces it.
+run-scenarios-12Aug2026.ps1 is the run pack, in order.
+
+COMMIT ONLY WHAT IS LISTED. Two sessions were editing this repo on the evening of 12 August. Run
+`git status --short` and read it BEFORE composing any `git add`. bt2/bt2_pin_score.py,
+run-pin-score-12Aug2026.ps1, cleanup-stale-copies-12Aug2026.ps1, commit-message-12Aug2026.txt and
+the warm_demo.py fix came from the other session and are not in this list.
+
+  git add app/scenario_runner.py app/cases_sjc_tpe.json app/bt2_capture_core.py
+  git add app/bt2_input_check.py app/route_context.py bt2/bt2_capture.py
+  git add GRADING-BASIS-QUESTION-12Aug2026.md run-scenarios-12Aug2026.ps1
+
+TWO FINDINGS TO READ FIRST, BOTH ABOUT NUMBERS THAT HAVE MOVED
+
+  THE FROZEN BASELINE IS STALE AND `econ_baseline.py check` CANNOT PASS AGAINST IT. Checked against
+  a figure John already knows: app/econ_baseline.json holds the B789 7x case at 67,308 each way at
+  a load factor of 0.578, which is exactly the 10 August dashboard screenshot at 134,616 two-way.
+  The 12 August SJC-TPE-BASELINE entry has the same case at 203,840 two-way, capacity bound at the
+  87.5% cap. The forecast-year default of 11 August and the connecting build moved it, legitimately.
+  Task 5 needs a re-capture at the current commit, not a check against a 10 August file.
+
+  AND TWO OF THE THREE CASES ARE FROZEN ON THE WRONG SEAT COUNT. CASES names them "carrier seats"
+  and now passes 333 for the B77W and 306 for the A359. The frozen file records 380 and 336, the
+  generic table figures, so it predates the seats argument being passed. The case definitions moved
+  as well as the engine, and the frozen numbers describe different cases from the ones they name.
+
+THE WIRING FAULT IS FIXED IN CODE AND IS NOT YET MEASURED
+
+app/bt2_capture_core.py is the one implementation the 12 August commit message asked for. load_legs,
+components and cap_from moved out of bt2/bt2_capture.py into app/, and both chains now import them,
+which is John's ruling of 9 August applied to the three inputs it was not applied to.
+
+app/route_context.py no longer takes capa, qcx or legs_n from the engine payload. capture_inputs
+builds all three from the store with the training implementation, at the training's own month label
+and block time. A single-week OAG label is REFUSED BY NAME rather than allowed through: training
+read a month and took the week of the 15th to the 21st, and handing load_legs a label like
+"2026-05-25" would build the date window "2026-05-25-15", which is not a date, and return no legs.
+A route with no legs reads as a route with no competition and would score a capa of 1.0.
+
+Two quantities are called qcx and they are not the same. Inside cap_from it carries the 0.20
+one-stop factor and covers one direction. The MODEL FEATURE sums both directions and carries no such
+factor. Each is now built by its own named function and neither is derived from the other, because
+sharing a name is most of how this went wrong.
+
+app/bt2_input_check.py is the test bt2_wiring_test.py could not be. It takes routes the training
+chain has already scored, asks the LIVE path for the same three numbers, and compares against
+capture_L.csv. A pass is a difference of zero on all three. The tolerance is floating point and is
+not to be widened: the two chains now run the same code, so any real difference is a difference in
+the arguments, and the arguments are the finding. RUN IT BEFORE ANYTHING ELSE.
+
+THE SCENARIO RUNNER
+
+app/scenario_runner.py generalises app/econ_baseline.py. A cases file in, a table out, no Python
+written by the tester. Cases may be JSON or CSV and carry route, carrier, aircraft, seats,
+frequency, forecast year, growth path, departure time, partner carriers, split_floor, plan cap,
+season and curfews. Every figure comes from cortex_app.calibrated_forecast, so a scenario run and the
+portal answer the same question with the same code; if the two ever disagree that is a defect in the
+runner.
+
+  Everything is reported TWO-WAY, and every doubled column says so in its name. Mixing the engine's
+  each-way convention with BT2's both-directions seats_ly cost an afternoon on 9 August.
+
+  demand_lf and plan_lf_achieved are SEPARATE COLUMNS. The first is demand over seats and answers
+  whether the demand is there to fill the aeroplane; the second is carried over seats, is capped,
+  and can only ever be the lower. Reading one for the other is the capped-against-uncapped error
+  that invalidated a comparison quoted for a week.
+
+  It FAILS LOUDLY on a payload key it does not recognise, REFUSES TO WRITE a table in which any
+  case errored, and REFUSES TO RUN without AVIA_FREQ_SENSITIVE unless the cases file says plainly
+  that it means to. With that switch off a frequency ladder returns the same demand at 3x and at
+  14x and only the load factor moves, which a tester would not necessarily notice.
+
+  A misspelled setting is rejected by name rather than ignored, because a run carrying a setting the
+  tester believes is on is worse than a run that stops.
+
+app/cases_sjc_tpe.json carries sixteen cases: China Airlines, EVA, Starlux, United and Delta on
+SJC-TPE at four to seven weekly across 2027 and 2028, one case with the connectivity floor on as it
+ships, SFO-TPE as a served control, and SJC-LHR and GOA-JFK as other routes. Seat counts are the
+carriers' own configurations measured from OAG 2025 by capacity_frame, not the generic type table,
+which overstates capacity by 8 to 13% on these carriers. Growth is the post-recovery path at 7% a
+year, per John's ruling that the default taper measures a 20.00% CAGR, which is the clamp ceiling
+and a recovery burst.
+
+WATCH STARLUX. JX was founded after 2018, is absent from the 2018 carrier_home reference, and was
+once silently deleted from the one route it obviously belongs on. Its two cases must return numbers
+and a HOME traffic-rights verdict, not a blank.
+
+THE CHECK ON THE WHOLE RUN. With the floor off, on the analyst's 12:00 schedule with Southwest a
+partner, 2027 at 4x should read 109,764 two-way demand against 127,296 seats, which is 86.2%. If
+that figure has moved, say so before reading anything else in the table.
+
+GRADING-BASIS-QUESTION-12Aug2026.md is John's v2.0 of the question for the other session, held in
+the repo so it carries with the commit. It corrects a comparator I had wrong: SJC-TPE is both
+long-haul and Asian-hub, so the floor's x2.19 is judged against the x2.82 measured on the 147 routes
+that are both, not against the x2.07 or the x2.50. On the right comparator the floor is
+conservative.
+
+Avia Solutions Limited. All rights reserved.

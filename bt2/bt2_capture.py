@@ -27,66 +27,14 @@ sys.path.insert(0, APP)
 import connection_builder as CB
 import schedule_chain as SC
 
-def _et(el, mn):
-    x = (el - mn) / 60.0
-    return 1.0 if x <= 0 else 1.0 / ((int(x / 0.1) + 1) ** 0.8)
-
-def load_legs(con, mon, apset):
-    s = "(" + ",".join("'%s'" % a for a in apset) + ")"
-    base = """SELECT DISTINCT carrier, flight_no, dep_airport, arr_airport, dep_terminal,
-      arr_terminal, dep_country, arr_country, local_dep_time, local_arr_time,
-      days_of_op, arr_days_of_op, flying_time, elapsed_time, alliance, carrier_category
-      FROM oag WHERE week=? AND service_type='J'
-      AND (dep_airport IN %s OR arr_airport IN %s)
-      AND try_cast(strftime(try_cast(eff_from AS date), '%%d') AS int) IS NOT NULL
-      AND try_cast(eff_from AS date) <= ?::date AND try_cast(eff_to AS date) >= ?::date"""
-    y, m = int(mon[:4]), int(mon[5:7])
-    w_lo, w_hi = f"{mon}-15", f"{mon}-21"
-    rows = con.execute(base % (s, s), [mon, w_hi, w_lo]).fetchall()
-    if not rows:  # split-month fallback (Asia gaps): second half covers the 16th-21st
-        rows = con.execute(base % (s, s), [mon + "p16", w_hi, w_lo]).fetchall()
-        if not rows:
-            rows = con.execute(base % (s, s), [mon + "p01", w_hi, w_lo]).fetchall()
-    legs = []
-    for r in rows:
-        (car, fno, dep, arr, dt, at, dc, ac, ldt, lat, dop, adop, fly, el, alli, cat) = r
-        try: dtm = CB.parse_time_hhmm(ldt)
-        except Exception: dtm = None
-        try: atm = CB.parse_time_hhmm(lat)
-        except Exception: atm = None
-        L = {'carrier': str(car).strip(), 'flight_no': str(fno or '').strip(),
-             'dep_airport': str(dep).strip(), 'arr_airport': str(arr).strip(),
-             'dep_terminal': str(dt or '').strip(), 'arr_terminal': str(at or '').strip(),
-             'dep_country': str(dc or '').strip(), 'arr_country': str(ac or '').strip(),
-             'dep_time_mins': dtm, 'arr_time_mins': atm,
-             'flying_mins': CB._parse_duration_mins(fly or el),
-             'dep_day_set': CB.parse_days_string(dop), 'arr_day_set': CB.parse_days_string(adop or dop),
-             'alliance': str(alli or '').strip(), 'carrier_category': str(cat or '').strip(), 'id': len(legs)}
-        L['dom_int'] = CB.get_dom_int(L['dep_country'], L['arr_country'])
-        legs.append(L)
-    return legs
-
-def components(legs, a, b, alliances, mct, lcc, coords, block, circuity=1.25):
-    """Per direction: (S_online, S_alliance, S_interline, mn). Sums are freq*et by type."""
-    out = []
-    for oo, dd in ((a, b), (b, a)):
-        leg1 = [l for l in legs if l['dep_airport'] == oo]
-        leg2 = [l for l in legs if l['arr_airport'] == dd]
-        if not leg1 or not leg2:
-            out.append((0.0, 0.0, 0.0, block)); continue
-        valid, _ = CB.build_connections(leg1, leg2, alliances, mct, lcc, 20, 720, 90, hub_airport=None)
-        valid = SC.circuity_filter(valid, coords, circuity)
-        mn = min([c['elapsed_time'] for c in valid] + [block]) if valid else block
-        S = {'ONLINE': 0.0, 'ALLIANCE': 0.0, 'INTERLINING': 0.0}
-        for c in valid:
-            S[c['cnx_type']] = S.get(c['cnx_type'], 0.0) + c['frequency'] * _et(c['elapsed_time'], mn)
-        out.append((S['ONLINE'], S['ALLIANCE'], S['INTERLINING'], mn))
-    return out
-
-def cap_from(so, sa, si, mn, block, freq, w_all=0.75, w_int=0.25, onestop=0.20):
-    qcx = onestop * (so + w_all * sa + w_int * si)
-    qns = freq * _et(block, mn)
-    return qns / (qns + qcx) if (qns + qcx) else 0.0
+# ONE IMPLEMENTATION, NOT TWO. _et, load_legs, components and cap_from moved to
+# app/bt2_capture_core.py on 12 August 2026 so the training chain and the live path build capa, qcx
+# and legs_n with the same code. They did not until then and nobody had compared them: route_context
+# set capa to the engine's qsi_share, a different quantity on a different scale, which would have fed
+# every live route into the model below the tenth percentile of training in silence. The measurement
+# is in that file. sys.path already carries APP, three lines above.
+from bt2_capture_core import (elapsed_penalty as _et, load_legs, components, cap_from,   # noqa: F401
+                              capa_from_components, qcx_feature_from_components)         # noqa: F401
 
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument("--cohort", type=int, required=True)
