@@ -118,7 +118,17 @@ def main():
         if not pr:
             miss += 1
             continue
+        # SEATS MUST BE ANNUALISED AND THE FIRST RUN OF THIS SCRIPT DID NOT DO IT. seats_ly is the
+        # seats operated in the LAUNCH year over the MONTHS OPERATED; the arm's outturn is the
+        # GRADED year, L+1, a full twelve months. Dividing one by the other varies by a factor of
+        # six with nothing but the launch month, and it inflated the spread enough that seats x k on
+        # the sector total scored 21.1% here against the 74.5% the null control gave for the same
+        # segment on a matched basis. months_operated was in launch_profile the whole time.
+        _m = float(pr.get("months_operated") or 0)
         seats = float(pr.get("seats_ly") or 0)
+        if _m <= 0:
+            continue
+        seats = seats * 12.0 / _m
         gcd = float(pr.get("gcd_km") or 0)
         dom = (pr.get("ctry_a") == pr.get("ctry_b") and pr.get("ctry_a") != "")
         typ = "LCC" if (pr.get("carrier") in lcc or pr.get("oag_carrier") in lcc) else "FSC"
@@ -129,11 +139,19 @@ def main():
         if seats <= 0 or p2p_out < a.min_pax or eng <= 0:
             continue
         rows.append({"route": r.get("route"), "cohort": L, "seats": seats, "gcd": gcd,
-                     "engine": eng, "actual": p2p_out, "sector": _f(r, "outturn_pax")})
+                     "months": _m, "engine": eng, "actual": p2p_out,
+                     "sector": _f(r, "outturn_pax")})
 
     print("arm %s: %d rows, %d without a launch_profile match" % (os.path.basename(a.arm),
                                                                  len(arm), miss))
-    print("segment %s: %d routes scoreable\n" % (a.segment, len(rows)))
+    print("segment %s: %d routes scoreable" % (a.segment, len(rows)))
+    if rows:
+        mm = sorted(r["months"] for r in rows)
+        print("months operated in the launch year: median %.0f, p10 %.0f, p90 %.0f. Seats are "
+              "annualised by this before any division." % (mm[len(mm) // 2],
+                                                           mm[int(0.1 * len(mm))],
+                                                           mm[int(0.9 * len(mm))]))
+    print()
     if len(rows) < 100:
         print("FEWER THAN 100 ROUTES. A threshold or a band fitted on this many is not a result.")
     if not rows:
