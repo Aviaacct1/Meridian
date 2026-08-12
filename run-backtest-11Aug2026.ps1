@@ -35,7 +35,12 @@ Test-Path $env:AVIA_SABRE
 # years 2017-2019 and 3,602 dep-arr-year pairs; the 6-year covers 2016-2019 plus 2024 and 2025,
 # and 5,798. A route with no flown schedule falls back to the flat feed and appears UNCHANGED IN
 # BOTH ARMS, so the thinner cache waters the comparison down for nothing.
-$WAVE = "E:\Avia\qsi-tool\app\qsi_wave_cache_6yr.duckdb"
+# SUPERSEDED 12 August. The six-year cache covered only 16.7% of this pin, 727 routes of 4,342,
+# because its flown table holds only the routes it was itself built from. Rebuilt against the pin:
+#   py -3.12 wave_cache.py --oag $env:AVIA_OAG --routes-file $ROUTES --out E:\Avia\qsi_wave_cache_pin_12Aug2026.duckdb
+# which gives 66.6% coverage on the pin and 80.1% on the routes that produce a gradeable row. ALWAYS
+# rebuild the cache when the pin changes, and check coverage before spending hours on an arm.
+$WAVE = "E:\Avia\qsi_wave_cache_pin_12Aug2026.duckdb"
 Test-Path $WAVE
 
 # THE PRE-AGGREGATION STORE. Turns the per-route Sabre full scans into point lookups. It engages
@@ -61,7 +66,7 @@ cd C:\src\meridian\app
 # AVIA_DUCKDB_THREADS IS DELIBERATELY NOT SET HERE. This phase is one process doing whole-table
 # scans and it wants every core. It is pinned to 1 for the arms below, where twelve workers each
 # opening a multi-threaded connection would oversubscribe the box.
-py -3.12 backtest.py --oag $env:AVIA_OAG --sabre $env:AVIA_SABRE --years 2016,2017,2018,2019 --min-gcd 1500 --routes-file $ROUTES --discover-only
+py -3.12 backtest.py --oag $env:AVIA_OAG --sabre $env:AVIA_SABRE --years 2016,2017,2018,2024 --min-gcd 1500 --routes-file $ROUTES --discover-only
 
 # Read the route count and the launch-year split before going on. If the pin already exists from
 # an earlier attempt, discovery is bypassed and the count is whatever was pinned then: delete the
@@ -134,9 +139,23 @@ py -3.12 ..\bt2\compare_backtest_arms.py backtest_qsifeed_11Aug2026.csv backtest
 # Also removed from the three arm lines: --years and --min-gcd. They are discovery-time filters
 # and the pin has already applied them; leaving them on the arms is misleading rather than wrong.
 #
-# STILL OPEN, and John's call rather than a defect: the arms run launch years 2016-2019 only,
-# while the six-year wave cache also covers 2024 and 2025. Adding 2024 would put post-COVID
-# launches in the sample and the BT2 programme measured one extra cohort at +1.7 points. 2025
-# launches cannot be graded, because the outturn year would be 2026 and Sabre stops at 2025.
+# THE LAUNCH YEARS CHANGED, 2016-2019 to 2016,2017,2018,2024. Two reasons, decided 12 August.
+#
+# 2024 IS ADDED because the six-year wave cache covers it, it puts post-COVID launches in the
+# sample, and the BT2 programme measured one extra cohort at +1.7 points of blind accuracy. The
+# connecting feed is precisely the thing that changed shape across COVID, so a verdict drawn only
+# from pre-COVID launches would be a statement about 2019 rather than about the feed. 2025 cannot
+# be added: --offset defaults to 1, so it would grade against 2026 and Sabre stops at 2025.
+#
+# 2019 IS DROPPED, and this is the part that is easy to miss. --offset 1 grades every launch
+# against launch year PLUS ONE, so the 2019 cohort was being graded against 2020 OUTTURN. The
+# --years help calls 2016-2019 the clean sample with "Covid-hit 2020-2023 excluded", but that
+# excludes 2020-2023 as LAUNCH years, not as GRADING years. Worse than the dilution: --min-outturn
+# drops the worst-hit routes from the statistics, so the surviving 2019 routes are selected on
+# having come through 2020 well. Keeping 2019 would need --offset 0 across every arm, which grades
+# on immature launch-year outturn and which this file's own help says to cross-check against the
+# Y+1 read before trusting.
+#
+# The four cohorts now grade against 2017, 2018, 2019 and 2025. Every one is a normal year.
 #
 # Avia Solutions Limited. All rights reserved.
