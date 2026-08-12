@@ -65,7 +65,66 @@ def _run(case):
     # carried and load factor too, so a change to the forecast is caught as well as one to the P&L
     out["_carried_each_way"] = r["demand"]["total"]
     out["_load_factor"] = r["capacity"]["load"]
+    # THE FIGURES A CLIENT ACTUALLY READS, added 12 August 2026. The fields above catch a change in
+    # the economics; these catch a change in the FORECAST that produced them. Without them a
+    # consolidation could move the P2P and connecting split, leave the total untouched and pass this
+    # check, which is exactly what split_share does: it is total-preserving and moves the split by
+    # tens of thousands of passengers.
+    d = r.get("demand") or {}
+    cap = r.get("capacity") or {}
+    for key, field in (("p2p_carried", "_p2p_carried"), ("connecting_carried", "_connecting_carried"),
+                       ("p2p_share", "_p2p_share"), ("feed_total", "_feed_total"),
+                       ("feed_beyond", "_feed_beyond"), ("feed_behind", "_feed_behind"),
+                       ("qsi_share", "_capture_share"), ("natural", "_natural_market"),
+                       ("total_demand", "_total_demand_each_way")):
+        if key not in d:
+            # LOUD, not silent. A renamed payload key would otherwise record None and the baseline
+            # would freeze nothing while appearing to pass. That is the failure shape this codebase
+            # has now found six times.
+            return {"error": "demand payload has no key %r; econ_baseline needs updating" % key}
+        out[field] = d[key]
+    out["_spill"] = cap.get("spill")
     return out
+
+
+def _provenance():
+    """WHAT PRODUCED THE NUMBERS, recorded beside them.
+
+    The recurring failure this closes: a run is compared against an earlier one and only afterwards
+    does anyone establish that the code, the stores or the library versions were not the same. The
+    switches in ENV_KEYS were already recorded; this adds the code and the data.
+
+    The commit is READ FROM THE .git FILES, never by running git. A git process on a mounted working
+    tree takes .git/index.lock and the mount denies the unlink, which strands the lock and blocks
+    every later commit. Reading HEAD and the ref it points at is a plain file read and is safe.
+    """
+    p = {}
+    try:
+        root = os.path.dirname(HERE)
+        head = open(os.path.join(root, ".git", "HEAD"), encoding="utf-8").read().strip()
+        if head.startswith("ref:"):
+            ref = head.split(" ", 1)[1].strip()
+            p["commit"] = open(os.path.join(root, ".git", ref), encoding="utf-8").read().strip()
+            p["branch"] = ref.rsplit("/", 1)[-1]
+        else:
+            p["commit"], p["branch"] = head, "(detached)"
+    except Exception as exc:
+        p["commit"] = "unknown (%s)" % exc
+    for mod in ("duckdb", "airportsdata"):
+        try:
+            p[mod] = str(__import__(mod).__version__)
+        except Exception:
+            p[mod] = "not installed"
+    p["python"] = sys.version.split()[0]
+    try:
+        import cortex_app as CA
+        b = json.loads(CA.api_basis().body.decode())
+        p["oag_week"] = b.get("oag_week")
+        p["sabre_year"] = b.get("sabre_year")
+        p["default_forecast_year"] = b.get("default_forecast_year")
+    except Exception as exc:
+        p["store_vintage"] = "unreadable (%s)" % exc
+    return p
 
 
 # The switches that change the answer. Recorded with the baseline and checked on the way back,
@@ -80,9 +139,12 @@ def _env():
 
 
 def capture(path=DEFAULT_PATH):
-    data = {"note": "Frozen before the contribution-before-ownership change, 10 August 2026. "
-                    "Every figure here must be reproduced exactly by any additive change.",
-            "env": _env(), "cases": {}}
+    data = {"note": "Frozen record of the three SJC-TPE carrier cases. Every figure here must be "
+                    "reproduced exactly by any change that is not intended to move the forecast, "
+                    "and any change that IS intended to move it must be able to say which fields "
+                    "and by how much. Provenance records what produced the numbers.",
+            "captured_utc": __import__("datetime").datetime.utcnow().isoformat(timespec="seconds"),
+            "provenance": _provenance(), "env": _env(), "cases": {}}
     for c in CASES:
         data["cases"][c["name"]] = _run(c)
     with open(path, "w", encoding="utf-8") as fh:
@@ -105,6 +167,17 @@ def check(path=DEFAULT_PATH):
                          "below as a regression." % (k, was_env.get(k, ""), now_env.get(k, "")))
     if diffs:
         return False, diffs
+    # PROVENANCE IS REPORTED, NOT ENFORCED. A different commit is the normal case: the whole point of
+    # a baseline is to hold numbers across a code change. But it must be VISIBLE, because the failure
+    # this exists to stop is comparing two runs and only later establishing that the code, the stores
+    # or the library versions were not the same. A store refresh or an airportsdata release moving a
+    # figure is a legitimate reason for a difference and a different thing from a regression.
+    notes = []
+    was_p = blob.get("provenance") or {}
+    now_p = _provenance()
+    for k in sorted(set(list(was_p) + list(now_p))):
+        if was_p.get(k) != now_p.get(k):
+            notes.append("PROVENANCE %s: captured %r, now %r" % (k, was_p.get(k), now_p.get(k)))
     for c in CASES:
         name = c["name"]
         new = _run(c)
@@ -118,7 +191,9 @@ def check(path=DEFAULT_PATH):
                     diffs.append(f"{name} | {f}: {a} -> {b}")
             elif a != b:
                 diffs.append(f"{name} | {f}: {a} -> {b}")
-    return (not diffs), diffs
+    # notes first, so the code and store vintage are read BEFORE any moved field is interpreted.
+    # ok is decided by diffs alone: a different commit is expected and is not a regression.
+    return (not diffs), notes + diffs
 
 
 if __name__ == "__main__":
@@ -127,15 +202,30 @@ if __name__ == "__main__":
     if mode == "capture":
         p, data = capture(path)
         print("written:", p)
+        print("provenance:")
+        for k, v in sorted(data["provenance"].items()):
+            print(f"    {k:24} {v}")
+        print("switches:")
+        for k, v in sorted(data["env"].items()):
+            print(f"    {k:24} {v!r}")
+        print("cases:")
         for name, v in data["cases"].items():
             if "error" in v:
                 print(f"  {name}: FAILED {v['error']}")
             else:
-                print(f"  {name}: profit {v['profit']:,.0f} margin {v['margin']:.3f} "
-                      f"ownership {v['ownership']:,.0f} carried ew {v['_carried_each_way']:,.0f}")
+                print(f"  {name}: carried ew {v['_carried_each_way']:,.0f} "
+                      f"(P2P {v['_p2p_carried'] or 0:,.0f} / cnx {v['_connecting_carried'] or 0:,.0f}) "
+                      f"LF {v['_load_factor']:.3f} capture {v['_capture_share'] or 0:.4f} "
+                      f"profit {v['profit']:,.0f}")
     else:
-        ok, diffs = check(path)
-        print("IDENTICAL, no field moved" if ok else "REGRESSION, %d field(s) moved:" % len(diffs))
+        ok, lines = check(path)
+        notes = [x for x in lines if x.startswith("PROVENANCE")]
+        diffs = [x for x in lines if not x.startswith("PROVENANCE")]
+        if notes:
+            print("what changed about the RUN (context, read this first):")
+            for n in notes:
+                print("  ", n)
+        print("IDENTICAL, no field moved" if ok else "%d field(s) MOVED:" % len(diffs))
         for d in diffs:
             print("  ", d)
         sys.exit(0 if ok else 1)

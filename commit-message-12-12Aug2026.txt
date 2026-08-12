@@ -1,0 +1,62 @@
+Freeze the three SJC-TPE cases with a record of what produced them
+
+One file. econ_baseline.py already froze the three SJC-TPE carrier cases and already blocked on a
+switch difference, which is what caught a run without AVIA_FREQ_SENSITIVE on 10 August. It did not
+record WHAT CODE and WHAT DATA produced the numbers, and it did not record the split a client reads.
+Both are added.
+
+WHY NOW. The three cases are going to a client, and the consolidation of the two forecast paths is
+about to change the engine underneath them. The numbers have been reconciled against the 2025
+analyst's own deck, 111,384 against 107,857 on his basis and 106,080 against 107,857 at his 4x on
+300 seats, so they are defensible today. What was missing is the ability to prove, afterwards, that
+a later run was or was not the same code, the same stores and the same switches. Twice this week a
+comparison was made and only later established that the two sides were not comparable.
+
+1. PROVENANCE, RECORDED BESIDE THE NUMBERS
+
+_provenance() records the commit and branch, python, duckdb and airportsdata versions, and the OAG
+week, Sabre year and default forecast year from /api/basis.
+
+THE COMMIT IS READ FROM THE .git FILES, NEVER BY RUNNING GIT. A git process on a mounted working
+tree takes .git/index.lock and the mount denies the unlink, stranding the lock and blocking every
+later commit. Reading HEAD and the ref it names is a plain file read and is safe.
+
+Provenance is REPORTED, NOT ENFORCED. A different commit is the normal case, since the point of a
+baseline is to hold numbers across a code change, and check() decides pass or fail on the figures
+alone. But it prints FIRST, so the code and store vintage are read before any moved field is
+interpreted. A store refresh or an airportsdata release moving a figure is a legitimate difference
+and a different thing from a regression.
+
+2. THE FIGURES A CLIENT READS
+
+The baseline held every economics field plus carried passengers and load factor. It did not hold
+the P2P and connecting split, and split_share is TOTAL-PRESERVING: it can move the split by tens of
+thousands of passengers, leave the total untouched and pass the old check. Added: p2p_carried,
+connecting_carried, p2p_share, feed_total, feed_beyond, feed_behind, qsi_share, natural market,
+total demand before the capacity cap, and spill.
+
+3. AND IT FAILS LOUDLY ON A RENAMED KEY
+
+The payload keys are read by name and a missing one returns an error rather than None. Written that
+way because the first draft of this change guessed "p2p" and "connecting" where the payload actually
+carries "p2p_carried" and "connecting_carried": it would have recorded None for both, frozen
+nothing, and reported a clean capture. That is the sixth instance this week of a missing thing
+substituting a neutral value in silence.
+
+4. HOW IT IS USED
+
+  py -3.12 econ_baseline.py capture      before any consolidation work starts
+  py -3.12 econ_baseline.py check        after every change, and before anything is quoted
+
+Capture prints the provenance, the switches and the three cases. Check prints what changed about
+the run first, then any figure that moved, and exits non-zero only on a moved figure.
+
+  app/econ_baseline.py
+  commit-message-12-12Aug2026.txt
+
+  cd C:\AviaDev
+  git add app/econ_baseline.py commit-message-12-12Aug2026.txt
+  git commit -F commit-message-12-12Aug2026.txt
+  git push
+
+Avia Solutions Limited. All rights reserved.
