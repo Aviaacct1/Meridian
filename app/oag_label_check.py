@@ -189,20 +189,39 @@ def main():
         # grow by a quarter in a year, so a quarter missing is not growth.
         print("\nRead the DISTINCT flight column, not the rows. Rows carry the region duplication;"
               " distinct flights do not.")
-        print("Each label as a share of that airport's own best label. Below 75% is called SHORT,"
+        print("Each label as a share of the best label OF ITS OWN GRAIN. Below 75% is called SHORT,"
               " because these airports did not grow by a quarter in a year.")
+        # SCORED WITHIN GRAIN, and the first version of this block was not. The store holds three
+        # label grains: a week ("2015-05-25"), a month ("2015-08") and a half-year ("2015-H1"). This
+        # table counts DISTINCT FLIGHTS IN THE WHOLE LABEL with no date window, so a half-year label
+        # counts six months of schedule variation and a week counts one week. Scoring every label
+        # against one overall best therefore compared a month against a half-year, which put JNB's
+        # "best" on 2015-H2 and duly flagged most of 2018 to 2025 as SHORT when those months are
+        # complete. That is the basis error this log records six times, committed here in the tool
+        # written to catch it. Grains are now scored separately and never against each other.
+        def _grain(w):
+            w = str(w)
+            return "half-year" if (len(w) == 7 and w[5] == "H") else "week" if len(w) == 10 else "month"
         short = {}
         for x in aps:
-            best = max(flts.get(x, {}).values() or [0])
-            if not best:
-                continue
-            marks = []
-            for w in sorted(flts[x]):
-                sh = flts[x][w] / best
-                if sh < 0.75:
-                    short.setdefault(x, []).append(w)
-                marks.append("%s %3.0f%%%s" % (w, 100 * sh, " SHORT" if sh < 0.75 else ""))
-            print("   %-5s best %s flts | %s" % (x, "{:,}".format(best), "  ".join(marks)))
+            by_grain = {}
+            for w, n in flts.get(x, {}).items():
+                by_grain.setdefault(_grain(w), {})[w] = n
+            for g in ("week", "month", "half-year"):
+                lab = by_grain.get(g)
+                if not lab:
+                    continue
+                best = max(lab.values())
+                if not best:
+                    continue
+                marks = []
+                for w in sorted(lab):
+                    sh = lab[w] / best
+                    if sh < 0.75:
+                        short.setdefault(x, []).append(w)
+                    marks.append("%s %3.0f%%%s" % (w, 100 * sh, " SHORT" if sh < 0.75 else ""))
+                print("   %-5s %-9s best %s flts | %s"
+                      % (x, g, "{:,}".format(best), "  ".join(marks)))
         if short:
             print("\nSHORT LABELS FOUND. A five-against-seven region count is a partition count and"
                   " says nothing on its own, but these airports are missing flights, not files:")
