@@ -23,6 +23,27 @@ duckdb>=1.0
 airportsdata==20260803
 global-land-mask       # water-boundary catchment check; without it island catchments over-read
 
+# PINNED FOR THE SAME REASON AS airportsdata, and it was not listed here at all until 13 August
+# 2026, which is why it came to be installed by hand on the workstation and drifted. BT2's
+# calibrated figure is the one on the website, and it MOVES WITH THIS VERSION.
+#
+# Measured 13 August 2026, identical artefacts, identical sample of 6,524, identical config, the
+# only difference being the library:
+#
+#            calibrated +-20%   +-10%   tier A   portfolios of 20   blind route
+#   1.7.2          84.6%        72.4%    87.3%        94.7%            60.9%
+#   1.9.0          83.2%        70.0%    88.2%        93.2%            60.9%
+#
+# 1.7.2 reproduces the 9 August figures EXACTLY on every line. The blind route figure is identical
+# on both because its config is regularised, minleaf=60 and l2=5.0; the calibrated config runs
+# minleaf=5 with no l2 and is essentially unregularised, so it is sensitive to how a library breaks
+# a tie. A published claim that moves 2.4 points with a package install is not a claim.
+#
+# Pinned to the version the published figures were measured on. Changing it means re-measuring the
+# claim set and restating the site, in that order, and bt2_claimset now stamps the version it ran
+# under on every run so the two can never be confused again.
+scikit-learn==1.7.2
+
 # --- deliverable generators (report / workbook / deck endpoints) ---
 openpyxl>=3.1          # .xlsx business case, QSI workbooks, /api/report
 python-pptx>=0.6.23    # .pptx deck generation
