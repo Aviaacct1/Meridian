@@ -38,6 +38,9 @@ import bt2_lib as B
 import bt2_g12_exp as F
 from bt2_paths import BT2
 from bt2_score import within
+# One implementation of the build stamp, not two. bt2_claimset already imports the same three
+# modules, so this adds no work at import time and cannot drift from the line the claim set prints.
+from bt2_claimset import _provenance
 
 SPEC, G12 = ["car", "qcx", "gro"], ["base", "sister"]
 BLIND_KW = dict(lr=0.04, it=600, minleaf=60, l2=5.0)
@@ -106,8 +109,20 @@ def rate(d, keys=None, tol=0.20):
 
 
 def main():
+    # THE TARGET MUST BE nonstop, and this could not collide before 13 August 2026 because there was
+    # only one target. AVIA_BT2_TARGET now lets bt2_lib grade against p2p_outturn or against the
+    # SECTOR total instead of launch_pax. attach() below overwrites r["actual"] with the DOT DB1B
+    # figure on US domestic launches, and DB1B is a LOCAL NONSTOP ticket count: dropping it on top of
+    # a sector target would grade 595 routes on the local market and 5,929 on the whole sector inside
+    # one sample, which is not a mixed ruler but a broken one. Refused by name rather than allowed.
+    if B.TARGET != "nonstop":
+        raise SystemExit("AVIA_BT2_TARGET=%s. The mixed basis regrades US domestic launches onto DOT "
+                         "DB1B, which is a local nonstop ticket count, so it is only coherent against "
+                         "the nonstop target. Set AVIA_BT2_TARGET=nonstop." % B.TARGET)
+
     rows = G.rows
     F.attach(rows)
+    print("build:  %s" % _provenance())
 
     sab_blind = blind(rows)
     sab_cal = calibrated(rows)
@@ -137,7 +152,14 @@ def main():
     print("  %-34s %10s %12s" % ("", "blind", "calibrated"))
     print("  %-34s %9.1f%% %11.1f%%" % ("Sabre throughout", rate(sab_blind), rate(sab_cal)))
     print("  %-34s %9.1f%% %11.1f%%" % ("mixed, US domestic on DOT", rate(mix_blind), rate(mix_cal)))
-    print("  %-34s %9.1f%% %11.1f%%" % ("  calibrated within +-10%%", 0.0, rate(mix_cal, tol=0.10)))
+    # THE PUBLISHED PAIR IS ON THIS LINE AND THE ONE ABOVE, so both tolerances are printed for both
+    # bases rather than one figure for one of them. The old version passed a literal "%%" as a label
+    # argument, where it does not get consumed by the format operator and printed as "+-10%%", and
+    # put 0.0 in the blind column as a placeholder that read as a measurement of zero.
+    print("  %-34s %9.1f%% %11.1f%%" % ("  the same, within +-10%",
+                                        rate(mix_blind, tol=0.10), rate(mix_cal, tol=0.10)))
+    print("  %-34s %9.1f%% %11.1f%%" % ("  Sabre throughout, within +-10%",
+                                        rate(sab_blind, tol=0.10), rate(sab_cal, tol=0.10)))
 
     print("\n=== 3. THE US SLICE ALONE, which is what a US airport asks about ===")
     print("  %-34s %10s %12s" % ("", "blind", "calibrated"))
