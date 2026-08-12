@@ -44,6 +44,7 @@ derived from the other.
 
 Avia Solutions Limited. All rights reserved.
 """
+import os
 import statistics
 
 # Weightings. BT2's definition of how a connecting itinerary competes with a nonstop, not the
@@ -51,6 +52,26 @@ import statistics
 W_ALLIANCE = 0.75
 W_INTERLINE = 0.25
 ONESTOP = 0.20
+
+
+def _half_year_label(mon):
+    """The half-year label covering a monthly label, or None if there is not one to look in.
+
+    Returns None for anything that is not a plain YYYY-MM, which is deliberate: a single-week label
+    like "2026-05-25" already breaks the caller's date window, and a half-year label handed in here
+    would ask for the half-year of a half-year. Returns None outside 2015 to 2017 as well, because
+    those are the only years the store splits this way and widening it silently would change capa on
+    a cohort nobody meant to touch.
+    """
+    if not isinstance(mon, str) or len(mon) != 7 or mon[4] != "-":
+        return None
+    try:
+        y, m = int(mon[:4]), int(mon[5:7])
+    except ValueError:
+        return None
+    if not (1 <= m <= 12) or not (2015 <= y <= 2017):
+        return None
+    return "%d-H%d" % (y, 1 if m <= 6 else 2)
 
 
 def elapsed_penalty(el, mn):
@@ -79,16 +100,40 @@ def load_legs(con, mon, apset):
     base = """SELECT DISTINCT carrier, flight_no, dep_airport, arr_airport, dep_terminal,
       arr_terminal, dep_country, arr_country, local_dep_time, local_arr_time,
       days_of_op, arr_days_of_op, flying_time, elapsed_time, alliance, carrier_category
-      FROM oag WHERE week=? AND service_type='J'
+      FROM oag WHERE week IN %s AND service_type='J'
       AND (dep_airport IN %s OR arr_airport IN %s)
       AND try_cast(strftime(try_cast(eff_from AS date), '%%d') AS int) IS NOT NULL
       AND try_cast(eff_from AS date) <= ?::date AND try_cast(eff_to AS date) >= ?::date"""
     w_lo, w_hi = f"{mon}-15", f"{mon}-21"
-    rows = con.execute(base % (s, s), [mon, w_hi, w_lo]).fetchall()
+
+    # THE HALF-YEAR UNION, off by default. For 2015 to 2017 the store holds five regions on the
+    # monthly labels and Africa plus the Middle East on SEPARATE half-year labels, 2015-H1 through
+    # 2017-H2, because those two regions were downloaded as half-year files and oag_ingest_periodic
+    # line 9 maps them to that period key. A monthly query therefore sees a five-region world:
+    # measured on the 2017-08 window, Johannesburg reads 24 distinct departing flights against 396
+    # with the half-year label alongside, and Dubai 379 against 632.
+    #
+    # THE PREDICATE IS UNCHANGED. eff_from and eff_to carry the real dates, so selecting the 15th to
+    # the 21st out of a six-month label is the same question asked of a larger row set; only the
+    # label list grows. Distinct selection absorbs the overlap, which the control measured: London
+    # reads 763 on the monthly label, 78 on the half-year, and 763 together.
+    #
+    # DEFAULT OFF, because turning it on changes capa, qcx and legs_n for every route whose
+    # pre-launch month falls in 2015 to 2017, which is the whole of cohorts 2016 and 2017. The
+    # training artefacts were fitted without it, so a live path reading it while the model was
+    # trained without it would be the exact fault ONE-IMPLEMENTATION was written to end. Set
+    # AVIA_BT2_HALFYEAR=1 in BOTH chains, rebuild the capture and re-measure, or in neither.
+    labels = [mon]
+    if os.environ.get("AVIA_BT2_HALFYEAR") == "1":
+        h = _half_year_label(mon)
+        if h:
+            labels.append(h)
+    lab_sql = "(" + ",".join("'%s'" % x for x in labels) + ")"
+    rows = con.execute(base % (lab_sql, s, s), [w_hi, w_lo]).fetchall()
     if not rows:
-        rows = con.execute(base % (s, s), [mon + "p16", w_hi, w_lo]).fetchall()
+        rows = con.execute(base % ("('%sp16')" % mon, s, s), [w_hi, w_lo]).fetchall()
         if not rows:
-            rows = con.execute(base % (s, s), [mon + "p01", w_hi, w_lo]).fetchall()
+            rows = con.execute(base % ("('%sp01')" % mon, s, s), [w_hi, w_lo]).fetchall()
     legs = []
     for r in rows:
         (car, fno, dep, arr, dt, at, dc, ac, ldt, lat, dop, adop, fly, el, alli, cat) = r
