@@ -39,10 +39,24 @@ global-land-mask       # water-boundary catchment check; without it island catch
 # minleaf=5 with no l2 and is essentially unregularised, so it is sensitive to how a library breaks
 # a tie. A published claim that moves 2.4 points with a package install is not a claim.
 #
-# Pinned to the version the published figures were measured on. Changing it means re-measuring the
-# claim set and restating the site, in that order, and bt2_claimset now stamps the version it ran
-# under on every run so the two can never be confused again.
-scikit-learn==1.7.2
+# WHICH VERSION TO PIN, and the first answer here was wrong. 1.7.2 was pinned on the grounds that it
+# is what the published figures were measured on. It is, but so is airportsdata 20260315, which this
+# file does NOT declare: the airportsdata pin above was set to 20260803 on 11 August, two days AFTER
+# the 9 August claim set was produced. Measured 13 August: the Dev PC carries 20260315 with sklearn
+# 1.7.2 and reproduces 9 August exactly; the workstation carries the pinned 20260803 with sklearn
+# 1.9.0 and does not. So the published figures describe an environment the repo has never declared,
+# and chasing them would mean unpinning airportsdata, which would undo a deliberate decision.
+#
+# PINNED TO THE RUN HOST instead. The workstation is where clients are served from, cortex_app reads
+# airportsdata 20260803 live, and bt2_g12_exp.metro_map builds the sister feature from the same
+# library, so the model's features and the engine's geography should come from ONE release. That
+# makes 20260803 the right airportsdata and the workstation's sklearn the one to standardise on.
+#
+# CONSEQUENCE, and it is not optional: the claim set must be RE-MEASURED once on this declared pair
+# and the site restated if the figures move. The 9 August numbers then become history produced on an
+# undeclared environment, which is what they always were. bt2_claimset stamps python, sklearn,
+# numpy, scipy AND airportsdata on every run so this cannot recur silently.
+scikit-learn==1.9.0
 
 # --- deliverable generators (report / workbook / deck endpoints) ---
 openpyxl>=3.1          # .xlsx business case, QSI workbooks, /api/report
