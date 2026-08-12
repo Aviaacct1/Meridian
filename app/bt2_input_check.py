@@ -101,6 +101,27 @@ def training_rows(bt2, cohort):
     return out
 
 
+_AP = None
+
+
+def _countries(a, b):
+    """The two endpoint countries, for the breakdown below. ISO country codes straight from
+    airportsdata, with no region grouping applied: a region map is a judgement and this table exists
+    to show a pattern rather than to assume one."""
+    global _AP
+    if _AP is None:
+        try:
+            import airportsdata
+            _AP = airportsdata.load("IATA")
+        except Exception:                                   # noqa: BLE001
+            _AP = {}
+    out = []
+    for x in (a, b):
+        c = (_AP.get(x) or {}).get("country")
+        out.append(c or "??")
+    return sorted(set(out))
+
+
 def _dist(name, ratios):
     """The shape of the disagreement, not one number from it."""
     if not ratios:
@@ -155,6 +176,7 @@ def main():
     worst = []
     checked, refused = 0, []
     mct_seen = set()
+    by_country = {}
 
     for r in rows:
         got, err = RC.capture_inputs(r["a"], r["b"], r["freq"], r["gcd"], r["pre_month"])
@@ -171,6 +193,12 @@ def main():
             if float(r[k]):
                 ratios[k].append(float(got[k]) / float(r[k]))
         worst.append((max(diffs["capa"], diffs["qcx"] / 100.0), r, got, diffs))
+        ok = all(diffs[k] <= tol[k] for k in tol)
+        for cc in _countries(r["a"], r["b"]):
+            by_country.setdefault(cc, [0, 0])
+            by_country[cc][0] += 1
+            if not ok:
+                by_country[cc][1] += 1
 
     print("\n%d route(s) compared, %d refused" % (checked, len(refused)))
     for line in refused[:10]:
@@ -193,6 +221,22 @@ def main():
     print("\nlive over training, across the sample:")
     for k in ("capa", "qcx"):
         print(_dist(k, ratios[k]))
+
+    # WHERE THE FAILURES SIT, because two failures in a hundred and twenty is a pattern or a
+    # coincidence and a maximum cannot tell you which. Endpoint countries, sampled against failed.
+    # The reason for the table: capture_L.csv for the relaxed sample was built on 9 August 2026 and
+    # bt2/migrate_oag_asia_labels.py folded the Asia part-month labels on 11 August, relabelling
+    # 27,397,091 rows and making 26 months complete worlds. Before it, a monthly label carried six
+    # regions and no Asia. If the training file is stale rather than the code wrong, the failures
+    # cluster on Asian endpoints and nowhere else.
+    fails = {c: v for c, v in by_country.items() if v[1]}
+    if fails:
+        print("\nendpoint countries, sampled against failed:")
+        for c, (n, f) in sorted(fails.items(), key=lambda kv: (-kv[1][1], kv[0])):
+            print("   %-4s %3d sampled  %3d failed" % (c, n, f))
+        clean = sorted(c for c, v in by_country.items() if not v[1])
+        print("   %d further country/countries appear in the sample with no failure: %s"
+              % (len(clean), ", ".join(clean)))
 
     bad = [k for k in tol if matched[k] < checked]
     if not bad:
