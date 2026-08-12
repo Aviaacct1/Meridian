@@ -57,6 +57,12 @@ def main():
                     help="departures and distinct flights at named airports, per label. THE TEST "
                          "THAT DECIDES IT: a region count counts download partitions, not the "
                          "world, so ask whether the airports are actually there")
+    ap.add_argument("--month", metavar="YYYY-MM",
+                    help="THE FALLBACK TEST. For one month, count distinct flights at the "
+                         "--coverage airports in load_legs' own 15th-to-21st window, from the "
+                         "monthly label alone, from the half-year label covering that month, and "
+                         "from the two together. That is what the leg query sees with the "
+                         "fallback off and on")
     ap.add_argument("--bt2-dir", default=os.environ.get("AVIA_BT2_DIR"))
     a = ap.parse_args()
 
@@ -247,23 +253,76 @@ def main():
               "least one region, and the model is fitted on them. That is not a disagreement "
               "between the two chains and bt2_input_check cannot see it.")
 
+    if a.month:
+        _month_union(a, con)
+
     if a.pairs:
         bt2 = a.bt2_dir
         if not bt2 or not os.path.isdir(bt2):
             print("\n--pairs needs the BT2 data folder; set AVIA_BT2_DIR or pass --bt2-dir.")
             return
-        import csv
-        print("\npairs whose pre-launch month is %s:" % a.pairs)
-        total = 0
-        for f in sorted(os.listdir(bt2)):
-            if not (f.startswith("capture_") and f.endswith(".csv")):
-                continue
-            with open(os.path.join(bt2, f), encoding="utf-8") as fh:
-                hit = [r for r in csv.DictReader(fh) if r.get("pre_month") == a.pairs]
-            if hit:
-                total += len(hit)
-                print("   %-22s %4d of this cohort" % (f, len(hit)))
-        print("   %d row(s) in total would be rebuilt." % total)
+        _pairs_report(a, bt2)
+
+
+def _month_union(a, con):
+    """Does reading the half-year label alongside the monthly one recover the missing flying?
+
+    THE POINT. For 2015 to 2017 the store holds five regions on the monthly labels and Africa plus
+    the Middle East on SEPARATE HALF-YEAR labels, 2015-H1 through 2017-H2. bt2_capture_core.load_legs
+    queries ONE label and builds its window as {mon}-15 to {mon}-21, so on a monthly label it never
+    sees the other two regions, and on a half-year label it would build "2017-H1-15", which is not a
+    date and returns nothing. The flying is in the store and unreachable from either side.
+
+    This reproduces load_legs' own predicate exactly, on eff_from and eff_to, and reports the same
+    airports three ways: the monthly label alone, which is what the training chain read; the
+    half-year label alone; and the two together, which is what a fallback would read. The third
+    column is the prize and the second says where it comes from.
+    """
+    y, m = int(a.month[:4]), int(a.month[5:7])
+    half = "%d-H%d" % (y, 1 if m <= 6 else 2)
+    lo, hi = "%s-15" % a.month, "%s-21" % a.month
+    aps = [x.strip().upper() for x in (a.coverage or "").replace(";", ",").split(",") if x.strip()]
+    if not aps:
+        print("\n--month needs --coverage to name the airports to count.")
+        return
+    q = ("SELECT count(DISTINCT carrier || flight_no || arr_airport) FROM oag "
+         "WHERE week IN %s AND service_type='J' AND dep_airport = ? "
+         "AND try_cast(strftime(try_cast(eff_from AS date), '%%d') AS int) IS NOT NULL "
+         "AND try_cast(eff_from AS date) <= ?::date AND try_cast(eff_to AS date) >= ?::date")
+    print("\nDISTINCT DEPARTING FLIGHTS in the %s to %s window, load_legs' own predicate." % (lo, hi))
+    print("monthly label %s, half-year label %s\n" % (a.month, half))
+    print("   %-6s %10s %10s %10s   %s" % ("apt", "monthly", "half-year", "together", "what it means"))
+    for x in aps:
+        n_m = con.execute(q % ("('%s')" % a.month), [x, hi, lo]).fetchone()[0] or 0
+        n_h = con.execute(q % ("('%s')" % half), [x, hi, lo]).fetchone()[0] or 0
+        n_u = con.execute(q % ("('%s','%s')" % (a.month, half)), [x, hi, lo]).fetchone()[0] or 0
+        # An airport served only from the five monthly regions gains nothing and should not: that is
+        # the control. One in Africa or the Gulf should gain most of its flying.
+        note = ("no change, this airport is in the monthly regions" if n_h == 0 else
+                "RECOVERED %s flights, x%.1f" % ("{:,}".format(n_u - n_m), (n_u / n_m) if n_m else 0)
+                if n_u > n_m else "half-year label adds nothing")
+        print("   %-6s %10s %10s %10s   %s"
+              % (x, "{:,}".format(n_m), "{:,}".format(n_h), "{:,}".format(n_u), note))
+    print("\nIf 'together' restores an African or Gulf airport to a normal month while leaving the")
+    print("monthly-region airports untouched, the fallback is the fix and no data need be bought.")
+    print("If the two labels OVERLAP on an airport, together will read below monthly plus half-year")
+    print("and that is correct: a flight counted once is the point of counting distinct flights.")
+
+
+def _pairs_report(a, bt2):
+    """The BT2 rows whose pre-launch month is the named label, so a rebuild can be sized."""
+    import csv
+    print("\npairs whose pre-launch month is %s:" % a.pairs)
+    total = 0
+    for f in sorted(os.listdir(bt2)):
+        if not (f.startswith("capture_") and f.endswith(".csv")):
+            continue
+        with open(os.path.join(bt2, f), encoding="utf-8") as fh:
+            hit = [r for r in csv.DictReader(fh) if r.get("pre_month") == a.pairs]
+        if hit:
+            total += len(hit)
+            print("   %-22s %4d of this cohort" % (f, len(hit)))
+    print("   %d row(s) in total would be rebuilt." % total)
 
 
 if __name__ == "__main__":
