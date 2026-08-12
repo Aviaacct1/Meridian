@@ -54,10 +54,12 @@ def main():
     # how the live assembly came to run with no minimum connect times at all. An empty table does not
     # fail: it drops the tight connections at whichever airports the master covers and returns a
     # smaller connection set that looks entirely reasonable.
+    # ONE RESOLUTION AND ONE DEFAULT, shared with the live path, and the default is OFF because that
+    # is what every capture_L.csv in the relaxed sample was built with. Measured on 12 August 2026,
+    # cohort 2018: with the master loaded twenty of forty routes stop matching what this stage
+    # already wrote, and every one reads high. Rebuilding a cohort with AVIA_BT2_MCT=1 set is a
+    # change to the training data, not a repair, and the model must be re-measured after it.
     mct, mct_src = load_mct()
-    if not mct:
-        raise SystemExit("NOT RUN. %s. Training capture built without minimum connect times would "
-                         "not be the quantity the model is fitted on." % mct_src)
     print("MCT master: %s" % mct_src)
     con = duckdb.connect(OAG, read_only=True)
     con.execute("SET memory_limit='2GB'"); con.execute("SET threads=4")

@@ -165,24 +165,42 @@ def qcx_feature_from_components(comp):
 def load_mct(default_mct=90):
     """The minimum connect time master, and WHERE IT CAME FROM, returned together.
 
-    FOUND BY MEASUREMENT, 12 August 2026. bt2_input_check compared the live assembly against the
-    training capture on forty routes of cohort 2018 and reported the master as not loaded on the
-    live path. Thirty-nine routes agreed anyway, because most connections sit comfortably clear of
-    any minimum and the binding constraint rarely differs. One did not: NNG-YTY 2018-10 returned
-    online sums of 0.311 and 0.644 against training's 1.121 and 1.363, with the minimum elapsed time
-    identical at 104 minutes in both directions. Same connection candidates, fewer of them valid.
+    THE DEFAULT IS OFF, AND THAT IS NOT AN OVERSIGHT. It is what the training capture was built
+    with, and the live path has to reproduce training or the published accuracy stops describing
+    the number a client is shown.
 
-    So an empty table does not fail. It quietly drops the tight connections at whichever airports
-    the master covers, and only on the routes thin enough for those connections to matter, which is
-    the fifth instance of the shape this codebase keeps finding: capability present, caller hands it
-    a neutral value, nothing reports anything.
+    MEASURED, 12 August 2026, on forty routes of cohort 2018 against capture_2018.csv:
 
-    The training chain looked in two places, config.MCT_MASTER and then bt2_paths.mct_master, and
-    the live path only in the first. This is the one implementation both now use, and it says what
-    it found rather than returning an empty dict that reads like a working one.
+        no master   thirty-nine of forty routes agree to the file's own write precision. Median
+                    ratio of live over training 1.0000, upper quartile 1.0000, maximum 1.0011.
+        master on   twenty routes stop agreeing and every one of them reads HIGH. Median 1.0549,
+                    upper quartile 1.3637, maximum 1.8379. MXP-TXL online rises by a factor of
+                    1.41, MDW-PWM by 1.78, DUS-LJU alliance by 1.54, in every case with the
+                    minimum elapsed time unchanged, so the same candidates are found and more of
+                    them survive.
+
+    So capa, the model's third feature and one the published 92% and 86% are fitted on, was computed
+    with the 90 minute default at every airport. That is a real property of the training data and it
+    was not written down anywhere before today. The master itself is not in question: E:\\Avia and
+    C:\\Avia hold byte-identical copies, md5 2d7e8a27f2f167b4992345b1f4fde299.
+
+    I FIRST CONCLUDED THE OPPOSITE AND IT IS WITHDRAWN. I read NNG-YTY, where the live path read
+    0.38 of training, as the master being absent live. It is not: that route returns 0.3822 with the
+    master and 0.3822 without it, unchanged to four decimals. Reasoning from a mechanism ahead of
+    measuring it, which is the pattern this programme keeps paying for.
+
+    TO TURN IT ON, which is a real improvement to the input and a departure from what was measured:
+
+        AVIA_BT2_MCT=1     both chains load the master
+
+    Setting it means the training cohorts must be rebuilt with it and the model re-measured before
+    any accuracy figure is quoted against a forecast that used it.
     """
     import os
     import connection_builder as CB
+    if os.environ.get("AVIA_BT2_MCT", "").strip().lower() not in ("1", "true", "on"):
+        return {}, ("OFF by default, which is the state capture_L.csv was built in. Set "
+                    "AVIA_BT2_MCT=1 to load the master, and rebuild the cohorts if you do.")
     cands = []
     env = os.environ.get("AVIA_MCT_MASTER")
     if env:
