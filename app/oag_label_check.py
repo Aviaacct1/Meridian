@@ -81,26 +81,50 @@ def main():
       FROM oag WHERE week LIKE ? GROUP BY 1 ORDER BY 1""", [a.like]).fetchall()
     print("\n%d label(s) matching %r. A monthly label is YYYY-MM; anything longer is a single week."
           % (len(rows), a.like))
-    part, thin = [], []
+    part = []
     for w, reg, n in rows:
         flag = ""
         if str(w).endswith(("p01", "p16")):
             flag = "  <-- PART LABEL, the fold did not reach it"
             part.append(w)
-        elif reg < FULL_REGIONS:
-            flag = "  <-- %d regions, NOT a complete world" % reg
-            thin.append(w)
         print("   %-14s regions %d  rows %12s%s" % (w, reg, "{:,}".format(n), flag))
 
-    if part or thin:
-        print("\n%d part label(s) and %d incomplete label(s). Any BT2 capture written against one "
-              "of these measured connecting competition against a world missing a region."
-              % (len(part), len(thin)))
-    else:
-        print("\nEvery label matching %r carries %d regions. So an incomplete world is not the "
-              "state of the store TODAY, and a training file that disagrees with the live path was "
-              "written against an EARLIER state of it. Compare the capture file's modification date "
-              "with the fold, 11 August 2026." % (a.like, FULL_REGIONS))
+    # A REGION COUNT IS NOT A COVERAGE TEST. It happens to point the right way here, and it pointed
+    # the right way for the wrong reason, so the test that settles it is --coverage and this count
+    # is only ever the thing that sends you to run it.
+    #
+    # WHAT WAS MEASURED, 12 August 2026. 2015 to 2017 monthly labels carry five region names, Asia,
+    # Europe, Latin America, North America and Southwest Pacific; 2018 onward carry seven, adding
+    # Africa and Middle East. Two readings were proposed and both were wrong. Mine, that two regions
+    # of the world are absent. John's, that all regions are present under a five-label taxonomy in
+    # which Europe is EMEA. Distinct departing flights in August settle it:
+    #
+    #        2015    2016    2017    2018    2019
+    #   JNB    21      26      24     401     402
+    #   CAI    48      49      50     382     337
+    #   DXB   356     375     381     639     626
+    #   DOH   175     197     220     348     366
+    #   TPE   372     423     406     421     451
+    #
+    # Asia is complete throughout, so the Asian ingest is sound. Africa and the Middle East are not
+    # absent either: what survives in 2015-2017 is the flying that had somewhere to live in one of
+    # the five loaded partitions. Dubai keeps 60% of its later count because its long-haul into
+    # Europe and Asia sits in those files; Johannesburg keeps 6% because nearly all its flying is
+    # intra-African. EMEA-as-Europe would have kept Johannesburg whole and did not.
+    #
+    # SO THE GAP IS SHAPED: intra-Africa and intra-Middle-East schedules are largely missing from
+    # 2015, 2016 and 2017, and the long-haul out of both regions is mostly present. Cohorts 2016 and
+    # 2017 take every pre-launch month from that range.
+    if part:
+        print("\n%d part label(s). Those were the Asia split-month labels; "
+              "migrate_oag_asia_labels.py folded 53 of them on 11 August 2026." % len(part))
+    thin = [w for w, reg, _n in rows if reg < FULL_REGIONS and not str(w).endswith(("p01", "p16"))]
+    if thin:
+        print("\n%d label(s) carry fewer than %d region names. That is a REASON TO RUN --coverage "
+              "and not a finding on its own: a region count counts download partitions. Measured on "
+              "these labels, Asia is complete and intra-Africa and intra-Middle-East flying is "
+              "largely absent, Johannesburg running 24 distinct departures in 2017-08 against 402 "
+              "in 2019-08." % (len(thin), FULL_REGIONS))
 
     # WHICH REGIONS ARE ACTUALLY MISSING. A count of five says two are absent and does not say
     # which, and the answer decides whether the gap can be closed from the extract or not.
