@@ -89,7 +89,7 @@ def main():
     with open(a.arm, newline="", encoding="utf-8") as f:
         arm = list(csv.DictReader(f))
 
-    rows, ctl_bad = [], 0
+    rows, ctl_bad, ctl_ex = [], 0, []
     for r in arm:
         eng, act = _f(r, "captured_uncapped"), _f(r, "p2p_outturn")
         if eng <= 0 or act < a.min_pax:
@@ -98,14 +98,28 @@ def main():
             L = int(float(r.get("year")))
         except (TypeError, ValueError):
             continue
-        # CONTROL: the arm already carries fc_over_p2p. If the ratio computed here does not
-        # reproduce it, captured_uncapped is not the numerator backtest line 630 says it is and
-        # nothing below can be trusted.
+        # CONTROL, AT THE PRECISION THE VALUES WERE STORED AT AND NOT TIGHTER. The arm already
+        # carries fc_over_p2p, so the ratio computed here is checked against it. But backtest line
+        # 595 builds ratio_p2p from the UNROUNDED captured and p2p, line 602 stores
+        # captured_uncapped as an INTEGER, line 604 stores p2p_outturn as an integer and
+        # fc_over_p2p to THREE DECIMALS. So a ratio of two rounded integers cannot match a rounded
+        # ratio of two unrounded ones to better than what those roundings allow.
+        #
+        # A flat 2% was the first version and it flagged 184 of 2,948 rows, 6.2%, which is exactly
+        # the slice where captured falls below about 26 and rounding alone moves the ratio by more
+        # than 2%. That is the TOLERANCE fault of 12 August in a new place: comparing two numbers
+        # tighter than they were written. The tolerance is now DERIVED from the write precision,
+        # so a real basis difference still surfaces and rounding no longer does.
         stated = r.get("fc_over_p2p")
         mine = eng / act
         try:
-            if stated not in ("", None) and abs(float(stated) - mine) > 0.02 * max(mine, 1e-9):
-                ctl_bad += 1
+            if stated not in ("", None):
+                tol = mine * (0.5 / max(eng, 1.0) + 0.5 / max(act, 1.0)) + 0.0005 + 1e-9
+                if abs(float(stated) - mine) > tol:
+                    ctl_bad += 1
+                    if len(ctl_ex) < 5:
+                        ctl_ex.append("%s: stated %.3f, mine %.4f, rounding allows %.4f"
+                                      % (r.get("route"), float(stated), mine, tol))
         except ValueError:
             pass
         rows.append({"route": r.get("route"), "cohort": L, "engine": eng, "actual": act,
@@ -115,10 +129,13 @@ def main():
                      "needed": act / eng})
 
     print("arm %s: %d rows, %d scoreable" % (os.path.basename(a.arm), len(arm), len(rows)))
-    print("control: %d rows where my engine/actual disagrees with the arm's own fc_over_p2p by "
-          "more than 2%%" % ctl_bad)
+    print("control: %d of %d rows disagree with the arm's own fc_over_p2p by MORE THAN ROUNDING "
+          "ALLOWS" % (ctl_bad, len(rows)))
+    for x in ctl_ex:
+        print("   %s" % x)
     if ctl_bad > 0.01 * max(len(rows), 1):
-        sys.exit("STOPPING. captured_uncapped is not the numerator behind fc_over_p2p on this arm.")
+        sys.exit("STOPPING. captured_uncapped is not the numerator behind fc_over_p2p on this arm, "
+                 "and the disagreement is larger than the stored precision can explain.")
     if not rows:
         return
 
