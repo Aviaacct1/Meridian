@@ -1,0 +1,64 @@
+The cleanup script would have deleted reference data, so it now inventories instead
+
+The dry run did its job. Replacing the delete with a report before anything is removed.
+
+WHAT THE FIRST VERSION WOULD HAVE DONE
+
+It deleted three app\ trees outright, on the strength of the 11 August handover calling them "three
+out-of-git app copies" whose deletion "finishes that day's work". The dry run showed they are not
+code copies:
+
+  C:\Users\...\Avia QSI Tool\app   28,447 files, up to 39GB. Holds venv\, data\, cases\,
+                                   reference_tables\ and _archive_old_versions\, and at top level
+                                   qsi_wave_cache_6yr.duckdb (329MB), qsi_wave_cache.duckdb
+                                   (134MB), bias_correction_model.joblib, airport_attributes.json,
+                                   cities5000.txt, served_2026-05-25.json, and the bt_v1_6yr and
+                                   bt_v2_6yr back-test artefacts.
+  C:\Avia\qsi-tool\app             438 files, 38.8GB, never inventoried.
+  E:\Avia\qsi-tool\app             437 files, 38.8GB, never inventoried.
+
+Step 1 moved *.duckdb out of E:\Avia\qsi-tool\app only. Everything above would have gone, including
+a folder explicitly named _archive_old_versions.
+
+The fault is the same one this codebase keeps finding: acting on a description instead of a
+measurement. A handover sentence written in shorthand was treated as an inventory.
+
+WHAT IT DOES NOW
+
+Reports, per tree: total, regenerable (venv, __pycache__, _dt_cache, .pyc), code, and DATA, with
+the eight largest data files named. The presence of any data file blocks deletion of that tree.
+-PurgeCaches removes ONLY the regenerable folders. No switch deletes anything else.
+
+TWO FINDINGS FROM THE DRY RUN, BOTH WORTH KEEPING
+
+THE LIVE TREES MATCH. C:\AviaDev and the workstation's C:\src\meridian both read the same
+cortex_app.py. No divergence between the two machines.
+
+AND THERE IS A FOURTH COPY. The DEV PC has its own C:\src\meridian, a git repo, 110 lines behind
+both live trees. Invisible from the workstation. The script refuses it because it carries .git,
+which is right, but it is reported now: a stale clone somebody could run by mistake should be
+pulled or deleted, not left.
+
+AND A FIX TO THE CHECK ITSELF
+
+Section 5 printed "cortex_app.py 1982 lines" while the note beside it said the real file is 2,154.
+Same file: Get-Content | Measure-Object -Line skips blank lines. A check that cannot agree with its
+own stated expectation is worse than no check. Now (Get-Content).Count, which counts every line.
+
+THE EXECUTION POLICY, since every .ps1 in this repo hits it
+
+  powershell -ExecutionPolicy Bypass -File .\cleanup-stale-copies-12Aug2026.ps1
+
+Set-ExecutionPolicy -Scope CurrentUser reported "overridden by a policy defined at a more specific
+scope" on the dev PC, so group policy is setting it and Bypass is the way in. Worth raising with
+whoever owns that policy, because the tool standard has deploy meaning pull and restart.
+
+  cleanup-stale-copies-12Aug2026.ps1
+  commit-message-15-12Aug2026.txt
+
+  cd C:\AviaDev
+  git add cleanup-stale-copies-12Aug2026.ps1 commit-message-15-12Aug2026.txt
+  git commit -F commit-message-15-12Aug2026.txt
+  git push
+
+Avia Solutions Limited. All rights reserved.
