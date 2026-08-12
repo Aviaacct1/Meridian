@@ -1,0 +1,61 @@
+# MD5 manifest of the BT2 relaxed sample, DEV PC copy, 13 August 2026
+#
+# WHY. bt2_claimset run on both machines on the same day reported base strength resolved on 5,855 of
+# 6,524 launches on each, but the SISTER FLAG set on 428 rows on the Dev PC and 424 on the
+# workstation. That happens in bt2_g12_exp.attach, which runs BEFORE any fitting, so the
+# scikit-learn version cannot be the cause. The likeliest explanation is that the two
+# E:\Avia\bt2_relaxed copies are not byte-identical, since they are different drives on different
+# machines and nothing has ever compared them.
+#
+# Four routes of feature difference is small. It is not nothing, and the wiring is about to be built
+# on top of these files, so know rather than assume.
+#
+# Source: E:\Avia\bt2_relaxed on DESKTOP-3R7OQVJ, read 13 August 2026.
+# Every file bt2_lib.load_master and bt2_g12_exp.attach read, plus the discovery output.
+#
+# TO COMPARE, on the WORKSTATION:
+#
+#   cd E:\Avia\bt2_relaxed
+#   Get-ChildItem base_strength_*.json,metro_ns_*.json,capture_*.csv,launch_profile_*.csv,growth_*.csv,launches_*.csv |
+#     ForEach-Object { "{0}  {1,10}  {2}" -f (Get-FileHash $_ -Algorithm MD5).Hash.ToLower(), $_.Length, $_.Name }
+#
+# A difference in base_strength or metro_ns explains the sister flag directly. A difference in
+# capture or launch_profile is more serious, because those are the model's own inputs and
+# LABEL-2018-08 already records the capture files as stale against the OAG store.
+
+bf75983310ddf2a4ba46e67f567ce2a5     3035455  base_strength_2016.json
+e94a8f8d63d80a4567079d614f10a1db     3490601  base_strength_2017.json
+bf2e6bd56a64d4a902c766ae158c0392     3786497  base_strength_2018.json
+ec855b5825ef6a3d356fbc37f1282ce0     3518699  base_strength_2019.json
+9d916958cc40ace06dd1b1cfcb70a928     3151954  base_strength_2024.json
+97935cec5e102d8f2b94e78c6ba5bb2a     2903219  base_strength_2025.json
+af272e7948c2fd23200a85eee1b4c656     6417687  metro_ns_2016.json
+209d38086599600defa07792af2912f2     6530574  metro_ns_2017.json
+321efa2e547b3a94612207f0fa29f724     6822605  metro_ns_2018.json
+2a6ba86c224da5f6b272160680054816     7267339  metro_ns_2019.json
+0cae21828970ae908238bd5c7c0e2f7d     6040335  metro_ns_2024.json
+e19f66c5bed0b7e1e0be40f14f2c03fa     5930117  metro_ns_2025.json
+8efe52297c6d7be4f1305db22c01c77e       65763  capture_2016.csv
+f5daa1fa4ba2f75cf5c777a0f73cf4ae       83722  capture_2017.csv
+a4d124f4a4141413f62d43f08222f29c       94770  capture_2018.csv
+75067026e8df5f08471fcd976531f2c6       86594  capture_2019.csv
+92578dd9c04d3ebd3a3094f2b056ff2a       99414  capture_2024.csv
+30d053e8e3eb9f259f5caecd1244b017       89491  capture_2025.csv
+cbaabb61df5e4431bf0e41ff3eade315       67082  launch_profile_2016.csv
+96024527868f818f5c1dff0b297e993f       85667  launch_profile_2017.csv
+5adebf6bd23bbc312473c9e21f9c4b0b       96358  launch_profile_2018.csv
+569f5e1cddabdbccfd1ea820696bad19       88990  launch_profile_2019.csv
+912b05672904c34f07f3f85f061a1c7c      107034  launch_profile_2024.csv
+2519cbd9f472447b3945ab3bb6ab0488       95633  launch_profile_2025.csv
+6116e58e8a0f3b89527c9a2761d98149       24698  growth_2016.csv
+c1767180f0bb4b6f2f785bd8acfa9fd7       29926  growth_2017.csv
+37fc611d74ca378813d95ba087d50a81       32565  growth_2018.csv
+03db96e2b3d39915a77a50d139214537       29518  growth_2019.csv
+3fdd2a3bf5f3aedea9651b8df47ea073       32955  growth_2024.csv
+0decf3ab037421643417ecb4c6315573       30164  growth_2025.csv
+579a0d0e7c1ee95eb0644c0f9f167999       40893  launches_2016.csv
+ca7ba366f46019feec0a3cc5738485da       49546  launches_2017.csv
+2588970d42174d3dfd0642e26be79c51       53609  launches_2018.csv
+6c4ef01213f4442a96fff1a01476764d       48915  launches_2019.csv
+248d75c29ef219c5230a21c3d8a542f5       57786  launches_2024.csv
+d9e551d60c811af32befdced3b616e08       50919  launches_2025.csv
