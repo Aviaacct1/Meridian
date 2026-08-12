@@ -34,7 +34,8 @@ import schedule_chain as SC
 # every live route into the model below the tenth percentile of training in silence. The measurement
 # is in that file. sys.path already carries APP, three lines above.
 from bt2_capture_core import (elapsed_penalty as _et, load_legs, components, cap_from,   # noqa: F401
-                              capa_from_components, qcx_feature_from_components)         # noqa: F401
+                              capa_from_components, qcx_feature_from_components,         # noqa: F401
+                              load_mct)                                                  # noqa: F401
 
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument("--cohort", type=int, required=True)
@@ -48,15 +49,16 @@ def main():
     if not todo:
         print(f"cohort {L}: COMPLETE ({len(done)}/{len(prof)})"); return
     coords = SC.load_airport_coords()
-    mct = {}
-    try:
-        from config import MCT_MASTER
-        mct = CB.load_mct_data(str(MCT_MASTER), 90)
-    except Exception:
-        try:
-            mct = CB.load_mct_data(str(mct_master() or ""), 90)
-        except Exception:
-            mct = {}
+    # ONE RESOLUTION, and it says what it found. The two-step try/except this replaces looked in
+    # config.MCT_MASTER and then bt2_paths.mct_master, and the live path had only the first, which is
+    # how the live assembly came to run with no minimum connect times at all. An empty table does not
+    # fail: it drops the tight connections at whichever airports the master covers and returns a
+    # smaller connection set that looks entirely reasonable.
+    mct, mct_src = load_mct()
+    if not mct:
+        raise SystemExit("NOT RUN. %s. Training capture built without minimum connect times would "
+                         "not be the quantity the model is fitted on." % mct_src)
+    print("MCT master: %s" % mct_src)
     con = duckdb.connect(OAG, read_only=True)
     con.execute("SET memory_limit='2GB'"); con.execute("SET threads=4")
     by_pm = defaultdict(list)

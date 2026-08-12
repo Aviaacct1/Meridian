@@ -134,7 +134,22 @@ def main():
     print("BT2 folder %s, cohort %d, %d route(s) sampled" % (bt2, a.cohort, len(rows)))
 
     import route_context as RC
-    tol = {"capa": 1e-9, "qcx": 1e-6, "legs_n": 0.0}
+    # THE TOLERANCE IS THE TRAINING FILE'S OWN WRITE PRECISION, not a judgement and not a width
+    # chosen to make a run pass. bt2_capture.main writes round(so,3) on each of the six sums and
+    # round(cap_actual,5), so a value read back from capture_L.csv cannot be compared any tighter
+    # than it was stored.
+    #
+    #   capa   stored at five decimal places, so half a unit in the last place is 5e-6. 1e-5 taken.
+    #   qcx    six sums each rounded to three places, combined with weights 1, 0.75 and 0.25 over
+    #          two directions: 2 x 0.0005 x (1 + 0.75 + 0.25) = 0.002.
+    #   legs_n an integer, stored exactly, so zero.
+    #
+    # THE FIRST VERSION USED 1e-9 AND 1e-6 AND WAS WRONG. It reported thirty-two of forty routes as
+    # differing when the median ratio was 1.0000 and the components agreed to every digit the file
+    # holds. That is the same fault the run was built to catch, in the test rather than in the code:
+    # comparing two numbers without first establishing what basis each was on. One was a full
+    # precision computation and the other was a rounded CSV cell.
+    tol = {"capa": 1e-5, "qcx": 2e-3, "legs_n": 0.0}
     matched = {k: 0 for k in tol}
     ratios = {"capa": [], "qcx": []}
     worst = []
@@ -147,7 +162,7 @@ def main():
             refused.append("%s-%s %s: %s" % (r["a"], r["b"], r["pre_month"], err))
             continue
         checked += 1
-        mct_seen.add(bool(got.get("mct_loaded")))
+        mct_seen.add(str(got.get("mct_source") or "not reported"))
         diffs = {k: abs(float(got[k]) - float(r[k])) for k in tol}
         for k in tol:
             if diffs[k] <= tol[k]:
@@ -169,8 +184,7 @@ def main():
     # then through bt2_paths.mct_master; the live path has only the first of those. An empty minimum
     # connect time table lets every itinerary through at the 90 minute default, which changes the
     # connection set and every sum over it.
-    print("\nMCT master loaded on the live path: %s"
-          % ("yes" if mct_seen == {True} else "no" if mct_seen == {False} else "mixed %s" % mct_seen))
+    print("\nMCT master used by the live path: %s" % ", ".join(sorted(mct_seen)))
 
     print("\nroutes matching to floating point:")
     for k in ("capa", "qcx", "legs_n"):

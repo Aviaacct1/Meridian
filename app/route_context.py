@@ -240,12 +240,16 @@ def capture_inputs(a, b, freq, gcd_km, pre_month, con=None):
         alliances = SC.alliances_from_legs(legs) or CB.load_alliance_data()
         lcc = SC.lcc_from_legs(legs) or CB.DEFAULT_LCC_LIST
         coords = SC.load_airport_coords()
-        mct = {}
-        try:
-            from config import MCT_MASTER
-            mct = CB.load_mct_data(str(MCT_MASTER), 90)
-        except Exception:                                   # noqa: BLE001
-            mct = {}
+        # FAILS CLOSED ON THE MCT MASTER, and it is not a precaution. Measured on 12 August 2026:
+        # with no master the live path returned online sums of 0.311 and 0.644 on NNG-YTY against
+        # training's 1.121 and 1.363, on the same connection candidates with the same minimum
+        # elapsed time. An empty minimum-connect-time table lets every itinerary through on the 90
+        # minute default and silently drops the tight ones the master governs. That is a different
+        # connection set, so it is a different forecast, and nothing about it looks wrong.
+        mct, mct_src = CORE.load_mct()
+        if not mct:
+            return None, ("the minimum connect time master could not be loaded, so the connection "
+                          "set would not be the one the model was trained on: %s" % mct_src)
         block = CORE.block_minutes(gcd_km)
         comp = CORE.components(legs, a, b, alliances, mct, lcc, coords, block)
         return {"capa": CORE.capa_from_components(comp, block, float(freq)),
@@ -253,7 +257,7 @@ def capture_inputs(a, b, freq, gcd_km, pre_month, con=None):
                 "legs_n": len(legs),
                 "block": block, "pre_month": pre_month,
                 "components": [list(c) for c in comp],
-                "mct_loaded": bool(mct)}, None
+                "mct_loaded": bool(mct), "mct_source": mct_src}, None
     finally:
         if close:
             con.close()

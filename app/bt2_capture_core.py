@@ -162,6 +162,58 @@ def qcx_feature_from_components(comp):
             + so2 + W_ALLIANCE * sa2 + W_INTERLINE * si2)
 
 
+def load_mct(default_mct=90):
+    """The minimum connect time master, and WHERE IT CAME FROM, returned together.
+
+    FOUND BY MEASUREMENT, 12 August 2026. bt2_input_check compared the live assembly against the
+    training capture on forty routes of cohort 2018 and reported the master as not loaded on the
+    live path. Thirty-nine routes agreed anyway, because most connections sit comfortably clear of
+    any minimum and the binding constraint rarely differs. One did not: NNG-YTY 2018-10 returned
+    online sums of 0.311 and 0.644 against training's 1.121 and 1.363, with the minimum elapsed time
+    identical at 104 minutes in both directions. Same connection candidates, fewer of them valid.
+
+    So an empty table does not fail. It quietly drops the tight connections at whichever airports
+    the master covers, and only on the routes thin enough for those connections to matter, which is
+    the fifth instance of the shape this codebase keeps finding: capability present, caller hands it
+    a neutral value, nothing reports anything.
+
+    The training chain looked in two places, config.MCT_MASTER and then bt2_paths.mct_master, and
+    the live path only in the first. This is the one implementation both now use, and it says what
+    it found rather than returning an empty dict that reads like a working one.
+    """
+    import os
+    import connection_builder as CB
+    cands = []
+    env = os.environ.get("AVIA_MCT_MASTER")
+    if env:
+        cands.append(env)
+    try:
+        from config import MCT_MASTER
+        cands.append(str(MCT_MASTER))
+    except Exception:                                       # noqa: BLE001
+        pass
+    for root in (os.environ.get("AVIA_LOCAL_CACHE"),
+                 os.path.join("E:" + os.sep, "Avia"), os.path.join("C:" + os.sep, "Avia")):
+        if root:
+            cands.append(os.path.join(root, "MCT Master List.xlsx"))
+    tried = []
+    for c in cands:
+        if not c:
+            continue
+        tried.append(c)
+        if not os.path.isfile(c):
+            continue
+        try:
+            mct = CB.load_mct_data(c, default_mct)
+        except Exception as exc:                            # noqa: BLE001
+            return {}, "found %s but could not read it: %s" % (c, exc)
+        if mct:
+            return mct, c
+        return {}, "read %s and it produced no minimum connect times" % c
+    return {}, ("no MCT master found. Looked in: %s. Set AVIA_MCT_MASTER."
+                % ", ".join(tried) if tried else "no candidate paths")
+
+
 def block_minutes(gcd_km):
     """The block time bt2_capture assumes for the proposed nonstop, int(km / 13.5) + 30. It is the
     reference the elapsed penalty is measured against, so it must match training rather than the
