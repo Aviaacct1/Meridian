@@ -177,6 +177,7 @@ def main():
     checked, refused = 0, []
     mct_seen = set()
     by_country = {}
+    by_month = {}
 
     for r in rows:
         got, err = RC.capture_inputs(r["a"], r["b"], r["freq"], r["gcd"], r["pre_month"])
@@ -199,6 +200,10 @@ def main():
             by_country[cc][0] += 1
             if not ok:
                 by_country[cc][1] += 1
+        by_month.setdefault(r["pre_month"], [0, 0])
+        by_month[r["pre_month"]][0] += 1
+        if not ok:
+            by_month[r["pre_month"]][1] += 1
 
     print("\n%d route(s) compared, %d refused" % (checked, len(refused)))
     for line in refused[:10]:
@@ -237,6 +242,18 @@ def main():
         clean = sorted(c for c, v in by_country.items() if not v[1])
         print("   %d further country/countries appear in the sample with no failure: %s"
               % (len(clean), ", ".join(clean)))
+
+        # AND BY PRE-LAUNCH MONTH, which is the sharper cut of the two. bt2/migrate_oag_asia_labels
+        # folded 53 labels on 11 August 2026, not the whole store, so if the training file is stale
+        # the failures sit in the months that were folded and nowhere else. A month with a high
+        # failure rate against months with none is that finding; failures spread evenly across
+        # months is not, and means the cause is per-route rather than per-vintage.
+        print("\npre-launch months carrying a failure, against every month sampled:")
+        for m, (n, f) in sorted(by_month.items()):
+            if f:
+                print("   %-8s %3d sampled  %3d failed   <-- " % (m, n, f))
+        q = [m for m, v in sorted(by_month.items()) if not v[1]]
+        print("   %d month(s) sampled with no failure: %s" % (len(q), ", ".join(q)))
 
     bad = [k for k in tol if matched[k] < checked]
     if not bad:
