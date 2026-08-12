@@ -47,8 +47,15 @@ def main():
     ap.add_argument("--carrier", default=None)
     ap.add_argument("--seats", type=float, required=True, help="seats per departure")
     ap.add_argument("--freq", type=float, default=7.0, help="weekly frequency per direction")
-    ap.add_argument("--months", type=float, default=12.0)
-    ap.add_argument("--launch-month", type=int, default=6)
+    # MONTHS AND LAUNCH MONTH ARE NOT INDEPENDENT. In BT2 training months_operated = 13 - launch
+    # month in every one of 6,810 rows, because bt2_profile counts months from the launch month to
+    # year end, and the model reads both as separate features. The old defaults here were 12 and 6,
+    # a pair that occurs zero times in training; route_context now refuses it by name. A full year
+    # means a January launch, which is the only place a twelve-month operation exists.
+    ap.add_argument("--months", type=float, default=12.0,
+                    help="months operating in the launch year, at most 13 minus the launch month")
+    ap.add_argument("--launch-month", type=int, default=1,
+                    help="1 to 12. With --months 12 this must be 1, and route_context says so if not")
     ap.add_argument("--week", default=os.environ.get("AVIA_WEEK"))
     ap.add_argument("--year", type=int, default=None)
     ap.add_argument("--sabre", default=None)

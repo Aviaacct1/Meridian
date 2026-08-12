@@ -3,7 +3,7 @@ r"""Assemble the twenty-one BT2 inputs for a live route. One place, calling the 
 
     import route_context as RC
     d = RC.build("SJC", "TPE", carrier="BR", aircraft_seats=333, freq=7, months=12,
-                 launch_mon=6, engine_payload=fc)
+                 launch_mon=1, engine_payload=fc)      # months = 13 - launch_mon, always
     import bt2_forecast as BF; BF.forecast(d)
 
 John's ruling of 9 August: everything is calculated in one place. So anything the QSI engine already
@@ -260,7 +260,7 @@ def capture_inputs(a, b, freq, gcd_km, pre_month, con=None):
             con.close()
 
 
-def build(a, b, carrier, aircraft_seats, freq, months=12, launch_mon=6, year=None,
+def build(a, b, carrier, aircraft_seats, freq, months=12, launch_mon=1, year=None,
           engine_payload=None, qcx=None, legs_n=None, capa=None, ncar=1, pre_month=None):
     """The BT2 route dict, or a dict with ok=False naming exactly what is missing.
 
@@ -268,9 +268,41 @@ def build(a, b, carrier, aircraft_seats, freq, months=12, launch_mon=6, year=Non
     needs, but capa, qcx and legs_n are NO LONGER TAKEN FROM IT. They are the three the model is most
     sensitive to and the three the engine computes on a different definition; see capture_inputs.
     Passing capa, qcx or legs_n explicitly overrides the computation and is for testing only.
+
+    MONTHS AND LAUNCH_MON ARE NOT INDEPENDENT, and this defaulted to a pair that cannot exist.
+    bt2_gbm.X_of feeds the model log(months) as feature six and month_num as feature thirteen. In
+    training those two are PERFECTLY COLLINEAR: bt2_profile counts months from the launch month to
+    year end, so months_operated = 13 - launch_month in every one of 6,810 rows. The model therefore
+    learned on a one-dimensional line through a two-dimensional feature space.
+
+    The old defaults were months=12 with launch_mon=6. That pair occurs ZERO times in training and
+    cannot occur by construction: all 192 training rows carrying twelve months launched in January.
+    A default call put the model off its own training manifold on every route, silently, which is
+    CAPA-IS-NOT-QSI-SHARE of 12 August in a different feature.
+
+    So the default is now launch_mon=1 with months=12, the January case, and an impossible pair is
+    REFUSED BY NAME rather than accepted. That is the same treatment load_legs gives a single-week
+    OAG label, and for the same reason: a quietly wrong input produces a confident wrong answer.
     """
     a, b, carrier = a.upper(), b.upper(), carrier.upper()
     miss = []
+
+    try:
+        _lm, _mo = int(launch_mon), int(months)
+    except (TypeError, ValueError):
+        return {"ok": False, "missing": ["months and launch_mon must be whole numbers, got %r and %r"
+                                         % (months, launch_mon)]}
+    if not 1 <= _lm <= 12:
+        return {"ok": False, "missing": ["launch_mon must be 1 to 12, got %d" % _lm]}
+    if not 1 <= _mo <= 12:
+        return {"ok": False, "missing": ["months must be 1 to 12, got %d" % _mo]}
+    if _mo > 13 - _lm:
+        return {"ok": False, "missing": [
+            "months=%d is impossible for launch_mon=%d: a route launching in month %d can operate "
+            "at most %d months of its launch year, and the model is trained only on pairs where "
+            "months = 13 - launch month. Use launch_mon=1 with months=12 for a full year."
+            % (_mo, _lm, _lm, 13 - _lm)]}
+    months, launch_mon = _mo, _lm
 
     import airportsdata
     M = airportsdata.load("IATA")
@@ -334,5 +366,7 @@ if __name__ == "__main__":
     a, b, car = (sys.argv[1:4] + ["SJC", "TPE", "BR"])[:3]
     # No engine payload and no overrides: capa, qcx and legs_n are built from the store by the
     # training implementation, which is the point of the file.
+    # launch_mon=6 with the months default of 12 is now REFUSED, correctly: a June launch can only
+    # operate seven months of its launch year. Seven is what a June launch means.
     print(json.dumps(build(a, b, car, aircraft_seats=333, freq=7, year=2024, launch_mon=6,
-                           pre_month="2024-06"), indent=2, default=str))
+                           months=7, pre_month="2024-06"), indent=2, default=str))
