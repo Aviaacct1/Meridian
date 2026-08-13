@@ -104,7 +104,14 @@ def case_and_outputs(fc):
         "hub_airport": d.get("iata") or d.get("code"),       # the destination IS the hub on a feed route
         "service_year": sch.get("forecast_year") or fc.get("year"),
         "frequency": cap.get("freq"),
+        # route_metadata reads these three by their own names and they were empty on every case.
+        # There is no IATA metro code in the payload, so the airport code stands in and is named as
+        # doing so: a deck that prints the airport where a city code belongs is right far more often
+        # than not, and a blank is wrong every time.
+        "airline_iata": fc.get("airline"),
         "airline": fc.get("airline"),
+        "origin_city_code": o.get("city_code") or o.get("iata") or o.get("code"),
+        "destination_city_code": d.get("city_code") or d.get("iata") or d.get("code"),
         "origin_city": o.get("city"),
         "dest_city": d.get("city"),
     }
@@ -139,6 +146,42 @@ def case_and_outputs(fc):
     return case, outputs
 
 
+def connecting_from_forecast(fc):
+    """The connecting argument build_contract takes, from the payload's own feed detail.
+
+    THE CITY ROWS WERE ALREADY THERE. cortex_app's _feed_list carries code, name, country, base,
+    share, forecast and pdew per city whenever the engine returned its detail, which is exactly what
+    the contract's connecting tables want, and the first version of this adapter passed None and
+    left four blocks empty for no reason.
+
+    DIRECTION, stated rather than assumed, because getting these two the wrong way round is the
+    error this programme made twice on 13 August. route_feed.feed_side defines beyond as the origin
+    CATCHMENT to the destinations BEYOND the hub, and behind as the hub's FEEDERS to the route
+    destination. case["hub_airport"] is set to the destination, so beyond traffic is what connects
+    at that hub and it maps to connecting_at_hub. behind maps to connecting_at_destination.
+
+    VERIFY THIS ON THE FIRST DECK. The totals are printed in the payload as feed_beyond and
+    feed_behind, so the two tables must sum to those two figures and not to each other's.
+    """
+    dem = fc.get("demand") or {}
+
+    def _rows(lst):
+        out = []
+        for c in (lst or []):
+            if c.get("base") is None and c.get("forecast") is None:
+                continue          # a pdew-only row, from the trimmed path: no demand to table
+            out.append({"city_code": c.get("code"), "city_name": c.get("name"),
+                        "country": c.get("country"), "annual_demand": c.get("base"),
+                        "airline_share": c.get("share"), "annual_forecast": c.get("forecast")})
+        return out
+
+    hub_rows, dest_rows = _rows(dem.get("beyond_pdew")), _rows(dem.get("behind_pdew"))
+    if not hub_rows and not dest_rows:
+        return None
+    return {"hub_cities": hub_rows, "dest_cities": dest_rows,
+            "hub_market": dem.get("feed_beyond_base"), "dest_market": dem.get("feed_behind_base")}
+
+
 def contract_from_forecast(fc, currency="USD", growth_rate=None, ancillary_per_pax=None,
                            segment_rows=None, connecting=None):
     """The deck data contract for one live forecast, or a RuntimeError naming what is missing."""
@@ -147,6 +190,15 @@ def contract_from_forecast(fc, currency="USD", growth_rate=None, ancillary_per_p
         raise RuntimeError("cannot build a contract: " + "; ".join(miss))
     import deck_contract as DC
     case, outputs = case_and_outputs(fc)
+    if connecting is None:
+        connecting = connecting_from_forecast(fc)
+    # The growth path the forecast actually ran, so the deck's years 2 and 3 project on the same
+    # rate rather than on a default nobody chose. GROWTH-IS-THE-GAP of 12 August: the engine's own
+    # taper measures a 20.00% CAGR, which is the clamp ceiling, and John's ruling is that client
+    # work states its own path.
+    if growth_rate is None:
+        growth_rate = ((fc.get("projection") or {}).get("cagr")
+                       or (fc.get("schedule") or {}).get("growth_rate"))
     contract = DC.build_contract(case, outputs, connecting=connecting, growth_rate=growth_rate,
                                  ancillary_per_pax=ancillary_per_pax, segment_rows=segment_rows)
     # Currency is NOT inferred, which is forecast_spec's own rule: the contract carries fares and
