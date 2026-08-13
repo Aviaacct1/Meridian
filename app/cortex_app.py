@@ -1832,10 +1832,21 @@ def api_optimise(origin: str, dest: str, airline: str = "", carrier_type: str = 
                         if demand <= 0:
                             continue
                     try:
+                        # THE CARRIER IS NAMED EVEN WHEN THE GAUGE IS FIXED, corrected 14 August 2026.
+                        # airline_iata does two jobs in select_aircraft and they were being confused:
+                        # candidates() uses it to BUILD a pool, and only when no explicit fleet is
+                        # given (line 54, pool = fleet, then `if pool is None and airline_iata`), while
+                        # select_aircraft uses it a second time to read the carrier's OWN cabin out of
+                        # capacity_frame.config_for. Suppressing it whenever the client fixed a gauge
+                        # therefore threw away the configuration as well as the pool it was not being
+                        # asked for. Measured: China Airlines and Starlux fly the A350-900 at 306 seats
+                        # against the generic table's 336, so a fixed A350-900 was sized on 10% more
+                        # capacity than the carrier flies. Passing both is safe because the explicit
+                        # fleet still takes precedence for the pool.
                         code, ranked = ASsel.select_aircraft(dist_nm, demand, f, plan_lf=plan_lf,
                                         econ_share=es_i, econ_fare_ow=fare, bus_fare_ow=bus_fare,
                                         airline_type=ct_i, weeks=sea_weeks,
-                                        airline_iata=(None if _fixed_ac else (cand or None)),
+                                        airline_iata=(cand or None),
                                         fleet=([_fixed_ac] if _fixed_ac else None))   # honour a client-fixed gauge, else search
                     except Exception:
                         continue
@@ -1903,6 +1914,12 @@ def api_optimise(origin: str, dest: str, airline: str = "", carrier_type: str = 
                               "carrier_type": best.get("ctype"), "carrier_type_auto": carrier_type not in ("FSC", "LCC", "ULCC"),
                               "season": best.get("season"), "season_auto": season not in ("annual", "summer", "winter"),
                               "annual_profit": round(best["annual_profit"]),
+                              # The seat count the gauge was sized on and WHERE IT CAME FROM, so the
+                              # page states its basis rather than leaving the reader to assume the
+                              # carrier's own configuration was used. "carrier configuration, OAG" or
+                              # "generic type table"; the second is the honest answer for a type the
+                              # carrier does not fly and the store therefore cannot describe.
+                              "seats": best.get("seats"), "seats_source": best.get("seats_source"),
                               # what it optimised FOR, so the output says which question it answered
                               "objective": "passengers at the planning load factor",
                               "target_lf": TARGET_LF, "viable_lf": VIABLE_LF,
