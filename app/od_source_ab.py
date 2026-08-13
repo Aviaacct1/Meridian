@@ -31,6 +31,14 @@ APP_DIR = os.path.dirname(os.path.abspath(__file__))
 if APP_DIR not in sys.path:
     sys.path.insert(0, APP_DIR)
 
+# The market chain, printed separately from the legs. A market that moves the opposite way
+# to the measured source ratio is a chain question, not a leg question, and the answer is
+# always one of the multipliers between the store and the figure.
+CHAIN = [("Coverage gross-up", ("demand", "coverage_gross_up")),
+         ("Origin QSI share", ("demand", "qsi_share")),
+         ("Average fare", ("demand", "avg_fare")),
+         ("Stimulation", ("demand", "stimulation"))]
+
 LEGS = [("Point to point carried", ("demand", "p2p_carried")),
         ("Connecting carried", ("demand", "connecting_carried")),
         ("Feed beyond", ("demand", "feed_beyond")),
@@ -98,6 +106,16 @@ def main():
         share = _g(test, ("od_source", f"{side}_dot_share"))
         if share is not None:
             print(f"  DOT share of the {side} market under {args.mode}: {share:.1%}")
+
+    print(f"\n  {'market chain':<26} {'sabre':>14} {args.mode:>14} {'change':>10}")
+    for label, path in CHAIN:
+        b, t = _g(base, path), _g(test, path)
+        if b is None and t is None:
+            continue
+        b, t = float(b or 0), float(t or 0)
+        pct = (100.0 * (t - b) / b) if b else None
+        shown = "same" if pct is None or abs(pct) < 0.05 else f"{pct:+.2f}%"
+        print(f"  {label:<26} {b:>14,.4f} {t:>14,.4f} {shown:>10}")
 
     print(f"\n  {'leg':<26} {'sabre':>14} {args.mode:>14} {'change':>10}")
     moved = 0
