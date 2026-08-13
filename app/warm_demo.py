@@ -73,6 +73,18 @@ def _server_env(a):
     # the load factor moves, so a planner asking what the seventh frequency buys gets no answer.
     # setdefault, so a shell that names it still wins and a deliberate off is still possible.
     env.setdefault("AVIA_FREQ_SENSITIVE", "1")
+    # THE FORECAST ENGINE IS PINNED, NOT INHERITED, and this is deliberately not a setdefault.
+    #
+    # The calibrated model was wired behind AVIA_FORECAST_ENGINE on 13 August 2026, and on the same
+    # evening the shell used to test it carried AVIA_FORECAST_ENGINE=bt2. A server started from that
+    # shell would have served model numbers to a client with no announcement, and the model rebuilt
+    # that night under the pinned scikit-learn HAS NOT HAD ITS ACCURACY MEASURED: every published
+    # figure describes an artefact fitted under a different release.
+    #
+    # So the demo server takes the engine from THIS FLAG and nowhere else. A stale export in the
+    # launching shell cannot reach a client. --engine bt2 opts in, deliberately and visibly, and the
+    # value is printed at start-up either way.
+    env["AVIA_FORECAST_ENGINE"] = a.engine
     if a.sabre:
         env["AVIA_SABRE"] = a.sabre
     if a.oag:
@@ -131,6 +143,10 @@ def main():
     ap.add_argument("--sabre", default=None, help="Sabre store path (sets AVIA_SABRE for the server)")
     ap.add_argument("--oag", default=None, help="OAG store path (sets AVIA_OAG for the server)")
     ap.add_argument("--password", default=os.environ.get("AVIA_PASSWORD", "aviacortex2026"))
+    ap.add_argument("--engine", choices=("qsi", "bt2"), default="qsi",
+                    help="which engine answers. DEFAULT qsi, the shipped one, and the shell cannot "
+                         "override it: the model rebuilt on 13 August has not had its accuracy "
+                         "measured, so bt2 must be asked for on this line and nowhere else")
     ap.add_argument("--no-browser", action="store_true", help="warm only; do not open browser tabs")
     a = ap.parse_args()
     base = f"http://127.0.0.1:{a.port}"
@@ -139,10 +155,22 @@ def main():
     print("Avia Cortex demo warm-up")
     print(f"  python : {py}")
     print(f"  water-boundary mask: {'ON' if _water_active(py) else 'OFF - run: ' + py + ' -m pip install global-land-mask'}")
+    # Said at start-up, every time, because it decides which engine a client is shown and the shell
+    # cannot be trusted to carry it. _shell names what was inherited so a surprise is visible.
+    _shell = (os.environ.get("AVIA_FORECAST_ENGINE") or "unset").strip().lower()
+    print(f"  forecast engine: {a.engine.upper()}"
+          + ("  (the shipped QSI engine)" if a.engine == "qsi" else
+             "  *** CALIBRATED MODEL, accuracy NOT re-measured since the 13 Aug rebuild ***")
+          + (f"   [shell said {_shell}, overridden]" if _shell not in ("unset", a.engine) else ""))
 
     proc = None
     if _port_open("127.0.0.1", a.port):
+        # A SERVER ALREADY UP IS NOT NECESSARILY THE SERVER YOU ASKED FOR. It was started with its
+        # own engine and this run cannot change it, so re-warming an existing listener while
+        # printing a line that says QSI would be the silent-default shape again.
         print(f"  server already answering on {a.port} - re-warming (no relaunch)")
+        print(f"  NOTE: the running server keeps the engine IT was started with, which this run "
+              f"cannot see. Restart with --engine {a.engine} if you need certainty.")
     else:
         _free_port(a.port)
         proc = _start_server(py, a.port, _server_env(a))
