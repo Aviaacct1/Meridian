@@ -328,8 +328,19 @@ def _against_prior(c, prior):
 
 def _catchment(c):
     """Sep 25 slide 41. The map where one has been drawn, the zone definitions where it has not."""
+    # A ZONE VALUE IS EITHER A DICT OR A STRING. The contract carries {"definition": "..."} on some
+    # zones and a bare string on others, and assuming the first shape threw on the first real run.
+    # Keys beginning with an underscore are the contract's own gap notes and are not zones.
     z = _g(c, "catchment", "zones", default={}) or {}
-    rows = [[k.replace("_", " ").title(), (v or {}).get("definition") or "-"] for k, v in z.items()]
+    rows = []
+    for k, v in z.items():
+        if str(k).startswith("_"):
+            continue
+        if isinstance(v, dict):
+            text = v.get("definition") or v.get("note") or "-"
+        else:
+            text = str(v) if v else "-"
+        rows.append([str(k).replace("_", " ").title(), text])
     fig = _g(c, "catchment", "map_image")
     if fig:
         return S.figure(fig, title="The catchment",
