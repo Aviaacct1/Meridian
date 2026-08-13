@@ -58,6 +58,27 @@ DISCLAIMER = (
 SRC = "Source: AviaSolutions analysis (Avia Cortex), Sabre MI and OAG schedules."
 
 
+def _src(c):
+    """The source line, built from what the run reports rather than from what the product claims.
+
+    US airports validate a domestic forecast against US government data, so naming DOT DB1B is
+    worth having. Naming it on a figure produced from a Sabre run is the fault found four times in
+    the contract on 14 August, committed on purpose. This reads the run's own od_source block, so
+    the line can only say DOT when DOT was read, and says so per leg because od_source partitions
+    each feed scope rather than taking a side whole.
+    """
+    od = _g(c, "_settings", "od_source") or {}
+    legs = [od.get("point_to_point"), od.get("beyond"), od.get("behind")]
+    if not any(legs) or not any("DB1B" in (s or "") for s in legs):
+        return SRC
+    if all("DB1B" in (s or "") and "Sabre" not in (s or "") for s in legs if s):
+        read = "US DOT O&D Survey (DB1B) and OAG schedules"
+    else:
+        read = ("US DOT O&D Survey (DB1B) for the US domestic markets, Sabre MI for the rest, "
+                "and OAG schedules")
+    return "Source: AviaSolutions analysis (Avia Cortex), %s." % read
+
+
 # --- reading the contract ---------------------------------------------------
 
 def _g(d, *path, default=None):
@@ -133,7 +154,7 @@ def _summary(c):
                       panels=[S.panel("The basis of this run", basis)],
                       title="Summary of route forecast",
                       subtitle="%s to %s" % (rm.get("origin_airport") or "", rm.get("destination_airport") or ""),
-                      source=SRC)
+                      source=_src(c))
 
 
 def _competition(alliance):
@@ -178,7 +199,7 @@ def _opportunity(c):
     return S.keynumbers(items, title="The opportunity",
                         subtitle=("Addressable market at %s, before stimulation and before capture" % yr)
                                  if yr else "Addressable market before stimulation and before capture",
-                        source=(ss.get("catchment_note") or SRC))
+                        source=(ss.get("catchment_note") or _src(c)))
 
 
 def _forecast_table(c):
@@ -213,7 +234,7 @@ def _forecast_table(c):
                    bullets=["Passengers per trip each way. Demand on double connections is excluded.",
                             _g(ss, "grand_total", "_basis",
                                default="carried, after the plan load factor cap")],
-                   source=SRC)
+                   source=_src(c))
 
 
 def _connecting(c, key, title):
@@ -240,7 +261,7 @@ def _connecting(c, key, title):
                % (_n(shown), _n(leg)))
     return S.table({"head": ["", "City", "Country", "Annual demand", "Share captured",
                              "Forecast", "Per day each way"], "rows": rows},
-                   title=title, subtitle=sub, source=SRC)
+                   title=title, subtitle=sub, source=_src(c))
 
 
 def _method_pages(c):
@@ -264,7 +285,7 @@ def _method_pages(c):
             ("Measurement",
              "Passenger demand is measured from Sabre MI, which is MIDT adjusted for bookings made "
              "outside the global distribution systems. Schedules and capacity are measured from OAG.")]
-    out.append(S.prose(base, title="Forecast methodology", subtitle="Base demand and growth", source=SRC))
+    out.append(S.prose(base, title="Forecast methodology", subtitle="Base demand and growth", source=_src(c)))
 
     legs = ss.get("schedule") or []
     sched = [(None, "The forecast is built on the schedule below. A schedule is an input, and the "
@@ -278,7 +299,7 @@ def _method_pages(c):
     cur = _g(c, "_settings", "curfew_cost")
     if cur:
         sched.append(("Night restrictions", cur))
-    out.append(S.prose(sched, title="Forecast methodology", subtitle="The schedule", source=SRC))
+    out.append(S.prose(sched, title="Forecast methodology", subtitle="The schedule", source=_src(c)))
 
     p2p = [(None, "Point to point demand is the measured origin and destination market between the "
                   "two catchments, grown to the service year, stimulated for the new nonstop "
@@ -287,7 +308,7 @@ def _method_pages(c):
            ("Capture", "Capture rate %s of the addressable market."
             % _pct(_g(c, "segment_forecast", "summary", "point_to_point_total", "capture_rate"), 1)),
            ("Catchment", ss.get("catchment_note") or "Catchment as defined in the catchment page.")]
-    out.append(S.prose(p2p, title="Forecast methodology", subtitle="Point to point", source=SRC))
+    out.append(S.prose(p2p, title="Forecast methodology", subtitle="Point to point", source=_src(c)))
 
     cnx = [(None, "Connecting demand is the already-connecting market at each end, captured through "
                   "a quality of service index. The index scores each routing on total elapsed time, "
@@ -299,7 +320,7 @@ def _method_pages(c):
            ("Capture", "Captured at %s over the hub and %s over the origin."
             % (_pct(_g(c, "segment_forecast", "summary", "connecting_at_hub_total", "capture_rate"), 1),
                _pct(_g(c, "segment_forecast", "summary", "connecting_at_destination_total", "capture_rate"), 1)))]
-    out.append(S.prose(cnx, title="Forecast methodology", subtitle="Connecting markets", source=SRC))
+    out.append(S.prose(cnx, title="Forecast methodology", subtitle="Connecting markets", source=_src(c)))
     return out
 
 
@@ -323,7 +344,7 @@ def _against_prior(c, prior):
                    subtitle="Previous service year %s against %s"
                             % (_g(prior, "route_metadata", "service_year") or "-",
                                _g(c, "route_metadata", "service_year") or "-"),
-                   source=SRC)
+                   source=_src(c))
 
 
 def _catchment(c):
@@ -345,13 +366,13 @@ def _catchment(c):
     if fig:
         return S.figure(fig, title="The catchment",
                         table={"head": ["Zone", "Definition"], "rows": rows} if rows else None,
-                        source=SRC)
+                        source=_src(c))
     if not rows:
         return None
     return S.table({"head": ["Zone", "Definition"], "rows": rows},
                    title="The catchment",
                    subtitle=_g(c, "summary_and_schedule", "catchment_note"),
-                   source=SRC)
+                   source=_src(c))
 
 
 # --- assembly ---------------------------------------------------------------

@@ -1,0 +1,39 @@
+Source line built from the run, and _settings finally written
+
+Job 1 piece 2: the label travels from the engine to the slide. Still off, so every
+line reads Sabre until AVIA_OD_SOURCE is set.
+
+app/cortex_app.py
+  od_source block in the payload, reported the way forecast_engine and feed_level
+  already are and for the same reason: point_to_point, beyond and behind each name
+  their own source, with beyond_dot_share and behind_dot_share beside them because
+  od_source PARTITIONS a feed scope rather than taking a side whole, so a leg is
+  rarely one source or the other. The mode is carried too, so a case can be read a
+  year from now.
+
+app/forecast_to_contract.py
+  od_source carried into outputs, and _settings written.
+
+  _SETTINGS WAS NEVER WRITTEN BY ANYTHING. deck/forecast_pack.py reads it in four
+  places, for the connecting floor, the growth basis, the curfew cost and the feed
+  level, and no module in the repo has ever populated it, so all four have been
+  silently taking their defaults. That includes the curfew cost shipped on 14 August:
+  CURFEW-COST-WAS-DISCARDED put it on the cortex page, and the forecast pack could
+  never have shown it, because the key it reads does not exist. Now written from the
+  payload, so it states what the run did rather than what the case asked for. This is
+  the ninth instance of the recorded shape: a missing key substituting a neutral
+  default in silence.
+
+deck/forecast_pack.py
+  _src(c) replaces the SRC constant at all ten render call sites. It reads the run's
+  own od_source block and can only name DOT DB1B when DOT was read. Three outcomes:
+  a run with no od_source block or an all-Sabre run keeps the existing line; an
+  all-DOT run names the DOT survey; a partitioned run says DOT for the US domestic
+  markets and Sabre for the rest, which is the true sentence and still the one that
+  sells. Tested on all four contract shapes.
+
+STILL OPEN, unchanged from the previous commit. Capture was calibrated against
+Sabre-measured markets, so the DB1B-to-Sabre ratio on the connecting quantity has to
+be measured before the default moves off sabre.
+
+Avia Solutions Limited. All rights reserved.

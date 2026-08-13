@@ -177,6 +177,11 @@ def case_and_outputs(fc):
         # are two different things and the payload reports both.
         "forecast_engine": fc.get("forecast_engine"),
         "feed_level": fc.get("feed_level"),
+        # And WHICH SOURCE the market came from, per leg. A slide that names DOT DB1B on a
+        # figure produced from Sabre is the same fault as the four found in the contract on
+        # 14 August, committed on purpose, so the source line has to be built from what the
+        # run reports rather than from what the product claims.
+        "od_source": fc.get("od_source"),
         "load_factor": cap.get("load"),
         "spill_ew": cap.get("spill"),
     }
@@ -342,6 +347,25 @@ def contract_from_forecast(fc, currency="USD", growth_rate=None, ancillary_per_p
     # Guessing would put the wrong symbol in front of every revenue figure on the page.
     contract["currency"] = currency
     contract["_source_engine"] = (outputs.get("forecast_engine") or {}).get("local_leg")
+    # THE RUN SETTINGS THE PACK ALREADY ASKS FOR. deck/forecast_pack.py reads _settings for the
+    # connecting floor, the growth basis, the curfew cost and the feed level, and until now
+    # NOTHING WROTE IT: all four reads took their default, including the curfew cost shipped on
+    # 14 August, which could therefore never have reached the page it was built for. Written from
+    # the payload rather than from the case, so it states what the run did.
+    _sched = fc.get("schedule") or {}
+    _opt = _sched.get("optimised") or {}
+    contract["_settings"] = {
+        "split_floor": (fc.get("settings") or {}).get("split_floor",
+                                                      (case or {}).get("split_floor")),
+        "growth_basis": _sched.get("growth_basis"),
+        "curfew_cost": ({"cost_pax": _opt.get("cost_pax"),
+                         "unrestricted_dep": _opt.get("unrestricted_dep"),
+                         "basis": "connecting demand at the two departure times, not carried "
+                                  "passengers; see the capacity caveat"}
+                        if _opt.get("cost_pax") else None),
+        "feed_level": outputs.get("feed_level"),
+        "od_source": outputs.get("od_source"),
+    }
     _fill_hardcoded(contract, fc, case)
     # The note travels whether the table built or not: a populated block says on what basis, and an
     # empty one says which inputs are outstanding, so the gap report reads as an instruction.

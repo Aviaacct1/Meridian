@@ -1115,6 +1115,20 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
             # every one of them was fitted against the engine it replaces. route_forecast line 609.
             "qsi_corrections_applied": (not _bt2),
         },
+        # WHICH SOURCE ANSWERED, on each feed leg separately. US airports validate against US
+        # government data rather than a GDS sample, so the source line is a commercial statement
+        # and not a footnote. od_source partitions each feed scope, DOT for the all-US pairs and
+        # Sabre for the rest, so a leg is rarely one source or the other: dot_share says how much
+        # of the market actually came from DB1B. Reported the same way as forecast_engine and
+        # feed_level, and for the same reason. Sabre throughout until AVIA_OD_SOURCE is set.
+        "od_source": {
+            "point_to_point": feed_cfg.get("_p2p_source", "Sabre ODPOO"),
+            "beyond": feed_cfg.get("_beyond_source", "Sabre ODPOO"),
+            "behind": feed_cfg.get("_behind_source", "Sabre ODPOO"),
+            "beyond_dot_share": feed_cfg.get("_beyond_dot_share", 0.0),
+            "behind_dot_share": feed_cfg.get("_behind_dot_share", 0.0),
+            "mode": os.environ.get("AVIA_OD_SOURCE", "sabre"),
+        },
         "feed_level": ({"qsi_k": float(qsi_k),
                         "qsi_k_behind": float(qsi_k_behind) if qsi_k_behind is not None else float(qsi_k),
                         "basis": ("default" if (qsi_k == 1.0 and qsi_k_behind is None) else "caller"),
