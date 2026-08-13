@@ -190,14 +190,28 @@ def connecting_from_forecast(fc):
     """
     dem = fc.get("demand") or {}
 
+    # nr AND pdew ARE INCLUDED BECAUSE ONE OF THE TWO LISTS IS PASSED STRAIGHT THROUGH.
+    # build_contract wraps the HUB cities itself, adding nr as i+1 and computing pdew, but writes
+    # "cities": dest_cities for the destination list exactly as given. emit_workbook then reads
+    # c["nr"] on both, so a destination row without it raises KeyError 'nr' and no workbook is
+    # written. Supplying both on both lists costs nothing, since build_contract overwrites them on
+    # the hub side, and it means the two lists reach the writer in the same shape.
+    try:
+        import deck_contract as _DC
+        _pdew = _DC.pdew
+    except Exception:                                        # noqa: BLE001
+        _pdew = lambda x: round((x or 0) / 728.0, 1)         # deck_contract's own DAYS_2WAY
+
     def _rows(lst):
         out = []
         for c in (lst or []):
             if c.get("base") is None and c.get("forecast") is None:
                 continue          # a pdew-only row, from the trimmed path: no demand to table
-            out.append({"city_code": c.get("code"), "city_name": c.get("name"),
+            out.append({"nr": len(out) + 1,
+                        "city_code": c.get("code"), "city_name": c.get("name"),
                         "country": c.get("country"), "annual_demand": c.get("base"),
-                        "airline_share": c.get("share"), "annual_forecast": c.get("forecast")})
+                        "airline_share": c.get("share"), "annual_forecast": c.get("forecast"),
+                        "pdew": _pdew(c.get("forecast") or 0)})
         return out
 
     hub_rows, dest_rows = _rows(dem.get("beyond_pdew")), _rows(dem.get("behind_pdew"))
