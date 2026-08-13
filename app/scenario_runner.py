@@ -105,6 +105,12 @@ COLUMNS = (
 ) + tuple(ECON_COLUMN.get(f, f) for f in ECON_FIELDS) + (
     "growth_basis", "dep_time", "dep_basis", "partners", "split_floor", "plan_lf_cap", "season",
     "qsi_k", "qsi_k_behind", "feed_level_basis",
+    # WHICH ENGINE PRODUCED THE LOCAL LEG, per case. Added 13 August 2026 after a run with the
+    # switch set returned figures identical to the run without it and NOTHING ON SCREEN COULD SAY
+    # WHY: the switch may not have been set, the pull may not have carried the change, or the model
+    # may have declined on every case. Three very different answers and no way to tell them apart is
+    # the exact failure this runner exists to prevent.
+    "local_engine", "engine_mode", "engine_tier", "engine_declined",
     "traffic_rights", "engine", "freq_sensitive", "oag_week", "sabre_year",
 )
 
@@ -266,6 +272,12 @@ def run_case(case):
         "qsi_k": (r.get("feed_level") or {}).get("qsi_k"),
         "qsi_k_behind": (r.get("feed_level") or {}).get("qsi_k_behind"),
         "feed_level_basis": (r.get("feed_level") or {}).get("basis") or "no feed",
+        # Read from the payload rather than from the environment, so the column reports what the
+        # engine DID and not what the shell was asked for. Those are the two things that differed.
+        "local_engine": (r.get("forecast_engine") or {}).get("local_leg") or "unknown",
+        "engine_mode": (r.get("forecast_engine") or {}).get("mode") or "",
+        "engine_tier": (r.get("forecast_engine") or {}).get("tier") or "",
+        "engine_declined": (r.get("forecast_engine") or {}).get("declined") or "",
         "engine": os.environ.get("AVIA_FORECAST_ENGINE", "") or "qsi (default)",
         "freq_sensitive": os.environ.get("AVIA_FREQ_SENSITIVE", "") or "OFF",
         "oag_week": r.get("week") or "", "sabre_year": r.get("year") or "",
@@ -342,11 +354,17 @@ def run(path, out_csv=None):
             print("  %-52s FAILED  %s" % (name[:52], row["error"]))
             continue
         rows.append(row)
-        print("  %-52s demand %10s  seats %10s  LF %6s  capture %6s"
-              % (row["case"][:52], "{:,}".format(row["total_demand_2w"]),
+        # The engine is on the console line, not only in the file. A run whose figures match the
+        # previous one is either the switch not taking effect or the model declining, and reading a
+        # CSV afterwards to find out which is how an evening gets spent.
+        _eng = "BT2" if row["local_engine"].startswith("calibrated") else "qsi"
+        print("  %-46s %-4s demand %10s  seats %10s  LF %6s  capture %6s"
+              % (row["case"][:46], _eng, "{:,}".format(row["total_demand_2w"]),
                  "{:,}".format(row["seats_2w"]),
                  "%.1f%%" % (100 * row["demand_lf"]) if row["demand_lf"] else "-",
                  "%.2f%%" % (100 * row["capture_share"]) if row["capture_share"] else "-"))
+        if row["engine_declined"]:
+            print("       %s" % row["engine_declined"][:110])
 
     # REFUSE TO WRITE A RESULTS FILE IN WHICH ANY CASE ERRORED. A table with three rows where five
     # were asked for reads as a completed run, and the two that are missing are exactly the two
