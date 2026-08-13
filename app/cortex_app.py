@@ -1122,7 +1122,11 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
         # of the market actually came from DB1B. Reported the same way as forecast_engine and
         # feed_level, and for the same reason. Sabre throughout until AVIA_OD_SOURCE is set.
         "od_source": {
-            "point_to_point": feed_cfg.get("_p2p_source", "Sabre ODPOO"),
+            # route_forecast line 488 already routes the P2P market through od_source and reports
+            # what answered, so this READS the engine rather than asking the config what it would
+            # have done. The first version of this block read a feed_cfg key nothing sets, which
+            # would have printed Sabre on a DOT run.
+            "point_to_point": r.get("od_source") or "Sabre ODPOO",
             "beyond": feed_cfg.get("_beyond_source", "Sabre ODPOO"),
             "behind": feed_cfg.get("_behind_source", "Sabre ODPOO"),
             "beyond_dot_share": feed_cfg.get("_beyond_dot_share", 0.0),

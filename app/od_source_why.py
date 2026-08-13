@@ -81,14 +81,20 @@ def main():
         print(f"  airports    {args.origin} US={o_us}, {args.dest} US={d_us}  "
               f"{'PASS' if (o_us and d_us) else 'FAIL, DB1B holds US domestic only'}")
 
-    print("\n  wiring      feed legs   route_feed.feed_side and behind_feed go through "
+    print("\n  wiring      feed legs        route_feed.feed_side and behind_feed go through "
           "od_source.feed_market")
-    print("              point to point   cortex_app calls "
-          "sabre_catchment.destination_market_split DIRECTLY")
-    print("                               at lines 776, 946 and 1001. od_source.market_split is "
-          "called ONLY")
-    print("                               by backtest.py line 462, so the live P2P leg has never "
-          "been wired.")
+    print("              point to point   route_forecast line 488 goes through "
+          "od_source.market_split,")
+    print("                               and line 511 sets the GDS coverage gross-up to 1.0 when "
+          "DB1B")
+    print("                               answered, DB1B being a full-market actual rather than a "
+          "sample.")
+    print("              catchment share  cortex_app lines 776, 946 and 1001 call "
+          "destination_market_split")
+    print("                               directly. Those compute SHARES and growth rates, not the "
+          "P2P")
+    print("                               market level, so they are a separate question from the "
+          "source.")
     return 0
 
 

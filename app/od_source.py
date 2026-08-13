@@ -161,6 +161,34 @@ def _year_complete(coupons_db, year):
 _AP = {}
 
 
+def _latest_complete(coupons_db):
+    """The most recent year whose four quarters are all logged built, or None."""
+    try:
+        from db_registry import con_ro
+        con = con_ro(coupons_db)
+        try:
+            row = con.execute(
+                "SELECT year FROM build_log GROUP BY year "
+                "HAVING count(*) FILTER (WHERE status='built') = 4 "
+                "AND count(*) FILTER (WHERE status<>'built') = 0 "
+                "ORDER BY year DESC LIMIT 1").fetchone()
+        finally:
+            con.close()
+        return int(row[0]) if row else None
+    except Exception:
+        return None
+
+
+def _index_mode():
+    """Vintage indexing: off unless AVIA_OD_INDEX_VINTAGE is set to 1, true, on or yes."""
+    return os.environ.get("AVIA_OD_INDEX_VINTAGE", "0").strip().lower() in ("1", "true", "on", "yes")
+
+
+# A growth factor outside this range is not a market growing, it is two different
+# populations being compared, and the run falls back to Sabre rather than publish it.
+INDEX_MIN, INDEX_MAX = 0.5, 2.0
+
+
 def _us(code):
     """True if `code` is a US airport. The table is loaded once: a feed scope runs to
     hundreds of points and airportsdata.load re-reads its file on every call."""
@@ -209,9 +237,23 @@ def feed_market(sabre_fn, origins, dests, year, factor_indirect=1.044, group="de
 
     if (mode not in ("dot", "auto") or not origins or not dests
             or not os.path.exists(coupons_db)
-            or not _year_complete(coupons_db, year)
             or not all(_us(c) for c in fixed if c)):
         return sabre_fn(origins, dests), SABRE, 0.0
+
+    # THE VINTAGE PROBLEM, and it is structural rather than a fault. DOT publishes a year
+    # or more behind, so the engine's base year is routinely outside the DOT store: on
+    # 15 August 2026 the store ends at 2024 and a live run asks for 2025. Left alone,
+    # _year_complete refuses on EVERY live run and DOT only ever answers a back-test,
+    # which makes the US proposition undeliverable. Indexing reads DOT's most recent
+    # complete year and carries it forward on Sabre's OWN growth for the same markets and
+    # the same quantity, so the LEVEL is DOT's and only the year-on-year movement is
+    # Sabre's. Off unless AVIA_OD_INDEX_VINTAGE is set, because it is a method choice.
+    read_year, index_factor = int(year), 1.0
+    if not _year_complete(coupons_db, year):
+        latest = _latest_complete(coupons_db) if _index_mode() else None
+        if latest is None or latest >= int(year):
+            return sabre_fn(origins, dests), SABRE, 0.0
+        read_year = latest
 
     us_side = [c for c in grouped if c and _us(c)]
     other_side = [c for c in grouped if c and not _us(c)]
@@ -220,9 +262,15 @@ def feed_market(sabre_fn, origins, dests, year, factor_indirect=1.044, group="de
 
     try:
         if group == "dest":
-            dot = _db1b_feed(coupons_db, origins, us_side, year, factor_indirect, "dest")
+            dot = _db1b_feed(coupons_db, origins, us_side, read_year, factor_indirect, "dest")
         else:
-            dot = _db1b_feed(coupons_db, us_side, dests, year, factor_indirect, "origin")
+            dot = _db1b_feed(coupons_db, us_side, dests, read_year, factor_indirect, "origin")
+        if read_year != int(year):
+            index_factor = _growth_factor(sabre_fn, origins, dests, us_side, group,
+                                          read_year, int(year))
+            if index_factor is None:
+                return sabre_fn(origins, dests), SABRE, 0.0
+            dot = {k: v * index_factor for k, v in dot.items()}
     except Exception:
         return sabre_fn(origins, dests), SABRE, 0.0      # any DB1B problem -> safe Sabre fallback
 
@@ -237,7 +285,34 @@ def feed_market(sabre_fn, origins, dests, year, factor_indirect=1.044, group="de
     dot_pax = sum(dot.values())
     share = (dot_pax / total) if total else 0.0
     source = DB1B if not other_side else f"{DB1B} for the US domestic markets, {SABRE} otherwise"
+    if read_year != int(year):
+        # The vintage and the indexing go INTO the label. A reader who is told DOT and not
+        # told the year would take a 2024 measurement for a 2025 one.
+        source = (f"{source} [{read_year} vintage, indexed to {int(year)} "
+                  f"on Sabre growth x{index_factor:.3f}]")
     return market, source, share
+
+
+def _growth_factor(sabre_fn, origins, dests, us_side, group, from_year, to_year):
+    """Sabre's own growth on the SAME markets and the SAME quantity, from_year to to_year.
+
+    Aggregate rather than per market: a per-market factor on a thin feeder is mostly noise,
+    and the quantity being carried forward is a level for the side as a whole. Returns None
+    when either end is empty or the factor falls outside INDEX_MIN to INDEX_MAX, since a
+    market does not halve or double in a year and a figure that says it did is two
+    populations rather than one.
+    """
+    if group == "dest":
+        a = sabre_fn(origins, us_side, from_year)
+        b = sabre_fn(origins, us_side, to_year)
+    else:
+        a = sabre_fn(us_side, dests, from_year)
+        b = sabre_fn(us_side, dests, to_year)
+    base, later = sum((a or {}).values()), sum((b or {}).values())
+    if base <= 0 or later <= 0:
+        return None
+    factor = later / base
+    return factor if INDEX_MIN <= factor <= INDEX_MAX else None
 
 
 def _db1b_feed(coupons_db, origins, dests, year, factor_indirect, group):

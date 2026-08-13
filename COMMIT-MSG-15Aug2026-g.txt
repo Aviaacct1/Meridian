@@ -1,0 +1,44 @@
+The vintage problem, and a correction to my own claim about the P2P wiring
+
+WHY NOTHING MOVED. od_source_why on SJC-BOS: at 2025 every guard passes except the
+year, and the store spans 2000-2024; at 2024 every guard passes. The cause is
+structural rather than a fault. DOT publishes a year or more behind, the engine's base
+year is 2025, and _year_complete refuses correctly. Left alone, DOT would only ever
+answer a back-test and the US proposition would be undeliverable. This recurs every
+year, so it needed answering rather than working around.
+
+I WAS WRONG ABOUT THE POINT TO POINT LEG AND SAID SO ON JOHN'S SCREEN. I claimed the
+live P2P leg had never been wired to od_source, from a grep of cortex_app without
+following the field back. route_forecast line 488 DOES call od_source.market_split, and
+line 511 handles the consequence properly: the GDS coverage gross-up is set to 1.0 when
+DB1B answered, DB1B being a full-market actual rather than a sample. The three
+destination_market_split calls in cortex_app compute catchment SHARES and growth rates,
+not the P2P market level. Corrected in od_source_why.py, which was printing the wrong
+claim.
+
+app/cortex_app.py
+  The payload's od_source.point_to_point now reads r["od_source"], which route_forecast
+  already reports, rather than a feed_cfg key nothing sets. As written it would have
+  printed Sabre on a DOT run.
+
+app/od_source.py
+  Vintage indexing, OFF unless AVIA_OD_INDEX_VINTAGE is set, because it is a method
+  choice and not a fix. When the requested year is outside the store, DOT's most recent
+  COMPLETE year is read and carried forward on Sabre's OWN growth for the same markets
+  and the same quantity, so the LEVEL is DOT's and only the year-on-year movement is
+  Sabre's. Aggregate rather than per market: a per-market factor on a thin feeder is
+  mostly noise. A factor outside 0.5 to 2.0 is refused and the run falls back to Sabre,
+  since a market does not halve or double in a year and a figure that says it did is two
+  populations rather than one. The vintage and the factor go INTO the source label: a
+  reader told DOT and not told the year would take a 2024 measurement for a 2025 one.
+
+app/route_feed.py
+  The two Sabre closures take an optional year, so od_source can ask for a second year
+  when it indexes. Default is the run's year, unchanged.
+
+bt2/od_source_feed_check.py
+  Three cases added, 9 of 9 pass. Indexing off and a year outside the store falls back;
+  indexing on returns DOT's level times Sabre's growth with the vintage and the factor
+  in the label; an implausible growth factor falls back rather than publishes.
+
+Avia Solutions Limited. All rights reserved.

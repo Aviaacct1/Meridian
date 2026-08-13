@@ -229,11 +229,14 @@ def feed_side(sabre_db, oag_db, week, origin_airports, hub, year, capture=DEFAUL
     scope = on_the_way(origin_airports, hub, scope, circuity=_circ)  # drop backtracking destinations
     _pa = _preagg_from_cfg(feed_cfg)
 
-    def _sabre_beyond(_o, _d):
+    def _sabre_beyond(_o, _d, _y=None):
+        # The year is an argument so od_source can ask for a second year when it indexes a
+        # DOT vintage forward on Sabre's own growth. Default is the run's year, unchanged.
+        _yy = year if _y is None else _y
         if _pa:
             import preagg
-            return preagg.connecting_market(_pa, _o, _d, year, _fac)
-        return connecting_market(sabre_db, _o, _d, year, _fac)
+            return preagg.connecting_market(_pa, _o, _d, _yy, _fac)
+        return connecting_market(sabre_db, _o, _d, _yy, _fac)
 
     # US-market credibility rule. od_source leads with DOT DB1B on the all-US pairs of the
     # scope and leaves the rest on Sabre, so a US airport sees its own domestic feed measured
@@ -390,11 +393,12 @@ def behind_feed(sabre_db, oag_db, week, origin_airports, dest_airports, year, ca
         feeders = kept
     _pa = _preagg_from_cfg(feed_cfg)
 
-    def _sabre_behind(_o, _d):
+    def _sabre_behind(_o, _d, _y=None):
+        _yy = year if _y is None else _y
         if _pa:
             import preagg
-            return preagg.behind_market(_pa, _o, _d, year, _fac)
-        return behind_market(sabre_db, _o, _d, year, _fac)
+            return preagg.behind_market(_pa, _o, _d, _yy, _fac)
+        return behind_market(sabre_db, _o, _d, _yy, _fac)
 
     # The behind side is the one a US airport cares most about, being its own domestic
     # catchment feeding the new route. Grouped by feeder, so the FEEDERS are partitioned.

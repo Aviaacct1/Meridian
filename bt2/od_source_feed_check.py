@@ -67,12 +67,20 @@ def build_store(path, quarters=(1, 2, 3, 4)):
         con.close()
 
 
-def sabre_stub(calls):
-    """Records what it was asked for, so case 1 can assert the FULL scope was passed."""
-    def fn(origins, dests):
-        calls.append((tuple(origins), tuple(dests)))
+def sabre_stub(calls, growth=None):
+    """Records what it was asked for, so case 1 can assert the FULL scope was passed.
+
+    The optional year argument is what od_source uses to index a DOT vintage forward, so
+    the stub returns `growth` times its base figure for any year after YEAR, which lets a
+    case assert the indexing arithmetic rather than only that it ran.
+    """
+    def fn(origins, dests, year=None):
+        calls.append((tuple(origins), tuple(dests), year))
         keys = dests if len(dests) >= len(origins) else origins
-        return {k: SABRE_PER_PAIR for k in keys}
+        mult = 1.0
+        if growth is not None and year is not None and int(year) > YEAR:
+            mult = growth
+        return {k: SABRE_PER_PAIR * mult for k in keys}
     return fn
 
 
@@ -107,6 +115,21 @@ def run():
         results.append((name, ok, market, source, share))
         return ok
 
+    def index_case(name, want_market, want_label_bit, growth, index_on, year):
+        """The vintage cases: ask for a year the store does not hold."""
+        os.environ["AVIA_OD_SOURCE"] = "dot"
+        os.environ["AVIA_OD_INDEX_VINTAGE"] = "1" if index_on else "0"
+        OS._YEAR_OK.clear()
+        OS._coupons_path = lambda: full
+        market, source, share = OS.feed_market(sabre_stub([], growth=growth), ["SJC"], ["AUS"],
+                                               year, factor_indirect=FACTOR, group="dest")
+        ok = (all(abs(market.get(k, 0.0) - v) < 0.5 for k, v in want_market.items())
+              and set(market) == set(want_market)
+              and (want_label_bit in source))
+        results.append((name, ok, market, source, share))
+        os.environ.pop("AVIA_OD_INDEX_VINTAGE", None)
+        return ok
+
     # 1. OFF: full scope handed to Sabre, answer returned unchanged.
     case("OFF, pass-through", "sabre",
          {"AUS": SABRE_PER_PAIR, "LHR": SABRE_PER_PAIR}, 0.0,
@@ -135,6 +158,20 @@ def run():
     case("behind, all US", "dot",
          {"PDX": 70000.0 * FACTOR, "SEA": 30000.0 * FACTOR}, 1.0,
          "dot", full, ["PDX", "SEA"], ["AUS"], "origin")
+
+    # 7. VINTAGE, indexing OFF: a year the store does not hold falls back to Sabre.
+    index_case("vintage, indexing off", {"AUS": SABRE_PER_PAIR}, "Sabre ODPOO",
+               growth=1.06, index_on=False, year=YEAR + 1)
+
+    # 8. VINTAGE, indexing ON: DOT's level carried forward on Sabre's own growth, and the
+    #    label carries the vintage and the factor. 100,000 x 1.044 x 1.06.
+    index_case("vintage, indexed", {"AUS": 100000.0 * FACTOR * 1.06},
+               "2024 vintage, indexed to 2025", growth=1.06, index_on=True, year=YEAR + 1)
+
+    # 9. VINTAGE, implausible growth: a factor outside 0.5 to 2.0 is two populations, not a
+    #    market, so the run falls back rather than publish it.
+    index_case("vintage, implausible growth", {"AUS": SABRE_PER_PAIR}, "Sabre ODPOO",
+               growth=3.0, index_on=True, year=YEAR + 1)
 
     failed = 0
     for name, ok, market, source, share in results:
