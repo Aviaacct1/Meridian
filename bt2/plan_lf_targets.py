@@ -19,11 +19,16 @@ summed over both directions across the months the route actually operated.
 THREE BASIS CAVEATS, printed by the run as well as recorded here, because they govern how far the
 result can be pushed:
 
-  1. SABRE UNDER-COUNTS TRANSFER TRAFFIC. FLOOR-EVIDENCED measured 2.07x on 335 routes touching a
-     major Asian hub and 2.50x on 476 long-haul routes. The numerator here is Sabre-derived, so this
-     load factor reads LOW, and it reads lowest exactly where connecting traffic matters most. A cap
-     raised on the uncorrected figure would be raised least where it binds most. This is the reason
-     the run reports the cuts and does not propose a number.
+  1. THE NUMERATOR NEEDS NO TRANSFER CORRECTION, and the first version of this file said it did.
+     It carried a caveat that Sabre under-counts transfer traffic by the 2.07x and 2.50x of
+     FLOOR-EVIDENCED, so that these load factors read low. THAT WAS WRONG AND THIS RUN DISPROVED IT.
+     FLOOR-EVIDENCED measured "the multiplier the FLAT feed needs to reach" actual connecting, with
+     the Sabre residual as the TARGET; it is a measurement of how far the engine's flat feed
+     under-read, not of Sabre's own coverage. Applying it as a Sabre correction is arithmetically
+     impossible on this population: measured 14 August on 336 long-haul launches, the median
+     connecting share of the sector is 0.572, so a 2.50x correction takes the median achieved load
+     factor from 0.782 to 1.360 and puts 78% of launches above 100%. At 2.07x it is 1.185 and 71%.
+     So the figures below stand as measured and nothing is to be added to them.
 
   2. THE TWO WINDOWS ARE NOT IDENTICAL. seats_ly covers the months the route operated; sector covers
      source_year = L entire. On a virgin pair the pre-launch months carry no traffic, so the two
@@ -219,6 +224,27 @@ def main():
 
     # The impossible ones are DROPPED and counted, never truncated to 1.0: a ratio above 1.0 is a
     # measurement fault on that route and clipping it would fold the fault into the median.
+    #
+    # THEY ARE ALSO WRITTEN OUT, added 14 August. The first version reported the count and the worst
+    # case and kept the rows to itself, so an exclusion of 155 launches could not be audited and the
+    # standing hypothesis, that they are charter markets where OAG holds thin scheduled service
+    # against a full Sabre passenger count, could not be checked by anyone reading the output.
+    # An exclusion nobody can inspect is a silent filter with a printed count in front of it.
+    excl_p = os.path.join(BT2, "plan_lf_achieved_excluded.csv")
+    with open(excl_p, "w", newline="", encoding="utf-8") as f:
+        w = csv.DictWriter(f, fieldnames=["a", "b", "cohort", "carrier", "gcd_km", "haul",
+                                          "months_operated", "n_carriers", "seats_ly", "sector",
+                                          "nonstop", "lf", "reason"], extrasaction="ignore")
+        w.writeheader()
+        for r in sorted(scored, key=lambda x: -x["lf"]):
+            if r["lf"] > 1.0:
+                w.writerow(dict(r, lf=round(r["lf"], 4), reason="more passengers than seats flown"))
+            elif r["months_operated"] < a.min_months:
+                w.writerow(dict(r, lf=round(r["lf"], 4),
+                                reason="operated %d months, under --min-months %d"
+                                       % (r["months_operated"], a.min_months)))
+    print("  the excluded launches are written to %s so the filter can be argued with"
+          % os.path.basename(excl_p))
     scored = [r for r in scored if r["lf"] <= 1.0 and r["months_operated"] >= a.min_months]
     print("  %d launches scored after dropping the impossible ones and launch years shorter than "
           "%d months" % (len(scored), a.min_months))
@@ -243,14 +269,14 @@ def main():
         "BY COMPETITIVE STRUCTURE", out_rows)
 
     print("\nHOW TO READ THIS, and it is the whole point of the run.")
-    print("  The numerator is Sabre-derived and Sabre under-counts transfer traffic by a measured")
-    print("  2.07x at Asian hubs and 2.50x on long haul (FLOOR-EVIDENCED). So every figure above is")
-    print("  BIASED LOW, and most so on the long-haul cuts. A cap set from the uncorrected medians")
-    print("  would be set lowest exactly where the cap already binds hardest.")
-    print("  The column that needs no correction is the LAST one: the share of real launches whose")
-    print("  measured load factor exceeds 0.875 is a floor on how often the shipped cap contradicts")
-    print("  the market, since correcting the under-count can only move launches ACROSS that line")
-    print("  and never back.")
+    print("  These figures stand as measured and NOTHING is to be added to them for a supposed")
+    print("  Sabre transfer under-count. FLOOR-EVIDENCED's 2.07x and 2.50x measure the multiplier")
+    print("  the engine's FLAT FEED needed to reach the Sabre residual, with Sabre as the target,")
+    print("  and say nothing about Sabre's own coverage. Applied here they are impossible: see")
+    print("  caveat 1 in the docstring for the arithmetic and the run that settled it.")
+    print("  A cap is an UPPER LIMIT and not a median. Setting it at any median above would spill")
+    print("  half of every launch that has actually happened. The figure to read against a")
+    print("  candidate cap is the last column, the share of real launches that exceeded it.")
 
     outp = a.out or os.path.join(BT2, "plan_lf_achieved.csv")
     with open(outp, "w", newline="", encoding="utf-8") as f:
