@@ -330,6 +330,13 @@
         <div class="hidden" id="schedRow" style="margin:-8px 0 20px;padding:9px 0 0;border-top:1px solid var(--line)">
           <div style="font-family:var(--sans);font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);font-weight:600">Schedule assumed</div>
           <div id="schedLine" style="font-family:var(--mono);font-size:11.5px;color:var(--body);margin-top:6px;line-height:1.6"></div>
+          <!-- WHAT THE CURFEW COSTS. optimise_departure has always computed the unrestricted optimum
+               beside the permitted one and returned cost_pax with it, and nothing displayed either,
+               so the figure was built on every run and thrown away at the last step. route_feed's own
+               docstring calls it the argument an airport takes to a curfew review. Hidden unless a
+               restriction was actually entered, because with no curfew there is no cost to state. -->
+          <div id="curfewLine" class="hidden" style="font-family:var(--mono);font-size:11.5px;color:var(--body);margin-top:8px;line-height:1.6;padding-top:8px;border-top:1px dotted var(--line)"></div>
+          <div id="curfewBasis" class="hidden" style="font-family:var(--sans);font-size:10.5px;color:var(--muted);margin-top:5px;line-height:1.55"></div>
         </div>
         <div id="runline" class="runline"></div>
         <div id="basis" class="foot-note" style="margin:-6px 0 16px"></div>
@@ -912,9 +919,48 @@ function render(d){
       `${_sc.outbound.sector} dep ${_sc.outbound.dep} arr ${_sc.outbound.arr}  ·  `+
       `${_sc.inbound.sector} dep ${_sc.inbound.dep} arr ${_sc.inbound.arr}  ·  `+
       `${cap.aircraft}, ${cap.freq}x/week, block ${_bh}h ${String(_bm).padStart(2,"0")}m each way`+
+      // THE SEAT COUNT AND WHERE IT CAME FROM. The payload has carried seats_source since the
+      // carrier configuration was measured, and the page showed neither, so a schedule sized on
+      // China Airlines' own 306-seat A350-900 read identically to one sized on the generic 336.
+      // The two produce different load factors and a different aircraft choice, so which one was
+      // used belongs on the line that states the schedule.
+      (cap.seats?`, ${cap.seats} seats (${cap.seats_source||"basis not stated"})`:"")+
       (_sc.indicative?"  ·  local times, indicative: not slot-, curfew- or connection-optimised":""));
     const _el=$("#schedRow"); if(_el) _el.classList.remove("hidden");
   } else { const _el=$("#schedRow"); if(_el) _el.classList.add("hidden"); }
+
+  // WHAT THE CURFEW COSTS, and on what basis. Added 14 August 2026.
+  //
+  // optimise_departure computes the unrestricted optimum alongside the permitted one on every run
+  // and returns unrestricted_dep and cost_pax with it, precisely so the cost of a restriction can be
+  // quoted rather than hidden. Nothing displayed either, so the figure was built and discarded at
+  // the last step. It is the output an airport takes to a curfew review and it is worth more than
+  // the forecast it comes from.
+  //
+  // THE BASIS IS STATED BECAUSE IT IS NOT WHAT A READER WILL ASSUME. cost_pax is the difference in
+  // CONNECTING DEMAND won at the two departure times, scored inside optimise_departure before the
+  // capture scaling, before the connectivity re-split and before the aircraft's capacity. It is not
+  // a carried-passenger figure and it must never be read as one. Where the aircraft is already full
+  // the carried cost of the restriction is smaller than this and can be nil, because the seats sell
+  // either way and only the mix changes; the note says so whenever the run is capacity bound.
+  const _op=(_sc&&_sc.optimised)||null;
+  const _cl=$("#curfewLine"), _cbz=$("#curfewBasis");
+  const _win=[].concat((_op&&_op.restricted)||[], (_op&&_op.restricted_dest)||[]);
+  if(_op && _win.length && _op.unrestricted_dep && _cl){
+    const _cost=Math.round(_op.cost_pax||0);
+    const _bound=(d.capacity && d.capacity.spill > 0.02*(((d.demand&&d.demand.total)||1)));
+    setTxt("curfewLine",
+      `Restricted ${_win.join(", ")}  ·  departs ${_sc.outbound.dep} within the restriction  ·  `+
+      `would depart ${_op.unrestricted_dep} without it  ·  cost ${fmt(_cost)} connecting demand`);
+    _cbz.textContent =
+      "The cost is the connecting demand the route wins at the permitted time against the "+
+      "unrestricted time, measured before capture scaling, before the local and connecting re-split "+
+      "and before the aircraft's capacity. It is not a carried-passenger figure."+
+      (_bound ? "  This run is capacity bound, so the seats sell at either departure time and the "+
+                "carried cost of the restriction is smaller than the figure above."
+              : "");
+    _cl.classList.remove("hidden"); _cbz.classList.remove("hidden");
+  } else if(_cl){ _cl.classList.add("hidden"); _cbz.classList.add("hidden"); }
 
   const est = d.title.indexOf("Genoa")<0;
   $("#fidChip").className = est?"chip est":"chip";
