@@ -66,6 +66,10 @@ def main():
     ap.add_argument("--coupons", default=None)
     ap.add_argument("--sabre", default=None)
     ap.add_argument("--top", type=int, default=10, help="worst-divergence pairs to list")
+    ap.add_argument("--all-pairs", action="store_true",
+                    help="do not restrict to US-to-US pairs. The first run of this tool did not "
+                         "restrict, and its 6,031 Sabre-only pairs were mostly international rather "
+                         "than a DB1B coverage gap. Kept as a switch, not as the default.")
     ap.add_argument("--memory", default="4GB")
     ap.add_argument("--threads", type=int, default=4)
     ap.add_argument("--temp", default=None)
@@ -121,6 +125,21 @@ def main():
         con.execute(f"CREATE TEMP TABLE dot AS {dot_sql}", params)
         con.execute(f"CREATE TEMP TABLE sab AS {sab_sql}", params)
 
+        # DB1B IS DOMESTIC ONLY, so every airport in the coupon store is a US airport and the
+        # store is its own US list. Without this the Sabre side carries ORD-LHR and every other
+        # international pair, and they present as DB1B blindness when they are out of scope.
+        # KNOWN LIMIT, stated because it cuts the wrong way. The US list is "every airport DB1B has
+        # ever seen", which by construction EXCLUDES the commuter and EAS tail DB1B is blind to.
+        # Those are precisely the pairs od_source's auto mode falls back to Sabre for, so this
+        # filter removes some genuine coverage gap along with the international noise and the
+        # Sabre-only figure below is a floor rather than the whole of it.
+        if not args.all_pairs:
+            con.execute("CREATE TEMP TABLE us AS SELECT DISTINCT origin AS a FROM od_market_coupons "
+                        "UNION SELECT DISTINCT dest FROM od_market_coupons")
+            for t in ("dot", "sab"):
+                con.execute(f"DELETE FROM {t} WHERE o NOT IN (SELECT a FROM us) "
+                            f"OR d NOT IN (SELECT a FROM us)")
+
         matched = con.execute("""
             SELECT count(*),
                    SUM(dot.ns), SUM(sab.ns), SUM(dot.cx), SUM(sab.cx), SUM(dot.tot), SUM(sab.tot)
@@ -151,6 +170,29 @@ def main():
             print(f"\n  Connecting against nonstop: {r_cx / r_ns:.3f}x. Above 1 means Sabre's "
                   f"under-read is concentrated in transfer traffic;\n  near 1 means the coverage "
                   f"gap is flat and capture can be re-levelled by one number.")
+
+        # THE CUT THAT GOVERNS THE FEED. The feed legs read the connecting market on
+        # feeder-to-destination pairs, which are pairs people connect over BECAUSE there is little
+        # or no nonstop. An aggregate connecting ratio is dominated by dense nonstop pairs and is
+        # therefore the wrong statistic for the question, in the same way a median was the wrong
+        # statistic for a cap. Nonstop share is taken from DOT, the reference side.
+        print("\n  Connecting ratio by how much nonstop service the pair has (DOT nonstop share):")
+        print(f"    {'pairs with':<26} {'n':>7} {'DOT conn':>14} {'Sabre conn':>14} {'ratio':>9}")
+        cuts = [("no nonstop at all", "d_ns_share = 0"),
+                ("under 10% nonstop", "d_ns_share > 0 AND d_ns_share < 0.10"),
+                ("10% to 50% nonstop", "d_ns_share >= 0.10 AND d_ns_share < 0.50"),
+                ("50% or more nonstop", "d_ns_share >= 0.50")]
+        for label, cond in cuts:
+            row = con.execute(f"""
+                SELECT count(*), SUM(dc), SUM(sc) FROM (
+                    SELECT coalesce(dot.cx, 0) AS dc, coalesce(sab.cx, 0) AS sc,
+                           coalesce(dot.ns, 0) / nullif(dot.tot, 0) AS d_ns_share
+                    FROM dot JOIN sab ON dot.o = sab.o AND dot.d = sab.d)
+                WHERE {cond}
+            """).fetchone()
+            n_c, dv, sv = (row[0] or 0), (row[1] or 0), (row[2] or 0)
+            print(f"    {label:<26} {n_c:>7,} {dv:>14,.0f} {sv:>14,.0f} "
+                  f"{_fmt_ratio(_ratio(dv, sv)):>9}")
 
         if args.top:
             print(f"\n  Widest connecting divergence, {args.top} pairs with 5,000+ DOT connecting:")

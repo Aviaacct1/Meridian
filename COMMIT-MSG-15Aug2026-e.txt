@@ -1,0 +1,35 @@
+dot_ratio_check: US-to-US by default, and the cut that governs the feed
+
+Two corrections to my own tool, both found by reading its first real output.
+
+THE FIRST RUN'S SABRE-ONLY FIGURE WAS NOT A COVERAGE GAP. On pairs touching SJC, TPA
+and ORD in 2024 the tool reported 6,031 Sabre-only pairs carrying 14.2m passengers,
+against 2,199 matched pairs. The pair selection was "either end is one of the named
+airports" with no US test, so the Sabre side carried ORD-LHR and every other
+international pair, which DB1B cannot hold by construction. Those present as DB1B
+blindness and are nothing of the kind. The comparison is now restricted to US-to-US
+pairs, using the coupon store as its own US list: DB1B is domestic only, so every
+airport in it is a US airport and no external table is needed. --all-pairs keeps the
+old behaviour as a switch rather than as the default.
+
+STATED LIMIT, because it cuts the wrong way. That US list is "every airport DB1B has
+ever seen", which excludes the commuter and EAS tail DB1B is blind to, and those are
+exactly the pairs od_source's auto mode falls back to Sabre for. So the filter removes
+some genuine coverage gap along with the international noise, and the Sabre-only
+figure is now a floor rather than the whole of it.
+
+THE AGGREGATE WAS THE WRONG STATISTIC FOR THE QUESTION. The first run returned a
+connecting ratio of 1.047x while its ten widest divergences were all dense nonstop
+pairs at 2.6x to 4.2x, so most pairs must agree and the movement is concentrated
+somewhere. The feed legs never read a dense pair's connecting market: they read
+feeder-to-destination markets, which are pairs people connect over BECAUSE there is
+little or no nonstop. The tool now cuts the connecting ratio by the pair's DOT nonstop
+share, into no nonstop at all, under 10%, 10 to 50%, and 50% or more. The first of
+those is the population the feed actually reads. Same shape as HAUL-IS-A-TAIL-EFFECT:
+the statistic has to match the question, and a median or an aggregate rarely does.
+
+Tested on the synthetic stores: an international pair added to the Sabre side is
+excluded by default and restored by --all-pairs, and the cuts recover the constructed
+2.000x in each populated cut.
+
+Avia Solutions Limited. All rights reserved.
