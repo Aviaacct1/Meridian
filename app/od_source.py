@@ -51,7 +51,16 @@ def is_dot(source):
 
 
 def _mode():
-    return os.environ.get("AVIA_OD_SOURCE", "sabre").strip().lower()
+    """DEFAULT auto FROM 15 AUGUST 2026, John's decision.
+
+    US airports validate against US government data rather than a GDS sample, so the
+    switch has to be on by default: one that has to be remembered is one that will be
+    forgotten. auto reads DB1B for all-US markets where DB1B has them and falls back to
+    Sabre for the commuter and EAS tail it is blind to.
+
+    To revert on the workstation, no code change: $env:AVIA_OD_SOURCE = "sabre".
+    """
+    return os.environ.get("AVIA_OD_SOURCE", "auto").strip().lower()
 
 
 def _db1b_path():
@@ -228,8 +237,13 @@ def _latest_complete(coupons_db):
 
 
 def _index_mode():
-    """Vintage indexing: off unless AVIA_OD_INDEX_VINTAGE is set to 1, true, on or yes."""
-    return os.environ.get("AVIA_OD_INDEX_VINTAGE", "0").strip().lower() in ("1", "true", "on", "yes")
+    """DEFAULT ON FROM 15 AUGUST 2026, John's decision.
+
+    Without it DOT answers no live run at all, the store ending a year behind the engine's
+    base year, so leaving it off would leave the switch above on and inert. Off is
+    $env:AVIA_OD_INDEX_VINTAGE = "0".
+    """
+    return os.environ.get("AVIA_OD_INDEX_VINTAGE", "1").strip().lower() in ("1", "true", "on", "yes")
 
 
 # A growth factor outside this range is not a market growing, it is two different

@@ -130,10 +130,22 @@ def run():
         os.environ.pop("AVIA_OD_INDEX_VINTAGE", None)
         return ok
 
-    # 1. OFF: full scope handed to Sabre, answer returned unchanged.
-    case("OFF, pass-through", "sabre",
+    # 1. OFF: full scope handed to Sabre, answer returned unchanged. The mode is set to
+    #    sabre EXPLICITLY. Until 15 August this case popped the variable instead, which
+    #    tested the off path only for as long as off was the default; the moment the default
+    #    became auto it was testing something else. A test that depends on a default is a
+    #    test of the default.
+    case("explicit sabre, pass-through", "sabre",
          {"AUS": SABRE_PER_PAIR, "LHR": SABRE_PER_PAIR}, 0.0,
-         None, full, ["SJC"], ["AUS", "LHR"], "dest", want_sabre_scope=("AUS", "LHR"))
+         "sabre", full, ["SJC"], ["AUS", "LHR"], "dest", want_sabre_scope=("AUS", "LHR"))
+
+    # 1b. THE DEFAULT ITSELF. With nothing set the mode must be auto and indexing on, which
+    #     is the 15 August decision, so a later edit cannot quietly turn the product off.
+    for _k in ("AVIA_OD_SOURCE", "AVIA_OD_INDEX_VINTAGE"):
+        os.environ.pop(_k, None)
+    _default_ok = (OS._mode() == "auto" and OS._index_mode() is True)
+    results.append(("default is auto with indexing on", _default_ok, {}, OS._mode(),
+                    1.0 if OS._index_mode() else 0.0))
 
     # 2. ALL US: whole side from DB1B, factor applied.
     case("all US", "dot",
