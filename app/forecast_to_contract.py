@@ -114,6 +114,9 @@ def case_and_outputs(fc):
         "destination_city_code": d.get("city_code") or d.get("iata") or d.get("code"),
         "origin_city": o.get("city"),
         "dest_city": d.get("city"),
+        # block_hours_per_departure is computed by deck_contract as case["block_min"]/60 and the
+        # payload has carried block_min all along. It was empty only because nothing passed it.
+        "block_min": fc.get("block_min"),
     }
 
     outputs = {
@@ -129,11 +132,33 @@ def case_and_outputs(fc):
         "frequency": cap.get("freq"),
         "econ_lf": ec.get("econ_lf"),
         "bus_lf": ec.get("bus_lf"),
-        "route_pnl": {k: ec.get(k) for k in
-                      ("revenue", "fuel", "maintenance", "crew", "ownership",
-                       "airport_nav_other", "total_cost", "profit", "margin", "breakeven_lf")},
+        # THE ECONOMICS BLOCK IS PER TURN, established from cortex_app rather than assumed: it
+        # builds charges_per_turn as y["landing"] + y["nav"] + y["handling"] with no division, so
+        # every y figure is one round trip. deck_contract multiplies econ_rev + bus_rev by turns to
+        # reach the year, which is the right shape for a per-turn input.
+        #
+        # The payload carries ONE passenger revenue figure rather than a cabin split, so the whole
+        # of it goes in econ_rev and bus_rev is zero. That is correct for every total downstream,
+        # because deck_contract only ever sums the two, and it is NAMED here because anything that
+        # reads econ_rev alone would be reading a blended figure under a cabin label.
+        #
+        # gross_rev includes cargo, which has its own line, so cargo is taken out first or the
+        # passenger revenue and the average fare would both carry it.
+        "route_pnl": dict(
+            {k: ec.get(k) for k in
+             ("revenue", "fuel", "maintenance", "crew", "ownership",
+              "airport_nav_other", "total_cost", "profit", "margin", "breakeven_lf")},
+            econ_rev=((ec.get("revenue") or 0) - ((ec.get("raw") or {}).get("cargo_rev") or 0)),
+            bus_rev=0.0,
+            cargo_rev=((ec.get("raw") or {}).get("cargo_rev") or 0),
+            load_factor=(fc.get("capacity") or {}).get("load"),
+            _revenue_basis="per turn; econ_rev is blended passenger revenue with cargo removed"),
+        # annual_pax is what deck_contract's `carried` falls back to, and without it carried is 0,
+        # which takes every average-fare and yield figure in economics_year1 down with it. The
+        # payload's demand.total is CARRIED each way, so this is that doubled and nothing else.
         "annual_pnl": {"profit": ec.get("annual_profit"),
-                       "aircraft_required": ec.get("aircraft_required")},
+                       "aircraft_required": ec.get("aircraft_required"),
+                       "annual_pax": (round((dem.get("total") or 0) * 2) or None)},
         "observed_split": (fc.get("catchment") or {}).get("observed_share"),
         # PROVENANCE TRAVELS WITH THE NUMBERS. A deck built from a forecast must be able to say
         # which engine produced it and at what connecting level, because from 13 August 2026 those
