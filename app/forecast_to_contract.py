@@ -129,6 +129,18 @@ def case_and_outputs(fc):
         "p2p_carried_ew": dem.get("p2p_carried"),
         "connecting_carried_ew": dem.get("connecting_carried"),
         "feed_total_ew": dem.get("feed_total"),
+        # THE P2P LEG BEFORE THE CAP, added 14 August 2026 so the contract's
+        # point_to_point_total can state a demand and a carried figure that are the same leg.
+        # captured_demand is the local market after stimulation and after the bucket correction,
+        # which is demand_after_stimulation in the contract's own vocabulary. There is no
+        # pre-stimulation figure in the payload, so demand_at_service_year stays a named gap
+        # rather than being filled with the nearest number to hand.
+        "p2p_demand_ew": dem.get("captured"),
+        # The two feed sides SEPARATELY, because the contract splits the connecting leg between a
+        # hub table and a destination table and had no figure to split it on. These are pre-cap, so
+        # they are used as a RATIO and never as a level.
+        "feed_beyond_ew": dem.get("feed_beyond"),
+        "feed_behind_ew": dem.get("feed_behind"),
         "frequency": cap.get("freq"),
         "econ_lf": ec.get("econ_lf"),
         "bus_lf": ec.get("bus_lf"),
@@ -217,8 +229,33 @@ def connecting_from_forecast(fc):
     hub_rows, dest_rows = _rows(dem.get("beyond_pdew")), _rows(dem.get("behind_pdew"))
     if not hub_rows and not dest_rows:
         return None
+
+    # ONE BASIS FOR THE ROWS AND THE LEG. Added 14 August 2026.
+    #
+    # The city rows are the RAW feed. route_forecast scales its feed detail to the carried
+    # connecting leg only when split_floor is ON (line 867, _sc = conn_carried / feed); with the
+    # floor OFF, which is what every SJC-TPE case runs, the detail stays at the pre-cap level while
+    # connecting_carried is lower. A table of pre-cap cities under a post-cap leg total is two
+    # bases in one block, and it is how a subtotal comes to exceed the leg it belongs to.
+    #
+    # So the rows are scaled to the carried leg here, by the same ratio for every city, which keeps
+    # each city's SHARE of the leg exactly as the engine measured it and moves only the level. The
+    # factor is reported rather than applied silently: a deck that shows a city carrying 400
+    # passengers should be able to say whether that is before or after the aircraft filled up.
+    _feed, _carried = dem.get("feed_total"), dem.get("connecting_carried")
+    _scale, _basis = 1.0, "raw feed; carried connecting leg not reported by the engine"
+    if _feed and _carried is not None and _feed > 0:
+        _scale = float(_carried) / float(_feed)
+        _basis = ("carried, after the plan load factor cap; city rows scaled from the raw feed by "
+                  "%.4f, shares unchanged" % _scale)
+        if abs(_scale - 1.0) > 1e-9:
+            for _r in hub_rows + dest_rows:
+                if _r.get("annual_forecast") is not None:
+                    _r["annual_forecast"] = round(_r["annual_forecast"] * _scale)
+                    _r["pdew"] = _pdew(_r["annual_forecast"])
     return {"hub_cities": hub_rows, "dest_cities": dest_rows,
-            "hub_market": dem.get("feed_beyond_base"), "dest_market": dem.get("feed_behind_base")}
+            "hub_market": dem.get("feed_beyond_base"), "dest_market": dem.get("feed_behind_base"),
+            "_rows_basis": _basis, "_rows_scale": round(_scale, 4)}
 
 
 def _expand(v, keys):

@@ -350,6 +350,40 @@ def build_contract(case: dict, outputs: dict, connecting: dict = None, growth_ra
     annual_seats = seats * freq * 52 * 2 if seats and freq else None
     total_lf = rp.get("load_factor")
 
+    # THE TOTAL IS NOT THE POINT TO POINT LEG. Corrected 14 August 2026, and the cause is a shape
+    # change nobody carried through. This module was written against assess(), where
+    # directional_demand was the LOCAL leg. cortex_app's payload sets demand.total to carried_ew,
+    # and route_forecast line 823 computes carried = min(captured + feed, capacity x plan cap), so
+    # the connecting passengers are ALREADY INSIDE IT. Writing that figure into
+    # point_to_point_total presented an entire route as local traffic, and grand_total then added
+    # the two connecting legs a second time. Measured on SJC-TPE CI 4x 2027: 109,764 carried was
+    # labelled point to point, and grand_total read 123,266, which is 96.8% of the aircraft against
+    # a plan cap of 87.5%. The impossible load factor was the symptom; the double count was the
+    # cause.
+    #
+    # None rather than a fallback where the payload cannot answer: a contract that quietly
+    # substitutes the nearest number to hand is what produced the fault above.
+    _p2p_ew = outputs.get("p2p_carried_ew")
+    _cnx_ew = outputs.get("connecting_carried_ew")
+    p2p_carried = round(_p2p_ew * 2) if _p2p_ew else None
+    cnx_carried = round(_cnx_ew * 2) if _cnx_ew else None
+    p2p_demand = round((outputs.get("p2p_demand_ew") or 0) * 2) or None
+    NEED_LEG = ("the payload's demand.total is the TOTAL carried; run through forecast_to_contract "
+                "so p2p_carried_ew and connecting_carried_ew reach this module")
+
+    # THE CONNECTING LEG SPLIT. The city tables cannot supply it: cortex_app._feed_list takes
+    # top=15, so both lists are the fifteen largest cities and their sum is a subtotal, not a leg.
+    # Measured on the same case, the two tables sum to 13,502 against an implied leg of 26,356.
+    # forecast_to_contract's own docstring says to verify this on the first deck; this is that
+    # verification, and it failed. The carried leg is therefore split on the pre-cap feed sides as
+    # a RATIO, which survives the cap because the cap scales both sides together.
+    _fb, _fh = outputs.get("feed_beyond_ew") or 0.0, outputs.get("feed_behind_ew") or 0.0
+    _fsum = _fb + _fh
+    cnx_hub_carried = round(cnx_carried * _fb / _fsum) if (cnx_carried and _fsum) else None
+    cnx_dest_carried = (cnx_carried - cnx_hub_carried) if (cnx_carried and cnx_hub_carried is not None) else None
+    NEED_TOPN = ("the fifteen largest cities only, from cortex_app._feed_list(top=15); their sum is "
+                 "a subtotal and the leg total is stated separately")
+
     turns = ap.get("annual_turnarounds") or (freq * 52 * 2 if freq else 0)
     pax_rev_y1 = round((rp.get("econ_rev", 0) + rp.get("bus_rev", 0)) * turns) if turns else None
     cargo_y1 = round(rp.get("cargo_rev", 0) * turns) if turns else None
@@ -415,17 +449,32 @@ def build_contract(case: dict, outputs: dict, connecting: dict = None, growth_ra
             "_rows_source": ("segment_model.build_segment_table (route-current Sabre cabin mix + zone bands + analyst capture)" if segment_rows else None),
             "summary": {
                 "point_to_point_total": {"base_annual_demand": round(natural * 2),
-                    "demand_at_service_year": round(each_way * 2), "demand_after_stimulation": round(each_way * 2),
-                    "capture_rate": capture, "forecast": carried, "pdew": pdew(carried)},
+                    # demand_at_service_year is the leg BEFORE stimulation and the payload does not
+                    # carry it, so it is named as a gap rather than filled with the figure beside it.
+                    "demand_at_service_year": None,
+                    "_demand_at_service_year_need": "no pre-stimulation local leg in the payload",
+                    "demand_after_stimulation": p2p_demand,
+                    "capture_rate": capture,
+                    "forecast": p2p_carried,
+                    "_forecast_need": (None if p2p_carried else NEED_LEG),
+                    "pdew": pdew(p2p_carried or 0)},
                 "connecting_at_hub_total": ({"base_annual_demand": cnx.get("hub_market"),
                     "demand_at_service_year": cnx.get("hub_market"), "demand_after_stimulation": cnx.get("hub_market"),
-                    "capture_rate": (airline_share(cnx_hub_fc, cnx.get("hub_market")) if cnx.get("hub_market") else None),
-                    "forecast": cnx_hub_fc, "pdew": pdew(cnx_hub_fc or 0)} if hub_cities else
+                    "capture_rate": (airline_share(cnx_hub_carried, cnx.get("hub_market")) if cnx.get("hub_market") else None),
+                    "forecast": cnx_hub_carried,
+                    "_forecast_need": (None if cnx_hub_carried else NEED_LEG),
+                    "top_cities_forecast": cnx_hub_fc, "_top_cities_need": NEED_TOPN,
+                    "pdew": pdew(cnx_hub_carried or 0)} if hub_cities else
                     {"forecast": None, "_need": NEED_CNX_DEST}),
-                "connecting_at_destination_total": ({"forecast": cnx_dest_fc, "pdew": pdew(cnx_dest_fc or 0)}
+                "connecting_at_destination_total": ({"forecast": cnx_dest_carried,
+                    "_forecast_need": (None if cnx_dest_carried else NEED_LEG),
+                    "top_cities_forecast": cnx_dest_fc, "_top_cities_need": NEED_TOPN,
+                    "pdew": pdew(cnx_dest_carried or 0)}
                     if dest_cities else {"forecast": None, "_need": NEED_CNX_DEST}),
-                "grand_total": {"forecast": (carried or 0) + (cnx_hub_fc or 0) + (cnx_dest_fc or 0),
-                    "pdew": pdew((carried or 0) + (cnx_hub_fc or 0) + (cnx_dest_fc or 0))},
+                # carried ALREADY contains both connecting legs. Adding them here is what produced a
+                # load factor above the plan cap, so the total is taken and never summed.
+                "grand_total": {"forecast": carried, "pdew": pdew(carried or 0),
+                    "_basis": "carried, after the plan load factor cap; the legs below sum to it"},
             },
         },
         "connecting_at_hub": {"hub": hub,
