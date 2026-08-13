@@ -1,0 +1,38 @@
+od_source_ab: the DOT switch, A against B on one route
+
+THE RATIO IS MEASURED AND IT IS FLAT. dot_ratio_check on US-to-US pairs touching BOS
+and AUS, 2024, 1,516 matched pairs: nonstop 0.959x, connecting 1.098x, total 0.989x.
+Cut by the pair's own nonstop share the connecting ratio is 1.091x on pairs with no
+nonstop at all, 1.089x under 10%, 1.070x from 10 to 50% and 1.113x at 50% or more.
+FLAT ACROSS EVERY CUT, so Sabre's coverage gap is not concentrated in transfer traffic
+and the feed can be re-levelled by one number, circa 1.09. The 2.6x to 4.2x pairs in
+the earlier SJC/TPA/ORD run were dense-pair noise on top of a flat gap.
+
+WHAT THAT MEANS FOR CAPTURE. Turning the switch on raises US domestic feed markets by
+circa 9%, and a fixed capture on a 9% larger market gives a 9% larger feed. The
+recommendation is NOT to adjust capture to cancel it: DOT is the census and Sabre the
+sample, so the 9% is a correction and cancelling it would be tuning the answer to
+preserve the figure we already believe is the less accurate of the two. The test is
+whether the US domestic subset of the BT2 back-test improves, which is measurable with
+what already exists.
+
+AND IT DOES NOT SPEAK TO JOB 3. SJC-TPE's feed markets are US to Taiwan, which DOT
+cannot see at all, so a flat gap on US domestic says nothing about Sabre's
+international transfer coverage and the 19% argument is untouched by this.
+
+ONE ANOMALY RECORDED, NOT EXPLAINED. MDW-AUS and AUS-MDW run the other way, 0.52x and
+0.54x, consistently in both directions and therefore structural rather than noise.
+Both are Southwest strongholds, as is Tampa, which makes it relevant to the TPA-AUS
+test case specifically. Untested, and it stays a hypothesis until somebody queries it.
+
+app/od_source_ab.py (new)
+  Runs one case through calibrated_forecast twice, control at AVIA_OD_SOURCE=sabre and
+  test at auto or dot, and puts the legs side by side: point to point carried,
+  connecting carried, beyond, behind, feed total, total carried, natural market and
+  captured. Reads the od_source block from each payload, so the run states which source
+  answered each leg rather than being assumed to have used the one asked for.
+  A route with no all-US market on any leg must not move at all, and the tool says so
+  rather than leaving a table of zero changes to be read as a failed run. SJC-TPE is
+  the control case for exactly that reason.
+
+Avia Solutions Limited. All rights reserved.
