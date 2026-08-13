@@ -1,0 +1,41 @@
+{
+  "note": "SJC-TPE WITH THE EIGHT-SEGMENT TABLE, 13 August 2026. Identical forecast settings to cases_sjc_tpe.json, so every demand figure must match that file to the passenger; the only addition is the segments block, which is NOT a forecast setting and is passed to the deck contract rather than to the engine. THE FOUR NUMBERS IN IT ARE JUDGEMENT AND THEY ARE PLACEHOLDERS UNTIL JOHN SETS THEM. origin_share is the origin-resident share of the two-way point-to-point market and is not derivable from the payload, which carries no directional residency split; business_share_destination is the far end's business share, where the origin end comes from catchment.tier_split on the real catchment. growth, stim and capture are given here as SINGLE VALUES applied to all eight segments, which makes the table a split of the route total rather than eight independent judgements, and the contract says so in its own note when they are scalars. Replace any of the three with a dict keyed o_bus, o_pri, o_sec, o_con, d_bus, d_pri, d_sec, d_con to state them per segment, which is what the BA 2015 deck did. The zone split across primary, secondary and contested is MEASURED from the catchment and is not set here.",
+  "defaults": {
+    "origin": "SJC",
+    "dest": "TPE",
+    "airline": "CI",
+    "carrier_type": "FSC",
+    "aircraft": "A359",
+    "seats": 306,
+    "growth": 0.07,
+    "split_floor": false,
+    "partners": [
+      "WN"
+    ],
+    "dep_time": "12:00",
+    "segments": {
+      "origin_share": 0.62,
+      "business_share_destination": 0.22,
+      "growth": 0.07,
+      "stim": 1.15,
+      "capture": 0.251
+    }
+  },
+  "cases": [
+    {
+      "name": "SJC-TPE CI A359 306 4x 2027, the analyst's case",
+      "freq": 4,
+      "forecast_year": 2027
+    },
+    {
+      "name": "SJC-TPE CI A359 306 4x 2028",
+      "freq": 4,
+      "forecast_year": 2028
+    },
+    {
+      "name": "SJC-TPE CI A359 306 5x 2028",
+      "freq": 5,
+      "forecast_year": 2028
+    }
+  ]
+}

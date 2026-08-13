@@ -100,7 +100,8 @@ def main():
     for i, raw in enumerate(cases, 1):
         case = dict(defaults); case.update(raw)
         name = case.get("name") or "case %d" % i
-        unknown = sorted(set(case) - SR.CASE_KEYS)
+        # "segments" is legitimate here and unknown to scenario_runner, which only forecasts.
+        unknown = sorted(set(case) - SR.CASE_KEYS - {"segments"})
         if unknown:
             failed.append((name, "unknown setting(s): " + ", ".join(unknown)))
             print("  %-52s SKIPPED  unknown setting(s) %s" % (name[:52], ", ".join(unknown)))
@@ -121,7 +122,10 @@ def main():
             kw["growth"] = _g
         try:
             fc = CA.calibrated_forecast(case["origin"], case["dest"], **kw)
-            contract = contract_from_forecast(fc, currency=a.currency)
+            # "segments" carries the eight-segment judgement inputs and is the one case key that is
+            # NOT a forecast setting, so it is passed to the contract rather than to the engine.
+            contract = contract_from_forecast(fc, currency=a.currency,
+                                              segments=case.get("segments"))
         except Exception as e:                               # noqa: BLE001
             failed.append((name, "%s: %s" % (type(e).__name__, e)))
             print("  %-52s FAILED  %s" % (name[:52], e))

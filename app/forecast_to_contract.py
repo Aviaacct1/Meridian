@@ -182,8 +182,47 @@ def connecting_from_forecast(fc):
             "hub_market": dem.get("feed_beyond_base"), "dest_market": dem.get("feed_behind_base")}
 
 
+def _expand(v, keys):
+    """A scalar applied to all eight segments, or a dict taken as given, or None.
+
+    A SCALAR IS A DELIBERATE SIMPLIFICATION AND THE CONTRACT SAYS SO. With one capture rate on
+    every segment the table stops being the bottom-up build the BA deck did and becomes a
+    decomposition of a total that was computed another way. Still worth showing, because the split
+    itself is the point of the page, but it must not be presented as eight independent judgements
+    when it is one repeated eight times.
+    """
+    if v is None:
+        return None, False
+    if isinstance(v, dict):
+        return {k: v.get(k) for k in keys}, False
+    return {k: float(v) for k in keys}, True
+
+
+def segments_from_case(fc, seg_case, base_year, service_year):
+    """(rows, total, note) for the eight-segment block, from the case's judgement inputs."""
+    import segment_inputs as SI
+    if not seg_case:
+        ti = SI.tier_inputs(fc)
+        why = ti.get("error") or ("catchment tiers are available (%s) but no segment judgement "
+                                  "inputs were given" % ti.get("basis", ""))
+        return None, None, "the eight-segment table needs: " + why
+    flat = []
+    j = {"origin_share": seg_case.get("origin_share"),
+         "business_share_destination": seg_case.get("business_share_destination")}
+    for name in ("growth", "stim", "capture"):
+        j[name], one = _expand(seg_case.get(name), SI.SEGMENT_KEYS)
+        if one:
+            flat.append(name)
+    rows, total, note = SI.segment_rows(fc, j, base_year, service_year)
+    if rows and flat:
+        note = (note or "") + (". One %s applied to every segment, so this table is a split of the "
+                               "route total rather than eight independent judgements"
+                               % " and one ".join(flat))
+    return rows, total, note
+
+
 def contract_from_forecast(fc, currency="USD", growth_rate=None, ancillary_per_pax=None,
-                           segment_rows=None, connecting=None):
+                           segment_rows=None, connecting=None, segments=None):
     """The deck data contract for one live forecast, or a RuntimeError naming what is missing."""
     miss = _need(fc)
     if miss:
@@ -199,6 +238,16 @@ def contract_from_forecast(fc, currency="USD", growth_rate=None, ancillary_per_p
     if growth_rate is None:
         growth_rate = ((fc.get("projection") or {}).get("cagr")
                        or (fc.get("schedule") or {}).get("growth_rate"))
+    # THE EIGHT-SEGMENT TABLE. Built when the case names the judgement inputs, and left as
+    # deck_contract's own gap with a note saying exactly which are outstanding when it does not.
+    _seg_note = None
+    if segment_rows is None:
+        _base = (fc.get("projection") or {}).get("base_year") or fc.get("year")
+        _svc = (fc.get("schedule") or {}).get("forecast_year") or _base
+        try:
+            segment_rows, _seg_total, _seg_note = segments_from_case(fc, segments, _base, _svc)
+        except Exception as e:                               # noqa: BLE001
+            segment_rows, _seg_note = None, "%s: %s" % (type(e).__name__, e)
     contract = DC.build_contract(case, outputs, connecting=connecting, growth_rate=growth_rate,
                                  ancillary_per_pax=ancillary_per_pax, segment_rows=segment_rows)
     # Currency is NOT inferred, which is forecast_spec's own rule: the contract carries fares and
@@ -207,6 +256,10 @@ def contract_from_forecast(fc, currency="USD", growth_rate=None, ancillary_per_p
     contract["currency"] = currency
     contract["_source_engine"] = (outputs.get("forecast_engine") or {}).get("local_leg")
     _fill_hardcoded(contract, fc, case)
+    # The note travels whether the table built or not: a populated block says on what basis, and an
+    # empty one says which inputs are outstanding, so the gap report reads as an instruction.
+    if _seg_note and isinstance(contract.get("segment_forecast"), dict):
+        contract["segment_forecast"]["_rows_need"] = _seg_note
     return contract
 
 
