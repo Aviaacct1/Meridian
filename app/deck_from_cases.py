@@ -60,7 +60,13 @@ def _blocks(contract):
             gaps = []
             for kk in keys:
                 if v[kk] in (None, "", [], {}):
-                    gaps.append((kk, v.get("_need_" + kk) or v.get(kk + "_need") or ""))
+                    # THREE NAMING CONVENTIONS, and the first version knew two of them.
+                    # deck_contract writes _rows_need, _origin_city_need and _schedule_times_need,
+                    # so the leading underscore form is the common one and it was the one missed.
+                    # The reason for the last empty block was therefore being swallowed by the
+                    # report written to show it.
+                    gaps.append((kk, v.get("_%s_need" % kk) or v.get("_need_" + kk)
+                                 or v.get(kk + "_need") or v.get("_need") or ""))
             out[k] = (len(keys) - len(gaps), len(keys), gaps)
         elif isinstance(v, list):
             out[k] = (len(v), len(v) or 1, [] if v else [("(no rows)", "")])
