@@ -242,7 +242,18 @@ def connecting_from_forecast(fc):
     # each city's SHARE of the leg exactly as the engine measured it and moves only the level. The
     # factor is reported rather than applied silently: a deck that shows a city carrying 400
     # passengers should be able to say whether that is before or after the aircraft filled up.
-    _feed, _carried = dem.get("feed_total"), dem.get("connecting_carried")
+    # THE DENOMINATOR IS THE SIDES, NOT feed_total, and getting that wrong double-scaled the one
+    # case that runs the floor. When split_floor is ON, route_forecast line 867 has ALREADY scaled
+    # the detail by conn_carried / feed and scaled feed_beyond and feed_behind with it, but it never
+    # reassigns `feed`, so demand.feed_total stays the RAW pre-floor figure. Dividing the carried leg
+    # by that reapplied a scaling that had already happened: on SJC-TPE, where FLOOR-EVIDENCED
+    # measures the floor at 2.19x, a top-fifteen subtotal of 49% became 107% of its own leg.
+    #
+    # feed_beyond + feed_behind is the feed AS THE ROWS NOW STAND on either setting, so the ratio is
+    # 1.0 when the engine has already done the work and the cap ratio when it has not. No flag is
+    # read and none needs to be: the figures say which case they are in.
+    _feed = (dem.get("feed_beyond") or 0.0) + (dem.get("feed_behind") or 0.0)
+    _carried = dem.get("connecting_carried")
     _scale, _basis = 1.0, "raw feed; carried connecting leg not reported by the engine"
     if _feed and _carried is not None and _feed > 0:
         _scale = float(_carried) / float(_feed)
