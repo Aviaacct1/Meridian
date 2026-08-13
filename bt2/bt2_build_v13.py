@@ -110,9 +110,21 @@ def main():
             % (pop, len(rows), ",".join(str(c) for c in B.COHORTS), a.calib, CALIB[a.calib],
                w20, w10, 100.0 * sum(1 for x in br if within(x)) / len(br)))
 
+    # THE BUILD ENVIRONMENT GOES IN THE ARTEFACT, added 13 August 2026 after the pickle could not be
+    # loaded at all. A pickled scikit-learn estimator is VERSION-LOCKED, not merely version-sensitive:
+    # bt2_model_v1_3.pkl was written under an older release and 1.9.0 fails to unpickle it with
+    # "No module named '_loss'", because sklearn's internal module paths moved. The forecast path
+    # reported the reason, which is how it was found, but the artefact itself said nothing about
+    # what wrote it, so a mismatch could only be diagnosed after it bit.
+    #
+    # This is a stronger constraint than VERSION-SENSITIVE of 12 August. That one moved a figure by
+    # 2.4 points; this one makes the model unreadable. Rebuilding under the pinned release is the fix
+    # and the rebuilt model is a DIFFERENT model, so its claim set must be re-measured.
+    from bt2_claimset import _provenance
     m = {"carid": G.carid, "version": "1.3 09Aug2026", "author": "Avia Solutions",
          "n_train": len(rows), "population": pop, "calib_rule": a.calib,
-         "calib_config": CALIB[a.calib], "blind_config": BLIND_KW, "provenance": prov}
+         "calib_config": CALIB[a.calib], "blind_config": BLIND_KW, "provenance": prov,
+         "build_env": _provenance(), "target": B.TARGET}
     for qq, nm in ((0.5, "q50"), (0.25, "q25"), (0.75, "q75")):
         mm = G.make(SPEC, **BLIND_KW)
         mm.set_params(quantile=qq)

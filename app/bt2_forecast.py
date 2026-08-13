@@ -77,7 +77,23 @@ def load():
             _MODEL = pickle.load(fh)
         _MODEL["_path"] = p
     except Exception as e:                                  # noqa: BLE001
-        _MODEL_ERR = "could not load %s: %s" % (p, e)
+        # SAY WHAT THE READER IS RUNNING, because the commonest cause is a version mismatch and the
+        # bare exception does not name either side. A pickled scikit-learn estimator is VERSION
+        # LOCKED: bt2_model_v1_3.pkl was written under an older release and 1.9.0 fails on it with
+        # "No module named '_loss'" because sklearn's internal module paths moved. On 13 August 2026
+        # that message alone cost an hour of narrowing down, and the fix is one rebuild.
+        _hint = ""
+        if "_loss" in str(e) or "module" in str(e).lower():
+            try:
+                import sklearn
+                _sv = sklearn.__version__
+            except Exception:                               # noqa: BLE001
+                _sv = "unknown"
+            _hint = (". This reads like a scikit-learn version mismatch: a pickled estimator can "
+                     "only be loaded by a compatible release. This process has scikit-learn %s. "
+                     "Rebuild the artefact under it with bt2/bt2_build_v13.py, and re-measure the "
+                     "claim set, because a rebuilt model is a different model." % _sv)
+        _MODEL_ERR = "could not load %s: %s%s" % (p, e, _hint)
         return None
     return _MODEL
 
