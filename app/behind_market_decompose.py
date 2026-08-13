@@ -40,6 +40,24 @@ FACTOR_INDIRECT = 1.044
 CIRCUITY = 1.35
 
 
+def _sabre_behind_by_origin(sabre_db, dest_codes, year, single_only=True, factor=FACTOR_INDIRECT):
+    """The behind market per origin airport, every origin. Used to cut US against the rest
+    without passing a fifteen-hundred-code IN list."""
+    from db_registry import con_ro
+    where = ["source_year = ?", "destination_airport IN (%s)" % ",".join("?" * len(dest_codes))]
+    params = [int(year), *dest_codes]
+    if single_only:
+        where.append("connecting_airport1 IS NOT NULL AND connecting_airport2 IS NULL")
+    con = con_ro(sabre_db)
+    try:
+        rows = con.execute(
+            f"SELECT origin_airport, SUM(passengers * {factor}) FROM sabre "
+            f"WHERE {' AND '.join(where)} GROUP BY 1", params).fetchall()
+    finally:
+        con.close()
+    return {r[0]: float(r[1] or 0.0) for r in rows if r[0]}
+
+
 def _sabre_behind(sabre_db, feeders, dest_codes, year, single_only=True, factor=FACTOR_INDIRECT):
     """Total behind market. feeders empty means EVERY origin, which is the whole market."""
     # con_ro, not duckdb.connect. The engine has already opened the Sabre store in this
@@ -96,18 +114,35 @@ def main():
 
     print(f"{args.origin}-{args.dest}  week {week}  year {year}")
     print(f"  origin catchment as the engine resolved it: {', '.join(catchment)}")
+    print(f"  the BEHIND side uses the route origin alone, {args.origin.upper()}, per "
+          f"route_forecast line 635")
     print(f"  destination group: {', '.join(dest_codes)}\n")
 
     # 0. Whole market, every origin, every itinerary type.
     n0, m0 = _sabre_behind(sabre_db, None, dest_codes, year, single_only=False)
     # 1. Whole market, single-connection only.
     n1, m1 = _sabre_behind(sabre_db, None, dest_codes, year, single_only=True)
-    # 2. Restricted to the OAG feeders into the catchment.
-    feeders = [y for y in RF.feeders_to(oag_db, week, catchment)
-               if y not in catchment and y not in dest_codes]
+    # 1b. US origins only, single-connection. The comparison figure is expected to sit near
+    #     this if the analyst took the whole US market to the destination as his behind market.
+    per_origin = _sabre_behind_by_origin(sabre_db, dest_codes, year, single_only=True)
+    try:
+        import airportsdata
+        _ap = airportsdata.load("IATA")
+        us = [a for a in per_origin if (_ap.get(a) or {}).get("country") == "US"]
+    except Exception:
+        us = []
+    n1b, m1b = len(us), sum(per_origin[a] for a in us)
+    # THE BEHIND SIDE USES THE ROUTE ORIGIN, NOT THE CATCHMENT. route_forecast line 635 calls
+    # behind_feed with [origin] and says why at line 633: a route into a small airport must not
+    # inherit a big neighbour's feed bank. The first version of this tool used the catchment and
+    # therefore reconstructed a market the engine does not use.
+    origin_side = [args.origin.upper()]
+    # 2. Restricted to the OAG feeders into the route origin.
+    feeders = [y for y in RF.feeders_to(oag_db, week, origin_side)
+               if y not in origin_side and y not in dest_codes]
     n2, m2 = _sabre_behind(sabre_db, feeders, dest_codes, year, single_only=True)
     # 3. Plus the on-the-way circuity test, replicating behind_feed lines 368 to 379.
-    ocen, dcen = RF._centroid(catchment), RF._centroid(dest_codes)
+    ocen, dcen = RF._centroid(origin_side), RF._centroid(dest_codes)
     od = RF._gc(ocen, dcen) or 0
     kept = []
     for y in feeders:
@@ -121,7 +156,8 @@ def main():
 
     rows = [("every origin, every itinerary", n0, m0),
             ("every origin, single-connection only", n1, m1),
-            ("OAG feeders into the catchment", n2, m2),
+            ("US origins only, single-connection", n1b, m1b),
+            (f"OAG feeders into {origin_side[0]} alone", n2, m2),
             ("and on the way, circuity 1.35", n3, m3)]
     print(f"  {'level':<38} {'origins':>8} {'market':>14} {'kept':>8}")
     for label, n, m in rows:
