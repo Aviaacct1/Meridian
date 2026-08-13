@@ -1,0 +1,40 @@
+The 5.36% reconciled, and the fare basis stopped from moving with the volume source
+
+THE MARKET MOVEMENT IS EXPLAINED AND IT IS A GAIN. TPA-AUS decomposed: coverage
+gross-up 0.930 under Sabre against 1.000 under DOT, natural market 368,074 against
+387,789. coverage.py line 27 sets the US country factor at 0.93, so it is a gross-DOWN
+and not a gross-up: Sabre reads US markets slightly rich and the engine scales them
+back. Removing it multiplies by 1/0.93. Arithmetic on the run's own figures:
+387,789 / 368,074 = 1.0536, and 1.0536 x 0.93 = 0.9799, which is the 0.989x
+dot_ratio_check measured on the total quantity once the index factor and the different
+pair scope are allowed for. THE CHAIN CLOSES and there is nothing unexplained in it.
+
+That makes the movement an accuracy argument rather than a discrepancy. coverage.py's
+own docstring records the US factor as fitted at n=4 and "heavily shrunk", so a US route
+on DOT retires a four-route correction and replaces it with the census. That is the
+sentence to put to Tampa.
+
+THE DEFECT FOUND IN THE SAME OUTPUT. Average fare fell 19.0%, 229.58 to 186.06, because
+DB1B's MktFare excludes taxes and fees while Sabre's avg_total_fare_usd includes them.
+They are two quantities under one field name, which is the shape of all four contract
+defects of 14 August. Every revenue and yield figure in the deck runs off avg_fare, so
+turning the switch on would have cut deck revenue by a fifth for a reason having nothing
+to do with revenue, on exactly the runs the switch exists to improve.
+
+app/od_source.py
+  DOT supplies the VOLUME, which is what it is authoritative on. The fare comes from
+  Sabre on the basis the revenue build, the yield figures and every calibration behind
+  them already use. _sabre_fare() returns 0.0 rather than raising when Sabre cannot
+  answer, because a missing fare is a stated gap downstream while a substituted DB1B
+  fare would be a silent basis change.
+
+bt2/od_source_label_check.py
+  The fare basis is now asserted on EVERY case, not only the DOT ones, with the DB1B
+  fixture fare set deliberately different from the Sabre one so a regression cannot pass
+  by coincidence. 5 of 5 pass.
+
+STILL OPEN. The circa 9% uplift on US domestic feed markets is a level change against a
+capture rate fitted on Sabre, and the test is the US domestic subset of the BT2
+back-test rather than a judgement.
+
+Avia Solutions Limited. All rights reserved.

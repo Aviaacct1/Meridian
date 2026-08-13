@@ -33,6 +33,8 @@ sys.path.insert(0, str(APP))
 
 SPAN = (2015, 2024)
 SABRE_MARKET = 194550.0          # fixture: what the stub Sabre returns for any market
+SABRE_FARE = 156.53              # fixture: the Sabre fare basis the revenue build expects
+DB1B_FARE = 210.0                # fixture: the DB1B fare, a DIFFERENT basis, never to be returned
 DB1B_MARKET = 250000.0           # fixture: what the synthetic DB1B holds for SJC-AUS
 
 
@@ -43,7 +45,7 @@ def build_store(path):
     try:
         con.execute("CREATE TABLE od_market (origin VARCHAR, dest VARCHAR, year BIGINT, "
                     "pax DOUBLE, avg_fare DOUBLE)")
-        rows = [("SJC", "AUS", y, DB1B_MARKET, 210.0) for y in range(SPAN[0], SPAN[1] + 1)]
+        rows = [("SJC", "AUS", y, DB1B_MARKET, DB1B_FARE) for y in range(SPAN[0], SPAN[1] + 1)]
         con.executemany("INSERT INTO od_market VALUES (?, ?, ?, ?, ?)", rows)
     finally:
         con.close()
@@ -54,7 +56,7 @@ def stub_sabre():
     import sabre_catchment as SC
     SC.destination_market_split = (
         lambda db, airports, dest_airports, **kw:
-        ({a: SABRE_MARKET for a in airports}, SABRE_MARKET * len(airports), 156.53))
+        ({a: SABRE_MARKET for a in airports}, SABRE_MARKET * len(airports), SABRE_FARE))
 
 
 def main():
@@ -91,9 +93,15 @@ def main():
                   and "2024 vintage, indexed to 2025" in source)
         else:
             ok = (abs(market - want_market) < 0.5) and (source == want_source)
+        # THE FARE BASIS NEVER MOVES. DB1B's MktFare excludes taxes and Sabre's total fare
+        # includes them, so returning the DB1B fare with a DB1B volume would cut deck revenue
+        # by the wedge between them for a reason that has nothing to do with revenue.
+        fare_ok = abs(avg_fare - SABRE_FARE) < 0.01
+        ok = ok and fare_ok
         failed += 0 if ok else 1
         print(f"  [{'PASS' if ok else 'FAIL'}] {name}: market {market:,.0f} "
-              f"(want {want_market:,.0f}), source {source}")
+              f"(want {want_market:,.0f}), fare {avg_fare:,.2f} "
+              f"({'Sabre basis' if fare_ok else 'WRONG BASIS'}), source {source}")
     os.environ.pop("AVIA_OD_INDEX_VINTAGE", None)
 
     print(f"\n{len(cases) - failed} of {len(cases)} passed")

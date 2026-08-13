@@ -123,7 +123,16 @@ def market_split(sabre_db, competing_airports, dest_codes, year=None):
                and _all_us([*competing_airports, *dest_codes]))
     if use_dot:
         try:
-            split, market, avg_fare = _db1b_split(db1b_db, competing_airports, dest_codes, read_year)
+            split, market, _dot_fare = _db1b_split(db1b_db, competing_airports, dest_codes,
+                                                   read_year)
+            # THE FARE STAYS ON SABRE'S BASIS. DB1B's MktFare excludes taxes and fees while
+            # Sabre's avg_total_fare_usd includes them, a wedge measured at 19.0% on TPA-AUS
+            # for 2025 (229.58 against 186.06). The revenue build, the yield figures and every
+            # calibration behind them are on the Sabre basis, so taking DB1B's fare with DB1B's
+            # volume would cut deck revenue by a fifth for a reason that has nothing to do with
+            # revenue. DOT supplies the VOLUME, which is what it is authoritative on; the fare
+            # basis does not move when the volume source does.
+            avg_fare = _sabre_fare(SC, sabre_db, competing_airports, dest_codes, year)
             if mode == "auto" and market <= 0:
                 # DB1B blind here (EAS/commuter/inter-island) - use Sabre's number, keep DOT label
                 split, market, avg_fare = SC.destination_market_split(
@@ -368,6 +377,21 @@ def _db1b_feed(coupons_db, origins, dests, year, factor_indirect, group):
     finally:
         con.close()
     return {r[0]: float(r[1] or 0) for r in rows}
+
+
+def _sabre_fare(SC, sabre_db, competing_airports, dest_codes, year):
+    """Sabre's average fare for the same market, on the basis the revenue build expects.
+
+    Returns 0.0 rather than raising if Sabre cannot answer: a missing fare is a stated gap
+    downstream, and a DB1B fare substituted here would be a silent basis change, which is
+    the fault this function exists to prevent.
+    """
+    try:
+        _, _, fare = SC.destination_market_split(sabre_db, competing_airports, dest_codes,
+                                                 year=year)
+        return fare or 0.0
+    except Exception:
+        return 0.0
 
 
 def _db1b_split(db1b_db, airports, dest_airports, year):
