@@ -585,9 +585,19 @@ def emit_workbook(contract: dict, path: str):
                      ("connecting_at_hub_total", "Connecting at hub total"),
                      ("connecting_at_destination_total", "Connecting at destination total"),
                      ("grand_total", "GRAND TOTAL")]:
+        # A MISSING FIGURE IS A BLANK CELL, NOT A CRASH. build_contract writes the full set of
+        # demand columns for point_to_point_total and connecting_at_hub_total, and only forecast and
+        # pdew for connecting_at_destination_total and grand_total, so this line raised
+        # KeyError 'base_annual_demand' on every live contract. It had only ever been run against
+        # ba_lhr_sjc_reference(), which fills all four rows by hand, so no live output had ever
+        # reached the workbook: the JSON wrote and the .xlsx did not.
+        #
+        # .get() rather than a new required key, because those two rows genuinely have no base-year
+        # demand to state: the connecting build starts at the market, not at a base that grew into
+        # it. A blank says that and a zero would not.
         s = contract["segment_forecast"]["summary"][key]
-        ws.append([lbl, s["base_annual_demand"], None, s["demand_at_service_year"], None,
-                   s["demand_after_stimulation"], s["capture_rate"], s["forecast"], None])
+        ws.append([lbl, s.get("base_annual_demand"), None, s.get("demand_at_service_year"), None,
+                   s.get("demand_after_stimulation"), s.get("capture_rate"), s.get("forecast"), None])
         row = ws.max_row
         ws.cell(row=row, column=9).value = f"=H{row}/{DAYS_2WAY}"
         ws.cell(row=row, column=7).number_format = "0.0%"; ws.cell(row=row, column=9).number_format = "0.0"
