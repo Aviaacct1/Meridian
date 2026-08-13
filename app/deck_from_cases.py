@@ -41,21 +41,33 @@ def parse_args():
 
 
 def _blocks(contract):
-    """Which top-level blocks carry a figure and which are empty, by the contract's own convention:
-    a value is a gap when it is None, and deck_contract marks the reason in a sibling _need key."""
-    full, thin = [], []
+    """How FULL each block is, and the named gaps with the reason deck_contract gave.
+
+    THE FIRST VERSION OF THIS COUNTED A BLOCK AS FULL IF ANY ONE FIELD WAS POPULATED, so a block
+    with one field of twenty read as complete and the report said "0 empty" on every case. That is
+    a test that cannot fail, on the one screen whose whole purpose was to show where the gaps are.
+
+    Now it returns the fill ratio per block and every missing key, with the sibling _need note
+    deck_contract writes to say WHY a field is empty. The _need notes are the actionable part: they
+    name what the model does not yet produce, which is the list of tables to populate.
+    """
+    out = {}
     for k, v in sorted(contract.items()):
         if k.startswith("_") or k == "currency":
             continue
         if isinstance(v, dict):
-            vals = [x for kk, x in v.items() if not kk.startswith("_")]
-            have = sum(1 for x in vals if x not in (None, "", [], {}))
-            (full if have else thin).append("%s (%d of %d)" % (k, have, len(vals)))
+            keys = [kk for kk in v if not kk.startswith("_")]
+            gaps = []
+            for kk in keys:
+                if v[kk] in (None, "", [], {}):
+                    gaps.append((kk, v.get("_need_" + kk) or v.get(kk + "_need") or ""))
+            out[k] = (len(keys) - len(gaps), len(keys), gaps)
         elif isinstance(v, list):
-            (full if v else thin).append("%s (%d rows)" % (k, len(v)))
+            out[k] = (len(v), len(v) or 1, [] if v else [("(no rows)", "")])
         else:
-            (full if v not in (None, "") else thin).append(k)
-    return full, thin
+            ok = v not in (None, "")
+            out[k] = (1 if ok else 0, 1, [] if ok else [(k, "")])
+    return out
 
 
 def main():
@@ -115,12 +127,16 @@ def main():
             print("  %-52s FAILED  %s" % (name[:52], e))
             continue
 
-        full, thin = _blocks(contract)
-        for t in thin:
-            seen_thin[t.split(" (")[0]] = seen_thin.get(t.split(" (")[0], 0) + 1
+        blocks = _blocks(contract)
+        for bk, (have, tot, gaps) in blocks.items():
+            rec = seen_thin.setdefault(bk, {"have": 0, "tot": 0, "n": 0, "why": {}})
+            rec["have"] += have; rec["tot"] += tot; rec["n"] += 1
+            for gk, why in gaps:
+                rec["why"][gk] = why or rec["why"].get(gk, "")
         _eng = (fc.get("forecast_engine") or {}).get("local_leg", "?")
-        print("  %-52s %-16s %d blocks with figures, %d empty"
-              % (name[:52], _eng, len(full), len(thin)))
+        _h = sum(b[0] for b in blocks.values()); _t = sum(b[1] for b in blocks.values())
+        print("  %-52s %-16s %d of %d fields carry a figure (%.0f%%)"
+              % (name[:52], _eng, _h, _t, 100.0 * _h / max(_t, 1)))
         if a.out and not a.report_only:
             stem = "".join(ch if ch.isalnum() or ch in "-_" else "_" for ch in name)[:80]
             p = os.path.join(a.out, stem + "_contract.json")
@@ -133,11 +149,21 @@ def main():
                 print("       workbook not written: %s" % e)
 
     if seen_thin:
-        print("\nBLOCKS CARRYING NO FIGURES, and how many cases each was empty on. This is the list")
-        print("of tables to populate, not a list of faults: deck_contract emits a gap as None with")
-        print("a _need note rather than a zero, so a thin block is visible instead of misleading.")
-        for k, n in sorted(seen_thin.items(), key=lambda kv: -kv[1]):
-            print("   %-34s empty on %d case(s)" % (k, n))
+        print("\nHOW FULL EACH BLOCK IS, across every case. THE LIST OF TABLES TO POPULATE is the")
+        print("bottom of this table, not the top: deck_contract emits a gap as None with a _need")
+        print("note rather than a zero, so an empty field is visible instead of reading as a")
+        print("measurement of nothing.")
+        print("\n   %-30s %8s  %s" % ("block", "filled", "fields with no figure"))
+        for k, rec in sorted(seen_thin.items(), key=lambda kv: kv[1]["have"] / max(kv[1]["tot"], 1)):
+            pc = 100.0 * rec["have"] / max(rec["tot"], 1)
+            gaps = sorted(rec["why"])
+            print("   %-30s %7.0f%%  %s" % (k, pc, ", ".join(gaps[:6]) + (" ..." if len(gaps) > 6 else "")
+                                            or "none"))
+        _why = {g: w for rec in seen_thin.values() for g, w in rec["why"].items() if w}
+        if _why:
+            print("\n   WHY, in deck_contract's own words:")
+            for g, w in sorted(_why.items()):
+                print("     %-26s %s" % (g, w[:100]))
     if failed:
         print("\n%d case(s) did not produce a contract:" % len(failed))
         for n, why in failed:
