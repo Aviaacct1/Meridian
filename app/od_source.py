@@ -118,6 +118,144 @@ def market_split(sabre_db, competing_airports, dest_codes, year=None):
     return split, market, avg_fare, SABRE
 
 
+def _coupons_path():
+    try:
+        import config
+        return str(config.DB1B_COUPONS_DUCKDB)
+    except Exception:
+        return os.environ.get("AVIA_DB1B_COUPONS_DUCKDB", r"C:\Avia\db1b_coupons.duckdb")
+
+
+_YEAR_OK = {}
+
+
+def _year_complete(coupons_db, year):
+    """True only if all four quarters of `year` are logged as built.
+
+    2016 is short Q1 on the E: store, as bt2_db1b.py already records, and 2001 and 2002
+    are short three quarters between them. A three-quarter year read as a four-quarter
+    year under-states every market in it by circa a quarter, which is a silent gap-fill
+    in the other direction. Refuse the year rather than scale it.
+    """
+    key = (coupons_db, int(year))
+    if key in _YEAR_OK:
+        return _YEAR_OK[key]
+    ok = False
+    try:
+        from db_registry import con_ro
+        con = con_ro(coupons_db)
+        try:
+            row = con.execute("SELECT count(*) FROM build_log WHERE year=? AND status='built'",
+                              [int(year)]).fetchone()
+            bad = con.execute("SELECT count(*) FROM build_log WHERE year=? AND status<>'built'",
+                              [int(year)]).fetchone()
+        finally:
+            con.close()
+        ok = bool(row and row[0] == 4 and bad and bad[0] == 0)
+    except Exception:
+        ok = False
+    _YEAR_OK[key] = ok
+    return ok
+
+
+_AP = {}
+
+
+def _us(code):
+    """True if `code` is a US airport. The table is loaded once: a feed scope runs to
+    hundreds of points and airportsdata.load re-reads its file on every call."""
+    if not _AP:
+        try:
+            import airportsdata
+            _AP.update(airportsdata.load("IATA"))
+        except Exception:
+            return False
+    return (_AP.get(code) or {}).get("country") == "US"
+
+
+def feed_market(sabre_fn, origins, dests, year, factor_indirect=1.044, group="dest"):
+    """The CONNECTING market for one feed side, led by DOT where DOT can see it.
+
+    route_feed measures the feed market as single-connection O&D only, so the quantity
+    here is DB1B MktCoupons = 2, which is the same itinerary shape as Sabre's
+    connecting_airport1 IS NOT NULL AND connecting_airport2 IS NULL.
+
+    A feed scope is rarely all one country: a US hub serves US and foreign points in the
+    same list. Rather than refuse the whole side because one destination is foreign, the
+    scope is PARTITIONED. The all-US pairs are read from DB1B and the rest from Sabre
+    through `sabre_fn`, which is the "leads with DB1B, Sabre underneath" rule applied at
+    the level it was written for.
+
+        sabre_fn(origins, dests) -> {key: pax}, already carrying factor_indirect
+        group="dest"   key by destination  (the beyond side, connecting_market)
+        group="origin" key by origin       (the behind side, behind_market)
+
+    factor_indirect is applied to the DOT figures identically to the Sabre ones. It is a
+    Sabre-era constant from the 2013 BA method and may well not belong on DOT data, but
+    that is a second measurement: swapping the source has to change one thing at a time
+    or nothing afterwards is attributable.
+
+    Returns (market, source, dot_share). dot_share is the share of the returned market
+    that came from DB1B, so a slide can state what it is actually reading rather than
+    claiming the whole side.
+    """
+    mode = _mode()
+    # The grouped side is the one the market is keyed by and is partitioned US / not-US.
+    # The fixed side is the other end of every pair and must be all-US for DB1B to hold
+    # the market at all.
+    grouped = list(dests) if group == "dest" else list(origins)
+    fixed = list(origins) if group == "dest" else list(dests)
+    coupons_db = _coupons_path()
+
+    if (mode not in ("dot", "auto") or not origins or not dests
+            or not os.path.exists(coupons_db)
+            or not _year_complete(coupons_db, year)
+            or not all(_us(c) for c in fixed if c)):
+        return sabre_fn(origins, dests), SABRE, 0.0
+
+    us_side = [c for c in grouped if c and _us(c)]
+    other_side = [c for c in grouped if c and not _us(c)]
+    if not us_side:
+        return sabre_fn(origins, dests), SABRE, 0.0
+
+    try:
+        if group == "dest":
+            dot = _db1b_feed(coupons_db, origins, us_side, year, factor_indirect, "dest")
+        else:
+            dot = _db1b_feed(coupons_db, us_side, dests, year, factor_indirect, "origin")
+    except Exception:
+        return sabre_fn(origins, dests), SABRE, 0.0      # any DB1B problem -> safe Sabre fallback
+
+    market = dict(dot)
+    if other_side:
+        rest = (sabre_fn(origins, other_side) if group == "dest"
+                else sabre_fn(other_side, dests))
+        for k, v in (rest or {}).items():
+            market[k] = market.get(k, 0.0) + v
+
+    total = sum(market.values())
+    dot_pax = sum(dot.values())
+    share = (dot_pax / total) if total else 0.0
+    source = DB1B if not other_side else f"{DB1B} for the US domestic markets, {SABRE} otherwise"
+    return market, source, share
+
+
+def _db1b_feed(coupons_db, origins, dests, year, factor_indirect, group):
+    """Single-connection DB1B market, grouped by destination or by origin."""
+    from db_registry import con_ro
+    key = "dest" if group == "dest" else "origin"
+    oph = ",".join("?" * len(origins)); dph = ",".join("?" * len(dests))
+    sql = (f"SELECT {key} k, SUM(pax) * ? p FROM od_market_coupons "
+           f"WHERE year = ? AND coupons = 2 "
+           f"AND origin IN ({oph}) AND dest IN ({dph}) GROUP BY 1")
+    con = con_ro(coupons_db)
+    try:
+        rows = con.execute(sql, [float(factor_indirect), int(year), *origins, *dests]).fetchall()
+    finally:
+        con.close()
+    return {r[0]: float(r[1] or 0) for r in rows}
+
+
 def _db1b_split(db1b_db, airports, dest_airports, year):
     """DB1B equivalent of destination_market_split: annual directional O&D from od_market."""
     from db_registry import con_ro

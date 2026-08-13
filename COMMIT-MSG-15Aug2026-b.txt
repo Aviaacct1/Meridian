@@ -1,0 +1,54 @@
+DOT DB1B wired into both feed legs, partitioned and labelled
+
+Job 1 piece 1 and part of piece 2. Still off: AVIA_OD_SOURCE defaults to sabre and
+feed_market is a verified pass-through in that state.
+
+THE STORE IS SOUND. db1b_coupons_check on 2024 passes 13 of 13, exact to the
+passenger on the total and on all six pairs. The four 2024 quarters sum to
+620,369,570, which is od_market's own 2024 total, so build_db1b_store.py applied no
+filter this builder does not and the coupon split is a true breakdown of a figure
+already in use rather than a second opinion on it. Splits behave: LAX-JFK 96.2%
+nonstop, SFO-ORD 93.2%, SJC-SEA 98.0%; the three pairs with no nonstop service carry
+no nonstop class at all and run 91-94% single-connection.
+
+96 quarters built, 2000-2024. Four missing and flagged: 2016 Q1 (already recorded in
+bt2_db1b.py), 2001 Q4, 2002 Q1 and 2002 Q4.
+
+app/od_source.py
+  feed_market(): the connecting market for one feed side, reading DB1B MktCoupons = 2,
+  which is the same itinerary shape as Sabre's connecting_airport1 IS NOT NULL AND
+  connecting_airport2 IS NULL. A feed scope is rarely one country, so rather than
+  refuse the side because one point is foreign, the scope is PARTITIONED: all-US pairs
+  from DB1B, the rest from Sabre, merged, with the DOT share returned so a slide can
+  state what it actually read. Returns (market, source, dot_share).
+  _year_complete(): a year whose four quarters are not all logged built is refused
+  outright. 2016 is short Q1, and three quarters read as four under-states every market
+  in the year by circa a quarter, which is a silent gap-fill in the other direction.
+  _us(): airportsdata loaded once rather than per call, a feed scope being hundreds of
+  points.
+  factor_indirect is applied to the DOT figures IDENTICALLY to the Sabre ones. It is a
+  Sabre-era constant from the 2013 BA method and may not belong on DOT data, but that is
+  a second measurement. Swapping the source changes one thing or nothing afterwards is
+  attributable.
+
+app/route_feed.py
+  feed_side (beyond) and behind_feed (behind) now take their market through
+  od_source.feed_market, with the existing Sabre or preagg query passed in as the
+  fallback so neither path is duplicated and preagg still works. The source label and
+  DOT share are written back to feed_cfg as _beyond_source, _beyond_dot_share,
+  _behind_source and _behind_dot_share, for the payload and contract work in piece 2.
+
+bt2/od_source_feed_check.py (new)
+  Six cases on a synthetic store, 6 of 6 pass. The first is the one that protects the
+  rest of the engine: with the switch off, the FULL scope is handed to the Sabre path
+  and its answer is returned unchanged. Also asserted: an all-US scope reads entirely
+  from DB1B with the factor applied and the nonstop class never read; a mixed scope
+  splits US to DOT and foreign to Sabre with the share correct at 0.905; a short year
+  falls back; and the SJC-TPE shape, where the far end of every pair is foreign, falls
+  back.
+
+STILL OPEN. Capture was calibrated against Sabre-measured markets, so turning the
+switch on moves the feed by the DB1B-to-Sabre ratio on the affected pairs. That ratio
+is being measured on the connecting quantity before the default changes.
+
+Avia Solutions Limited. All rights reserved.

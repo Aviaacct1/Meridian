@@ -228,11 +228,22 @@ def feed_side(sabre_db, oag_db, week, origin_airports, hub, year, capture=DEFAUL
     scope = [x for x in scope if x not in origin_airports]           # exclude the local O-H leg
     scope = on_the_way(origin_airports, hub, scope, circuity=_circ)  # drop backtracking destinations
     _pa = _preagg_from_cfg(feed_cfg)
-    if _pa:
-        import preagg
-        market = preagg.connecting_market(_pa, origin_airports, scope, year, _fac)
-    else:
-        market = connecting_market(sabre_db, origin_airports, scope, year, _fac)
+
+    def _sabre_beyond(_o, _d):
+        if _pa:
+            import preagg
+            return preagg.connecting_market(_pa, _o, _d, year, _fac)
+        return connecting_market(sabre_db, _o, _d, year, _fac)
+
+    # US-market credibility rule. od_source leads with DOT DB1B on the all-US pairs of the
+    # scope and leaves the rest on Sabre, so a US airport sees its own domestic feed measured
+    # on the government figure it validates against. Off unless AVIA_OD_SOURCE is set.
+    import od_source as _OS
+    market, _src, _dot_share = _OS.feed_market(_sabre_beyond, origin_airports, scope, year,
+                                               factor_indirect=_fac, group="dest")
+    if feed_cfg is not None:
+        feed_cfg["_beyond_source"] = _src
+        feed_cfg["_beyond_dot_share"] = _dot_share
     # OPT-IN Engine V2 (feed_cfg['qsi_feed']): the schedule-quality QSI feed. Scores the new
     # route's connection quality per onward market and competes for share against rival one-stops
     # (qsi_feed.beyond_capture, the frozen analyst QSI). REPLACES flat capture x conn_coeff (the
@@ -378,11 +389,21 @@ def behind_feed(sabre_db, oag_db, week, origin_airports, dest_airports, year, ca
                 kept.append(y)
         feeders = kept
     _pa = _preagg_from_cfg(feed_cfg)
-    if _pa:
-        import preagg
-        market = preagg.behind_market(_pa, feeders, dest_airports, year, _fac)
-    else:
-        market = behind_market(sabre_db, feeders, dest_airports, year, _fac)
+
+    def _sabre_behind(_o, _d):
+        if _pa:
+            import preagg
+            return preagg.behind_market(_pa, _o, _d, year, _fac)
+        return behind_market(sabre_db, _o, _d, year, _fac)
+
+    # The behind side is the one a US airport cares most about, being its own domestic
+    # catchment feeding the new route. Grouped by feeder, so the FEEDERS are partitioned.
+    import od_source as _OS
+    market, _src, _dot_share = _OS.feed_market(_sabre_behind, feeders, dest_airports, year,
+                                               factor_indirect=_fac, group="origin")
+    if feed_cfg is not None:
+        feed_cfg["_behind_source"] = _src
+        feed_cfg["_behind_dot_share"] = _dot_share
     # OPT-IN Engine V2: the mirror of feed_side's QSI branch - feeder arrivals at the ORIGIN
     # compete for the feeder->destination markets against one-stops over rival hubs.
     if feed_cfg and feed_cfg.get("qsi_feed") and feed_cfg.get("dep_time_mins") is not None:
