@@ -650,7 +650,7 @@ def emit_workbook(contract: dict, path: str):
     header(ws, ["Passenger demand"] + [str(y) for y in yrs])
     for k, lbl in [("point_to_point", "Point to point"), ("connecting_at_hub", "Connecting at hub"),
                    ("connecting_at_destination", "Connecting at destination"), ("total", "Total")]:
-        ws.append([lbl] + rv["passengers"][k])
+        ws.append([lbl] + (rv["passengers"].get(k) or [None] * len(yrs)))
         if k == "total":
             for j in range(2, 5):
                 ws.cell(row=ws.max_row, column=j).font = BOLD
@@ -664,7 +664,15 @@ def emit_workbook(contract: dict, path: str):
     for k, lbl in [("point_to_point", "Point to point"), ("connecting_at_hub", "Connecting at hub"),
                    ("connecting_at_destination", "Connecting at destination"), ("cargo", "Cargo"),
                    ("ancillary", "Ancillary"), ("total", "Total")]:
-        ws.append([lbl] + rv["revenue"][k])
+        # THE BUILDER PRODUCES FOUR OF THESE SIX AND SAYS SO. revenue_forecast["revenue"] holds
+        # point_to_point, cargo, ancillary and total, and carries _connecting_revenue_need reading
+        # "needs connecting pax x connecting fare", so the two connecting lines are a stated gap
+        # rather than an oversight. This loop asked for all six and raised KeyError
+        # 'connecting_at_hub' on every live contract.
+        #
+        # A missing flow becomes an EMPTY ROW of the right width rather than a crash, so the sheet
+        # still shows the line and leaves it blank, which is what the _need note describes.
+        ws.append([lbl] + (rv["revenue"].get(k) or [None] * len(yrs)))
         for j in range(2, 5):
             ws.cell(row=ws.max_row, column=j).number_format = "$#,##0"
             if k == "total":
@@ -705,7 +713,9 @@ def emit_workbook(contract: dict, path: str):
     header(ws, ["Flow"] + [str(y) for y in rb["by_flow"]["years"]])
     for k, lbl in [("point_to_point", "Point to point"), ("connecting_at_hub", "Connecting at hub"),
                    ("connecting_at_destination", "Connecting at destination"), ("cargo", "Cargo"), ("ancillary", "Ancillary")]:
-        ws.append([lbl] + rb["by_flow"][k])
+        # Same shape as the revenue_forecast loop above: by_flow carries the flows the builder can
+        # fill and this asked for all five.
+        ws.append([lbl] + (rb["by_flow"].get(k) or [None] * len(rb["by_flow"].get("years") or [])))
         for j in range(2, 5):
             ws.cell(row=ws.max_row, column=j).number_format = "$#,##0"
     ws.append([])

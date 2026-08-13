@@ -156,7 +156,16 @@ def main():
                 import deck_contract as DC
                 DC.emit_workbook(contract, os.path.join(a.out, stem + "_contract.xlsx"))
             except Exception as e:                           # noqa: BLE001
-                print("       workbook not written: %s" % e)
+                # THE LINE, NOT JUST THE KEY. A bare KeyError name cost three round trips on 13
+                # August: 'base_annual_demand', then 'nr', then 'annual_demand', each one guessed
+                # at from the key alone when the traceback knew exactly which line raised it.
+                import traceback
+                tb = traceback.extract_tb(e.__traceback__)
+                where = tb[-1] if tb else None
+                print("       workbook not written: %s: %s" % (type(e).__name__, e))
+                if where:
+                    print("       at %s line %d: %s" % (os.path.basename(where.filename),
+                                                        where.lineno, (where.line or "").strip()[:100]))
 
     if seen_thin:
         print("\nHOW FULL EACH BLOCK IS, across every case. THE LIST OF TABLES TO POPULATE is the")
