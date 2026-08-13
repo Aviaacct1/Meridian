@@ -64,15 +64,24 @@ def tier_inputs(fc, dump=None, radius_km=220.0, min_pop=5000,
     except Exception as e:                                   # noqa: BLE001
         return {"error": "catchment layer unavailable: %s: %s" % (type(e).__name__, e)}
 
+    # THE APP ALREADY KNOWS WHERE THIS IS, and the first version invented a second answer.
+    # cortex_app line 30 is DUMP = os.path.join(HERE, "cities5000.txt") and the file sits beside it
+    # in app/, so requiring AVIA_GEONAMES made a working install look broken and sent the run
+    # looking for a file it already had. John's ruling of 9 August: everything is calculated in one
+    # place. A path is calculated in one place too.
     if dump is None:
         try:
-            import config
-            dump = getattr(config, "GEONAMES_DUMP", None)
+            import cortex_app as _CA
+            dump = getattr(_CA, "DUMP", None)
         except Exception:                                    # noqa: BLE001
             dump = None
-        dump = dump or os.environ.get("AVIA_GEONAMES")
+        dump = dump or os.path.join(HERE, "cities5000.txt")
+        # The environment variable still WINS where it is set, for an install that keeps the dump
+        # somewhere else, but it is no longer the only way to be found.
+        dump = os.environ.get("AVIA_GEONAMES") or dump
     if not dump or not os.path.exists(dump):
-        return {"error": "no GeoNames dump found; set AVIA_GEONAMES to cities5000.txt"}
+        return {"error": "no GeoNames dump at %r. It normally sits beside cortex_app.py in app/; "
+                         "set AVIA_GEONAMES to override" % dump}
 
     try:
         locales = G.near_point(dump, float(oll[0]), float(oll[1]), radius_km,
