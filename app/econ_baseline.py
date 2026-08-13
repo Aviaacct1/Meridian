@@ -184,8 +184,24 @@ def check(path=DEFAULT_PATH):
     diffs = []
     was_env = blob.get("env") or {}
     now_env = _env()
+
+    # UNSET AND SET-TO-THE-DEFAULT ARE THE SAME ENVIRONMENT, and treating them as different stopped
+    # this check dead on 13 August 2026: the baseline was captured with AVIA_FORECAST_ENGINE unset
+    # and the run had it set explicitly to "qsi", which is what unset MEANS. It reported an
+    # environment difference and refused to compare a single field, so a switch being wired in could
+    # not be proved harmless by the one tool built to prove it.
+    #
+    # Only variables with a real default belong here, and the default has to match the code that
+    # reads it: bt2_forecast line 40 is os.environ.get("AVIA_FORECAST_ENGINE", "qsi").
+    _DEFAULTS = {"AVIA_FORECAST_ENGINE": "qsi"}
+
+    def _norm(k, v):
+        v = (v or "").strip()
+        return _DEFAULTS.get(k, "") if v == "" else v.lower() if k in _DEFAULTS else v
+
     for k in ENV_KEYS:
-        if was_env.get(k, "") != now_env.get(k, ""):
+        a, b = _norm(k, was_env.get(k, "")), _norm(k, now_env.get(k, ""))
+        if a != b:
             diffs.append("ENVIRONMENT %s: captured %r, now %r. Fix this before reading anything "
                          "below as a regression." % (k, was_env.get(k, ""), now_env.get(k, "")))
     if diffs:
