@@ -1338,7 +1338,7 @@ def api_forecast(origin: str, dest: str, airline: str = "", carrier_type: str = 
                  circuity: float = 1.35, factor_indirect: float = 1.044, mct_banking: int = 0,
                  season: str = "annual", own_bh: float = 0.0, crew_bh: float = 0.0, util_bh: float = 0.0,
                  dep_time: str = "", curfew_origin: str = "", curfew_dest: str = "", partners: str = "",
-                 forecast_year: int = 0, split_floor: int = 1):
+                 forecast_year: int = 0, split_floor: int = 1, seats: float = 0.0):
     """The CALIBRATED any-city-pair forecast (coverage + feed + alliance). ~10s per call. The
     override args (default sentinels = off) are the Expert hooks: adjust any stage of the engine.
     own_bh/crew_bh/util_bh are the airline-specific fixed-cost overrides ($/block-hour, $/block-hour, BH/yr).
@@ -1386,6 +1386,12 @@ def api_forecast(origin: str, dest: str, airline: str = "", carrier_type: str = 
         cnx_online=cnx_online, cnx_alliance=cnx_alliance, cnx_interline=cnx_interline,
         circuity=circuity, factor_indirect=factor_indirect, mct_banking=bool(mct_banking),
         season=season, fixed_overrides=(_fixed or None),
+        # THE CARRIER'S OWN SEAT COUNT, added 13 August 2026 and absent until then. Without it the
+        # portal sizes every route from the generic type table, where the A350-900 is 336 seats
+        # against the 306 China Airlines actually flies, so an on-screen SJC-TPE forecast could not
+        # reproduce the agreed case and would overstate capacity by 8 to 13% on these carriers.
+        # /api/report already took it; the forecast endpoint the page itself calls did not.
+        seats=(float(seats) if seats else None),
         dep_time_mins=_hhmm_to_mins(dep_time),
         restricted_hours=(curfew_origin or None), restricted_hours_dest=(curfew_dest or None), partner_carriers=(partners or None), forecast_year=(forecast_year or None), split_floor=bool(split_floor))
     if isinstance(fc, dict) and fc.get("ok"):
