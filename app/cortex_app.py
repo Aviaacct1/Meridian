@@ -1934,16 +1934,59 @@ def _xlsx_to_csv_zip(xlsx_path, zip_path):
 def api_report(origin: str, dest: str, airline: str = "", carrier_type: str = "FSC",
                aircraft: str = "A21X", freq: int = 7, econ_share: float = 0.85, plan_lf: float = 0.875,
                econ_fare: float = 0.0, bus_fare: float = 1400.0, fuel_price: float = 0.0, growth_years: int = 0,
-               part: str = "both", season: str = "annual"):
+               part: str = "both", season: str = "annual",
+               seats: float = 0.0, partners: str = "", forecast_year: int = 0,
+               growth: float = 0.0, split_floor: int = 1, dep_time: str = ""):
     """Forecast deliverables from the live forecast: part='deck' returns the Forecast Summary PPTX,
     part='xlsx' the Forecast Excel workbook, part='csv' the workbook's sheets as a zipped CSV
-    bundle, part='both' a zip of deck + workbook."""
+    bundle, part='both' a zip of deck + workbook.
+
+    THE SIX PARAMETERS ADDED 13 AUGUST 2026 ARE THE ONES A CLIENT CASE ACTUALLY TURNS ON, and
+    without them a deck could not reproduce a scenario the tool had already agreed. This endpoint
+    took aircraft, freq and growth_years and nothing else, so an SJC-TPE deck would have been built
+    on a generic A21X at 7x weekly with no named partner, no forecast year and the default growth
+    taper, while the agreed ladder runs a 306-seat A350 at 4x, Southwest as a partner, 2027 or 2028
+    and post-recovery growth. Two documents describing the same route and disagreeing by tens of
+    thousands of passengers is worse than having no deck.
+
+      seats          the CARRIER'S OWN configuration each way, from OAG, not the generic type table.
+                     China Airlines flies the A350-900 at 306 against the table's 336, so sizing on
+                     the generic figure overstates capacity by 8 to 13% on these carriers
+      partners       comma-separated codes counted as commercial partners on the connecting feed.
+                     A partnership is a fact about a deal, not a property of a schedule, so it is
+                     named by the person running the forecast
+      forecast_year  the maturity year the client is shown. Defaults inside calibrated_forecast to
+                     the base data year plus one
+      growth         an explicit market growth rate. GROWTH-IS-THE-GAP of 12 August: the default
+                     taper measures a 20.00% CAGR, which is the clamp ceiling and a post-COVID
+                     recovery burst, and John's ruling is that client work states its own path
+      split_floor    the connectivity floor. 1 is what ships
+      dep_time       "12:00" or "0030". Omitted, the optimiser picks the time for the airline
+    """
     import tempfile, route_deck as RDECK
+    _dep = None
+    if dep_time.strip():
+        _raw = dep_time.strip()
+        # AT MOST ONE COLON. Stripping every colon turns "1:2:3" into "123" and answers 01:23, which
+        # is a malformed input producing a plausible time, and a departure time silently wrong by
+        # hours moves the whole connecting feed.
+        _t = _raw.replace(":", "")
+        _hh, _mm = (_t[:-2], _t[-2:]) if len(_t) in (3, 4) else ("", "")
+        if _raw.count(":") <= 1 and _t.isdigit() and _hh and 0 <= int(_hh) <= 23 and 0 <= int(_mm) <= 59:
+            _dep = int(_hh) * 60 + int(_mm)
+        else:
+            return JSONResponse({"ok": False, "error": "dep_time must be HH:MM or HHMM in 24-hour "
+                                 "local time, got %r" % dep_time}, status_code=400)
     fc = calibrated_forecast(origin, dest, airline=(airline or None), carrier_type=carrier_type,
                              aircraft=aircraft, freq=freq, econ_share=econ_share, plan_lf=plan_lf,
                              econ_fare=(econ_fare or None), bus_fare=bus_fare,
                              fuel_price=(fuel_price or None), growth_years=growth_years, with_econ=True,
-                             season=season)
+                             season=season,
+                             seats=(float(seats) if seats else None),
+                             partner_carriers=(partners or None),
+                             forecast_year=(int(forecast_year) or None),
+                             growth=float(growth), split_floor=bool(split_floor),
+                             dep_time_mins=_dep)
     if not fc.get("ok"):
         return JSONResponse(fc, status_code=400)
     if not fc.get("economics_ok"):
