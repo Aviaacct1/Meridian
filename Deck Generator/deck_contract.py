@@ -629,7 +629,16 @@ def emit_workbook(contract: dict, path: str):
     cd = contract["connecting_at_destination"]
     for c in cd["cities"]:
         ws.append([c["nr"], c["city_code"], c["city_name"], c["country"], c["annual_demand"], None, c["annual_forecast"], None])
-    ws.append(["", "", "TOTAL", "", cd["total"]["annual_demand"], None, cd["total"]["annual_forecast"], cd["total"]["pdew"]])
+    # THE SAME MISMATCH AS THE SUMMARY ROWS, on the destination total. build_contract writes
+    # connecting_at_destination["total"] with annual_forecast and pdew only, and never an
+    # annual_demand, so this raised KeyError 'annual_demand' on every live contract. The hub side
+    # is not affected because build_contract builds that total itself with the full set.
+    #
+    # .get() again rather than a new required key: the destination total genuinely has no base-year
+    # demand figure to state, and a blank cell says that where a zero would not.
+    _cdt = cd.get("total") or {}
+    ws.append(["", "", "TOTAL", "", _cdt.get("annual_demand"), None,
+               _cdt.get("annual_forecast"), _cdt.get("pdew")])
     for j in range(1, 9):
         ws.cell(row=ws.max_row, column=j).font = BOLD
     ws.append([]); ws.append([cd.get("_note", "")])
