@@ -508,8 +508,11 @@ def forecast(sabre_db, oag_db, week, origin, dest_codes, competing_airports, *, 
         _cov = COV.gross_up(_oc, _dc, _gcd)
     except Exception:
         _cov = 1.0
-    if od_src == od_source.DB1B:
-        _cov = 1.0   # DB1B is the full-market actual; the GDS coverage gross-up is Sabre-only
+    if od_source.is_dot(od_src):
+        # DB1B is the full-market actual; the GDS coverage gross-up is Sabre-only. Tested by
+        # label rather than by equality: from 15 August the label carries the vintage and the
+        # indexing factor, and an equality test would have quietly grossed up a DOT figure.
+        _cov = 1.0
     if coverage_override is not None:          # EXPERT override of the auto coverage factor
         _cov = float(coverage_override)
     market *= _cov

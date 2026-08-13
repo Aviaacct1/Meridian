@@ -71,20 +71,30 @@ def main():
     OS._db1b_path = lambda: store
 
     cases = [
-        ("in span, market present", ["SJC"], ["AUS"], 2024, DB1B_MARKET, OS.DB1B),
-        ("in span, market absent", ["SJC"], ["BFL"], 2024, SABRE_MARKET, OS.DB1B),
-        ("outside span", ["SJC"], ["AUS"], 2025, SABRE_MARKET, OS.SABRE),
-        ("international market", ["SJC"], ["TPE"], 2024, SABRE_MARKET, OS.SABRE),
+        ("in span, market present", ["SJC"], ["AUS"], 2024, DB1B_MARKET, OS.DB1B, False),
+        ("in span, market absent", ["SJC"], ["BFL"], 2024, SABRE_MARKET, OS.DB1B, False),
+        ("outside span, indexing off", ["SJC"], ["AUS"], 2025, SABRE_MARKET, OS.SABRE, False),
+        ("international market", ["SJC"], ["TPE"], 2024, SABRE_MARKET, OS.SABRE, False),
+        # Vintage indexing on the P2P leg. The stub Sabre returns the same market for every
+        # year, so the growth factor is exactly 1.0 and the DOT level comes through unchanged
+        # with the vintage in the label. That is the arithmetic being asserted, not the growth.
+        ("outside span, indexed", ["SJC"], ["AUS"], 2025, DB1B_MARKET, "vintage", True),
     ]
 
     failed = 0
-    for name, origins, dests, year, want_market, want_source in cases:
+    for name, origins, dests, year, want_market, want_source, index_on in cases:
+        os.environ["AVIA_OD_INDEX_VINTAGE"] = "1" if index_on else "0"
         split, market, avg_fare, source = OS.market_split(
             "unused_sabre.duckdb", origins, dests, year=year)
-        ok = (abs(market - want_market) < 0.5) and (source == want_source)
+        if want_source == "vintage":
+            ok = (abs(market - want_market) < 0.5 and OS.is_dot(source)
+                  and "2024 vintage, indexed to 2025" in source)
+        else:
+            ok = (abs(market - want_market) < 0.5) and (source == want_source)
         failed += 0 if ok else 1
         print(f"  [{'PASS' if ok else 'FAIL'}] {name}: market {market:,.0f} "
-              f"(want {want_market:,.0f}), source {source} (want {want_source})")
+              f"(want {want_market:,.0f}), source {source}")
+    os.environ.pop("AVIA_OD_INDEX_VINTAGE", None)
 
     print(f"\n{len(cases) - failed} of {len(cases)} passed")
     return 1 if failed else 0

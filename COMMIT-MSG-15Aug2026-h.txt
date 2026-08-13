@@ -1,0 +1,50 @@
+Point to point on DOT, the 2021 vintage guarded, and a label test that would have broken
+
+THE 2021 EXPOSURE IS NIL, CHECKED RATHER THAN ASSUMED. source_year 2021 holds
+14,197,338 rows of 2020 travel and 12,316,299 of 2021, so 53.5% of that vintage is the
+COVID year, and source_year 2020 was never loaded at all. Nothing reads either: the
+engine takes max(source_year), which is 2025; the BT2 cohorts are 2016, 2017, 2018,
+2019, 2024 and 2025; backtest.py excludes 2020-2023 from the clean sample; and
+airport_profile.py line 69 names 2020-2022 absent and never to be interpolated. A
+latent trap, not an active defect.
+
+AND 2025 IS A COMPLETE YEAR. 4.09 billion passengers against 2024's 4.04 billion, one
+source file per year as in every other year. So the sub-one indexing factors measured
+on SJC-BOS and TPA-AUS are genuine movement in the connecting quantity and not a
+coverage artefact, and the objection raised against indexing is withdrawn.
+
+app/sabre_years.py (new)
+  What a source_year actually contains, measured on the store, with check(year) returning
+  a note for the two vintages whose contents do not match their label. Never raises and
+  never changes a figure: a caller that wants to refuse can act on the note, and one that
+  wants to proceed carries it. The real fix, when somebody wants those years, is to filter
+  on `year` rather than `source_year`, identical in every vintage but 2021 and therefore
+  safe to verify one year at a time. Not done here: source_year appears 106 times across
+  47 files and changing it wholesale would move figures fitted on the blend without saying
+  so.
+
+app/cortex_app.py
+  The base year is checked against it. max() lands on 2025 today, but a store rebuilt
+  short would put the base year on the blend without a word.
+
+app/od_source.py
+  market_split takes the same vintage indexing as the feed legs, so the POINT TO POINT
+  leg reads DOT on a live run. This is the leg a US airport cares most about, being its
+  own domestic O&D market, and it was the one leg still on Sabre after the feed legs
+  went across. Growth is whole-market rather than per airport, a per-airport factor on a
+  thin competing airport being mostly noise. THE FARE IS NOT INDEXED: it is a price and
+  not a volume, so it stays DOT's vintage fare and the label states the vintage.
+  is_dot(): the label is no longer a fixed string.
+
+app/route_forecast.py
+  Line 511 tested od_src == od_source.DB1B to turn off the GDS coverage gross-up, DB1B
+  being a full-market actual. The indexed label is no longer equal to that constant, so
+  the test would have silently started grossing up a DOT figure the moment indexing was
+  used. Now od_source.is_dot(). Found by reading the consumer before shipping the
+  producer, which is the check the last four defects did not get.
+
+bt2/od_source_label_check.py
+  A fifth case: outside the span with indexing on returns the DOT level with the vintage
+  in the label. 5 of 5 pass, and the feed check still passes 9 of 9.
+
+Avia Solutions Limited. All rights reserved.

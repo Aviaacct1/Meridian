@@ -39,6 +39,17 @@ SABRE = "Sabre ODPOO"
 DB1B  = "US DOT O&D Survey (DB1B)"
 
 
+def is_dot(source):
+    """True if this source label means DB1B answered, whatever else the label says.
+
+    The label is no longer a fixed string: it carries the vintage and the indexing factor
+    when a DOT year has been carried forward. route_forecast line 511 turns the GDS
+    coverage gross-up off when DB1B answered, and an equality test against the bare
+    constant would silently start grossing up a DOT figure the moment the label grew.
+    """
+    return bool(source) and DB1B in str(source)
+
+
 def _mode():
     return os.environ.get("AVIA_OD_SOURCE", "sabre").strip().lower()
 
@@ -99,17 +110,45 @@ def market_split(sabre_db, competing_airports, dest_codes, year=None):
     db1b_db = _db1b_path()
     span = _db1b_years(db1b_db) if os.path.exists(db1b_db) else None
     in_span = bool(span) and (year is None or span[0] <= int(year) <= span[1])
+    # The vintage problem reaches the point to point leg exactly as it reaches the feed:
+    # DOT publishes a year behind, so a live 2025 run is outside the store. Same treatment,
+    # same switch, and the same reason it is off by default. This is the leg a US airport
+    # cares most about, being its own domestic O&D market.
+    read_year, index_factor = (int(year) if year is not None else None), 1.0
+    if (not in_span) and span and year is not None and _index_mode() and int(year) > span[1]:
+        read_year, in_span = span[1], True
     use_dot = (mode in ("dot", "auto")
                and os.path.exists(db1b_db)
                and in_span
                and _all_us([*competing_airports, *dest_codes]))
     if use_dot:
         try:
-            split, market, avg_fare = _db1b_split(db1b_db, competing_airports, dest_codes, year)
+            split, market, avg_fare = _db1b_split(db1b_db, competing_airports, dest_codes, read_year)
             if mode == "auto" and market <= 0:
                 # DB1B blind here (EAS/commuter/inter-island) - use Sabre's number, keep DOT label
                 split, market, avg_fare = SC.destination_market_split(
                     sabre_db, competing_airports, dest_codes, year=year)
+                return split, market, avg_fare, DB1B
+            if read_year != int(year):
+                # Sabre's own growth on the same market, whole-market rather than per airport:
+                # a per-airport factor on a thin competing airport is mostly noise.
+                _, m_from, _ = SC.destination_market_split(sabre_db, competing_airports,
+                                                           dest_codes, year=read_year)
+                _, m_to, _ = SC.destination_market_split(sabre_db, competing_airports,
+                                                         dest_codes, year=year)
+                if not m_from or not m_to:
+                    raise ValueError("no Sabre market for the indexing years")
+                index_factor = m_to / m_from
+                if not (INDEX_MIN <= index_factor <= INDEX_MAX):
+                    raise ValueError(f"implausible growth factor {index_factor:.3f}")
+                split = {k: v * index_factor for k, v in split.items()}
+                market *= index_factor
+                # THE FARE IS NOT INDEXED. It is a price, not a volume, and carrying it forward
+                # on a passenger growth factor would be arithmetic with no meaning. It stays
+                # DOT's vintage fare and the label states the vintage.
+                return (split, market, avg_fare,
+                        f"{DB1B} [{read_year} vintage, indexed to {int(year)} "
+                        f"on Sabre growth x{index_factor:.3f}]")
             return split, market, avg_fare, DB1B
         except Exception:
             pass  # any DB1B problem -> safe Sabre fallback

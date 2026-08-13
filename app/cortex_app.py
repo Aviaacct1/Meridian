@@ -443,6 +443,14 @@ def _live_ctx():
     try:
         c = duckdb.connect(sabre_db, read_only=True)
         year = c.execute("SELECT max(source_year) FROM sabre").fetchone()[0]; c.close()
+        # A source_year does not always contain the year it is labelled with: the 2021 vintage
+        # holds 2020 travel as well and there is no 2020 vintage at all. max() lands on 2025
+        # today and the note is None, but a store rebuilt short would put the base year on the
+        # blend without a word, which is the shape this codebase keeps being caught by.
+        import sabre_years as _SY
+        _year_note = _SY.check(year)
+        if _year_note:
+            print("BASE YEAR WARNING: " + _year_note)
     except Exception:
         pass
     si = _latest_served_index()
