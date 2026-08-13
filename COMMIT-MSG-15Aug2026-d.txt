@@ -1,0 +1,33 @@
+dot_ratio_check: DOT against Sabre on nonstop, connecting and total
+
+app/dot_ratio_check.py (new)
+
+WHAT IT IS FOR. DEFAULT_CONN_CAPTURE and behind_cap were calibrated against
+Sabre-measured markets. od_source now reads DB1B for the all-US pairs of a feed scope,
+so the moment AVIA_OD_SOURCE moves off sabre the feed forecast moves by the
+DB1B-to-Sabre ratio on those pairs, before any method changes. That ratio has never
+been measured on the connecting quantity, because until 15 August the connecting
+quantity did not exist in the DOT store.
+
+Compares matched pairs for one year on three quantities: nonstop (MktCoupons = 1
+against Sabre's connecting_airport1 IS NULL), connecting (MktCoupons = 2 against the
+live single-stop filter) and total. Neither side is adjusted: no factor_indirect, no
+capture, no grossing beyond the x10 already in the store.
+
+Pairs present in one source and not the other are counted and reported separately
+rather than dropped, because a coverage difference IS the measurement here.
+
+Refuses a year whose four quarters are not all logged built, the same guard as
+od_source._year_complete, so 2016 cannot be compared as though it were whole.
+
+Prints the connecting ratio against the nonstop ratio, which is the finding: near 1
+means Sabre's coverage gap is flat and capture can be re-levelled by one number; above
+1 means Sabre under-reads TRANSFER traffic specifically, which is a different
+correction and bears on the 19% gap against the 2025 analyst.
+
+TESTED on synthetic stores built to a known answer: nonstop level and connecting
+under-read 2x recovers 1.000x, 2.000x and 2.000x exactly, lists the diverging pairs,
+and reports the DOT-only and Sabre-only pairs rather than silently dropping them. The
+short-year guard refuses a three-quarter year.
+
+Avia Solutions Limited. All rights reserved.
