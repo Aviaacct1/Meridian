@@ -127,11 +127,18 @@ def main():
     per_origin = _sabre_behind_by_origin(sabre_db, dest_codes, year, single_only=True)
     try:
         import airportsdata
-        _ap = airportsdata.load("IATA")
-        us = [a for a in per_origin if (_ap.get(a) or {}).get("country") == "US"]
+        _APX = airportsdata.load("IATA")
+        us = [a for a in per_origin if (_APX.get(a) or {}).get("country") == "US"]
     except Exception:
-        us = []
+        _APX, us = None, []
     n1b, m1b = len(us), sum(per_origin[a] for a in us)
+    # US origins, EVERY itinerary. The analyst's behind figure is far too large to be connecting
+    # traffic, and the obvious candidate is the whole US market to the destination, nonstop
+    # included: San Francisco, Los Angeles and Seattle all fly Taipei nonstop and those flows are
+    # large. If his figure lands here, his construction is identified rather than inferred.
+    per_origin_all = _sabre_behind_by_origin(sabre_db, dest_codes, year, single_only=False)
+    us_all = [a for a in per_origin_all if (_APX.get(a) or {}).get("country") == "US"] if _APX else []
+    n1c, m1c = len(us_all), sum(per_origin_all[a] for a in us_all)
     # THE BEHIND SIDE USES THE ROUTE ORIGIN, NOT THE CATCHMENT. route_forecast line 635 calls
     # behind_feed with [origin] and says why at line 633: a route into a small airport must not
     # inherit a big neighbour's feed bank. The first version of this tool used the catchment and
@@ -156,6 +163,7 @@ def main():
 
     rows = [("every origin, every itinerary", n0, m0),
             ("every origin, single-connection only", n1, m1),
+            ("US origins only, EVERY itinerary", n1c, m1c),
             ("US origins only, single-connection", n1b, m1b),
             (f"OAG feeders into {origin_side[0]} alone", n2, m2),
             ("and on the way, circuity 1.35", n3, m3)]
