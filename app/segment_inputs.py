@@ -69,19 +69,37 @@ def tier_inputs(fc, dump=None, radius_km=220.0, min_pop=5000,
     # in app/, so requiring AVIA_GEONAMES made a working install look broken and sent the run
     # looking for a file it already had. John's ruling of 9 August: everything is calculated in one
     # place. A path is calculated in one place too.
+    # AN OVERRIDE THAT POINTS AT NOTHING MUST NOT BEAT A WORKING DEFAULT, and the previous version
+    # let it. AVIA_GEONAMES was set to a path with no file on it, so the run failed while
+    # cities5000.txt sat in app/ where cortex_app line 30 already finds it. An environment variable
+    # is a preference, not a promise that the file is there.
+    #
+    # Candidates in order, and the FIRST ONE THAT EXISTS is used. Where an override is set and
+    # misses, the fallback is taken and SAID, because silently ignoring what somebody explicitly
+    # asked for is its own kind of wrong.
+    tried, used_fallback = [], None
     if dump is None:
+        cands = []
+        env = os.environ.get("AVIA_GEONAMES")
+        if env:
+            cands.append(("AVIA_GEONAMES", env))
         try:
             import cortex_app as _CA
-            dump = getattr(_CA, "DUMP", None)
+            if getattr(_CA, "DUMP", None):
+                cands.append(("cortex_app.DUMP", _CA.DUMP))
         except Exception:                                    # noqa: BLE001
-            dump = None
-        dump = dump or os.path.join(HERE, "cities5000.txt")
-        # The environment variable still WINS where it is set, for an install that keeps the dump
-        # somewhere else, but it is no longer the only way to be found.
-        dump = os.environ.get("AVIA_GEONAMES") or dump
+            pass
+        cands.append(("beside segment_inputs.py", os.path.join(HERE, "cities5000.txt")))
+        for label, p in cands:
+            tried.append("%s=%s" % (label, p))
+            if p and os.path.exists(p):
+                dump = p
+                if label != "AVIA_GEONAMES" and env:
+                    used_fallback = ("AVIA_GEONAMES is set to %r and no file is there, so %s was "
+                                     "used instead" % (env, label))
+                break
     if not dump or not os.path.exists(dump):
-        return {"error": "no GeoNames dump at %r. It normally sits beside cortex_app.py in app/; "
-                         "set AVIA_GEONAMES to override" % dump}
+        return {"error": "no GeoNames dump found. Tried: " + "; ".join(tried)}
 
     try:
         locales = G.near_point(dump, float(oll[0]), float(oll[1]), radius_km,
@@ -115,7 +133,8 @@ def tier_inputs(fc, dump=None, radius_km=220.0, min_pop=5000,
                       "leisure": round(tiers[t]["leisure"])} for t in tiers},
         "basis": ("catchment.tier_split over %d locales and %d airports within %.0fkm, "
                   "contested band %.0f min, primary within %.0f min"
-                  % (len(locales), len(airports), radius_km, contested_band, primary_max)),
+                  % (len(locales), len(airports), radius_km, contested_band, primary_max)
+                  + (". " + used_fallback if used_fallback else "")),
     }
 
 
