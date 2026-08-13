@@ -42,7 +42,11 @@ CIRCUITY = 1.35
 
 def _sabre_behind(sabre_db, feeders, dest_codes, year, single_only=True, factor=FACTOR_INDIRECT):
     """Total behind market. feeders empty means EVERY origin, which is the whole market."""
-    import duckdb
+    # con_ro, not duckdb.connect. The engine has already opened the Sabre store in this
+    # process with its own configuration, and DuckDB refuses a second connection to the
+    # same file under a different one. The registry hands out a cursor over the existing
+    # base connection, which is what every other reader in the engine uses.
+    from db_registry import con_ro
     where = ["source_year = ?"]
     params = [int(year)]
     if feeders:
@@ -52,8 +56,7 @@ def _sabre_behind(sabre_db, feeders, dest_codes, year, single_only=True, factor=
     params += list(dest_codes)
     if single_only:
         where.append("connecting_airport1 IS NOT NULL AND connecting_airport2 IS NULL")
-    con = duckdb.connect(sabre_db, read_only=True,
-                         config={"memory_limit": "4GB", "threads": "4"})
+    con = con_ro(sabre_db)
     try:
         row = con.execute(
             f"SELECT count(DISTINCT origin_airport), SUM(passengers * {factor}) "
