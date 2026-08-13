@@ -56,6 +56,23 @@ def _env_path(var: str, default: Path) -> Path:
     return Path(value).expanduser() if value else default
 
 
+def _env_store(var: str, *candidates: Path) -> Path:
+    """A store path with more than one place it may have been built.
+
+    The DOT loaders wrote t100 and form41 into a subfolder of LOCAL_CACHE while the
+    rest of the stores went to its root, so a single default resolved to a file that
+    was not there and every reader took a silent blank. Returns the first candidate
+    that exists; failing that the first, so the error names the expected path.
+    """
+    value = os.environ.get(var)
+    if value:
+        return Path(value).expanduser()
+    for path in candidates:
+        if path.exists():
+            return path
+    return candidates[0]
+
+
 # ----------------------------------------------------------------------------
 # Root 1: DATA_ROOT
 # ----------------------------------------------------------------------------
@@ -117,12 +134,20 @@ OAG_DUCKDB = _env_path("AVIA_OAG_DUCKDB", LOCAL_CACHE / "oag.duckdb")
 # US DOT stores (built from the DOT extracts; see build_db1b_store.py / load_t100.py / load_p12.py).
 # Aggregated, so small; live next to sabre.duckdb.
 DB1B_DUCKDB = _env_path("AVIA_DB1B_DUCKDB", LOCAL_CACHE / "db1b.duckdb")      # US domestic O&D (od_market)
-T100_DUCKDB = _env_path("AVIA_T100_DUCKDB", LOCAL_CACHE / "t100.duckdb")      # US capacity/seats/LF (seg)
+# The coupon-split companion to db1b.duckdb, built by build_db1b_coupons.py from the raw
+# DB1BMarket extracts. od_market cannot separate a nonstop itinerary from a connecting one,
+# which the feed legs need; od_market_coupons keeps MktCoupons so each leg reads its own
+# quantity. Added 15 August 2026.
+DB1B_COUPONS_DUCKDB = _env_store("AVIA_DB1B_COUPONS_DUCKDB", LOCAL_CACHE / "db1b_coupons.duckdb",
+                                 LOCAL_CACHE / "Usmarket data" / "db1b_coupons.duckdb")
+T100_DUCKDB = _env_store("AVIA_T100_DUCKDB", LOCAL_CACHE / "t100.duckdb",
+                         LOCAL_CACHE / "Usmarket data" / "t100.duckdb")       # US capacity/seats/LF (seg)
 # ACI airport traffic, monthly, worldwide. Built by load_aci.py from the hand-
 # maintained workbook on Egnyte. TOTAL THROUGHPUT: arrivals + departures +
 # transit, domestic and international together. Not O&D, not one direction.
 ACI_DUCKDB = _env_path("AVIA_ACI_DUCKDB", LOCAL_CACHE / "aci.duckdb")         # non-US airport traffic (aci_monthly)
-FORM41_DUCKDB = _env_path("AVIA_FORM41_DUCKDB", LOCAL_CACHE / "form41_p12.duckdb")  # carrier P&L / CASM
+FORM41_DUCKDB = _env_store("AVIA_FORM41_DUCKDB", LOCAL_CACHE / "form41_p12.duckdb",
+                           LOCAL_CACHE / "Usmarket data" / "form41_p12.duckdb")  # carrier P&L / CASM
 CASM_BENCHMARK = _env_path("AVIA_CASM_BENCHMARK", LOCAL_CACHE / "casm_benchmark.duckdb")  # carrier CASM/RASM + stage
 
 # ----------------------------------------------------------------------------
@@ -182,6 +207,7 @@ ALL_PATHS = {
     "SABRE_DUCKDB": SABRE_DUCKDB,
     "OAG_DUCKDB": OAG_DUCKDB,
     "DB1B_DUCKDB": DB1B_DUCKDB,
+    "DB1B_COUPONS_DUCKDB": DB1B_COUPONS_DUCKDB,
     "T100_DUCKDB": T100_DUCKDB,
     "ACI_DUCKDB": ACI_DUCKDB,
     "FORM41_DUCKDB": FORM41_DUCKDB,

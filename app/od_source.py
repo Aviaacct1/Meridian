@@ -19,6 +19,17 @@ Behaviour is controlled by AVIA_OD_SOURCE:
                       inter-island tail where DB1B is blind, but keep the DOT label
                       (the engine used the accurate number; the label stays DOT).
 
+The DOT label is kept ONLY where DB1B could have seen the market and did not. A base
+year outside the store's own span is a different case: there DB1B reads nothing for
+any US market, the engine reads Sabre for all of them, and the label must say Sabre.
+Keeping the DOT label there would put "US DOT O&D Survey (DB1B)" on a slide produced
+entirely from a Sabre run, on every market rather than on a tail.
+
+DB1B is US DOMESTIC ONLY, measured on the store: no rows exist for TPE, LHR, NRT, CDG
+or YYZ, so an international market reads Sabre whatever the mode. A route such as
+SJC-TPE has no all-US market on any leg, since route_feed measures the behind leg
+from each feeder to the route DESTINATION rather than to the origin.
+
 Nothing changes until AVIA_OD_SOURCE is set and db1b.duckdb exists, so the
 calibrated baseline is untouched until it is deliberately backtested.
 """
@@ -40,6 +51,35 @@ def _db1b_path():
         return os.environ.get("AVIA_DB1B_DUCKDB", r"C:\Avia\db1b.duckdb")
 
 
+_YEARS = {}
+
+
+def _db1b_years(db1b_db):
+    """(min_year, max_year) present in od_market, or None if it cannot be read.
+
+    The store is built from published DOT extracts and therefore ends a year or more
+    behind the Sabre store. A base year outside that span returns no rows for EVERY
+    US market, not for a thin one, so it must not be read as DB1B being blind to a
+    market: see the label rule in market_split.
+    """
+    if db1b_db in _YEARS:
+        return _YEARS[db1b_db]
+    span = None
+    try:
+        from db_registry import con_ro
+        con = con_ro(db1b_db)
+        try:
+            row = con.execute("SELECT MIN(year), MAX(year) FROM od_market").fetchone()
+        finally:
+            con.close()
+        if row and row[0] is not None:
+            span = (int(row[0]), int(row[1]))
+    except Exception:
+        span = None
+    _YEARS[db1b_db] = span
+    return span
+
+
 def _all_us(codes):
     """True if every non-empty IATA code is a US airport (DB1B's domestic scope)."""
     try:
@@ -57,8 +97,11 @@ def market_split(sabre_db, competing_airports, dest_codes, year=None):
     import sabre_catchment as SC
     mode = _mode()
     db1b_db = _db1b_path()
+    span = _db1b_years(db1b_db) if os.path.exists(db1b_db) else None
+    in_span = bool(span) and (year is None or span[0] <= int(year) <= span[1])
     use_dot = (mode in ("dot", "auto")
                and os.path.exists(db1b_db)
+               and in_span
                and _all_us([*competing_airports, *dest_codes]))
     if use_dot:
         try:

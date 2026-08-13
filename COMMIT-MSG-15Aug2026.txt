@@ -1,0 +1,56 @@
+DOT DB1B: coupon-split store, the label rule, and two dead config paths
+
+Job 1 groundwork. Nothing in the engine changes: AVIA_OD_SOURCE still defaults to
+sabre and od_source is still off.
+
+WHY THE COUPON SPLIT IS NEEDED. od_market carries one figure per origin, destination
+and year over every itinerary type. That matches the point to point leg, which reads
+all itineraries through sabre_catchment.destination_market_split. It does NOT match
+the feed legs: route_feed.connecting_market line 203 and behind_market line 345 both
+filter to connecting itineraries only. Dropping od_source into those legs as od_market
+stands would swap a connecting-only market for a total market and inflate the feed base
+by the whole nonstop share. The raw DB1BMarket extracts carry MktCoupons, which is the
+itinerary length, and bt2/bt2_db1b.py already reads them that way.
+
+app/build_db1b_coupons.py (new)
+  Builds od_market_coupons(origin, dest, year, quarter, coupons, pax, avg_fare) from
+  the raw extracts at E:\Avia\Usmarket data. Coupons 1 is nonstop, 2 is a single
+  connection and matches the live feed filter exactly, 3 or more is collapsed to 4 and
+  kept rather than dropped. Passengers grossed x10, the convention already recorded in
+  bt2_db1b.py line 3. NO filters applied: no bulk fare exclusion, no country test, no
+  fare range, because the convention behind od_market is not recorded anywhere in the
+  repo and the first build has to reproduce it before anything is changed. Quarters are
+  logged built, missing or empty; an extract that parses to nothing is logged empty
+  rather than counted as built, which is the shape an older vintage fails in. Re-running
+  skips quarters already built.
+
+app/db1b_coupons_check.py (new)
+  Four checks against od_market: TOTAL, PAIR on three dense and three thin pairs,
+  SPLIT SANE, and QUARTERS. Tested in both directions on synthetic extracts: the
+  correct build passes 13 of 13; an od_market built nonstop-only fails TOTAL at +302%
+  and every PAIR; a year missing one quarter fails QUARTERS and TOTAL at -25.7%.
+
+app/od_source.py
+  Year-span test. The DOT label was kept whenever DB1B returned nothing, on the
+  reasoning that DB1B could see the market and did not, which is the EAS and commuter
+  tail. That reasoning does not hold for a base year outside the store's own span:
+  there DB1B reads nothing for EVERY US market, the engine reads Sabre for all of them,
+  and the label must say Sabre. The store spans 2015-2024, so a 2025 base year would
+  have put "US DOT O&D Survey (DB1B)" on a slide produced entirely from a Sabre run.
+  Docstring records that DB1B is US domestic only, measured on the store (no rows for
+  TPE, LHR, NRT, CDG or YYZ), and that SJC-TPE therefore has no all-US market on any
+  leg, since route_feed measures the behind leg from each feeder to the route
+  DESTINATION rather than to the origin.
+
+bt2/od_source_label_check.py (new)
+  Four label cases on a synthetic store, no real data needed. 4 of 4 pass, and verified
+  it bites: with the year test removed a 2025 run returns Sabre's number under the DOT
+  label.
+
+app/config.py
+  _env_store resolver, taking the first candidate that exists. T100_DUCKDB and
+  FORM41_DUCKDB both pointed at the E:\Avia root while both stores live under
+  E:\Avia\Usmarket data, so neither resolved and every reader took a silent blank.
+  DB1B_COUPONS_DUCKDB added.
+
+Avia Solutions Limited. All rights reserved.
