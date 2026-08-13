@@ -206,7 +206,55 @@ def contract_from_forecast(fc, currency="USD", growth_rate=None, ancillary_per_p
     # Guessing would put the wrong symbol in front of every revenue figure on the page.
     contract["currency"] = currency
     contract["_source_engine"] = (outputs.get("forecast_engine") or {}).get("local_leg")
+    _fill_hardcoded(contract, fc, case)
     return contract
+
+
+def _fill_hardcoded(contract, fc, case):
+    """Fill the fields build_contract writes as a literal None, which no argument can reach.
+
+    These are not gaps in the model. deck_contract sets origin_city_code, destination_city_code and
+    both schedule legs' dep_time and arr_time to None in the dict literal itself, with a _need note
+    beside them, so passing them in `case` does nothing at all: the first version of this adapter
+    did exactly that and they stayed empty. They are filled here, after the contract is built, and
+    each one is filled only where the payload genuinely carries it.
+
+    Nothing is invented. A field the payload cannot supply is left as deck_contract wrote it, so its
+    _need note still reads and the gap report still counts it.
+    """
+    rm = contract.get("route_metadata") or {}
+    # No IATA metro code exists in the payload, so the airport code stands in, and the _need note is
+    # rewritten to say so rather than left claiming a lookup is outstanding.
+    if rm.get("origin_city_code") is None and case.get("origin_city_code"):
+        rm["origin_city_code"] = case["origin_city_code"]
+        rm["_origin_city_need"] = "airport code standing in; no IATA metro code in the payload"
+    if rm.get("destination_city_code") is None and case.get("destination_city_code"):
+        rm["destination_city_code"] = case["destination_city_code"]
+        rm["_dest_city_need"] = "airport code standing in; no IATA metro code in the payload"
+
+    # THE SCHEDULE TIMES ARE INDICATIVE AND MUST SAY SO. cortex_app._schedule_times returns
+    # {"outbound": {"dep","arr"}, "inbound": {...}, "indicative": True}, and its own docstring calls
+    # them illustrative: not curfew-, slot- or connection-optimised. A deck printing a departure
+    # time an airline reads as a proposal, with no note, is worse than one printing none, so the
+    # basis is carried onto the block rather than dropped at the boundary.
+    sch = fc.get("schedule") or {}
+    legs = contract.get("summary_and_schedule", {}).get("schedule") or []
+    for row, key in zip(legs, ("outbound", "inbound")):
+        leg = sch.get(key) or {}
+        if row.get("dep_time") is None and leg.get("dep"):
+            row["dep_time"] = leg["dep"]
+        if row.get("arr_time") is None and leg.get("arr"):
+            row["arr_time"] = leg["arr"]
+    if legs:
+        contract["summary_and_schedule"]["_schedule_times_need"] = (
+            (sch.get("basis") or "indicative") if sch.get("indicative")
+            else "departure time %s" % (sch.get("basis") or "set by the caller"))
+
+    # breakeven_load_factor is produced by the economics module and deck_contract does not read it.
+    ec = fc.get("economics") or {}
+    e1 = contract.get("economics_year1") or {}
+    if e1.get("breakeven_load_factor") is None and ec.get("breakeven_lf") is not None:
+        e1["breakeven_load_factor"] = ec["breakeven_lf"]
 
 
 def _selftest():
