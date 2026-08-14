@@ -754,7 +754,7 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
                         induced_floor=True, fixed_overrides=None, seats=None, charges_override=None,
                         dep_time_mins=None, restricted_hours=None, restricted_hours_dest=None,
                         partner_carriers=None, split_floor=True, forecast_year=None,
-                        qsi_k=1.0, qsi_k_behind=None):
+                        qsi_k=None, qsi_k_behind=None):
     """Any city pair through the CALIBRATED engine (route_forecast.forecast). season = annual (default)
     / summer / winter runs a seasonal service: demand scaled to the season's share of the year, capacity
     over the season's weeks.
@@ -874,6 +874,23 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
     # score identically at every time of day, so they move the level and not the choice, and running
     # the search once per airline is what keeps /api/optimise affordable when it sweeps seven
     # frequencies and three seasons.
+    # THE FEED LEVEL, SETTABLE ON THE LIVE PATH. qsi_k was hardcoded 1.0 in this signature with no
+    # environment override and nothing in the dashboard, so the level driving the largest single
+    # component of a client-facing forecast could not be changed without editing code. It is the
+    # figure RECUT-RESULT measured over-reading actual connecting traffic by circa ten times, and
+    # backtest.py --qsi-k defaults to 0.06. The DEFAULT IS UNCHANGED at 1.0, so nothing moves
+    # silently; AVIA_QSI_K and AVIA_QSI_K_BEHIND make it a switch rather than an edit.
+    if qsi_k is None:
+        try:
+            qsi_k = float(os.environ.get("AVIA_QSI_K", "1.0"))
+        except ValueError:
+            qsi_k = 1.0
+    if qsi_k_behind is None and os.environ.get("AVIA_QSI_K_BEHIND"):
+        try:
+            qsi_k_behind = float(os.environ["AVIA_QSI_K_BEHIND"])
+        except ValueError:
+            qsi_k_behind = None
+
     dep_mins, feed_opt = dep_time_mins, None
     # The restricted hours, resolved ONCE and unconditionally. The optimiser reads them inside a
     # branch that only runs when an airline is named and no departure was given, and the schedule
@@ -2097,7 +2114,13 @@ def api_report(origin: str, dest: str, airline: str = "", carrier_type: str = "F
     if not fc.get("ok"):
         return JSONResponse(fc, status_code=400)
     if not fc.get("economics_ok"):
-        return JSONResponse({"ok": False, "error": "economics unavailable for the deck"}, status_code=400)
+        # SAY WHY. The engine records economics_error and this threw it away, so a failed download
+        # gave "economics unavailable for the deck" and nothing to act on. The underlying message
+        # names the field or the lookup that failed.
+        return JSONResponse({"ok": False,
+                             "error": "economics unavailable for the deck: %s"
+                                      % (fc.get("economics_error") or "no reason recorded"),
+                             "economics_error": fc.get("economics_error")}, status_code=400)
     dem = fc["demand"]; cap = fc["capacity"]; ec = fc["economics"]; raw = ec.get("raw") or {}
     o = fc["origin"]; d = fc["dest"]
     _smode = (fc.get("season") or {}).get("mode", "annual")
