@@ -88,9 +88,17 @@ def stats(vals):
 def arm(label, extra, args, out_dir):
     """One back-test arm. Returns (label, csv path, seconds) or (label, None, seconds)."""
     out = os.path.join(out_dir, "bt_%s.csv" % label)
-    if os.path.exists(out) and args.resume:
-        print("  %-10s already present, skipped" % label)
-        return label, out, 0.0
+    # NEVER SKIP AN ARM BECAUSE ITS FILE EXISTS. A file exists as soon as the arm STARTS, and an
+    # interrupted arm leaves a partial one: on 14 August a dropped SSH session left bt_k0p5.csv at
+    # 95KB against the control's 392KB, a quarter of the routes, and the next run skipped it as
+    # done. A truncated arm scored as a complete one is worse than a missing one, because the
+    # pairing intersects on the routes EVERY arm graded and the whole comparison would have
+    # collapsed onto that quarter without saying so. backtest.py's own --resume skips the routes
+    # it has already graded, so re-running a finished arm costs a few seconds and re-running a
+    # partial one finishes it.
+    if os.path.exists(out):
+        print("  %-10s continuing an existing file (%.0f KB); backtest --resume skips graded routes"
+              % (label, os.path.getsize(out) / 1024.0))
     # THE STORE PATHS ARE NOT backtest.py's DEFAULTS. It defaults to C:\Avia\oag.duckdb and
     # C:\Avia\sabre.duckdb, which exist on neither machine: the workstation's data root is
     # E:\Avia. Without these every arm returned in 0s with no rows, and the first version of
@@ -149,7 +157,9 @@ def main():
     ap.add_argument("--temp-dir", default=None)
     ap.add_argument("--extra", default="", help="extra flags passed to every arm, identically")
     ap.add_argument("--no-control", action="store_true", help="skip the V1 arm")
-    ap.add_argument("--resume", action="store_true")
+    ap.add_argument("--resume", action="store_true",
+                    help="kept for the runbook's habit; --resume is now ALWAYS passed to each arm "
+                         "and no arm is ever skipped on the strength of its file existing")
     args = ap.parse_args()
 
     # The stores come from config, which resolves them per machine, rather than from
