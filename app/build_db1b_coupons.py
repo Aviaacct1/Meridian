@@ -128,6 +128,16 @@ def open_store(path, memory, threads, temp):
             -- the actual routed distance, nonstop_miles the great circle it competes against.
             miles_flown DOUBLE, nonstop_miles DOUBLE)
     """)
+    # MIGRATE AN OLDER TABLE RATHER THAN FAIL ON IT. CREATE TABLE IF NOT EXISTS does nothing when
+    # the table already exists with a different shape, so a store built before the distance columns
+    # were added kept its seven columns and the insert failed with a column-count error. Adding a
+    # column is safe on an existing store: the old rows carry NULL until a --rebuild repopulates
+    # them, which is visible rather than wrong.
+    have = {r[0] for r in con.execute("PRAGMA table_info('od_market_coupons')").fetchall()}
+    for col, typ in (("miles_flown", "DOUBLE"), ("nonstop_miles", "DOUBLE")):
+        if col not in have:
+            con.execute(f"ALTER TABLE od_market_coupons ADD COLUMN {col} {typ}")
+            print(f"  migrated: added {col} to od_market_coupons")
     con.execute("""
         CREATE TABLE IF NOT EXISTS build_log (
             year BIGINT, quarter BIGINT, status VARCHAR, source_file VARCHAR,
@@ -154,8 +164,11 @@ def build_quarter(con, csv_path, year, quarter):
     """Aggregate one quarter's extract into od_market_coupons. Directional, as od_market is."""
     started = time.time()
     con.execute("DELETE FROM od_market_coupons WHERE year=? AND quarter=?", [year, quarter])
+    # Columns named explicitly. A positional insert breaks the moment the table gains a column,
+    # which is exactly what happened when the distance columns were added.
     con.execute(f"""
         INSERT INTO od_market_coupons
+            (origin, dest, year, quarter, coupons, pax, avg_fare, miles_flown, nonstop_miles)
         WITH r AS (
             SELECT Origin AS origin, Dest AS dest,
                    try_cast(Year AS BIGINT) AS year,
