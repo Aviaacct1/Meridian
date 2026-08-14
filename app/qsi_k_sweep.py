@@ -88,8 +88,13 @@ def arm(label, extra, args, out_dir):
     if os.path.exists(out) and args.resume:
         print("  %-10s already present, skipped" % label)
         return label, out, 0.0
+    # THE STORE PATHS ARE NOT backtest.py's DEFAULTS. It defaults to C:\Avia\oag.duckdb and
+    # C:\Avia\sabre.duckdb, which exist on neither machine: the workstation's data root is
+    # E:\Avia. Without these every arm returned in 0s with no rows, and the first version of
+    # this tool captured the child's output and printed it only on a non-zero exit, so the
+    # reason was swallowed. Both faults are fixed here.
     cmd = [sys.executable, os.path.join(HERE, "backtest.py"), "--out", out,
-           "--jobs", str(args.jobs)]
+           "--jobs", str(args.jobs), "--oag", args.oag, "--sabre", args.sabre]
     if args.limit:
         cmd += ["--limit", str(args.limit)]
     if args.years:
@@ -103,8 +108,16 @@ def arm(label, extra, args, out_dir):
     print("  %-10s %s" % (label, " ".join(cmd[-6:])))
     r = subprocess.run(cmd, capture_output=True, text=True)
     secs = time.time() - started
+    tail = ((r.stdout or "")[-800:] + (r.stderr or "")[-800:]).strip()
     if r.returncode != 0:
-        print("  %-10s FAILED after %.0fs\n%s" % (label, secs, (r.stderr or "")[-600:]))
+        print("  %-10s FAILED after %.0fs\n%s" % (label, secs, tail))
+        return label, None, secs
+    # A ZERO EXIT IS NOT A RESULT. backtest.py can finish cleanly having graded nothing, and an
+    # arm that graded nothing must say why on the spot rather than appear as a dash in a table
+    # six lines further down.
+    if not os.path.exists(out) or os.path.getsize(out) < 40:
+        print("  %-10s exited cleanly in %.0fs but wrote no rows. Its own output:\n%s"
+              % (label, secs, tail or "(nothing on stdout or stderr)"))
         return label, None, secs
     print("  %-10s done in %.0fs" % (label, secs))
     return label, out, secs
@@ -114,6 +127,8 @@ def main():
     ap = argparse.ArgumentParser(description="Back-test the QSI feed at several levels of k.")
     ap.add_argument("--ks", default=DEFAULT_KS, help="comma-separated k values")
     ap.add_argument("--out-dir", required=True)
+    ap.add_argument("--oag", default=None, help="OAG store; defaults to config.OAG_DUCKDB")
+    ap.add_argument("--sabre", default=None, help="Sabre store; defaults to config.SABRE_DUCKDB")
     ap.add_argument("--limit", type=int, default=None, help="cap routes; use to SIZE the run first")
     ap.add_argument("--years", default=None)
     ap.add_argument("--jobs", type=int, default=4, help="4 not 8 on the 16GB workstation")
@@ -122,6 +137,18 @@ def main():
     ap.add_argument("--no-control", action="store_true", help="skip the V1 arm")
     ap.add_argument("--resume", action="store_true")
     args = ap.parse_args()
+
+    # The stores come from config, which resolves them per machine, rather than from
+    # backtest.py's own defaults, which name a folder that exists on neither.
+    if not args.oag or not args.sabre:
+        sys.path.insert(0, HERE)
+        import config as CFG
+        args.oag = args.oag or str(CFG.OAG_DUCKDB)
+        args.sabre = args.sabre or str(CFG.SABRE_DUCKDB)
+    for label, path in (("OAG", args.oag), ("Sabre", args.sabre)):
+        if not os.path.exists(path):
+            print("ERROR: %s store not found at %s" % (label, path))
+            return 2
 
     os.makedirs(args.out_dir, exist_ok=True)
     ks = [k.strip() for k in args.ks.split(",") if k.strip()]
