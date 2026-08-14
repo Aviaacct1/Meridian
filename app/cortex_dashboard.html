@@ -267,7 +267,11 @@
             <div class="fld" style="grid-column:span 2"><label>Freq / week</label><input id="freq" type="number" min="1" max="35" placeholder="blank = optimise"></div>
             <div class="fld" style="grid-column:span 2"><label>Schedule</label>
               <select id="season"><option value="">Unselected (optimise)</option><option value="annual">Year-round</option><option value="summer">Summer (S)</option><option value="winter">Winter (W)</option></select></div>
-            <div class="fld" style="grid-column:span 2"><label>Departure (origin local)</label><input id="deptime" placeholder="blank = optimise" title="The outbound departure in the origin's local time, e.g. 12:00. Left blank, Meridian chooses the time that wins the most connecting traffic for the airline named, at both ends of the route."></div>
+            <!-- CHOSEN, NOT TYPED, for the same reason as the curfew: a client asking for a
+                 specific departure should not be able to introduce a format error into the run.
+                 Blank still means optimise. Quarter-hours, because that is the resolution the
+                 optimiser refines to. -->
+            <div class="fld" style="grid-column:span 2"><label>Departure (origin local)</label><select id="deptime" title="The outbound departure in the origin's local time. Left blank, Meridian chooses the time that wins the most connecting traffic for the airline named, at both ends of the route."></select></div>
             <!-- CURFEWS ARE CHOSEN, NOT TYPED. Free text let "23:00 to 06:00" through on
                  14 August 2026: parse_windows splits on a hyphen, it raised, the optimiser fell
                  back to the 11:00 placeholder, and two runs came back unoptimised with the curfew
@@ -351,6 +355,26 @@
                so the figure was built on every run and thrown away at the last step. route_feed's own
                docstring calls it the argument an airport takes to a curfew review. Hidden unless a
                restriction was actually entered, because with no curfew there is no cost to state. -->
+          <!-- THE DEPARTURE-TIME CURVE. The optimiser scores every candidate across the day and
+               kept only the winner. An airport asking "we would prefer a slot between 10:00 and
+               14:00, what does that cost us" is asking to read this, so it is drawn on every run
+               that optimises a departure. Restricted hours are shaded, the chosen time marked. -->
+          <div id="curveWrap" class="hidden" style="margin-top:14px;padding-top:10px;border-top:1px dotted var(--line)">
+            <div style="font-family:var(--sans);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:6px">Connecting traffic by departure time</div>
+            <div id="curveSvg"></div>
+            <!-- THE SLIDER. Reads the curve, never re-runs the engine. What it can show exactly is
+                 traffic: the feed at any departure time is the curve at that time times the scale
+                 the run itself implies, local demand does not move, so total demand, the plan cap
+                 and the load factor all follow. What it CANNOT show is the point to point and
+                 connecting split or any economics, because those are not linear in the feed, and
+                 an interpolated P&L would be an invented number. The readout says so. -->
+            <div id="curveSlideWrap" class="hidden" style="margin-top:10px">
+              <input id="curveSlide" type="range" min="0" max="1425" step="15" value="0" style="width:100%">
+              <div id="curveRead" style="font-family:var(--mono);font-size:11.5px;color:var(--body);margin-top:6px;line-height:1.7"></div>
+              <div id="curveReadNote" style="font-family:var(--sans);font-size:10.5px;color:var(--muted);margin-top:4px;line-height:1.5"></div>
+            </div>
+            <div id="curveNote" style="font-family:var(--sans);font-size:10.5px;color:var(--muted);margin-top:6px;line-height:1.55"></div>
+          </div>
           <div id="curfewLine" class="hidden" style="font-family:var(--mono);font-size:11.5px;color:var(--body);margin-top:8px;line-height:1.6;padding-top:8px;border-top:1px dotted var(--line)"></div>
           <div id="curfewBasis" class="hidden" style="font-family:var(--sans);font-size:10.5px;color:var(--muted);margin-top:5px;line-height:1.55"></div>
         </div>
@@ -801,6 +825,14 @@ fetch("/api/basis").then(r=>r.json()).then(b=>{
   ["curfewO1","curfewO2","curfewD1","curfewD2"].forEach(id=>{
     const el=$("#"+id); if(el) el.innerHTML=t.join("");
   });
+  // The departure picker runs at quarter-hours, the resolution the optimiser refines to, and
+  // blank still means optimise.
+  const q=['<option value="">blank = optimise</option>'];
+  for(let m=0;m<1440;m+=15){
+    const s=("0"+Math.floor(m/60)).slice(-2)+":"+("0"+(m%60)).slice(-2);
+    q.push('<option value="'+s+'">'+s+'</option>');
+  }
+  const dt=$("#deptime"); if(dt) dt.innerHTML=q.join("");
 })();
 // Returns "" for none, "HH:MM-HH:MM" for a window, or null when one end is set and the other is
 // not. The caller stops on null: a half-entered curfew is a mistake, not a default.
@@ -809,6 +841,129 @@ function curfewVal(a,b){
   if(!x&&!y) return "";
   if(!x||!y) return null;
   return x+"-"+y;
+}
+// THE SLIDER UNDER THE CURVE. Derives, never interpolates and never re-runs.
+//
+// THE ARITHMETIC, and it is exact rather than approximate. The curve is market x QSI share
+// BEFORE the feed level k is applied, so the ratio between the feed the run actually reported and
+// the curve value at the departure the run used gives a scale, and that scale reproduces the feed
+// at any other point on the curve without needing to know k, the growth factor or the alliance
+// weighting. Local demand does not vary with departure time anywhere in the engine, so total
+// demand is local plus the scaled feed, the plan cap applies as it does in route_forecast, and the
+// load factor follows.
+//
+// WHAT IT DELIBERATELY DOES NOT SHOW: the point to point and connecting split of what is carried,
+// and anything in the economics. Neither is linear in the feed, both need the engine, and putting
+// an interpolated P&L on screen would be inventing a number.
+let _slideState=null;
+function wireSlider(pts, chosenMins){
+  const wrap=$("#curveSlideWrap"), el=$("#curveSlide");
+  if(!wrap||!el||!pts||pts.length<4||!_slideState){ if(wrap) wrap.classList.add("hidden"); return; }
+  el.value=String(chosenMins!==null&&chosenMins!==undefined?chosenMins:pts[0].dep);
+  el.oninput=()=>readSlider(pts);
+  readSlider(pts);
+  wrap.classList.remove("hidden");
+}
+function readSlider(pts){
+  const el=$("#curveSlide"); if(!el||!_slideState) return;
+  const m=+el.value;
+  // Nearest scored point rather than an interpolation between two: every value shown is one the
+  // optimiser actually computed.
+  let p=pts[0]; for(const q of pts){ if(Math.abs(q.dep-m)<Math.abs(p.dep-m)) p=q; }
+  const s=_slideState;
+  const feed_ew = p.total*s.scale;                 // each way, the engine's own feed at this time
+  const demand_ew = s.local + feed_ew;             // local does not move with departure time
+  const carried_ew = s.cap>0 ? Math.min(demand_ew, s.cap) : demand_ew;
+  const lf = s.capacity>0 ? carried_ew/s.capacity : null;
+  const spill = demand_ew - carried_ew;
+  setTxt("curveRead",
+    `${p.hhmm}${p.permitted?"":"  ·  NOT FLYABLE at this time"}`+
+    `  ·  connecting ${fmt(Math.round(feed_ew*2))}`+
+    `  ·  total demand ${fmt(Math.round(demand_ew*2))}`+
+    `  ·  carried ${fmt(Math.round(carried_ew*2))}`+
+    (lf!==null?`  ·  load factor ${(lf*100).toFixed(1)}%`:"")+
+    (spill>1?`  ·  spill ${fmt(Math.round(spill*2))}`:""));
+  setTxt("curveReadNote",
+    "Two-way. Derived from the curve and this run's own feed, so the traffic figures are the "+
+    "engine's, not an interpolation. The point to point and connecting split of what is carried, "+
+    "and every economic figure, need a run at that departure time: neither is linear in the feed.");
+}
+
+// THE DEPARTURE-TIME CURVE, drawn from the scores the optimiser already computed.
+//
+// WHAT IT SHOWS: connecting demand won at each departure time, each way, before capture scaling
+// and before the capacity cap. Local demand does not vary with departure time anywhere in the
+// engine, so the ROUTE TOTAL moves one for one with this curve until the aircraft fills. That is
+// what makes it readable as a total, and the note under it says so rather than leaving the reader
+// to assume a bigger claim.
+function drawCurve(op, sc, d){
+  const wrap=$("#curveWrap"); if(!wrap) return;
+  const pts=(op&&op.curve)||[];
+  if(pts.length<4){ wrap.classList.add("hidden"); if($("#curveSlideWrap")) $("#curveSlideWrap").classList.add("hidden"); return; }
+  // The scale that ties the curve to this run's own feed. Without a feed figure or a curve point
+  // at the departure the run used there is nothing to anchor on, and the slider stays hidden
+  // rather than showing a figure derived from an assumption.
+  _slideState=null;
+  const dem=(d&&d.demand)||{}, cap=(d&&d.capacity)||{};
+  const anchorDep=(sc&&sc.outbound&&sc.outbound.dep)||"";
+  const cmins=(()=>{const a=(anchorDep||"").split(":");return a.length<2?null:(+a[0])*60+(+a[1]);})();
+  if(cmins!==null && dem.feed_total>0 && dem.total_demand>0){
+    let anchor=pts[0]; for(const q of pts){ if(Math.abs(q.dep-cmins)<Math.abs(anchor.dep-cmins)) anchor=q; }
+    if(anchor.total>0){
+      const capacity=cap.annual_capacity||0;
+      _slideState={scale: dem.feed_total/anchor.total,
+                   local: dem.total_demand-dem.feed_total,
+                   capacity: capacity,
+                   cap: capacity*(cap.plan_cap||0)};
+    }
+  }
+  const W=760, H=170, L=46, R=12, T=10, B=26;
+  const iw=W-L-R, ih=H-T-B;
+  const max=Math.max.apply(null, pts.map(p=>p.total))||1;
+  const x=m=>L+iw*(m/1440), y=v=>T+ih*(1-v/max);
+  const parts=[];
+  // Restricted hours as shaded blocks, taken from the same windows the optimiser screened on.
+  const wins=[].concat((op&&op.restricted)||[]);
+  wins.forEach(w=>{
+    const m=w.split("-"); if(m.length<2) return;
+    const a=(+m[0].split(":")[0])*60+(+m[0].split(":")[1]||0);
+    const b=(+m[1].split(":")[0])*60+(+m[1].split(":")[1]||0);
+    const segs = a<b ? [[a,b]] : [[a,1440],[0,b]];      // a window may cross midnight
+    segs.forEach(s=>parts.push(`<rect x="${x(s[0])}" y="${T}" width="${Math.max(x(s[1])-x(s[0]),0)}" height="${ih}" fill="var(--line)" opacity="0.55"/>`));
+  });
+  // Axes: hours across, and the peak value marked once rather than a full scale.
+  for(let h=0;h<=24;h+=3){
+    parts.push(`<line x1="${x(h*60)}" y1="${T+ih}" x2="${x(h*60)}" y2="${T+ih+4}" stroke="var(--line)"/>`);
+    parts.push(`<text x="${x(h*60)}" y="${H-8}" font-size="10" fill="var(--muted)" text-anchor="middle" font-family="var(--sans)">${("0"+h).slice(-2)}:00</text>`);
+  }
+  parts.push(`<line x1="${L}" y1="${T+ih}" x2="${W-R}" y2="${T+ih}" stroke="var(--line)"/>`);
+  parts.push(`<text x="${L-6}" y="${y(max)+4}" font-size="10" fill="var(--muted)" text-anchor="end" font-family="var(--sans)">${fmt(max)}</text>`);
+  // The curve itself, and the permitted points marked so a shaded hour cannot be misread as a dip.
+  const line=pts.map((p,i)=>(i?"L":"M")+x(p.dep)+" "+y(p.total)).join(" ");
+  parts.push(`<path d="${line}" fill="none" stroke="var(--accent, #b8860b)" stroke-width="1.8"/>`);
+  pts.forEach(p=>{ if(!p.permitted) parts.push(`<circle cx="${x(p.dep)}" cy="${y(p.total)}" r="2" fill="var(--muted)"/>`); });
+  // The chosen departure, and the unrestricted optimum where a restriction moved it.
+  const chosen=(sc&&sc.outbound&&sc.outbound.dep)||"";
+  const toM=s=>{const a=(s||"").split(":");return a.length<2?null:(+a[0])*60+(+a[1]);};
+  const cm=toM(chosen);
+  if(cm!==null){
+    parts.push(`<line x1="${x(cm)}" y1="${T}" x2="${x(cm)}" y2="${T+ih}" stroke="var(--accent, #b8860b)" stroke-width="1" stroke-dasharray="3 3"/>`);
+    parts.push(`<text x="${x(cm)+4}" y="${T+11}" font-size="10" fill="var(--body)" font-family="var(--sans)">chosen ${chosen}</text>`);
+  }
+  const um=toM(op&&op.unrestricted_dep);
+  if(um!==null && um!==cm){
+    parts.push(`<line x1="${x(um)}" y1="${T}" x2="${x(um)}" y2="${T+ih}" stroke="var(--muted)" stroke-width="1" stroke-dasharray="2 4"/>`);
+    parts.push(`<text x="${x(um)+4}" y="${T+24}" font-size="10" fill="var(--muted)" font-family="var(--sans)">unrestricted ${op.unrestricted_dep}</text>`);
+  }
+  $("#curveSvg").innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" role="img">${parts.join("")}</svg>`;
+  wireSlider(pts, cm);
+  setTxt("curveNote",
+    "Connecting demand won at each departure time, each way, before capture scaling and before the "+
+    "aircraft's capacity. Local demand does not vary with departure time, so the route total moves "+
+    "with this curve until the aircraft fills. Shaded hours are restricted; grey points are "+
+    "departures the aircraft cannot fly, including those whose inbound would land inside a "+
+    "restriction. Read a preferred window off the curve, then run that time for the full forecast.");
+  wrap.classList.remove("hidden");
 }
 $("#optimise").onclick=optimise;
 function optimise(){
@@ -1004,6 +1159,7 @@ function render(d){
   // the carried cost of the restriction is smaller than this and can be nil, because the seats sell
   // either way and only the mix changes; the note says so whenever the run is capacity bound.
   const _op=(_sc&&_sc.optimised)||null;
+  drawCurve(_op, _sc, d);
   const _cl=$("#curfewLine"), _cbz=$("#curfewBasis");
   const _win=[].concat((_op&&_op.restricted)||[], (_op&&_op.restricted_dest)||[]);
   if(_op && _win.length && _op.unrestricted_dep && _cl){

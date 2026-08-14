@@ -1173,7 +1173,11 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
                      "aircraft": aircraft, "freq": freq,
                      # Named so a reader can tell a measured configuration from the generic table.
                      "seats": (int(seats) if seats else None),
-                     "seats_source": ("carrier configuration, OAG" if seats else "generic type table")},
+                     "seats_source": ("carrier configuration, OAG" if seats else "generic type table"),
+                     # The plan cap, so a reader can tell a route that filled from one the cap
+                     # held down. capacity.load is the ACHIEVED load factor and equals the cap
+                     # only when the run is capacity bound, so the two are not interchangeable.
+                     "plan_cap": float(plan_lf)},
         "season": {"mode": r.get("season", "annual"), "share": r.get("season_share", 1.0),
                    "weeks": round(season_weeks)},
         "projection": {"cagr": round(_cagr, 4), "base_year": ctx["year"], "horizon": 5, "build": _build},

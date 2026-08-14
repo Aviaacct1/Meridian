@@ -1,0 +1,38 @@
+The departure slider: traffic at any time on the curve, derived not interpolated
+
+JOHN, 14 August: "I was only thinking about the traffic load factor connecting numbers not
+the economics... to see the forecast at the time you select with the slider without an
+extra run."
+
+IT CAN BE EXACT, WHICH IS WHY IT IS WORTH DOING. The curve is market x QSI share BEFORE the
+feed level k is applied, so the ratio between the feed the run reported and the curve value
+at the departure the run used is a scale that reproduces the feed at any other point,
+without needing k, the growth factor or the alliance weighting. Local demand does not vary
+with departure time anywhere in the engine, which WEIGHT-IS-A-NULL-TEST established, so
+total demand is local plus the scaled feed, the plan cap applies as route_forecast applies
+it, and the load factor follows.
+
+Checked against the live SJC-TPE run: at the run's own 20:59 the slider returns connecting
+45,138, which is exactly twice the reported feed, and a total of 81,996, which is the figure
+on the page. At 19:00 it returns 72,968 and at 10:00 59,427, and the cap binds at 83,538
+two-way.
+
+app/cortex_app.py
+  capacity.plan_cap added. capacity.load is the ACHIEVED load factor and equals the cap only
+  when the run is capacity bound, so the two are not interchangeable and the slider needs the
+  cap itself to apply the same ceiling the engine does.
+
+app/cortex_dashboard.html
+  A slider under the curve. It snaps to the nearest SCORED point rather than interpolating
+  between two, so every figure shown is one the optimiser actually computed. It reports
+  connecting, total demand, carried, load factor and spill, all two-way.
+
+  WHAT IT DELIBERATELY WILL NOT SHOW, and the readout says so: the point to point and
+  connecting split of what is carried, and every economic figure. Neither is linear in the
+  feed, both need the engine, and an interpolated P&L on screen would be an invented number.
+
+  The slider stays hidden rather than guessing when the run carries no feed figure or the
+  curve has no point at the departure used, since there is then nothing to anchor the scale
+  on.
+
+Avia Solutions Limited. All rights reserved.
