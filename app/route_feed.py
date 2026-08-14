@@ -481,13 +481,26 @@ def parse_windows(spec):
             h, m = t, "0"
         return (int(h) * 60 + int(m)) % 1440
 
+    # SEPARATORS AS PEOPLE WRITE THEM. A curfew typed as "23:00 to 06:00" raised an unpack error
+    # on 14 August, the optimiser fell back to the 11:00 placeholder, and two SJC-TPE runs came
+    # back at 11:00 with the curfew silently absent. A restriction that fails to parse must never
+    # cost the run its optimiser over punctuation: an airport's night hours are a fact, and the
+    # form they were typed in is not one.
+    text = str(spec)
+    for sep in (" to ", " until ", " till ", "–", "—", " - ", "/"):
+        text = text.replace(sep, "-")
     out = []
-    for part in str(spec).replace(";", ",").split(","):
+    for part in text.replace(";", ",").split(","):
         part = part.strip()
         if not part:
             continue
-        a, b = part.split("-")[:2]
-        out.append((_m(a), _m(b)))
+        bits = [b for b in part.split("-") if b.strip()]
+        if len(bits) < 2:
+            # Named rather than raised as "not enough values to unpack", which tells the person
+            # reading the page nothing about what they typed or what was wanted.
+            raise ValueError("cannot read the restricted hours %r: expected a window such as "
+                             "23:00-06:00, or a comma-separated list of them" % part)
+        out.append((_m(bits[0]), _m(bits[1])))
     return out
 
 
