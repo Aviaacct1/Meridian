@@ -475,14 +475,31 @@ CONTINENTAL_MAX_KM = 3000.0
 _TURN_TABLE = {}
 
 
-def _measured_turn(aircraft_code):
-    """The measured turnaround for this aircraft type, or None.
+TURN_HAUL_BANDS = ((1500.0, "under1500"), (3000.0, "1500-3000"), (6000.0, "3000-6000"))
+
+
+def _turn_band(gcd_km):
+    for limit, name in TURN_HAUL_BANDS:
+        if (gcd_km or 0) <= limit:
+            return name
+    return "over6000"
+
+
+def _measured_turn(aircraft_code, gcd_km=None):
+    """The measured turnaround for this aircraft type ON THIS SECTOR LENGTH, or None.
 
     Built by build_turnarounds.py from OAG on unambiguous single-arrival single-departure
-    station-days, which is the only pairing OAG supports without tail numbers. p10 is used
-    rather than the median: a turnaround is the time the aeroplane NEEDS, and the median mixes
-    in stations that simply had a long gap. A type measured on too few station-days is marked
-    unusable in the file and is not read here.
+    station-days, which is the only pairing OAG supports without tail numbers.
+
+    KEYED ON TYPE AND HAUL, not type alone. The first table measured an A330-300 at 60 minutes
+    and a 777-300ER at 70, which are credible for a short-haul widebody rotation and not for the
+    same aeroplane off a thirteen-hour sector. One type covers both operations and a low
+    percentile then selects the short-haul end of it.
+
+    p10 within the band rather than the median: a turnaround is the time the aeroplane NEEDS, and
+    the median mixes in stations that simply had a long gap. A cell measured on too few
+    station-days is marked unusable in the file and is not read; the type's all-haul cell is the
+    fallback before the flight-type bands.
     """
     if not aircraft_code:
         return None
@@ -503,8 +520,13 @@ def _measured_turn(aircraft_code):
             except Exception:
                 pass
     row = _TURN_TABLE.get(str(aircraft_code).upper())
-    if isinstance(row, dict) and row.get("usable") and row.get("p10"):
-        return int(row["p10"])
+    bands = (row or {}).get("bands") if isinstance(row, dict) else None
+    if not isinstance(bands, dict):
+        return None
+    for key in (_turn_band(gcd_km) if gcd_km else None, "any"):
+        cell = bands.get(key) if key else None
+        if isinstance(cell, dict) and cell.get("usable") and cell.get("p10"):
+            return int(cell["p10"])
     return None
 
 
@@ -520,7 +542,7 @@ def turnaround_mins(origin_country, dest_country, gcd_km, cfg=None, aircraft_cod
     """
     if cfg and cfg.get("turnaround_mins"):
         return int(cfg["turnaround_mins"])
-    measured = _measured_turn(aircraft_code or (cfg or {}).get("aircraft_code"))
+    measured = _measured_turn(aircraft_code or (cfg or {}).get("aircraft_code"), gcd_km)
     if measured:
         return measured
     oc = (origin_country or "").upper()

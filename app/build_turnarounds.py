@@ -62,6 +62,18 @@ def _mins(t):
     return (h * 60 + m) if (h < 24 and m < 60) else None
 
 
+# The haul bands the programme already uses elsewhere, so a turnaround can be read beside a load
+# factor or a capture rate without translating.
+HAUL_BANDS = ((1500.0, "under1500"), (3000.0, "1500-3000"), (6000.0, "3000-6000"))
+
+
+def _haul(gcd_km):
+    for limit, name in HAUL_BANDS:
+        if (gcd_km or 0) <= limit:
+            return name
+    return "over6000"
+
+
 def _days(spec):
     """days_of_op as a set of ints 1-7. OAG writes '1 3 5 7', '1234567' or with dots."""
     out = set()
@@ -79,23 +91,29 @@ def build(con, weeks, min_n, verbose=True):
         where.append("CAST(year AS VARCHAR) = ?")
         params.append(str(weeks))
     sql = (f"SELECT week, carrier, aircraft_code, aircraft_name, dep_airport, arr_airport, "
-           f"local_dep_time, local_arr_time, days_of_op, arr_days_of_op "
+           f"local_dep_time, local_arr_time, days_of_op, arr_days_of_op, gcd_km "
            f"FROM oag WHERE {' AND '.join(where)}")
     rows = con.execute(sql, params).fetchall()
     if verbose:
         print(f"  {len(rows):,} scheduled nonstop passenger legs with an aircraft code")
 
-    # (airport, carrier, type, day) -> {"arr": [mins], "dep": [mins]}
+    # (airport, carrier, type, day) -> {"arr": [(mins, gcd)], "dep": [(mins, gcd)]}
     station = {}
-    for wk, car, ac, acn, dep_ap, arr_ap, dt, at, dop, adop in rows:
+    for wk, car, ac, acn, dep_ap, arr_ap, dt, at, dop, adop, gcd in rows:
         dm, am = _mins(dt), _mins(at)
         if dm is None or am is None:
             continue
+        try:
+            g = float(gcd or 0)
+        except (TypeError, ValueError):
+            g = 0.0
         for day in _days(dop):
-            station.setdefault((wk, dep_ap, car, ac, day), {"arr": [], "dep": []})["dep"].append(dm)
+            station.setdefault((wk, dep_ap, car, ac, day),
+                               {"arr": [], "dep": []})["dep"].append((dm, g))
         # The arrival day can differ from the departure day; OAG carries its own field for it.
         for day in (_days(adop) or _days(dop)):
-            station.setdefault((wk, arr_ap, car, ac, day), {"arr": [], "dep": []})["arr"].append(am)
+            station.setdefault((wk, arr_ap, car, ac, day),
+                               {"arr": [], "dep": []})["arr"].append((am, g))
 
     names, gaps = {}, {}
     counts = {"ambiguous": 0, "unambiguous": 0, "night_stop": 0, "below_floor": 0}
@@ -104,14 +122,23 @@ def build(con, weeks, min_n, verbose=True):
             counts["ambiguous"] += 1
             continue
         counts["unambiguous"] += 1
-        gap = (v["dep"][0] - v["arr"][0]) % 1440
+        (am, g_arr), (dm, g_dep) = v["arr"][0], v["dep"][0]
+        gap = (dm - am) % 1440
         if gap >= NIGHT_STOP_MIN:
             counts["night_stop"] += 1
             continue
         if gap < FLOOR_MIN:
             counts["below_floor"] += 1
             continue
-        gaps.setdefault(ac, []).append(gap)
+        # THE SECTOR SETS THE WORK AS MUCH AS THE AEROPLANE DOES. The first table keyed on type
+        # alone put an A330-300 at 60 minutes and a 777-300ER at 70, which are credible for a
+        # short-haul widebody rotation and not for the same aircraft off a thirteen-hour sector,
+        # where the cabin needs a deep clean, full catering, a crew change and a long uplift. One
+        # type covers both operations, and the low percentile then selects the short-haul end.
+        # The BINDING sector is the longer of the two: a long arrival drives the cleaning and a
+        # long departure drives the uplift.
+        gaps.setdefault((ac, _haul(max(g_arr, g_dep))), []).append(gap)
+        gaps.setdefault((ac, "any"), []).append(gap)
     for _wk, _car, ac, acn, *_rest in rows:
         if acn and ac not in names:
             names[ac] = acn
@@ -121,10 +148,11 @@ def build(con, weeks, min_n, verbose=True):
         return xs[min(int(round(p * (len(xs) - 1))), len(xs) - 1)]
 
     table = {}
-    for ac, xs in gaps.items():
-        table[ac] = {"name": names.get(ac, ""), "n": len(xs),
-                     "p10": pct(xs, 0.10), "p25": pct(xs, 0.25), "p50": pct(xs, 0.50),
-                     "min": min(xs), "usable": len(xs) >= min_n}
+    for (ac, band), xs in gaps.items():
+        table.setdefault(ac, {"name": names.get(ac, ""), "bands": {}})
+        table[ac]["bands"][band] = {"n": len(xs), "p10": pct(xs, 0.10), "p25": pct(xs, 0.25),
+                                    "p50": pct(xs, 0.50), "min": min(xs),
+                                    "usable": len(xs) >= min_n}
     return table, counts
 
 
@@ -158,16 +186,26 @@ def main():
     print(f"  of the unambiguous: {counts['night_stop']:,} night stops (8h or more, not a turn), "
           f"{counts['below_floor']:,} below the {FLOOR_MIN}-minute floor")
 
-    usable = {k: v for k, v in table.items() if v["usable"]}
-    print(f"\n  {len(table)} aircraft types measured, {len(usable)} with n >= {args.min_n}\n")
-    print(f"  {'type':<8} {'name':<26} {'n':>6} {'p10':>6} {'p25':>6} {'p50':>6} {'min':>6}")
-    for ac, v in sorted(usable.items(), key=lambda kv: -kv[1]["n"])[:args.top]:
-        print(f"  {ac:<8} {(v['name'] or '')[:26]:<26} {v['n']:>6,} {v['p10']:>6} "
-              f"{v['p25']:>6} {v['p50']:>6} {v['min']:>6}")
+    order = ["under1500", "1500-3000", "3000-6000", "over6000"]
+    ranked = sorted(table.items(), key=lambda kv: -(kv[1]["bands"].get("any", {}).get("n", 0)))
+    print(f"\n  {len(table)} aircraft types measured. p10 by haul band, minutes:\n")
+    print(f"  {'type':<6} {'name':<24} {'any n':>7} {'<1500':>7} {'1.5-3k':>7} {'3-6k':>7} "
+          f"{'>6000':>7}")
+    for ac, v in ranked[:args.top]:
+        b = v["bands"]
+        cell = lambda k: (str(b[k]["p10"]) + ("" if b[k]["usable"] else "?")) if k in b else "-"
+        print(f"  {ac:<6} {(v['name'] or '')[:24]:<24} {b.get('any', {}).get('n', 0):>7,} "
+              f"{cell('under1500'):>7} {cell('1500-3000'):>7} {cell('3000-6000'):>7} "
+              f"{cell('over6000'):>7}")
 
-    print("\n  THE FIGURE TO USE IS p10, not the median: a turnaround is the time the aeroplane "
-          "needs,\n  and the median mixes in stations that simply had a long gap. Types below the "
-          "minimum n are\n  written to the file but marked unusable rather than dropped.")
+    print("\n  A FIGURE MARKED ? IS BELOW n=%d AND IS NOT USED BY THE ENGINE. It is written to the "
+          "file\n  rather than dropped, so a thin cell is visible instead of silently absent."
+          % args.min_n)
+    print("  Read ACROSS a row: if the long-haul cell is well above the short-haul one for the "
+          "same\n  aeroplane, the sector is doing the work and a type-only figure would have "
+          "averaged them.")
+    print("  p10 rather than the median WITHIN a band: a turnaround is the time the aeroplane "
+          "needs,\n  and the median mixes in stations that simply had a long gap.")
 
     if args.out:
         with open(args.out, "w", encoding="utf-8") as fh:
@@ -180,10 +218,12 @@ def main():
         import csv as _csv
         with open(args.csv, "w", newline="", encoding="utf-8") as fh:
             w = _csv.writer(fh)
-            w.writerow(["aircraft_code", "aircraft_name", "n", "p10", "p25", "p50", "min", "usable"])
+            w.writerow(["aircraft_code", "aircraft_name", "haul_band", "n", "p10", "p25", "p50",
+                        "min", "usable"])
             for ac, v in sorted(table.items()):
-                w.writerow([ac, v["name"], v["n"], v["p10"], v["p25"], v["p50"], v["min"],
-                            v["usable"]])
+                for band, b in sorted(v["bands"].items()):
+                    w.writerow([ac, v["name"], band, b["n"], b["p10"], b["p25"], b["p50"],
+                                b["min"], b["usable"]])
         print(f"  wrote {args.csv}")
     return 0
 

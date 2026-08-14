@@ -1,0 +1,34 @@
+Turnarounds by type AND haul: the sector does as much of the work as the aeroplane
+
+THE FIRST TABLE SHOWED ITS OWN PROBLEM. Keyed on aircraft type alone, 2025 OAG returned an
+A330-300 at p10 60 minutes and a 777-300ER at 70, against an A320 at 35. Those widebody
+figures are credible for a short-haul rotation, Tokyo-Osaka or intra-Asia, and are not
+credible for the same aeroplane at an outstation off a thirteen-hour sector, where the cabin
+needs a deep clean, full catering, a crew change and a long uplift. One type covers both
+operations and a low percentile then selects the short-haul end of it.
+
+John's instinct that the aeroplane matters more than the region was right. The measurement
+says the SECTOR matters too, and gcd_km is already in the store.
+
+app/build_turnarounds.py
+  Keyed on (aircraft type, haul band), using the programme's existing bands so a turnaround
+  can be read beside a load factor or a capture rate without translating. The binding sector
+  is the LONGER of the arrival and the departure: a long arrival drives the cleaning, a long
+  departure drives the uplift. An all-haul cell is kept per type as a fallback.
+  The printed table is now a row per type across the four bands, so a reader can see the
+  sector effect directly. Cells below the minimum n print with a ? and are written to the
+  file rather than dropped, so a thin cell is visible instead of silently absent.
+
+app/route_feed.py
+  _measured_turn takes the sector length and reads the cell for that type and haul, falling
+  back to the type's all-haul cell, then to the flight-type bands, then to a case override.
+
+Tested on a fixture with one type flown on two very different sectors: the same A330-300
+returns 50 minutes on 900km and 180 on 11,000km, as constructed. A type-only table averages
+those into one number.
+
+MEASURED, 2025 OAG, before the haul cut: 43.3m scheduled nonstop legs with an aircraft code,
+199,216 unambiguous station-days against 4,071,620 skipped as ambiguous, of which 5,866 were
+night stops and 1,277 below the twenty-minute floor. 157 types measured, 127 with n >= 20.
+
+Avia Solutions Limited. All rights reserved.
