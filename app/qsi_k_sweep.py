@@ -207,15 +207,22 @@ def main():
                          "and no arm is ever skipped on the strength of its file existing")
     args = ap.parse_args()
 
+    # --score-only RUNS NOTHING, so it needs neither a store nor a route pin. Requiring them
+    # refused to read six arms that were already on disk, which is a check standing in front of
+    # work it has no part in.
+    if args.score_only:
+        args.oag = args.oag or ""
+        args.sabre = args.sabre or ""
     # The stores come from config, which resolves them per machine, rather than from
     # backtest.py's own defaults, which name a folder that exists on neither.
-    if not args.oag or not args.sabre:
+    elif not args.oag or not args.sabre:
         sys.path.insert(0, HERE)
         import config as CFG
         args.oag = args.oag or str(CFG.OAG_DUCKDB)
         args.sabre = args.sabre or str(CFG.SABRE_DUCKDB)
-    for label, path in (("OAG", args.oag), ("Sabre", args.sabre),
-                        ("pinned route set", args.routes_file)):
+    for label, path in ([] if args.score_only else
+                        (("OAG", args.oag), ("Sabre", args.sabre),
+                         ("pinned route set", args.routes_file))):
         if not os.path.exists(path):
             print("ERROR: %s not found at %s" % (label, path))
             if label == "pinned route set":
@@ -224,7 +231,8 @@ def main():
                       "--min-gcd 1500 --routes-file %s --discover-only"
                       % (args.oag, args.sabre, args.routes_file))
             return 2
-    for label, path in (("preagg", args.preagg), ("wave cache", args.wave_cache)):
+    for label, path in ([] if args.score_only else
+                        (("preagg", args.preagg), ("wave cache", args.wave_cache))):
         if path and not os.path.exists(path):
             print("WARNING: %s not found at %s. The QSI arms will fall back to the flat feed on "
                   "every route the cache does not cover, which waters the comparison down."
