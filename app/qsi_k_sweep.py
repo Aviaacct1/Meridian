@@ -55,18 +55,32 @@ KEY_COLS = ("route", "dep", "arr", "carrier", "year")
 
 
 def load(path):
-    """{key: fc_over_p2p} for the rows this arm actually graded, plus its ungraded count."""
+    """{key: (fc_over_out, fc_over_p2p)} for the rows this arm graded, plus its ungraded count.
+
+    THE MEASURE FOR A FEED CHANGE IS fc_over_out AND NOT fc_over_p2p. backtest.py line 595
+    computes ratio_p2p as f["captured"] / p2p, where captured is the LOCAL leg: the connecting
+    feed is not in that numerator at all. compare_backtest_ab.py says the same in its own
+    docstring, "the like-for-like demand test WITH THE FEED REMOVED". Scoring a feed sweep on it
+    returned four arms identical to four significant figures across a sixteen-fold range of k,
+    which is the column reporting that it does not measure what was varied.
+
+    Both are carried. fc_over_out is the result; fc_over_p2p is the CONTROL and should barely
+    move, because k has no route to the local leg except by crowding it out at the capacity cap.
+    A k that moves the local leg is one whose feed is large enough to spill the aircraft.
+    """
     if not path or not os.path.exists(path):
         return None, 0
     rows, ungraded = {}, 0
     with open(path, newline="", encoding="utf-8") as fh:
         for r in csv.DictReader(fh):
-            raw = (r.get("fc_over_p2p") or "").strip()
-            if not raw:
+            out_raw = (r.get("fc_over_out") or "").strip()
+            p2p_raw = (r.get("fc_over_p2p") or "").strip()
+            if not out_raw:
                 ungraded += 1
                 continue
             try:
-                rows[tuple((r.get(c) or "").strip() for c in KEY_COLS)] = float(raw)
+                rows[tuple((r.get(c) or "").strip() for c in KEY_COLS)] = (
+                    float(out_raw), float(p2p_raw) if p2p_raw else None)
             except ValueError:
                 ungraded += 1
     return rows, ungraded
@@ -244,16 +258,27 @@ def main():
         print("  No route is graded by every arm, so there is no controlled comparison to make.")
         return 1
 
-    print("\n  %-12s %6s %9s %10s %10s %8s %8s"
+    print("\n  fc/OUTTURN, the whole route including connecting. THIS IS THE RESULT.")
+    print("  %-12s %6s %9s %10s %10s %8s %8s"
           % ("arm", "n", "median", "within20", "within40", "over", "under"))
-    base = None
     for label, (rows, _u) in loaded.items():
-        s = stats([rows[k] for k in common])
-        if base is None:
-            base = s["within20"]
+        s = stats([rows[k][0] for k in common])
         print("  %-12s %6d %9.2f %9.1f%% %9.1f%% %7.1f%% %7.1f%%"
               % (label, s["n"], s["median"], 100 * s["within20"], 100 * s["within40"],
                  100 * s["over"], 100 * s["under"]))
+
+    p2p = {lab: [rows[k][1] for k in common if rows[k][1] is not None]
+           for lab, (rows, _u) in loaded.items()}
+    if any(p2p.values()):
+        print("\n  fc/P2P, the LOCAL leg only. THIS IS THE CONTROL and should barely move: the feed"
+              "\n  is not in its numerator, so k reaches it only by crowding local demand out at the"
+              "\n  capacity cap. An arm that moves here is spilling the aircraft.")
+        print("  %-12s %6s %9s %10s" % ("arm", "n", "median", "within20"))
+        for label, vals in p2p.items():
+            s = stats(vals)
+            if s:
+                print("  %-12s %6d %9.2f %9.1f%%"
+                      % (label, s["n"], s["median"], 100 * s["within20"]))
 
     print("\n  Read the SHAPE across k, not the winner. On a paired sample this size a point or "
           "two is\n  noise; a monotone trend is not. The V1 control is the arm to beat, and a V2 "
