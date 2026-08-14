@@ -655,7 +655,8 @@ def _econ_block(each_way, aircraft, freq, home, dest_airport, gcd, econ_share, p
         return {"economics_ok": False, "economics_error": str(e)}
 
 
-def _schedule_times(o_code, d_code, o, d, block_min, dep_out=11.0, turn_h=2.0):
+def _schedule_times(o_code, d_code, o, d, block_min, dep_out=11.0, turn_h=2.0,
+                    restricted=None, restricted_dest=None):
     """Indicative local dep/arr clock times from block time and an approximate timezone offset (by
     longitude). Illustrative only: not curfew-, slot- or connection-optimised, but gives the schedule
     a sensible shape. Outbound departs the origin late morning; the return turns at the destination."""
@@ -685,11 +686,46 @@ def _schedule_times(o_code, d_code, o, d, block_min, dep_out=11.0, turn_h=2.0):
         return hhmm(dep_local), hhmm(arr) + suffix
 
     do, ao = leg(dep_out, tzo, tzd)
-    dep_ret = ((dep_out + bh + (tzd - tzo)) + turn_h) % 24.0
+    # THE RETURN IS TIMED ON ITS OWN TWO MOVEMENTS, NOT DERIVED FROM THE OUTBOUND. The earliest
+    # possible return is arrival plus a turn, but the aircraft does not shuttle: it flies another
+    # route from the destination and comes back, so that time is a starting point for the search
+    # and not the answer. From it, step forward until BOTH the departure from the destination and
+    # the resulting arrival at the origin fall outside their own airport's restricted hours. A
+    # curfew blocks every movement in its window, arrivals and departures alike.
+    arr_dest_local = dep_out + bh + (tzd - tzo)
+    dep_ret = (arr_dest_local + turn_h) % 24.0
+    ret_note = None
+    if restricted or restricted_dest:
+        try:
+            import route_feed as _RF
+            w_o = _RF.parse_windows(restricted) if restricted else []
+            w_d = _RF.parse_windows(restricted_dest) if restricted_dest else []
+            found = None
+            for step in range(0, 24 * 4):                      # quarter-hours across a whole day
+                cand = (arr_dest_local + turn_h + step * 0.25) % 24.0
+                arr_origin = (cand + bh + (tzo - tzd)) % 24.0
+                if _RF.in_window(int(round(cand * 60)) % 1440, w_d):
+                    continue
+                if _RF.in_window(int(round(arr_origin * 60)) % 1440, w_o):
+                    continue
+                found = cand
+                break
+            if found is None:
+                # Stated, never silently drawn illegal. A window this wide is a real finding about
+                # the airport pair rather than a bug in the search.
+                ret_note = ("no return departure in the 24 hours after the turn clears both "
+                            "airports' restricted hours")
+            else:
+                dep_ret = found
+        except ValueError as e:                                # unreadable window: say so
+            ret_note = str(e)
     dr, ar = leg(dep_ret, tzd, tzo)
-    return {"outbound": {"sector": f"{o_code}-{d_code}", "dep": do, "arr": ao},
-            "inbound": {"sector": f"{d_code}-{o_code}", "dep": dr, "arr": ar},
-            "block_min": block_min, "indicative": True}
+    out = {"outbound": {"sector": f"{o_code}-{d_code}", "dep": do, "arr": ao},
+           "inbound": {"sector": f"{d_code}-{o_code}", "dep": dr, "arr": ar},
+           "block_min": block_min, "indicative": True}
+    if ret_note:
+        out["inbound_need"] = ret_note
+    return out
 
 
 def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft="A21X",
@@ -824,6 +860,13 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
     # the search once per airline is what keeps /api/optimise affordable when it sweeps seven
     # frequencies and three seasons.
     dep_mins, feed_opt = dep_time_mins, None
+    # The restricted hours, resolved ONCE and unconditionally. The optimiser reads them inside a
+    # branch that only runs when an airline is named and no departure was given, and the schedule
+    # builder needs them on every path: a curfew constrains the return leg whether or not the
+    # outbound was optimised, and a run with a caller-set departure still has to draw a legal
+    # return.
+    _rh_disp = restricted_hours or os.environ.get("AVIA_RESTRICTED_HOURS") or None
+    _rd_disp = restricted_hours_dest or os.environ.get("AVIA_RESTRICTED_HOURS_DEST") or None
     dep_basis = ("set by the caller" if dep_time_mins is not None else
                  "indicative only, no operator named so no connecting feed is built")
     if airline:
@@ -832,8 +875,7 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
             # one must never read a cached optimum taken without it.
             # No restriction is assumed at either end. A curfew is a fact about an airport that
             # somebody has to know, so it is entered rather than inferred.
-            _rh = restricted_hours or os.environ.get("AVIA_RESTRICTED_HOURS") or None
-            _rd = restricted_hours_dest or os.environ.get("AVIA_RESTRICTED_HOURS_DEST") or None
+            _rh, _rd = _rh_disp, _rd_disp
             _dk = ("dep", home, dest_airport, airline, ctx["week"], ctx["year"], str(_rh), str(_rd),
                    ",".join(_partners))
             if _dk not in S:
@@ -1093,7 +1135,8 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
         # The schedule shown is the schedule forecast. It was the other way round: the page drew an
         # 11:00 departure while the demand behind it knew nothing of any departure time at all.
         "schedule": dict(_schedule_times(home, dest_airport, o, d, bmin,
-                                         dep_out=((dep_mins / 60.0) if dep_mins is not None else 11.0)),
+                                         dep_out=((dep_mins / 60.0) if dep_mins is not None else 11.0),
+                                         restricted=_rh_disp, restricted_dest=_rd_disp),
                          basis=dep_basis, partners=(_partners or None),
                          forecast_year=fy, growth_basis=growth_basis,
                          optimised=(feed_opt or {}) if feed_opt else None,

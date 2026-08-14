@@ -1,0 +1,49 @@
+Each movement screened on its own time: the rotation is not a loop
+
+JOHN'S RULING, 14 August: a curfew blocks every movement in its window, arrivals and
+departures alike. And his correction before it: the aircraft does not shuttle. It flies
+another route from the destination and comes back, so the return departure is a FREE
+VARIABLE and its arrival at the origin is not dep + 2 x block + turn.
+
+Four movements, and only two of them belong to the outbound decision.
+
+app/route_feed.py
+  optimise_departure now screens the outbound on ITS OWN two movements: the departure
+  from the origin against the origin's hours, and the arrival at the hub against the
+  hub's. The two derived tests are gone. They blocked departures that are perfectly
+  legal, because a return time exists that lands outside the window whatever the outbound
+  does: on SJC-TPE against a 23:00-06:00 origin curfew the derived return-arrival test
+  alone blocked 17:30 through 04:00, most of the evening, for a rotation nobody flies.
+  The permitted window is therefore WIDER than it was and the optimum may move.
+
+app/cortex_app.py
+  _schedule_times times the return on its own two movements. From the earliest possible
+  turn it steps forward in quarter-hours across a whole day until BOTH the departure from
+  the destination and the resulting arrival at the origin fall outside their own airport's
+  restricted hours. Where no such time exists in 24 hours it draws the earliest turn and
+  SAYS SO in inbound_need rather than drawing an illegal return as though it were a
+  schedule. An unreadable window is reported the same way.
+  The restricted hours are now resolved once and unconditionally: they were read inside
+  the branch that only runs when an airline is named and no departure was given, while
+  the schedule builder needs them on every path.
+
+app/cortex_dashboard.html
+  The schedule line carries "RETURN NOT TIMED" and the reason when the search failed.
+  And the curfew line now reads "best permitted departure 06:30 ... would depart 00:30 if
+  unrestricted", where it read "departs 06:30 within the restriction", which parses as the
+  departure being INSIDE the curfew. On a page an airport takes to a curfew review that is
+  the sentence they stop on.
+
+Tested on SJC-TPE geometry, block 13h45: no curfew reproduces the previous return exactly
+(08:15 arriving 06:00, unchanged); a 23:00-06:00 origin curfew returns 14:15 arriving
+12:00, both legal; a window ending at 22:00 correctly permits a 22:00 arrival, windows
+being half-open; an origin closed 00:00-23:59 finds nothing and says so; and a curfew
+typed with "to" now parses.
+
+STILL OPEN AND LARGER THAN THIS. qsi_feed.beyond_capture and behind_capture both take a
+single dep_time_mins, the outbound departure, and there is no inbound scoring anywhere in
+the module, so one direction's connection quality is applied to a two-way market. The
+return has its own connections at both ends and they are never scored. See
+THE-FEED-IS-SCORED-ONE-WAY-ONLY.
+
+Avia Solutions Limited. All rights reserved.

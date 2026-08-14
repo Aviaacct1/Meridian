@@ -974,7 +974,12 @@ function render(d){
       // The two produce different load factors and a different aircraft choice, so which one was
       // used belongs on the line that states the schedule.
       (cap.seats?`, ${cap.seats} seats (${cap.seats_source||"basis not stated"})`:"")+
-      (_sc.indicative?"  ·  local times, indicative: not slot-, curfew- or connection-optimised":""));
+      (_sc.indicative?"  ·  local times, indicative: not slot-, curfew- or connection-optimised":"")+
+      // THE RETURN LEG SAYS WHEN IT COULD NOT BE TIMED LEGALLY. _schedule_times searches the 24
+      // hours after the turn for a return that clears both airports' restricted hours, and when
+      // none exists it falls back to the earliest turn and states why. Drawing that fallback
+      // without the reason would put an illegal return on the page as though it were a schedule.
+      (_sc.inbound_need?"  ·  RETURN NOT TIMED: "+_sc.inbound_need:""));
     const _el=$("#schedRow"); if(_el) _el.classList.remove("hidden");
   } else { const _el=$("#schedRow"); if(_el) _el.classList.add("hidden"); }
 

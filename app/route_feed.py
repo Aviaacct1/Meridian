@@ -627,20 +627,27 @@ def optimise_departure(sabre_db, oag_db, week, origin_airports, origin, hub, des
     windows_d = parse_windows(restricted_dest)
 
     def permitted(dep):
-        """Movements both airports can take: outbound departure and return arrival at the origin,
-        arrival and return departure at the destination."""
+        """The two movements THIS departure commits: it leaves the origin, and it lands at the hub.
+
+        A CURFEW BLOCKS EVERY MOVEMENT IN ITS WINDOW, arrivals and departures alike, and John
+        confirmed that on 14 August. What it does not do is tie the return to the outbound. The
+        aircraft does not shuttle: it flies another route from the hub and comes back, so the
+        return departure is a FREE VARIABLE and its arrival at the origin is not dep + 2 x block
+        + turn. Screening the outbound on a derived return arrival blocked departures that are
+        perfectly legal, because a return time exists that lands outside the window whatever the
+        outbound does. On SJC-TPE against a 23:00-06:00 origin curfew the derived test alone
+        blocked 17:30 through 04:00, which is most of the evening, for a rotation nobody flies.
+
+        The return's own two movements, its departure from the hub and its arrival at the origin,
+        are screened where the return is timed, in cortex_app._schedule_times. Both legs are
+        curfew-legal; neither is derived from the other.
+        """
         if in_window(dep, windows):
             return False
-        if check_return and windows:
-            # timezone cancels across the two legs, so the return lands dep + 2 x block + turn later
-            if in_window(dep + 2 * int(flying_mins) + int(turn_mins), windows):
-                return False
         if windows_d:
             import qsi_feed as _QF
             arr_hub = _QF._hub_arrival_mins(origin, hub, dep, flying_mins, cfg)
             if in_window(arr_hub, windows_d):
-                return False
-            if check_return and in_window(arr_hub + int(turn_mins), windows_d):
                 return False
         return True
 
