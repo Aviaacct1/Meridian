@@ -268,8 +268,24 @@
             <div class="fld" style="grid-column:span 2"><label>Schedule</label>
               <select id="season"><option value="">Unselected (optimise)</option><option value="annual">Year-round</option><option value="summer">Summer (S)</option><option value="winter">Winter (W)</option></select></div>
             <div class="fld" style="grid-column:span 2"><label>Departure (origin local)</label><input id="deptime" placeholder="blank = optimise" title="The outbound departure in the origin's local time, e.g. 12:00. Left blank, Meridian chooses the time that wins the most connecting traffic for the airline named, at both ends of the route."></div>
-            <div class="fld" style="grid-column:span 2"><label>Curfew at origin</label><input id="curfewO" placeholder="e.g. 23:00-06:00" title="Restricted hours in the ORIGIN's local time. None is assumed unless entered. Screens movements, so it blocks the return arrival as well as the outbound departure. Several windows may be separated by commas."></div>
-            <div class="fld" style="grid-column:span 2"><label>Curfew at destination</label><input id="curfewD" placeholder="e.g. 00:30-05:30" title="Restricted hours in the DESTINATION's local time. None is assumed unless entered. Screens the arrival and the return departure."></div>
+            <!-- CURFEWS ARE CHOSEN, NOT TYPED. Free text let "23:00 to 06:00" through on
+                 14 August 2026: parse_windows splits on a hyphen, it raised, the optimiser fell
+                 back to the 11:00 placeholder, and two runs came back unoptimised with the curfew
+                 silently absent. A restriction the forecast appears to respect and does not is
+                 worse than no restriction, and the fix belongs at the input rather than only in
+                 the parser. Half-hour steps: no published night restriction is finer than that. -->
+            <div class="fld" style="grid-column:span 2"><label>Curfew at origin</label>
+              <div style="display:flex;gap:6px;align-items:center">
+                <select id="curfewO1" title="Start of the restricted hours in the ORIGIN's local time. None is assumed unless both ends are set. Screens movements, so it blocks the return arrival as well as the outbound departure."></select>
+                <span style="color:var(--muted);font-size:11px">to</span>
+                <select id="curfewO2" title="End of the restricted hours in the ORIGIN's local time."></select>
+              </div></div>
+            <div class="fld" style="grid-column:span 2"><label>Curfew at destination</label>
+              <div style="display:flex;gap:6px;align-items:center">
+                <select id="curfewD1" title="Start of the restricted hours in the DESTINATION's local time. None is assumed unless both ends are set. Screens the arrival and the return departure."></select>
+                <span style="color:var(--muted);font-size:11px">to</span>
+                <select id="curfewD2" title="End of the restricted hours in the DESTINATION's local time."></select>
+              </div></div>
             <div class="fld" style="grid-column:span 2"><label>Forecast year</label><select id="fyear" title="The year the forecast is FOR. Demand is grown from the base data year at the measured market rate. Defaults to the year after the data, so a 2025 Sabre base gives 2026."></select></div>
             <div class="fld" style="grid-column:span 2"><label>Connectivity floor</label><select id="sfloor" title="The split_share floor re-splits the carried total using an airport connectivity table and can only lift connecting, never cut it. It exists because the FLAT feed under-credited transfer traffic at non-US hubs. With the QSI feed running it is an over-correction: on SJC-TPE it rescales the reported beyond feed from 12,467 to 27,324 two-way. Total-preserving either way."><option value="1">On (as shipped)</option><option value="0">Off (QSI feed only)</option></select></div>
             <div class="fld" style="grid-column:span 2"><label>Partner carriers</label><input id="partners" placeholder="e.g. WN" title="Carriers to price as alliance partners of the operating airline rather than as a basic interline, comma separated. Empty by default: a partnership is a commercial fact, not a property of the schedule. It matters most where an unaligned carrier dominates the feed, as Southwest does at San Jose."></div>
@@ -750,8 +766,14 @@ function doForecast(){
   // Schedule constraints. A blank departure means optimise it; a blank curfew means no restriction,
   // which is the default everywhere: a curfew is a fact about an airport and is never assumed.
   const _dt=$("#deptime").value.trim(); if(_dt) q.set("dep_time",_dt);
-  const _cO=$("#curfewO").value.trim(); if(_cO) q.set("curfew_origin",_cO);
-  const _cD=$("#curfewD").value.trim(); if(_cD) q.set("curfew_dest",_cD);
+  const _cO=curfewVal("curfewO1","curfewO2"), _cD=curfewVal("curfewD1","curfewD2");
+  if(_cO===null||_cD===null){
+    btn.disabled=false; btn.textContent="Run assessment";
+    showErr("a curfew needs both ends set, or neither. One end alone is not a restriction and the run will not guess the other.");
+    return;
+  }
+  if(_cO) q.set("curfew_origin",_cO);
+  if(_cD) q.set("curfew_dest",_cD);
   const _pt=$("#partners").value.trim(); if(_pt) q.set("partners",_pt);
   const _fy=$("#fyear").value; if(_fy) q.set("forecast_year",_fy);
   const _sf=$("#sfloor").value; if(_sf!=="") q.set("split_floor",_sf);
@@ -767,6 +789,27 @@ fetch("/api/basis").then(r=>r.json()).then(b=>{
     `<option value="${y}"${y===b.default_forecast_year?" selected":""}>${y}${y===b.default_forecast_year?" (default)":""}</option>`).join("");
   sel.title = `Forecast year. Demand is grown from the Sabre ${b.sabre_year} base at the measured market rate. Schedules from OAG week ${b.oag_week}.`;
 }).catch(()=>{});
+// THE CURFEW PICKERS. Half-hour options, blank meaning none, filled here rather than written out
+// as ninety-six lines of markup. A window is sent ONLY when both ends are set: one end alone is
+// not a restriction and must not be guessed into one, so it is refused out loud instead.
+(function fillCurfews(){
+  const t=['<option value="">none</option>'];
+  for(let m=0;m<1440;m+=30){
+    const s=("0"+Math.floor(m/60)).slice(-2)+":"+("0"+(m%60)).slice(-2);
+    t.push('<option value="'+s+'">'+s+'</option>');
+  }
+  ["curfewO1","curfewO2","curfewD1","curfewD2"].forEach(id=>{
+    const el=$("#"+id); if(el) el.innerHTML=t.join("");
+  });
+})();
+// Returns "" for none, "HH:MM-HH:MM" for a window, or null when one end is set and the other is
+// not. The caller stops on null: a half-entered curfew is a mistake, not a default.
+function curfewVal(a,b){
+  const x=($("#"+a)&&$("#"+a).value)||"", y=($("#"+b)&&$("#"+b).value)||"";
+  if(!x&&!y) return "";
+  if(!x||!y) return null;
+  return x+"-"+y;
+}
 $("#optimise").onclick=optimise;
 function optimise(){
   const o=$("#origin").value.trim(), d=$("#dest").value.trim();
@@ -777,8 +820,14 @@ function optimise(){
   const _ac=$("#aircraft").value; if(_ac) q.set("aircraft",_ac);          // honour a client-fixed gauge; blank = optimise it
   const _fq=($("#freq").value||"").trim(); if(_fq) q.set("freq",_fq);      // honour a client-fixed frequency; blank = optimise it
   const _dt=($("#deptime").value||"").trim(); if(_dt) q.set("dep_time",_dt); // honour a client-fixed departure; blank = optimise it
-  const _cO=($("#curfewO").value||"").trim(); if(_cO) q.set("curfew_origin",_cO);
-  const _cD=($("#curfewD").value||"").trim(); if(_cD) q.set("curfew_dest",_cD);
+  const _cO=curfewVal("curfewO1","curfewO2"), _cD=curfewVal("curfewD1","curfewD2");
+  if(_cO===null||_cD===null){
+    btn.disabled=false; btn.textContent="Optimise";
+    showErr("a curfew needs both ends set, or neither. One end alone is not a restriction and the run will not guess the other.");
+    return;
+  }
+  if(_cO) q.set("curfew_origin",_cO);
+  if(_cD) q.set("curfew_dest",_cD);
   const _pt=($("#partners").value||"").trim(); if(_pt) q.set("partners",_pt);
   const _fy=($("#fyear").value||""); if(_fy) q.set("forecast_year",_fy);
   const _sf=($("#sfloor").value||""); if(_sf!=="") q.set("split_floor",_sf);
@@ -950,8 +999,11 @@ function render(d){
     const _cost=Math.round(_op.cost_pax||0);
     const _bound=(d.capacity && d.capacity.spill > 0.02*(((d.demand&&d.demand.total)||1)));
     setTxt("curfewLine",
-      `Restricted ${_win.join(", ")}  ·  departs ${_sc.outbound.dep} within the restriction  ·  `+
-      `would depart ${_op.unrestricted_dep} without it  ·  cost ${fmt(_cost)} connecting demand`);
+      // "within the restriction" read as though the departure were INSIDE the curfew, which is
+      // the opposite of what it says. On a page an airport takes to a curfew review, that
+      // sentence is the one they stop on.
+      `Restricted ${_win.join(", ")}  ·  best permitted departure ${_sc.outbound.dep}  ·  `+
+      `would depart ${_op.unrestricted_dep} if unrestricted  ·  cost ${fmt(_cost)} connecting demand`);
     _cbz.textContent =
       "The cost is the connecting demand the route wins at the permitted time against the "+
       "unrestricted time, measured before capture scaling, before the local and connecting re-split "+
