@@ -656,7 +656,7 @@ def _econ_block(each_way, aircraft, freq, home, dest_airport, gcd, econ_share, p
 
 
 def _schedule_times(o_code, d_code, o, d, block_min, dep_out=11.0, turn_h=2.0,
-                    restricted=None, restricted_dest=None):
+                    restricted=None, restricted_dest=None, ground_h=3.0):
     """Indicative local dep/arr clock times from block time and an approximate timezone offset (by
     longitude). Illustrative only: not curfew-, slot- or connection-optimised, but gives the schedule
     a sensible shape. Outbound departs the origin late morning; the return turns at the destination."""
@@ -686,14 +686,24 @@ def _schedule_times(o_code, d_code, o, d, block_min, dep_out=11.0, turn_h=2.0,
         return hhmm(dep_local), hhmm(arr) + suffix
 
     do, ao = leg(dep_out, tzo, tzd)
-    # THE RETURN IS TIMED ON ITS OWN TWO MOVEMENTS, NOT DERIVED FROM THE OUTBOUND. The earliest
-    # possible return is arrival plus a turn, but the aircraft does not shuttle: it flies another
-    # route from the destination and comes back, so that time is a starting point for the search
-    # and not the answer. From it, step forward until BOTH the departure from the destination and
-    # the resulting arrival at the origin fall outside their own airport's restricted hours. A
-    # curfew blocks every movement in its window, arrivals and departures alike.
+    # THE SLACK BELONGS AT THE BASE, NOT AT THE OUTSTATION. The aircraft does not shuttle: it
+    # flies another route from the destination and comes back, so the destination end can carry a
+    # long gap because the aircraft is earning through it. The ORIGIN end cannot: a route station
+    # has no maintenance, no crew base and parking to pay for, so an aircraft sitting there is
+    # idle cost. John's correction, 14 August, on a draw that left 16h45 on the ground at San Jose.
+    #
+    # So the return is timed to LAND a short turn before the next outbound, not to leave as early
+    # as it can. The first version of this searched forward from the earliest possible turn, which
+    # finds the earliest legal return and therefore the LONGEST possible sit at the origin, which
+    # is exactly backwards.
+    #
+    # From that target the search steps BACKWARD in quarter-hours, so the first legal time it
+    # finds is the one that keeps the origin ground time as short as the two curfews allow. There
+    # is no minimum turn at the destination, because the returning aircraft is not the one that
+    # arrived.
     arr_dest_local = dep_out + bh + (tzd - tzo)
-    dep_ret = (arr_dest_local + turn_h) % 24.0
+    target_arr_origin = dep_out - ground_h                     # land this long before departing
+    dep_ret = (target_arr_origin - bh - (tzo - tzd)) % 24.0
     ret_note = None
     if restricted or restricted_dest:
         try:
@@ -701,8 +711,8 @@ def _schedule_times(o_code, d_code, o, d, block_min, dep_out=11.0, turn_h=2.0,
             w_o = _RF.parse_windows(restricted) if restricted else []
             w_d = _RF.parse_windows(restricted_dest) if restricted_dest else []
             found = None
-            for step in range(0, 24 * 4):                      # quarter-hours across a whole day
-                cand = (arr_dest_local + turn_h + step * 0.25) % 24.0
+            for step in range(0, 24 * 4):                      # quarter-hours, working backwards
+                cand = (dep_ret - step * 0.25) % 24.0
                 arr_origin = (cand + bh + (tzo - tzd)) % 24.0
                 if _RF.in_window(int(round(cand * 60)) % 1440, w_d):
                     continue
@@ -713,16 +723,21 @@ def _schedule_times(o_code, d_code, o, d, block_min, dep_out=11.0, turn_h=2.0,
             if found is None:
                 # Stated, never silently drawn illegal. A window this wide is a real finding about
                 # the airport pair rather than a bug in the search.
-                ret_note = ("no return departure in the 24 hours after the turn clears both "
-                            "airports' restricted hours")
+                ret_note = ("no return departure in 24 hours clears both airports' restricted "
+                            "hours")
             else:
                 dep_ret = found
         except ValueError as e:                                # unreadable window: say so
             ret_note = str(e)
+    # What the draw actually costs at the outstation, stated rather than left to be worked out
+    # from two clock times on a line.
+    _arr_o = (dep_ret + bh + (tzo - tzd)) % 24.0
+    ground_origin = (dep_out - _arr_o) % 24.0
     dr, ar = leg(dep_ret, tzd, tzo)
     out = {"outbound": {"sector": f"{o_code}-{d_code}", "dep": do, "arr": ao},
            "inbound": {"sector": f"{d_code}-{o_code}", "dep": dr, "arr": ar},
-           "block_min": block_min, "indicative": True}
+           "block_min": block_min, "indicative": True,
+           "ground_origin_h": round(ground_origin, 2)}
     if ret_note:
         out["inbound_need"] = ret_note
     return out

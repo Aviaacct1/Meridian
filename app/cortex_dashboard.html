@@ -974,6 +974,12 @@ function render(d){
       // The two produce different load factors and a different aircraft choice, so which one was
       // used belongs on the line that states the schedule.
       (cap.seats?`, ${cap.seats} seats (${cap.seats_source||"basis not stated"})`:"")+
+      // GROUND TIME AT THE OUTSTATION, because it is the number that showed the draw was wrong.
+      // A return timed to leave the destination as early as possible left 16h45 on the ground at
+      // San Jose, which is idle cost at a station with no maintenance and no crew base. The
+      // return is now timed to land a short turn before the next departure and this states the
+      // result of that.
+      (_sc.ground_origin_h?`  ·  ${_sc.ground_origin_h}h on the ground at ${(_sc.outbound.sector||"").split("-")[0]||"the origin"} between arrival and the next departure`:"")+
       (_sc.indicative?"  ·  local times, indicative: not slot-, curfew- or connection-optimised":"")+
       // THE RETURN LEG SAYS WHEN IT COULD NOT BE TIMED LEGALLY. _schedule_times searches the 24
       // hours after the turn for a return that clears both airports' restricted hours, and when

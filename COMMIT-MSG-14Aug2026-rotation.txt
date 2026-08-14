@@ -1,0 +1,37 @@
+The slack belongs at the base: the return lands before the next departure
+
+JOHN, 14 August, on a draw that put 16h45 on the ground at San Jose: "This still has the
+18 hour layover in SJC which is not sensible."
+
+He is right and the search I wrote an hour earlier was backwards. It stepped FORWARD from
+the earliest possible turn, so it found the earliest legal return departure and therefore
+the LONGEST possible sit at the origin. On SJC-TPE with a 22:59 outbound it drew the
+return arriving 06:14 against a next departure at 22:59.
+
+WHY THE TWO ENDS ARE NOT THE SAME. The aircraft does not shuttle, which John established
+earlier: it flies another route from the destination and comes back. The destination end
+can therefore carry a long gap, because the aircraft is earning through it. The origin end
+cannot. A route station has no maintenance, no crew base and parking to pay for, so an
+aircraft sitting there is idle cost and no planner would fly it.
+
+app/cortex_app.py
+  _schedule_times now times the return to LAND a short turn before the next outbound, not
+  to leave as early as it can. The target is dep_out minus ground_h, default three hours,
+  and the search steps BACKWARD in quarter-hours from it, so the first legal time found is
+  the one that keeps the origin ground time as short as the two curfews allow. There is no
+  minimum turn at the destination, because the returning aircraft is not the one that
+  arrived. ground_origin_h is returned so the result is stated rather than inferred from
+  two clock times.
+
+app/cortex_dashboard.html
+  The schedule line carries the ground time at the origin. It is the number that showed the
+  draw was wrong, so it belongs on the page rather than in the payload.
+
+Tested on SJC-TPE geometry, block 13h45, against the live answers:
+  no curfew, out 00:30   -> back 23:45 arriving 21:30, San Jose ground 3.00h
+  curfew 23:00-06:00, out 22:59 -> back 22:14 arriving 19:59, ground 3.00h, both legal
+  both curfews, out 22:59       -> unchanged, and the destination window does not bind
+Previously the same three drew 08:15/06:00, 08:29/06:14 and 08:29/06:14, leaving 18h30,
+16h45 and 16h45 on the ground at San Jose.
+
+Avia Solutions Limited. All rights reserved.
