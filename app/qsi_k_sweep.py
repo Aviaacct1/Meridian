@@ -39,6 +39,7 @@ Usage (workstation), sized first then run properly:
 """
 import argparse
 import csv
+import glob
 import os
 import subprocess
 import sys
@@ -157,6 +158,9 @@ def main():
     ap.add_argument("--temp-dir", default=None)
     ap.add_argument("--extra", default="", help="extra flags passed to every arm, identically")
     ap.add_argument("--no-control", action="store_true", help="skip the V1 arm")
+    ap.add_argument("--score-only", action="store_true",
+                    help="run nothing; score every bt_*.csv already in --out-dir. Safe at any "
+                         "time, including while a sweep is still running.")
     ap.add_argument("--resume", action="store_true",
                     help="kept for the runbook's habit; --resume is now ALWAYS passed to each arm "
                          "and no arm is ever skipped on the strength of its file existing")
@@ -191,19 +195,25 @@ def main():
           "varies.\nOut: %s\n" % args.out_dir)
 
     results = []
-    if not args.no_control:
-        results.append(arm("v1_control", [], args, args.out_dir))
-    for k in ks:
-        results.append(arm("k%s" % k.replace(".", "p"), ["--qsi-feed", "--qsi-k", k],
-                           args, args.out_dir))
+    if not args.score_only:
+        if not args.no_control:
+            results.append(arm("v1_control", [], args, args.out_dir))
+        for k in ks:
+            results.append(arm("k%s" % k.replace(".", "p"), ["--qsi-feed", "--qsi-k", k],
+                               args, args.out_dir))
 
+    # EVERY ARM IN THE FOLDER, not only the ones this invocation ran. A sweep is resumed across
+    # sessions, so the arms that matter are usually already on disk: running --ks 0.5,0.25,0.06
+    # would otherwise pair three arms and silently leave out the control and k=1.0, which are the
+    # comparators the whole exercise exists to produce.
     loaded = {}
-    for label, path, _s in results:
+    for path in sorted(glob.glob(os.path.join(args.out_dir, "bt_*.csv"))):
+        label = os.path.splitext(os.path.basename(path))[0][3:]
         rows, ungraded = load(path)
         if rows:
             loaded[label] = (rows, ungraded)
         else:
-            print("\n  %s produced no graded rows and is left out of the pairing." % label)
+            print("\n  %s has no graded rows and is left out of the pairing." % label)
     if not loaded:
         print("\nNo arm graded anything. Nothing to compare.")
         return 1
@@ -215,8 +225,21 @@ def main():
     # for arms that were meant to differ only in one number.
     common = set.intersection(*[set(r) for r, _u in loaded.values()])
     print("\n  Paired on %d routes graded by ALL %d arms." % (len(common), len(loaded)))
+    biggest = max(len(r) for r, _u in loaded.values())
+    short = []
     for label, (rows, ungraded) in loaded.items():
-        print("     %-12s graded %5d of its own, %5d ungraded" % (label, len(rows), ungraded))
+        flag = ""
+        if len(rows) < 0.8 * biggest:
+            flag = "   <- SHORT, %.0f%% of the fullest arm: unfinished, not worse" % (
+                100.0 * len(rows) / biggest)
+            short.append(label)
+        print("     %-12s graded %5d of its own, %5d ungraded%s"
+              % (label, len(rows), ungraded, flag))
+    if short:
+        print("\n  AN ARM MARKED SHORT IS UNFINISHED AND ITS ROW IS NOT A RESULT. It also drags the"
+              "\n  paired sample down to its own coverage, so every other arm is being scored on a"
+              "\n  smaller set than it graded. Finish it before reading the table: %s"
+              % ", ".join(short))
     if not common:
         print("  No route is graded by every arm, so there is no controlled comparison to make.")
         return 1
