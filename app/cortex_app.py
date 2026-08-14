@@ -911,7 +911,7 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
     # all three puts an impossible stand time on a widebody or an idle hour on a narrowbody.
     import route_feed as _RFT
     _turn_min = _RFT.turnaround_mins((o or {}).get("country"), (d or {}).get("country"), gcd,
-                                     feed_cfg)
+                                     feed_cfg, aircraft_code=aircraft)
     feed_cfg["turnaround_mins"] = _turn_min
     dep_basis = ("set by the caller" if dep_time_mins is not None else
                  "indicative only, no operator named so no connecting feed is built")

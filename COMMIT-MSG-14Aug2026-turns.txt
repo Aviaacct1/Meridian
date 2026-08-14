@@ -1,0 +1,44 @@
+Turnarounds measured from OAG by aircraft type, replacing three invented numbers
+
+JOHN, 14 August: "we do it by aircraft type average turn, which might be better... calculate
+turns from 2025 OAG."
+
+He is right on both counts. The aeroplane sets the stand time and region only proxies for
+it, and the 60, 90 and 180 shipped this afternoon were planning averages with no source
+sitting in a place that decides which departures are flyable at all.
+
+app/build_turnarounds.py (new)
+  THE FILTER IS THE WHOLE METHOD. OAG carries no tail numbers, so an arrival cannot be
+  linked with certainty to the departure that reuses the aircraft. At a hub that is fatal:
+  an arrival and a departure of the same type ten minutes apart are two different
+  aeroplanes and a naive minimum gap reports a ten-minute turn. Only UNAMBIGUOUS
+  station-days are measured, where one carrier operated exactly one arrival and exactly one
+  departure of one type at one airport on one day. There the gap is that aircraft's turn and
+  nothing else, and it is also the case a route forecast cares about, since a new service is
+  an outstation operation and that is where the turnaround binds.
+
+  Excluded, each counted and reported rather than dropped in silence: charter and freight
+  (service_type J only); through-flight transit stops, which are not station turns; gaps of
+  eight hours or more, which are night stops and a real finding in their own right; and gaps
+  under twenty minutes, which are not credible pairings.
+
+  Reports n and the 10th, 25th and 50th percentiles per type. THE FIGURE TO USE IS p10, NOT
+  THE MEDIAN: a turnaround is the time the aeroplane needs, and the median mixes in stations
+  that simply had a long gap.
+
+app/route_feed.py
+  turnaround_mins() takes an aircraft_code and prefers the measured p10 where the type has a
+  usable sample. The flight-type bands remain as the fallback and are now labelled in the
+  docstring as planning averages with no source, which is what they are. A type measured on
+  too few station-days is marked unusable in the file and is not read.
+
+app/cortex_app.py
+  Passes the aircraft to the resolver, so a run with a named gauge gets that gauge's turn.
+
+Tested on a fixture built to a known answer: an outstation pair lands at exactly 180, a hub
+with two arrivals and two departures of one type is skipped as ambiguous, and a ten-hour
+overnight is excluded as a night stop rather than counted as a turn. The reader prefers a
+usable measured p10 of 145, falls back to 180 where the sample is too small or the type is
+absent, and a case override beats both.
+
+Avia Solutions Limited. All rights reserved.

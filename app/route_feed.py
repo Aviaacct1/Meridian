@@ -472,15 +472,57 @@ TURNAROUND_MIN = {"domestic": 60, "continental": 90, "intercontinental": 180}
 CONTINENTAL_MAX_KM = 3000.0
 
 
-def turnaround_mins(origin_country, dest_country, gcd_km, cfg=None):
-    """Minutes on stand between arrival and the next departure, by flight type.
+_TURN_TABLE = {}
 
-    Same country is domestic. Different countries within CONTINENTAL_MAX_KM is continental
-    international, which is the LATAM and intra-Europe case. Anything longer is intercontinental.
-    A case may override the figure outright with feed_cfg["turnaround_mins"].
+
+def _measured_turn(aircraft_code):
+    """The measured turnaround for this aircraft type, or None.
+
+    Built by build_turnarounds.py from OAG on unambiguous single-arrival single-departure
+    station-days, which is the only pairing OAG supports without tail numbers. p10 is used
+    rather than the median: a turnaround is the time the aeroplane NEEDS, and the median mixes
+    in stations that simply had a long gap. A type measured on too few station-days is marked
+    unusable in the file and is not read here.
+    """
+    if not aircraft_code:
+        return None
+    if not _TURN_TABLE:
+        path = os.environ.get("AVIA_TURNAROUNDS")
+        if not path:
+            try:
+                import config
+                path = os.path.join(str(config.LOCAL_CACHE), "turnarounds_2025.json")
+            except Exception:
+                path = None
+        _TURN_TABLE["_loaded"] = True
+        if path and os.path.exists(path):
+            try:
+                import json
+                with open(path, encoding="utf-8") as fh:
+                    _TURN_TABLE.update((json.load(fh) or {}).get("types") or {})
+            except Exception:
+                pass
+    row = _TURN_TABLE.get(str(aircraft_code).upper())
+    if isinstance(row, dict) and row.get("usable") and row.get("p10"):
+        return int(row["p10"])
+    return None
+
+
+def turnaround_mins(origin_country, dest_country, gcd_km, cfg=None, aircraft_code=None):
+    """Minutes on stand between arrival and the next departure.
+
+    MEASURED FIRST. Where build_turnarounds.py has a usable figure for this aircraft type it is
+    used, because the aeroplane sets the stand time and region only proxies for it. The flight
+    type bands below are the fallback and are PLANNING AVERAGES WITH NO SOURCE: same country is
+    domestic, different countries within CONTINENTAL_MAX_KM is continental international, which
+    is the LATAM and intra-Europe case, and anything longer is intercontinental. A case may
+    override either with feed_cfg["turnaround_mins"].
     """
     if cfg and cfg.get("turnaround_mins"):
         return int(cfg["turnaround_mins"])
+    measured = _measured_turn(aircraft_code or (cfg or {}).get("aircraft_code"))
+    if measured:
+        return measured
     oc = (origin_country or "").upper()
     dc = (dest_country or "").upper()
     if oc and dc and oc == dc:
@@ -742,9 +784,25 @@ def optimise_departure(sabre_db, oag_db, week, origin_airports, origin, hub, des
 
     tot, b_pax, h_pax = tried[best]
     b_base, h_base = sum(b_mkt.values()) or 1.0, sum(h_mkt.values()) or 1.0
-    ret = (best + 2 * int(flying_mins) + int(turn_mins)) % 1440
+    # THE ARRIVAL THAT FEEDS THIS DEPARTURE, not a closed-loop return. It was best + 2 x block +
+    # turn, which is where the aircraft would land if it shuttled. It does not: it turns here, so
+    # the inbound landed one turnaround before this departure.
+    ret = (best - int(turn_mins)) % 1440
+    # THE WHOLE CURVE, not just its maximum. Every candidate departure is already scored and all
+    # but one was thrown away. An airport asking "we would prefer a slot between 10:00 and 14:00,
+    # what does that cost us" is asking to read this curve, and it costs nothing to return it.
+    #
+    # WHAT IT IS: connecting demand won at each departure time, each way, before capture scaling
+    # and before the capacity cap. LOCAL DEMAND DOES NOT VARY WITH DEPARTURE TIME anywhere in the
+    # engine, which WEIGHT-IS-A-NULL-TEST established on 14 August, so the total moves one for one
+    # with this curve until the aircraft fills. That is what makes it readable as a total.
+    curve = [{"dep": d, "hhmm": f"{d // 60:02d}:{d % 60:02d}",
+              "total": round(tried[d][0]), "beyond": round(tried[d][1]),
+              "behind": round(tried[d][2]), "permitted": bool(permitted(d))}
+             for d in sorted(tried)]
     info = {"beyond": b_pax / b_base, "behind": h_pax / h_base, "score": tot, "tried": len(tried),
             "restricted": _fmt(windows), "restricted_dest": _fmt(windows_d),
+            "turnaround_mins": int(turn_mins), "curve": curve,
             "return_arrival": f"{ret // 60:02d}:{ret % 60:02d}"}
     if (windows or windows_d) and free_best is not None:
         info["unrestricted_dep"] = f"{free_best // 60:02d}:{free_best % 60:02d}"
