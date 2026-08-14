@@ -48,18 +48,16 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_KS = "1.0,0.5,0.25,0.12,0.06"
 
 
-def score(path):
-    """The back-test's own measure: median fc/p2p and the share within +/-20%.
+# The pairing key compare_backtest_ab.py uses. Carrier and year are in it because one
+# route appears more than once across launch years and carriers.
+KEY_COLS = ("route", "dep", "arr", "carrier", "year")
 
-    Reads fc_over_p2p, the column backtest.py scores on at line 1117, so these numbers sit
-    beside every arm already recorded rather than beside a definition invented here. Rows
-    with no ratio are counted as ungraded and never as a miss, which would flatter a k that
-    simply graded fewer routes.
-    """
-    if not os.path.exists(path):
-        return None
-    vals = []
-    ungraded = 0
+
+def load(path):
+    """{key: fc_over_p2p} for the rows this arm actually graded, plus its ungraded count."""
+    if not path or not os.path.exists(path):
+        return None, 0
+    rows, ungraded = {}, 0
     with open(path, newline="", encoding="utf-8") as fh:
         for r in csv.DictReader(fh):
             raw = (r.get("fc_over_p2p") or "").strip()
@@ -67,15 +65,20 @@ def score(path):
                 ungraded += 1
                 continue
             try:
-                vals.append(float(raw))
+                rows[tuple((r.get(c) or "").strip() for c in KEY_COLS)] = float(raw)
             except ValueError:
                 ungraded += 1
+    return rows, ungraded
+
+
+def stats(vals):
+    """The back-test's own measure, read from fc_over_p2p as backtest.py scores it at line 1117."""
     if not vals:
-        return {"n": 0, "ungraded": ungraded}
-    vals.sort()
+        return None
+    vals = sorted(vals)
     n = len(vals)
     med = vals[n // 2] if n % 2 else 0.5 * (vals[n // 2 - 1] + vals[n // 2])
-    return {"n": n, "ungraded": ungraded, "median": med,
+    return {"n": n, "median": med,
             "within20": sum(1 for x in vals if 0.8 <= x <= 1.2) / n,
             "within40": sum(1 for x in vals if 0.6 <= x <= 1.4) / n,
             "over": sum(1 for x in vals if x > 1.2) / n,
@@ -94,11 +97,18 @@ def arm(label, extra, args, out_dir):
     # this tool captured the child's output and printed it only on a non-zero exit, so the
     # reason was swallowed. Both faults are fixed here.
     cmd = [sys.executable, os.path.join(HERE, "backtest.py"), "--out", out,
-           "--jobs", str(args.jobs), "--oag", args.oag, "--sabre", args.sabre]
-    if args.limit:
-        cmd += ["--limit", str(args.limit)]
-    if args.years:
-        cmd += ["--years", args.years]
+           "--jobs", str(args.jobs), "--oag", args.oag, "--sabre", args.sabre,
+           "--routes-file", args.routes_file, "--resume"]
+    # PINNED, PRE-AGGREGATED AND CACHED ON EVERY ARM IDENTICALLY, per the 11 August runbook.
+    # The pin is the whole point: discovery does not return identical membership run to run,
+    # backtest.py says so at line 928, and three unpinned discoveries silently stop the arms
+    # being a controlled comparison. preagg is a read-path change and cannot move a score; the
+    # wave cache must be the one built against THIS pin or the QSI arms fall back to the flat
+    # feed on the routes it does not cover.
+    if args.preagg:
+        cmd += ["--preagg", args.preagg]
+    if args.wave_cache:
+        cmd += ["--wave-cache", args.wave_cache]
     if args.temp_dir:
         cmd += ["--temp-dir", args.temp_dir]
     if args.extra:
@@ -129,8 +139,12 @@ def main():
     ap.add_argument("--out-dir", required=True)
     ap.add_argument("--oag", default=None, help="OAG store; defaults to config.OAG_DUCKDB")
     ap.add_argument("--sabre", default=None, help="Sabre store; defaults to config.SABRE_DUCKDB")
-    ap.add_argument("--limit", type=int, default=None, help="cap routes; use to SIZE the run first")
-    ap.add_argument("--years", default=None)
+    ap.add_argument("--routes-file", default=r"E:\Avia\backtest_routes_11Aug2026.json",
+                    help="the PINNED route set. Required: an unpinned sweep is not a controlled "
+                         "comparison, whatever its table looks like.")
+    ap.add_argument("--preagg", default=r"E:\Avia\preagg.duckdb")
+    ap.add_argument("--wave-cache", default=r"E:\Avia\qsi_wave_cache_pin_12Aug2026.duckdb",
+                    help="must be the cache built against THIS pin")
     ap.add_argument("--jobs", type=int, default=4, help="4 not 8 on the 16GB workstation")
     ap.add_argument("--temp-dir", default=None)
     ap.add_argument("--extra", default="", help="extra flags passed to every arm, identically")
@@ -145,10 +159,21 @@ def main():
         import config as CFG
         args.oag = args.oag or str(CFG.OAG_DUCKDB)
         args.sabre = args.sabre or str(CFG.SABRE_DUCKDB)
-    for label, path in (("OAG", args.oag), ("Sabre", args.sabre)):
+    for label, path in (("OAG", args.oag), ("Sabre", args.sabre),
+                        ("pinned route set", args.routes_file)):
         if not os.path.exists(path):
-            print("ERROR: %s store not found at %s" % (label, path))
+            print("ERROR: %s not found at %s" % (label, path))
+            if label == "pinned route set":
+                print("Build it once, then every arm runs the same routes by construction:\n"
+                      "  py -3.12 backtest.py --oag %s --sabre %s --years 2016,2017,2018,2024 "
+                      "--min-gcd 1500 --routes-file %s --discover-only"
+                      % (args.oag, args.sabre, args.routes_file))
             return 2
+    for label, path in (("preagg", args.preagg), ("wave cache", args.wave_cache)):
+        if path and not os.path.exists(path):
+            print("WARNING: %s not found at %s. The QSI arms will fall back to the flat feed on "
+                  "every route the cache does not cover, which waters the comparison down."
+                  % (label, path))
 
     os.makedirs(args.out_dir, exist_ok=True)
     ks = [k.strip() for k in args.ks.split(",") if k.strip()]
@@ -162,22 +187,45 @@ def main():
         results.append(arm("k%s" % k.replace(".", "p"), ["--qsi-feed", "--qsi-k", k],
                            args, args.out_dir))
 
+    loaded = {}
+    for label, path, _s in results:
+        rows, ungraded = load(path)
+        if rows:
+            loaded[label] = (rows, ungraded)
+        else:
+            print("\n  %s produced no graded rows and is left out of the pairing." % label)
+    if not loaded:
+        print("\nNo arm graded anything. Nothing to compare.")
+        return 1
+
+    # PAIRED ON THE ROUTES EVERY ARM GRADED. Each arm grades a slightly different subset even
+    # off one pin, because a route can fail to grade for reasons that vary with the feed. Scoring
+    # each arm on its own subset compares six different populations and calls the difference k:
+    # the first run of this tool did exactly that and returned 95, 91, 114, 102, 73 and 105 rows
+    # for arms that were meant to differ only in one number.
+    common = set.intersection(*[set(r) for r, _u in loaded.values()])
+    print("\n  Paired on %d routes graded by ALL %d arms." % (len(common), len(loaded)))
+    for label, (rows, ungraded) in loaded.items():
+        print("     %-12s graded %5d of its own, %5d ungraded" % (label, len(rows), ungraded))
+    if not common:
+        print("  No route is graded by every arm, so there is no controlled comparison to make.")
+        return 1
+
     print("\n  %-12s %6s %9s %10s %10s %8s %8s"
           % ("arm", "n", "median", "within20", "within40", "over", "under"))
-    for label, path, _s in results:
-        s = score(path) if path else None
-        if not s or not s.get("n"):
-            print("  %-12s %6s  no graded rows" % (label, "-"))
-            continue
+    base = None
+    for label, (rows, _u) in loaded.items():
+        s = stats([rows[k] for k in common])
+        if base is None:
+            base = s["within20"]
         print("  %-12s %6d %9.2f %9.1f%% %9.1f%% %7.1f%% %7.1f%%"
               % (label, s["n"], s["median"], 100 * s["within20"], 100 * s["within40"],
                  100 * s["over"], 100 * s["under"]))
 
-    print("\n  The V1 control is the arm to beat. A V2 level that does not beat it is not a "
-          "calibration\n  problem, it is a feed that is not earning its place, and "
-          "SCHEDULE-BANKING is the precedent.")
-    print("  Ungraded routes are reported separately and never counted as misses: a k that "
-          "grades\n  fewer routes must not read as a k that gets more of them right.")
+    print("\n  Read the SHAPE across k, not the winner. On a paired sample this size a point or "
+          "two is\n  noise; a monotone trend is not. The V1 control is the arm to beat, and a V2 "
+          "level that\n  cannot beat it is not a calibration problem but a feed not earning its "
+          "place, which is\n  what SCHEDULE-BANKING was parked for.")
     return 0
 
 
