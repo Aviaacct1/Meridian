@@ -48,12 +48,15 @@ if HERE not in sys.path:
 
 import deck_spec as S                                                   # noqa: E402
 
+# THE PRODUCT IS NOT AVIA SOLUTIONS AND THE DISCLAIMER MUST NOT SAY IT IS. John's correction,
+# 14 August 2026: this pack is produced by Meridian, by The Aviation Observatory. The disclaimer
+# also has to name the party it was prepared for, which the pack knows and was not printing.
 DISCLAIMER = (
-    "This forecast has been prepared by Avia Solutions Limited for the party named on the cover and "
-    "for the purpose stated in it. It rests on data licensed to Avia Solutions and on assumptions "
-    "stated in the methodology pages that follow. Forecasts are estimates and outturn will differ. "
-    "No part of this document may be reproduced or relied upon by any other party without the "
-    "written consent of Avia Solutions Limited.")
+    "This forecast has been prepared by The Aviation Observatory{for_whom} using Meridian, its "
+    "route forecasting model. It rests on licensed schedule and passenger data and on the "
+    "assumptions stated in the methodology pages that follow. Forecasts are estimates and outturn "
+    "will differ. No part of this document may be reproduced or relied upon by any other party "
+    "without the written consent of The Aviation Observatory.")
 
 SRC = "Source: AviaSolutions analysis (Avia Cortex), Sabre MI and OAG schedules."
 
@@ -121,9 +124,10 @@ def _cover(c, meta):
                    image="cover.hero", family="globe")
 
 
-def _disclaimer():
-    return S.prose([(None, DISCLAIMER)], title="Basis of this document",
-                   source="Avia Solutions Limited. All rights reserved.")
+def _disclaimer(prepared_for=""):
+    who = (" for %s" % prepared_for) if prepared_for else " for the party named on the cover"
+    return S.prose([(None, DISCLAIMER.format(for_whom=who))], title="Basis of this document",
+                   source="Meridian by The Aviation Observatory. All rights reserved.")
 
 
 def _summary(c):
@@ -143,7 +147,10 @@ def _summary(c):
     stats = [("Passengers a year, both directions", _n(tot), True),
              ("Point to point", _n(p2p), False),
              ("Connecting", _n(cnx), False),
-             ("Planned load factor", _pct(e1.get("total_load_factor"), 1), True)]
+             # "Load factor", not "Planned load factor": John's correction, 14 August. The figure is
+             # the load factor the forecast produces, and calling it planned invites the reader to
+             # take it for an input.
+             ("Load factor", _pct(e1.get("total_load_factor"), 1), True)]
     basis = ["%s weekly, %s, %s seats (%s)"
              % (_n(rm.get("frequency_per_week")), rm.get("aircraft_type") or "-",
                 _n(rm.get("seats")), _g(c, "summary_and_schedule", "_seats_source", default="seat source not stated")),
@@ -211,29 +218,59 @@ def _forecast_table(c):
     """
     ss = _g(c, "segment_forecast", "summary", default={})
     dep = _g(c, "economics_year1", "total_departures_annual_two_way")
+    rm = c.get("route_metadata") or {}
+    base_yr = _g(c, "route_metadata", "base_year") or _g(c, "_settings", "base_year")
+    svc_yr = rm.get("service_year")
+    buckets = _g(c, "segment_forecast", "_competition_buckets", default={}) or {}
 
-    def row(label, blk):
+    def row(label, blk, indent=False):
         fc = blk.get("forecast")
         ptew = (fc / dep) if (fc and dep) else None
-        return [label, _k(blk.get("base_annual_demand")), _k(blk.get("demand_after_stimulation")),
-                _pct(blk.get("capture_rate"), 1), _k(fc), _n(ptew, 0)]
+        stim = blk.get("stimulation_factor")
+        return [("   " + label) if indent else label,
+                _k(blk.get("base_annual_demand")),
+                _pct(blk.get("annual_growth_rate"), 1),
+                _k(blk.get("demand_at_service_year")),
+                ("-" if stim is None else "x%.2f" % float(stim)),
+                _pct(blk.get("capture_rate"), 1),
+                _k(fc), _n(ptew, 0)]
 
-    rows = [row("Total point to point", ss.get("point_to_point_total") or {}),
-            row("Connecting at %s" % _g(c, "connecting_at_hub", "hub", default="the hub"),
-                ss.get("connecting_at_hub_total") or {}),
-            row("Connecting at %s" % _g(c, "route_metadata", "origin_airport", default="the origin"),
-                ss.get("connecting_at_destination_total") or {}),
-            row("Grand total", ss.get("grand_total") or {})]
-    rm = c.get("route_metadata") or {}
-    return S.table({"head": ["Market", "Base annual demand (000s)", "After stimulation (000s)",
-                             "Capture rate", "Forecast traffic (000s)", "Per trip each way"],
+    def bucket_rows(key):
+        """The competed and uncompeted split beneath its own leg, where the run produced one."""
+        out = []
+        for b in (buckets.get(key) or []):
+            out.append([("   " + str(b.get("bucket"))), _k(b.get("base")), "-", "-", "-",
+                        _pct(b.get("capture"), 1), _k(b.get("forecast")), "-"])
+        return out
+
+    hub = _g(c, "connecting_at_hub", "hub", default="the hub")
+    org = _g(c, "route_metadata", "origin_airport", default="the origin")
+    rows = [row("Total point to point", ss.get("point_to_point_total") or {})]
+    rows.append(row("Connecting at %s" % hub, ss.get("connecting_at_hub_total") or {}))
+    rows += bucket_rows("connecting_at_hub")
+    rows.append(row("Connecting at %s" % org, ss.get("connecting_at_destination_total") or {}))
+    rows += bucket_rows("connecting_at_destination")
+    rows.append(row("Grand total", ss.get("grand_total") or {}))
+
+    def yr(label, y):
+        return "%s %s" % (label, y) if y else label
+
+    notes = ["Passengers per trip each way. Demand requiring a connection at both ends is excluded.",
+             _g(ss, "grand_total", "_basis", default="carried, after the plan load factor cap"),
+             "Base annual demand is measured origin and destination demand, both directions.",
+             "Growth is total growth from the base year to the service year, not a compound rate.",
+             "Stimulation is applied to the point to point leg only; the connecting legs carry x1.00.",
+             _g(c, "segment_forecast", "_competition_basis",
+                default="Competed and uncompeted rows appear where the run classified the markets.")]
+    return S.table({"head": ["Market", yr("Base annual demand (000s)", base_yr), "Traffic growth",
+                             yr("Demand before stimulation (000s)", svc_yr), "Stimulation",
+                             "Capture rate", yr("Forecast traffic (000s)", svc_yr),
+                             "Per trip each way"],
                     "rows": rows, "total": True},
                    title="Traffic forecast",
                    subtitle="%s weekly, year 1 at %s" % (_n(rm.get("frequency_per_week")),
-                                                         rm.get("service_year") or "maturity"),
-                   bullets=["Passengers per trip each way. Demand on double connections is excluded.",
-                            _g(ss, "grand_total", "_basis",
-                               default="carried, after the plan load factor cap")],
+                                                         svc_yr or "maturity"),
+                   bullets=notes,
                    source=_src(c))
 
 
@@ -247,7 +284,10 @@ def _connecting(c, key, title):
     cities = blk.get("cities") or []
     if not cities:
         return None
-    rows = [[str(x.get("nr") or i + 1), x.get("city_name") or x.get("city_code") or "",
+    # THE THREE-LETTER CODE GOES BEFORE THE CITY NAME. John's correction, 14 August: a planner
+    # reads the code first and several of these city names are ambiguous without it.
+    rows = [[str(x.get("nr") or i + 1), x.get("city_code") or "",
+             x.get("city_name") or x.get("city_code") or "",
              x.get("country") or "", _n(x.get("annual_demand")), _pct(x.get("airline_share"), 1),
              _n(x.get("annual_forecast")), _n(x.get("pdew"), 1)]
             for i, x in enumerate(cities)]
@@ -259,8 +299,13 @@ def _connecting(c, key, title):
         shown = sum((x.get("annual_forecast") or 0) for x in cities)
         sub = ("The fifteen largest cities, %s passengers of a leg of %s"
                % (_n(shown), _n(leg)))
-    return S.table({"head": ["", "City", "Country", "Annual demand", "Share captured",
-                             "Forecast", "Per day each way"], "rows": rows},
+    base_yr = _g(c, "route_metadata", "base_year") or _g(c, "_settings", "base_year")
+    svc_yr = _g(c, "route_metadata", "service_year")
+    return S.table({"head": ["", "Code", "City", "Country",
+                             "Annual demand %s" % base_yr if base_yr else "Annual demand",
+                             "Share captured",
+                             "Forecast %s" % svc_yr if svc_yr else "Forecast",
+                             "Per day each way"], "rows": rows},
                    title=title, subtitle=sub, source=_src(c))
 
 
@@ -298,7 +343,10 @@ def _method_pages(c):
     sched.append(("Basis", ss.get("_schedule_times_need") or "departure time basis not stated"))
     cur = _g(c, "_settings", "curfew_cost")
     if cur:
-        sched.append(("Night restrictions", cur))
+        # Coerced, because the renderer takes a cryptic TypeError deep inside python-pptx when a
+        # non-string reaches a run, and a contract field that changes shape must not be able to
+        # bring the render down. This one did on 15 August.
+        sched.append(("Night restrictions", cur if isinstance(cur, str) else str(cur)))
     out.append(S.prose(sched, title="Forecast methodology", subtitle="The schedule", source=_src(c)))
 
     p2p = [(None, "Point to point demand is the measured origin and destination market between the "
@@ -315,8 +363,8 @@ def _method_pages(c):
                   "the type of connection, whether online, interline or within an alliance, and the "
                   "frequency at which the routing is available. Connections shorter than the minimum "
                   "connect time are excluded, as is demand requiring a connection at both ends."),
-           ("Level", _g(c, "_settings", "feed_level",
-                        default="Connecting level as reported in the run.")),
+           ("Level", str(_g(c, "_settings", "feed_level",
+                            default="Connecting level as reported in the run."))),
            ("Capture", "Captured at %s over the hub and %s over the origin."
             % (_pct(_g(c, "segment_forecast", "summary", "connecting_at_hub_total", "capture_rate"), 1),
                _pct(_g(c, "segment_forecast", "summary", "connecting_at_destination_total", "capture_rate"), 1)))]
@@ -388,7 +436,8 @@ def build_pack(contract, *, codename, title=None, prepared_for="", date="",
                   prepared_for=prepared_for, event="", date=date,
                   confidentiality=confidentiality, author=author)
     meta = {"title": title}
-    pages = [_cover(c, meta), _disclaimer(), _summary(c), _competition(alliance), _opportunity(c),
+    pages = [_cover(c, meta), _disclaimer(prepared_for), _summary(c), _competition(alliance),
+             _opportunity(c),
              _forecast_table(c),
              _connecting(c, "connecting_at_hub",
                          "Passengers connecting at %s" % _g(c, "connecting_at_hub", "hub", default="the hub")),
@@ -443,8 +492,41 @@ def main():
         for p in (problems if isinstance(problems, list) else [problems]):
             print("   CHECK    %s" % p)
 
+    # THE IMAGES. The pack rendered with no resolver, so every slot resolved to nothing and the
+    # cover and dividers came out blank; the Observatory path passes avia_slots.SlotResolver and
+    # its decks carry imagery. Same resolver here, with the origin airport's coordinates so the
+    # cover globe is centred on the departure city as it is on an Observatory deck. Failing to
+    # build one is not fatal: the pack still renders, and it says the images are missing rather
+    # than producing them silently blank, which is how this went unnoticed.
+    resolver = None
+    try:
+        import avia_slots
+        origin = _g(c, "route_metadata", "origin_airport", default="")
+        ll = None
+        try:
+            import airportsdata
+            ap = (airportsdata.load("IATA").get(origin) or {})
+            if ap.get("lat") is not None:
+                ll = (ap["lon"], ap["lat"])
+        except Exception:
+            ll = None
+        resolver = avia_slots.SlotResolver(
+            uploads_dir=os.path.join(HERE, "uploads", (a.codename or origin or "pack").lower()),
+            subject_store=os.path.join(HERE, "image_store"),
+            brand_library=os.path.join(HERE, "observatory_library"),
+            project=(a.codename or origin or "pack").lower(),
+            origin=ll)
+    except Exception as e:                                   # noqa: BLE001
+        print("   IMAGES   no resolver (%s: %s); the pack will render without imagery"
+              % (type(e).__name__, e))
+
     import render_pptx as RPX
-    RPX.render(spec, a.out, safe_fonts=a.safe_fonts)
+    RPX.render(spec, a.out, safe_fonts=a.safe_fonts, resolver=resolver)
+    if resolver is not None:
+        try:
+            print(resolver.report())
+        except Exception:                                    # noqa: BLE001
+            pass
     print("wrote %s" % a.out)
 
 

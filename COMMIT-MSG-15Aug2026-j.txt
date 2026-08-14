@@ -1,0 +1,65 @@
+Forecast pack: John's corrections, the slide 32 columns, and the competition rows
+
+Jobs 2 and 3's remainder. Everything here is presentation fed from the payload; no
+forecast changes.
+
+app/forecast_to_contract.py
+  _fill_forecast_table(): the three columns slide 32 has and the contract did not.
+  deck_contract line 454 sets demand_at_service_year to None with the note "no
+  pre-stimulation local leg in the payload", which was true of the block it reads and
+  not of the payload: demand.stimulation is reported, so the pre-stimulation figure is
+  the post-stimulation one divided by it. Arithmetic on two figures in one payload, not
+  a new estimate. Also stimulation_factor, 1.0 on the connecting legs because the engine
+  does not stimulate them and a blank invites the reader to assume it does, and
+  annual_growth_rate as TOTAL growth base year to service year, which is the column the
+  2025 deck carries.
+
+  _fill_competition(): the competed and uncompeted rows, from cortex_app's own
+  competition_split. The rates are MEASURED, one capture per market applied by the engine
+  and reported by bucket, and the basis note says so, because a reader who has seen the
+  2025 analyst's table will otherwise take them for two rates assumed in advance. They
+  are not: COMPETITION-SPLIT-IS-NOT-THE-GAP records why building his two-rate model would
+  make the forecast worse, not better.
+
+  _settings: curfew_cost and feed_level are now SENTENCES. forecast_pack prints both
+  straight into prose, and the version I wrote this morning put dicts there, which threw
+  inside python-pptx on the first real render. The structured figures are kept beside
+  them as curfew_cost_detail and feed_level_detail, so nothing is lost and neither
+  consumer has to guess a shape. base_year added, which the table headings need.
+
+deck/forecast_pack.py
+  Disclaimer names THE AVIATION OBSERVATORY and Meridian, not Avia Solutions, and names
+  the party it was prepared for. This is not an Avia Solutions product.
+  "Load factor", not "Planned load factor": the figure is what the forecast produces and
+  calling it planned invites the reader to take it for an input.
+  Connecting tables carry the three-letter code BEFORE the city name, and the base demand
+  and forecast headings carry their years.
+  Traffic forecast table rebuilt to slide 32's column order: base annual demand with its
+  year, traffic growth, demand before stimulation at the service year, stimulation,
+  capture rate, forecast traffic with its year, per trip each way. The competed and
+  uncompeted rows sit indented under their own leg. Six notes underneath.
+  IMAGES: the pack rendered with no resolver, so every slot resolved to nothing and the
+  cover came out blank while the Observatory path passes avia_slots.SlotResolver. Same
+  resolver here, with the origin airport's coordinates so the cover globe is centred on
+  the departure city. A resolver that cannot be built is not fatal and is reported.
+  Two prose fields are coerced to str: the renderer takes a cryptic TypeError deep inside
+  python-pptx when a non-string reaches a run, and a contract field that changes shape
+  must not be able to bring the render down.
+
+app/contract_legs_check.py
+  A fifth invariant. The bucket rows sit UNDER their leg in the table, so a reader adds
+  them up: their forecasts must sum to the leg and their bases must not exceed the leg's
+  base. The bucket bases come from the feed DETAIL and the leg base from the market total,
+  which is precisely the pair of quantities that diverged on 14 August. Tested both ways:
+  a fixture whose hub buckets sum to 729,702 against a leg base of 696,196 fails, the
+  corrected one passes.
+
+Rendered end to end on a hand-built contract: 13 pages, content budget clean, both
+conditional pages correctly dropped and named, and the image report now states one empty
+slot rather than producing it blank in silence.
+
+STILL OUTSTANDING from Job 2, both genuine builds rather than corrections: the catchment
+page as a MAP with population at each end, which deck_contract line 280 records as never
+wired, and the route map with a great circle and the schedule options.
+
+Avia Solutions Limited. All rights reserved.

@@ -354,24 +354,120 @@ def contract_from_forecast(fc, currency="USD", growth_rate=None, ancillary_per_p
     # the payload rather than from the case, so it states what the run did.
     _sched = fc.get("schedule") or {}
     _opt = _sched.get("optimised") or {}
+    _fl = outputs.get("feed_level") or {}
+    # THESE TWO ARE READ AS PROSE. deck/forecast_pack.py prints _settings.curfew_cost and
+    # _settings.feed_level straight into a sentence, so they must be sentences. The first version
+    # of this block wrote dicts and the renderer threw on the first real contract. The structured
+    # figures are kept beside them under their own keys, so nothing is lost and neither consumer
+    # has to guess a shape.
+    _curfew = None
+    if _opt.get("cost_pax"):
+        _curfew = ("The permitted departure costs circa %s connecting passengers a year against an "
+                   "unrestricted departure at %s. The figure is connecting DEMAND at the two "
+                   "departure times, not carried passengers: on a capacity-bound route the seats "
+                   "sell either way and the carried cost is smaller."
+                   % ("{:,.0f}".format(_opt["cost_pax"]), _opt.get("unrestricted_dep") or "-"))
+    _feed = None
+    if _fl:
+        _feed = ("Connecting level k = %s (%s); the back-tested level is %s."
+                 % (_fl.get("qsi_k"), _fl.get("basis") or "basis not stated",
+                    _fl.get("back_test_k")))
     contract["_settings"] = {
         "split_floor": (fc.get("settings") or {}).get("split_floor",
                                                       (case or {}).get("split_floor")),
         "growth_basis": _sched.get("growth_basis"),
-        "curfew_cost": ({"cost_pax": _opt.get("cost_pax"),
-                         "unrestricted_dep": _opt.get("unrestricted_dep"),
-                         "basis": "connecting demand at the two departure times, not carried "
-                                  "passengers; see the capacity caveat"}
-                        if _opt.get("cost_pax") else None),
-        "feed_level": outputs.get("feed_level"),
+        "base_year": fc.get("year"),
+        "curfew_cost": _curfew,
+        "curfew_cost_detail": ({"cost_pax": _opt.get("cost_pax"),
+                                "unrestricted_dep": _opt.get("unrestricted_dep")}
+                               if _opt.get("cost_pax") else None),
+        "feed_level": _feed,
+        "feed_level_detail": (_fl or None),
         "od_source": outputs.get("od_source"),
     }
     _fill_hardcoded(contract, fc, case)
+    _fill_forecast_table(contract, fc)
+    _fill_competition(contract, fc)
     # The note travels whether the table built or not: a populated block says on what basis, and an
     # empty one says which inputs are outstanding, so the gap report reads as an instruction.
     if _seg_note and isinstance(contract.get("segment_forecast"), dict):
         contract["segment_forecast"]["_rows_need"] = _seg_note
     return contract
+
+
+def _fill_forecast_table(contract, fc):
+    """The three columns slide 32 has and the contract did not carry.
+
+    deck_contract line 454 sets demand_at_service_year to None with the note "no pre-stimulation
+    local leg in the payload", which was true of the block it reads and not of the payload as a
+    whole: demand.stimulation is reported, so the pre-stimulation figure is the post-stimulation
+    one divided by it. That is arithmetic on two figures in the same payload, not a new estimate.
+
+    Filled per leg:
+        demand_at_service_year   grown to the service year, BEFORE stimulation
+        stimulation_factor       1.0 on the connecting legs, which the engine does not stimulate
+        annual_growth_rate       total growth from the base year to the service year, not a CAGR,
+                                 because that is the column the 2025 deck carries
+
+    Nothing is invented. Where stimulation is absent or zero the field keeps its _need note.
+    """
+    ss = ((contract.get("segment_forecast") or {}).get("summary")) or {}
+    dem = fc.get("demand") or {}
+    stim = dem.get("stimulation")
+
+    def fill(block, factor):
+        if not isinstance(block, dict):
+            return
+        after, base = block.get("demand_after_stimulation"), block.get("base_annual_demand")
+        if block.get("demand_at_service_year") is None and after and factor:
+            block["demand_at_service_year"] = round(after / factor)
+            block.pop("_demand_at_service_year_need", None)
+        block.setdefault("stimulation_factor", factor)
+        pre = block.get("demand_at_service_year")
+        if block.get("annual_growth_rate") is None and pre and base:
+            block["annual_growth_rate"] = round(pre / base - 1.0, 4)
+
+    fill(ss.get("point_to_point_total"), (float(stim) if stim else None))
+    # The engine applies stimulation to the local leg only, so the connecting legs carry 1.0.
+    # Stating it is the point: a reader seeing a blank assumes the leg was stimulated too.
+    for key in ("connecting_at_hub_total", "connecting_at_destination_total"):
+        fill(ss.get(key), 1.0)
+
+
+def _fill_competition(contract, fc):
+    """The competed and uncompeted rows the forecast table needs, from the run's own bucket.
+
+    cortex_app already builds competition_split from direct_competition, which classifies each
+    connecting market on whether a nonstop exists in the scheduled week. The rates are OBSERVED,
+    not assumed: the engine applies one capture per market and this reports what that produced in
+    each bucket. It is not the two-rate model the 2025 analyst used, and the note says so, because
+    a reader who has seen his table will otherwise assume it is.
+    """
+    cs = fc.get("competition_split")
+    if not cs:
+        return
+    out = {}
+    for side, key in (("beyond", "connecting_at_hub"), ("behind", "connecting_at_destination")):
+        tot = ((cs.get(side) or {}).get("totals")) or {}
+        rows = []
+        for label, bucket in (("Direct competition", "direct"),
+                              ("No direct competition", "no_direct")):
+            blk = tot.get(bucket) or {}
+            if not blk.get("markets"):
+                continue
+            rows.append({"bucket": label, "markets": blk.get("markets"),
+                         "base": blk.get("base"), "capture": blk.get("capture"),
+                         "forecast": blk.get("forecast")})
+        if rows:
+            out[key] = rows
+    if out:
+        sf = contract.setdefault("segment_forecast", {})
+        sf["_competition_buckets"] = out
+        sf["_competition_basis"] = (
+            "A market has direct competition where a nonstop already operates in the scheduled "
+            "week (%s). The capture rates shown are MEASURED from the run, one rate per market "
+            "applied by the engine and reported by bucket, not two rates assumed in advance."
+            % (cs.get("week") or "week not stated"))
 
 
 def _fill_hardcoded(contract, fc, case):

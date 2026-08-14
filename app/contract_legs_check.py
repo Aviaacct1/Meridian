@@ -125,6 +125,32 @@ def check(path, cap):
         elif top is not None and leg:
             notes.append("%s city table is %s of the leg, %s of %s"
                          % (lbl, "%.0f%%" % (100.0 * top / leg), f"{top:,}", f"{leg:,}"))
+
+    # BUCKETS BELONG TO THEIR LEG. Added 15 August with the competed and uncompeted rows. Those
+    # rows sit UNDER their leg in the forecast table, so a reader adds them up: their forecasts
+    # must sum to the leg and their bases must not exceed the leg's base. Two rows summing past
+    # the line above them is the fault corrected on 14 August wearing different clothes, and the
+    # bucket bases come from the feed DETAIL while the leg base comes from the market total, which
+    # is exactly the pair of quantities that diverged last time.
+    cb = (c.get("segment_forecast") or {}).get("_competition_buckets") or {}
+    for lbl, key, leg in (("hub", "connecting_at_hub", hub),
+                          ("destination", "connecting_at_destination", dst)):
+        rows = cb.get(key) or []
+        if not rows:
+            continue
+        blk = s.get(("connecting_at_hub_total" if key == "connecting_at_hub"
+                     else "connecting_at_destination_total")) or {}
+        b_fc = sum((r.get("forecast") or 0) for r in rows)
+        b_base = sum((r.get("base") or 0) for r in rows)
+        leg_base = blk.get("base_annual_demand")
+        if leg is not None and abs(b_fc - leg) > TOL_PAX:
+            fails.append("the %s competition buckets sum to %s against a leg of %s"
+                         % (lbl, f"{b_fc:,}", f"{leg:,}"))
+        if leg_base and b_base > leg_base + TOL_PAX:
+            fails.append("the %s competition bucket bases sum to %s, above the leg's own base of "
+                         "%s: two bases in one block" % (lbl, f"{b_base:,}", f"{leg_base:,}"))
+        elif leg is not None:
+            notes.append("%s buckets: %d rows, forecasts sum to the leg" % (lbl, len(rows)))
     return name, fails, notes
 
 
