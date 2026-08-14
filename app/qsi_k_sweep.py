@@ -55,7 +55,23 @@ KEY_COLS = ("route", "dep", "arr", "carrier", "year")
 
 
 def load(path):
-    """{key: (fc_over_out, fc_over_p2p)} for the rows this arm graded, plus its ungraded count.
+    """{key: (fc_over_out, fc_over_p2p, fc_over_conn)} per graded row, plus the ungraded count.
+
+    THE THIRD ONE IS THE MEASURE THIS SWEEP EXISTS FOR AND IT IS NOT IN THE CSV. backtest.py
+    writes feed_beyond, feed_behind, outturn_pax and p2p_outturn, so the connecting leg can be
+    graded directly: the forecast is the two feed columns summed and the outturn is the onboard
+    sector total less the local O&D. Nothing had to be re-run to get it.
+
+    WHY IT MATTERS. fc_over_out grades the whole route, and an inflated feed sitting on top of a
+    short local leg satisfies it just as well as two correct legs do; the sweep's own control
+    showed the local leg reading 0.56 of the point to point outturn on the same population. A
+    total measure cannot tell compensation from correctness, and the mix is what drives the
+    aircraft and the frequency. This grades the leg k actually moves.
+
+    The connecting outturn is a RESIDUAL, so it inherits both inputs' errors and can come out
+    zero or negative on a route whose local O&D is measured at or above its onboard total. Those
+    rows are counted as ungradeable rather than clipped, which would fold the fault into the
+    median.
 
     THE MEASURE FOR A FEED CHANGE IS fc_over_out AND NOT fc_over_p2p. backtest.py line 595
     computes ratio_p2p as f["captured"] / p2p, where captured is the LOCAL leg: the connecting
@@ -70,19 +86,30 @@ def load(path):
     """
     if not path or not os.path.exists(path):
         return None, 0
+
+    def _f(v):
+        try:
+            return float(str(v or "").strip())
+        except ValueError:
+            return None
+
     rows, ungraded = {}, 0
     with open(path, newline="", encoding="utf-8") as fh:
         for r in csv.DictReader(fh):
-            out_raw = (r.get("fc_over_out") or "").strip()
-            p2p_raw = (r.get("fc_over_p2p") or "").strip()
-            if not out_raw:
+            out_ratio = _f(r.get("fc_over_out"))
+            if out_ratio is None:
                 ungraded += 1
                 continue
-            try:
-                rows[tuple((r.get(c) or "").strip() for c in KEY_COLS)] = (
-                    float(out_raw), float(p2p_raw) if p2p_raw else None)
-            except ValueError:
-                ungraded += 1
+            p2p_ratio = _f(r.get("fc_over_p2p"))
+            fb, fh_, out_pax, p2p_out = (_f(r.get("feed_beyond")), _f(r.get("feed_behind")),
+                                         _f(r.get("outturn_pax")), _f(r.get("p2p_outturn")))
+            conn_ratio = None
+            if None not in (fb, fh_, out_pax, p2p_out):
+                conn_out = out_pax - p2p_out
+                if conn_out > 0:
+                    conn_ratio = (fb + fh_) / conn_out
+            rows[tuple((r.get(c) or "").strip() for c in KEY_COLS)] = (
+                out_ratio, p2p_ratio, conn_ratio)
     return rows, ungraded
 
 
@@ -266,6 +293,24 @@ def main():
         print("  %-12s %6d %9.2f %9.1f%% %9.1f%% %7.1f%% %7.1f%%"
               % (label, s["n"], s["median"], 100 * s["within20"], 100 * s["within40"],
                  100 * s["over"], 100 * s["under"]))
+
+    # THE LEG k ACTUALLY MOVES. Graded on the routes every arm graded AND where the connecting
+    # outturn is a positive residual, so all arms are scored on one population.
+    conn_ok = [k for k in common
+               if all(rows[k][2] is not None for rows, _u in loaded.values())]
+    if conn_ok:
+        print(f"\n  fc/CONNECTING OUTTURN, the leg k moves. {len(conn_ok)} routes where every arm "
+              f"has a positive connecting residual.")
+        print("  %-12s %6s %9s %10s %10s %8s %8s"
+              % ("arm", "n", "median", "within20", "within40", "over", "under"))
+        for label, (rows, _u) in loaded.items():
+            s = stats([rows[k][2] for k in conn_ok])
+            print("  %-12s %6d %9.2f %9.1f%% %9.1f%% %7.1f%% %7.1f%%"
+                  % (label, s["n"], s["median"], 100 * s["within20"], 100 * s["within40"],
+                     100 * s["over"], 100 * s["under"]))
+        print("  Connecting outturn is onboard sector traffic less the local O&D, so it is a "
+              "RESIDUAL\n  and carries both inputs' errors. Read the arms against each other, not "
+              "against 1.00.")
 
     p2p = {lab: [rows[k][1] for k in common if rows[k][1] is not None]
            for lab, (rows, _u) in loaded.items()}
