@@ -919,7 +919,18 @@ function drawCurve(op, sc, d){
   }
   const W=760, H=170, L=46, R=12, T=10, B=26;
   const iw=W-L-R, ih=H-T-B;
-  const max=Math.max.apply(null, pts.map(p=>p.total))||1;
+  // TWO SERIES, because one of them was misleading on its own. Connecting demand moves across the
+  // day and the ROUTE TOTAL often does not, since route_forecast line 823 carries
+  // min(demand, capacity x plan cap) and a capacity-bound route is pinned at the ceiling whatever
+  // the departure time. Drawing only the connecting line invites the reader to take its shape for
+  // the route's, which is the opposite of the truth on exactly the routes that matter.
+  const st=_slideState;
+  const totalAt=p=>{ if(!st) return null;
+    const feed=p.total*st.scale, demand=st.local+feed;
+    return (st.cap>0?Math.min(demand,st.cap):demand)*2; };            // two-way, as the page reads
+  const capLine=st&&st.cap>0?st.cap*2:null;
+  const totals=st?pts.map(totalAt):[];
+  const max=Math.max.apply(null, (totals.length?totals:pts.map(p=>p.total)))||1;
   const x=m=>L+iw*(m/1440), y=v=>T+ih*(1-v/max);
   const parts=[];
   // Restricted hours as shaded blocks, taken from the same windows the optimiser screened on.
@@ -938,10 +949,21 @@ function drawCurve(op, sc, d){
   }
   parts.push(`<line x1="${L}" y1="${T+ih}" x2="${W-R}" y2="${T+ih}" stroke="var(--line)"/>`);
   parts.push(`<text x="${L-6}" y="${y(max)+4}" font-size="10" fill="var(--muted)" text-anchor="end" font-family="var(--sans)">${fmt(max)}</text>`);
-  // The curve itself, and the permitted points marked so a shaded hour cannot be misread as a dip.
-  const line=pts.map((p,i)=>(i?"L":"M")+x(p.dep)+" "+y(p.total)).join(" ");
-  parts.push(`<path d="${line}" fill="none" stroke="var(--accent, #b8860b)" stroke-width="1.8"/>`);
-  pts.forEach(p=>{ if(!p.permitted) parts.push(`<circle cx="${x(p.dep)}" cy="${y(p.total)}" r="2" fill="var(--muted)"/>`); });
+  // The plan cap, drawn where it binds. A flat total is not a flat market, it is the aeroplane.
+  if(capLine!==null && capLine<=max){
+    parts.push(`<line x1="${L}" y1="${y(capLine)}" x2="${W-R}" y2="${y(capLine)}" stroke="var(--muted)" stroke-width="1" stroke-dasharray="5 4"/>`);
+    parts.push(`<text x="${W-R}" y="${y(capLine)-4}" font-size="10" fill="var(--muted)" text-anchor="end" font-family="var(--sans)">aircraft ceiling ${fmt(Math.round(capLine))}</text>`);
+  }
+  // Route total, two-way, the series a reader expects to see first.
+  if(st){
+    const tl=pts.map((p,i)=>(i?"L":"M")+x(p.dep)+" "+y(totalAt(p))).join(" ");
+    parts.push(`<path d="${tl}" fill="none" stroke="var(--accent, #b8860b)" stroke-width="2"/>`);
+  }
+  // Connecting demand, two-way and on the same scale, so the mix shift is visible against a total
+  // that may not move at all.
+  const cl=pts.map((p,i)=>(i?"L":"M")+x(p.dep)+" "+y(st?p.total*st.scale*2:p.total)).join(" ");
+  parts.push(`<path d="${cl}" fill="none" stroke="var(--body)" stroke-width="1.4" stroke-dasharray="4 3" opacity="0.75"/>`);
+  pts.forEach(p=>{ if(!p.permitted) parts.push(`<circle cx="${x(p.dep)}" cy="${y(st?p.total*st.scale*2:p.total)}" r="2" fill="var(--muted)"/>`); });
   // The chosen departure, and the unrestricted optimum where a restriction moved it.
   const chosen=(sc&&sc.outbound&&sc.outbound.dep)||"";
   const toM=s=>{const a=(s||"").split(":");return a.length<2?null:(+a[0])*60+(+a[1]);};
@@ -957,12 +979,20 @@ function drawCurve(op, sc, d){
   }
   $("#curveSvg").innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" role="img">${parts.join("")}</svg>`;
   wireSlider(pts, cm);
+  const flat = st && totals.length &&
+               (Math.max.apply(null, totals) - Math.min.apply(null, totals)) < 0.02 * max;
   setTxt("curveNote",
-    "Connecting demand won at each departure time, each way, before capture scaling and before the "+
-    "aircraft's capacity. Local demand does not vary with departure time, so the route total moves "+
-    "with this curve until the aircraft fills. Shaded hours are restricted; grey points are "+
-    "departures the aircraft cannot fly, including those whose inbound would land inside a "+
-    "restriction. Read a preferred window off the curve, then run that time for the full forecast.");
+    "Solid: route total carried, two-way. Dashed: connecting demand, two-way. Shaded hours are "+
+    "restricted and grey points are departures the aircraft cannot fly, including those whose "+
+    "inbound would land inside a restriction. Local demand does not vary with departure time, so "+
+    "every movement in the total comes from the connecting side."+
+    (flat ? "  THE TOTAL IS FLAT BECAUSE THE ROUTE IS CAPACITY BOUND: the aircraft fills at every "+
+            "departure time, so the departure changes the MIX and not the total. Note that the "+
+            "optimiser maximises connecting passengers, and on a capacity-bound route that "+
+            "displaces point to point passengers, who pay more. Choosing the connecting peak is "+
+            "not the revenue optimum here."
+          : "  The route is not capacity bound across the day, so the departure time moves the "+
+            "total as well as the mix."));
   wrap.classList.remove("hidden");
 }
 $("#optimise").onclick=optimise;
