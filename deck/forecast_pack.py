@@ -530,9 +530,15 @@ def main():
         except Exception as e:                               # noqa: BLE001
             print("   IMAGES   config did not resolve (%s); falling back to deck/ folders"
                   % type(e).__name__)
-        for label, path in (("library", lib), ("subject store", store), ("uploads", uploads)):
-            if not os.path.isdir(path):
-                print("   IMAGES   %s not found at %s" % (label, path))
+        # ONLY THE BRAND LIBRARY IS REQUIRED. The subject store is built by avia_images.py and
+        # need not exist; the uploads folder is per project and exists only once somebody has
+        # uploaded images for that project. Warning on either would fire on every correct run,
+        # and a warning that always fires is one nobody reads. Absent optional folders are passed
+        # as None rather than as a path that is not there.
+        if not os.path.isdir(lib):
+            print("   IMAGES   brand library not found at %s; the cover will be empty" % lib)
+        store = store if os.path.isdir(store) else None
+        uploads = uploads if os.path.isdir(uploads) else None
         resolver = avia_slots.SlotResolver(uploads_dir=uploads, subject_store=store,
                                            brand_library=lib, project=proj, origin=ll)
     except Exception as e:                                   # noqa: BLE001
