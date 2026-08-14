@@ -510,12 +510,31 @@ def main():
                 ll = (ap["lon"], ap["lat"])
         except Exception:
             ll = None
-        resolver = avia_slots.SlotResolver(
-            uploads_dir=os.path.join(HERE, "uploads", (a.codename or origin or "pack").lower()),
-            subject_store=os.path.join(HERE, "image_store"),
-            brand_library=os.path.join(HERE, "observatory_library"),
-            project=(a.codename or origin or "pack").lower(),
-            origin=ll)
+        # THE IMAGERY IS NOT IN THE REPO AND CONFIG SAYS WHERE IT IS. config.py Root 4 was added
+        # on 8 August for exactly this: 102MB of Observatory photography, each image carrying a
+        # rights determination, living beside the stores rather than bundled. The first version of
+        # this looked in deck/ and found nothing, which is why the cover slot reported empty.
+        proj = (a.codename or origin or "pack").lower()
+        lib = os.path.join(HERE, "observatory_library")
+        store = os.path.join(HERE, "image_store")
+        uploads = os.path.join(HERE, "uploads", proj)
+        try:
+            _app = os.path.join(os.path.dirname(HERE), "app")
+            if _app not in sys.path:
+                sys.path.insert(0, _app)
+            import config as CFG
+            lib = str(CFG.OBS_LIBRARY_DIR)
+            store = str(getattr(CFG, "IMAGE_STORE_DIR", os.path.join(str(CFG.ASSETS_DIR),
+                                                                     "image_store")))
+            uploads = os.path.join(str(CFG.ENGAGEMENT_ASSETS_DIR), proj)
+        except Exception as e:                               # noqa: BLE001
+            print("   IMAGES   config did not resolve (%s); falling back to deck/ folders"
+                  % type(e).__name__)
+        for label, path in (("library", lib), ("subject store", store), ("uploads", uploads)):
+            if not os.path.isdir(path):
+                print("   IMAGES   %s not found at %s" % (label, path))
+        resolver = avia_slots.SlotResolver(uploads_dir=uploads, subject_store=store,
+                                           brand_library=lib, project=proj, origin=ll)
     except Exception as e:                                   # noqa: BLE001
         print("   IMAGES   no resolver (%s: %s); the pack will render without imagery"
               % (type(e).__name__, e))
