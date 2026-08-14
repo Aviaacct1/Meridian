@@ -1,0 +1,35 @@
+Competition buckets scaled to their leg: the new invariant caught my own defect
+
+THE CHECK FAILED 16 OF 16 ON ITS FIRST REAL RUN AND IT WAS RIGHT. The competition rows
+shipped an hour earlier sit UNDER their leg in the forecast table, and they were not on
+the leg's basis. competition_split is built from the feed DETAIL, which is each way and,
+with the split floor off, at the pre-cap level; the contract's leg is two-way and
+post-cap.
+
+THE MEASUREMENT THAT NAMES IT. On the shipped floor-ON case the hub buckets summed to
+15,872 against a leg of 31,745, which is 2.0000x to the passenger. On the floor-OFF
+cases the ratio drifts off 2.0 because the detail is also pre-cap: SJC-TPE CI 4x 2028
+reads 7,636 against 14,484, SFO-TPE reads 37,552 against 36,920 and GOA-JFK 43,830
+against 66,401. One basis difference plus one scaling difference, compounding.
+
+app/forecast_to_contract.py
+  Each side is scaled to its own leg by ONE ratio, forecasts to the leg forecast and
+  bases to the leg base, so every bucket's SHARE is exactly as the engine measured it
+  and only the level moves. This is the fix FLOOR-DOUBLE-SCALED settled for the city
+  rows on 14 August, applied to the same shape one table lower.
+  The capture rate is RECOMPUTED from the two scaled figures rather than carried, because
+  the two scalings differ and the ratio a client reads must be the ratio of the two
+  numbers printed beside it. That also corrects the rate: it was each-way forecast over
+  two-way market, understated roughly two-fold, and it now sits on the same basis as the
+  leg's own capture rate directly above it.
+  _competition_scale records both ratios per side, so a reader can see what was applied.
+
+Tested on the measured floor-ON figures: both sides sum exactly to their leg on
+forecasts and on bases, and the forecast scale comes out at 2.0001, recovering the
+each-way against two-way factor from the data rather than assuming it.
+
+THE INVARIANT STAYS AS WRITTEN. It cost an hour and it earned it: two rows that sum past
+the line above them is the fault of 14 August wearing different clothes, and without the
+check it would have reached a client table where a reader adds the two rows up.
+
+Avia Solutions Limited. All rights reserved.

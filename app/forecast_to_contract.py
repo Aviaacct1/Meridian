@@ -446,7 +446,8 @@ def _fill_competition(contract, fc):
     cs = fc.get("competition_split")
     if not cs:
         return
-    out = {}
+    ss = ((contract.get("segment_forecast") or {}).get("summary")) or {}
+    out, scales = {}, {}
     for side, key in (("beyond", "connecting_at_hub"), ("behind", "connecting_at_destination")):
         tot = ((cs.get(side) or {}).get("totals")) or {}
         rows = []
@@ -458,11 +459,34 @@ def _fill_competition(contract, fc):
             rows.append({"bucket": label, "markets": blk.get("markets"),
                          "base": blk.get("base"), "capture": blk.get("capture"),
                          "forecast": blk.get("forecast")})
-        if rows:
-            out[key] = rows
+        if not rows:
+            continue
+        # THE ROWS AND THE LEG ARE NOT ON ONE BASIS, and the rows sit under the leg in the table.
+        # competition_split is built from the feed DETAIL, which is each way and, with the split
+        # floor off, at the pre-cap level; the contract's leg is two-way and post-cap. Measured on
+        # the shipped floor-ON case the rows summed to 15,872 against a leg of 31,745, 2.0000x to
+        # the passenger. Each side is scaled to its own leg by ONE ratio, so every bucket's SHARE
+        # is exactly as the engine measured it and only the level moves. This is the fix
+        # FLOOR-DOUBLE-SCALED settled for the city rows on 14 August, applied to the same shape.
+        leg_blk = ss.get("connecting_at_hub_total" if key == "connecting_at_hub"
+                         else "connecting_at_destination_total") or {}
+        leg_fc, leg_base = leg_blk.get("forecast"), leg_blk.get("base_annual_demand")
+        sum_fc = sum((r.get("forecast") or 0) for r in rows)
+        sum_base = sum((r.get("base") or 0) for r in rows)
+        s_fc = (leg_fc / sum_fc) if (leg_fc and sum_fc) else 1.0
+        s_base = (leg_base / sum_base) if (leg_base and sum_base) else 1.0
+        for r in rows:
+            r["forecast"] = round((r.get("forecast") or 0) * s_fc)
+            r["base"] = round((r.get("base") or 0) * s_base)
+            # Recomputed rather than carried: the two scalings differ, so the ratio the client
+            # reads must be the ratio of the two numbers printed beside it.
+            r["capture"] = (round(r["forecast"] / r["base"], 4) if r["base"] else None)
+        scales[key] = {"forecast_scale": round(s_fc, 4), "base_scale": round(s_base, 4)}
+        out[key] = rows
     if out:
         sf = contract.setdefault("segment_forecast", {})
         sf["_competition_buckets"] = out
+        sf["_competition_scale"] = scales
         sf["_competition_basis"] = (
             "A market has direct competition where a nonstop already operates in the scheduled "
             "week (%s). The capture rates shown are MEASURED from the run, one rate per market "
