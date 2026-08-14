@@ -871,22 +871,31 @@ function readSlider(pts){
   // optimiser actually computed.
   let p=pts[0]; for(const q of pts){ if(Math.abs(q.dep-m)<Math.abs(p.dep-m)) p=q; }
   const s=_slideState;
-  const feed_ew = p.total*s.scale;                 // each way, the engine's own feed at this time
-  const demand_ew = s.local + feed_ew;             // local does not move with departure time
-  const carried_ew = s.cap>0 ? Math.min(demand_ew, s.cap) : demand_ew;
+  const conn_ew = p.total*s.scale;                 // connecting carried at this departure, each way
+  const p2p_ew  = s.local;                         // local does not move with departure time
+  const demand_ew = p2p_ew + conn_ew;
+  const bound = s.cap>0 && demand_ew > s.cap;
+  const carried_ew = bound ? s.cap : demand_ew;
   const lf = s.capacity>0 ? carried_ew/s.capacity : null;
-  const spill = demand_ew - carried_ew;
+  // THE FOUR FIGURES THE PAGE ITSELF REPORTS, on the same basis and in the same order, so the
+  // slider can be read against the headline rather than translated. Total demand and carried were
+  // shown side by side and are identical whenever the cap does not bind, which is most of the day
+  // on most routes: John's correction, 14 August.
   setTxt("curveRead",
     `${p.hhmm}${p.permitted?"":"  ·  NOT FLYABLE at this time"}`+
-    `  ·  connecting ${fmt(Math.round(feed_ew*2))}`+
-    `  ·  total demand ${fmt(Math.round(demand_ew*2))}`+
-    `  ·  carried ${fmt(Math.round(carried_ew*2))}`+
-    (lf!==null?`  ·  load factor ${(lf*100).toFixed(1)}%`:"")+
-    (spill>1?`  ·  spill ${fmt(Math.round(spill*2))}`:""));
+    `  ·  total forecast ${fmt(Math.round(carried_ew*2))}`+
+    (bound ? `  ·  point to point and connecting: split needs a run`
+           : `  ·  point to point ${fmt(Math.round(p2p_ew*2))}`+
+             `  ·  connecting feed ${fmt(Math.round(conn_ew*2))}`)+
+    (lf!==null?`  ·  load factor ${(lf*100).toFixed(1)}%`:""));
   setTxt("curveReadNote",
-    "Two-way. Derived from the curve and this run's own feed, so the traffic figures are the "+
-    "engine's, not an interpolation. The point to point and connecting split of what is carried, "+
-    "and every economic figure, need a run at that departure time: neither is linear in the feed.");
+    "Two-way, passengers a year. Derived from the curve and this run's own carried figures, so "+
+    "these are the engine's numbers rather than an interpolation, and they reconcile with the "+
+    "headline above."+
+    (bound ? "  AT THIS DEPARTURE THE AIRCRAFT FILLS, so the total is the ceiling and the split "+
+             "between point to point and connecting is set by the engine's re-split rather than "+
+             "by the feed. Run this time to see it."
+           : "  Economics need a run at this departure time: they are not linear in the feed."));
 }
 
 // THE DEPARTURE-TIME CURVE, drawn from the scores the optimiser already computed.
@@ -907,17 +916,23 @@ function drawCurve(op, sc, d){
   const dem=(d&&d.demand)||{}, cap=(d&&d.capacity)||{};
   const anchorDep=(sc&&sc.outbound&&sc.outbound.dep)||"";
   const cmins=(()=>{const a=(anchorDep||"").split(":");return a.length<2?null:(+a[0])*60+(+a[1]);})();
-  if(cmins!==null && dem.feed_total>0 && dem.total_demand>0){
+  // ANCHOR ON THE CARRIED FIGURES, WHICH ARE THE ONES THE PAGE REPORTS. demand.feed_total is the
+  // RAW pre-cap feed and is not the connecting traffic in the headline: on TPA-AUS it read 100,295
+  // against a connecting carried of 48,209. Scaling by the raw figure and taking local as
+  // total_demand minus it mixes two bases, and the local came out roughly double. p2p_carried and
+  // connecting_carried are on one basis and sum to the total, so the whole readout reconciles with
+  // the numbers above it.
+  if(cmins!==null && dem.connecting_carried>0 && dem.p2p_carried>0){
     let anchor=pts[0]; for(const q of pts){ if(Math.abs(q.dep-cmins)<Math.abs(anchor.dep-cmins)) anchor=q; }
     if(anchor.total>0){
       const capacity=cap.annual_capacity||0;
-      _slideState={scale: dem.feed_total/anchor.total,
-                   local: dem.total_demand-dem.feed_total,
+      _slideState={scale: dem.connecting_carried/anchor.total,
+                   local: dem.p2p_carried,
                    capacity: capacity,
                    cap: capacity*(cap.plan_cap||0)};
     }
   }
-  const W=760, H=170, L=46, R=12, T=10, B=26;
+  const W=760, H=200, L=62, R=14, T=10, B=28;   // room for the y labels and the legend
   const iw=W-L-R, ih=H-T-B;
   // TWO SERIES, because one of them was misleading on its own. Connecting demand moves across the
   // day and the ROUTE TOTAL often does not, since route_forecast line 823 carries
@@ -948,7 +963,22 @@ function drawCurve(op, sc, d){
     parts.push(`<text x="${x(h*60)}" y="${H-8}" font-size="10" fill="var(--muted)" text-anchor="middle" font-family="var(--sans)">${("0"+h).slice(-2)}:00</text>`);
   }
   parts.push(`<line x1="${L}" y1="${T+ih}" x2="${W-R}" y2="${T+ih}" stroke="var(--line)"/>`);
-  parts.push(`<text x="${L-6}" y="${y(max)+4}" font-size="10" fill="var(--muted)" text-anchor="end" font-family="var(--sans)">${fmt(max)}</text>`);
+  // Y AXIS WITH ITS UNIT. A chart has to stand on its own: one peak value in the corner is not a
+  // scale, and a reader cannot tell 40,000 from 400,000 without one.
+  parts.push(`<line x1="${L}" y1="${T}" x2="${L}" y2="${T+ih}" stroke="var(--line)"/>`);
+  [0, 0.25, 0.5, 0.75, 1].forEach(f=>{
+    const v=max*f;
+    parts.push(`<line x1="${L-4}" y1="${y(v)}" x2="${L}" y2="${y(v)}" stroke="var(--line)"/>`);
+    if(f>0) parts.push(`<line x1="${L}" y1="${y(v)}" x2="${W-R}" y2="${y(v)}" stroke="var(--line)" opacity="0.35"/>`);
+    parts.push(`<text x="${L-7}" y="${y(v)+3}" font-size="9.5" fill="var(--muted)" text-anchor="end" font-family="var(--sans)">${fmt(Math.round(v))}</text>`);
+  });
+  parts.push(`<text x="${L-7}" y="${T-2}" font-size="9" fill="var(--muted)" text-anchor="end" font-family="var(--sans)">pax/yr</text>`);
+  // LEGEND, inside the plot so it travels with the picture if it is screenshotted into a deck.
+  const lx=L+10, ly=T+12;
+  parts.push(`<line x1="${lx}" y1="${ly}" x2="${lx+18}" y2="${ly}" stroke="var(--accent, #b8860b)" stroke-width="2"/>`);
+  parts.push(`<text x="${lx+23}" y="${ly+3.5}" font-size="10" fill="var(--body)" font-family="var(--sans)">Route total carried, two-way</text>`);
+  parts.push(`<line x1="${lx}" y1="${ly+14}" x2="${lx+18}" y2="${ly+14}" stroke="var(--body)" stroke-width="1.4" stroke-dasharray="4 3" opacity="0.75"/>`);
+  parts.push(`<text x="${lx+23}" y="${ly+17.5}" font-size="10" fill="var(--body)" font-family="var(--sans)">Connecting, two-way</text>`);
   // The plan cap, drawn where it binds. A flat total is not a flat market, it is the aeroplane.
   if(capLine!==null && capLine<=max){
     parts.push(`<line x1="${L}" y1="${y(capLine)}" x2="${W-R}" y2="${y(capLine)}" stroke="var(--muted)" stroke-width="1" stroke-dasharray="5 4"/>`);
@@ -961,6 +991,8 @@ function drawCurve(op, sc, d){
   }
   // Connecting demand, two-way and on the same scale, so the mix shift is visible against a total
   // that may not move at all.
+  // Connecting is the CARRIED connecting at each departure, on the same basis as the total above
+  // it, since the scale is now anchored on connecting_carried rather than the raw feed.
   const cl=pts.map((p,i)=>(i?"L":"M")+x(p.dep)+" "+y(st?p.total*st.scale*2:p.total)).join(" ");
   parts.push(`<path d="${cl}" fill="none" stroke="var(--body)" stroke-width="1.4" stroke-dasharray="4 3" opacity="0.75"/>`);
   pts.forEach(p=>{ if(!p.permitted) parts.push(`<circle cx="${x(p.dep)}" cy="${y(st?p.total*st.scale*2:p.total)}" r="2" fill="var(--muted)"/>`); });
