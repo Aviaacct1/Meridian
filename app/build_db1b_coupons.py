@@ -120,7 +120,13 @@ def open_store(path, memory, threads, temp):
     con.execute("""
         CREATE TABLE IF NOT EXISTS od_market_coupons (
             origin VARCHAR, dest VARCHAR, year BIGINT, quarter BIGINT,
-            coupons BIGINT, pax DOUBLE, avg_fare DOUBLE)
+            coupons BIGINT, pax DOUBLE, avg_fare DOUBLE,
+            -- DISTANCE, ADDED 14 AUGUST FOR THE PRORATE QUESTION. A connecting passenger's fare
+            -- covers a longer journey than the nonstop it competes with, so comparing the two
+            -- O&D fares says nothing about what the OPERATING carrier earns on one sector. Yield
+            -- per mile does, and the long sector then keeps its distance share. miles_flown is
+            -- the actual routed distance, nonstop_miles the great circle it competes against.
+            miles_flown DOUBLE, nonstop_miles DOUBLE)
     """)
     con.execute("""
         CREATE TABLE IF NOT EXISTS build_log (
@@ -156,13 +162,21 @@ def build_quarter(con, csv_path, year, quarter):
                    try_cast(Quarter AS BIGINT) AS quarter,
                    least(try_cast(MktCoupons AS BIGINT), {MAX_COUPONS}) AS coupons,
                    try_cast(Passengers AS DOUBLE) AS pax_sample,
-                   try_cast(MktFare AS DOUBLE) AS fare
+                   try_cast(MktFare AS DOUBLE) AS fare,
+                   try_cast(MktMilesFlown AS DOUBLE) AS miles_flown,
+                   try_cast(NonStopMiles AS DOUBLE) AS nonstop_miles
             FROM read_csv(?, header=true)
         )
         SELECT origin, dest, year, quarter, coupons,
                SUM(pax_sample) * 10 AS pax,
                CASE WHEN SUM(pax_sample) > 0
-                    THEN SUM(pax_sample * fare) / SUM(pax_sample) ELSE 0 END AS avg_fare
+                    THEN SUM(pax_sample * fare) / SUM(pax_sample) ELSE 0 END AS avg_fare,
+               -- Passenger-weighted, so a market's distance reflects the routings people bought
+               -- rather than the routings that existed.
+               CASE WHEN SUM(pax_sample) > 0
+                    THEN SUM(pax_sample * miles_flown) / SUM(pax_sample) ELSE 0 END AS miles_flown,
+               CASE WHEN SUM(pax_sample) > 0
+                    THEN SUM(pax_sample * nonstop_miles) / SUM(pax_sample) ELSE 0 END AS nonstop_miles
         FROM r
         WHERE origin IS NOT NULL AND dest IS NOT NULL AND coupons IS NOT NULL
               AND pax_sample IS NOT NULL
