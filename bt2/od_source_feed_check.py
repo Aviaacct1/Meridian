@@ -120,6 +120,10 @@ def run():
         os.environ["AVIA_OD_SOURCE"] = "dot"
         os.environ["AVIA_OD_INDEX_VINTAGE"] = "1" if index_on else "0"
         OS._YEAR_OK.clear()
+        # The growth cache is keyed on the market and the years, not on the data behind them,
+        # which is right in a live process where Sabre does not change under it and wrong across
+        # fixtures that deliberately return different growth for the same market. Cleared per case.
+        OS._GROWTH.clear()
         OS._coupons_path = lambda: full
         market, source, share = OS.feed_market(sabre_stub([], growth=growth), ["SJC"], ["AUS"],
                                                year, factor_indirect=FACTOR, group="dest")

@@ -355,6 +355,9 @@ def feed_market(sabre_fn, origins, dests, year, factor_indirect=1.044, group="de
     return market, source, share
 
 
+_GROWTH = {}
+
+
 def _growth_factor(sabre_fn, origins, dests, us_side, group, from_year, to_year):
     """Sabre's own growth on the SAME markets and the SAME quantity, from_year to to_year.
 
@@ -364,6 +367,16 @@ def _growth_factor(sabre_fn, origins, dests, us_side, group, from_year, to_year)
     market does not halve or double in a year and a figure that says it did is two
     populations rather than one.
     """
+    # CACHED, because the optimiser calls this once per CANDIDATE DEPARTURE. optimise_departure
+    # scores departures across the whole day and each candidate re-enters feed_market, so an
+    # uncached factor runs two extra Sabre market queries per candidate per side to recompute an
+    # identical constant. Measured effect: an optimise on a US domestic route that should take
+    # seconds ran into minutes. The key is the full market definition, so a different scope or a
+    # different pair of years computes its own.
+    key = (group, from_year, to_year, tuple(sorted(origins)), tuple(sorted(dests)),
+           tuple(sorted(us_side)))
+    if key in _GROWTH:
+        return _GROWTH[key]
     if group == "dest":
         a = sabre_fn(origins, us_side, from_year)
         b = sabre_fn(origins, us_side, to_year)
@@ -371,10 +384,12 @@ def _growth_factor(sabre_fn, origins, dests, us_side, group, from_year, to_year)
         a = sabre_fn(us_side, dests, from_year)
         b = sabre_fn(us_side, dests, to_year)
     base, later = sum((a or {}).values()), sum((b or {}).values())
-    if base <= 0 or later <= 0:
-        return None
-    factor = later / base
-    return factor if INDEX_MIN <= factor <= INDEX_MAX else None
+    factor = None
+    if base > 0 and later > 0:
+        f = later / base
+        factor = f if INDEX_MIN <= f <= INDEX_MAX else None
+    _GROWTH[key] = factor      # a refusal is cached too: it will refuse identically next time
+    return factor
 
 
 def _db1b_feed(coupons_db, origins, dests, year, factor_indirect, group):
