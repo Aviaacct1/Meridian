@@ -460,6 +460,38 @@ def behind_feed(sabre_db, oag_db, week, origin_airports, dest_airports, year, ca
     return total, pdew
 
 
+# TURNAROUND BY FLIGHT TYPE, John's ruling of 14 August. An aircraft that departs the origin at T
+# ARRIVED at T minus the turnaround: the two movements are one rotation and are tied together. The
+# time it takes is not one number. A widebody off a thirteen-hour sector needs deep cleaning, full
+# catering, a crew change and a fuel uplift; a domestic narrowbody turns in under an hour. The
+# three cases John named are domestic, continental international, and intercontinental.
+#
+# THESE ARE PLANNING AVERAGES AND NOT MEASUREMENTS. They are stated here so they can be argued
+# with and overridden per case, which is the treatment any figure without a source gets.
+TURNAROUND_MIN = {"domestic": 60, "continental": 90, "intercontinental": 180}
+CONTINENTAL_MAX_KM = 3000.0
+
+
+def turnaround_mins(origin_country, dest_country, gcd_km, cfg=None):
+    """Minutes on stand between arrival and the next departure, by flight type.
+
+    Same country is domestic. Different countries within CONTINENTAL_MAX_KM is continental
+    international, which is the LATAM and intra-Europe case. Anything longer is intercontinental.
+    A case may override the figure outright with feed_cfg["turnaround_mins"].
+    """
+    if cfg and cfg.get("turnaround_mins"):
+        return int(cfg["turnaround_mins"])
+    oc = (origin_country or "").upper()
+    dc = (dest_country or "").upper()
+    if oc and dc and oc == dc:
+        kind = "domestic"
+    elif (gcd_km or 0) <= CONTINENTAL_MAX_KM:
+        kind = "continental"
+    else:
+        kind = "intercontinental"
+    return TURNAROUND_MIN[kind]
+
+
 def parse_windows(spec):
     """Restricted-hours windows as minutes past local midnight: [(start, end), ...].
 
@@ -644,10 +676,21 @@ def optimise_departure(sabre_db, oag_db, week, origin_airports, origin, hub, des
         """
         if in_window(dep, windows):
             return False
+        # THE AIRCRAFT ARRIVED BEFORE IT DEPARTED. A departure at T implies an arrival at
+        # T minus the turnaround, and that arrival is a movement at the origin like any other.
+        # Without this the optimiser picks departures nobody can fly: on SJC-TPE against a
+        # 21:00-06:00 curfew it chose 06:30, which needs an aircraft on stand from 03:30, three
+        # and a half hours inside the restriction.
+        if in_window(dep - int(turn_mins), windows):
+            return False
         if windows_d:
             import qsi_feed as _QF
             arr_hub = _QF._hub_arrival_mins(origin, hub, dep, flying_mins, cfg)
             if in_window(arr_hub, windows_d):
+                return False
+            # And that inbound aircraft left the hub: its departure is a movement there too.
+            # Timezone cancels across the pair, so it left the hub `block` before it landed here.
+            if in_window(dep - int(turn_mins) - int(flying_mins), windows_d):
                 return False
         return True
 

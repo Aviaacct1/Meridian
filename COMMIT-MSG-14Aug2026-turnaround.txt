@@ -1,0 +1,45 @@
+The aircraft turns: arrival and departure tied by a turnaround, by flight type
+
+JOHN, 14 August: "The arrival time in SJC still does not match with the departure time
+from SJC. These should be tied together. with an intl intercontinental average turnaround
+and for LATAM flights for a continental intl turnaround time and for dom a dom turnaround
+average."
+
+THIS IS THE THIRD MODEL AND THE FIRST CORRECT ONE. The shipped code derived the return as
+arrival plus a fixed turn, which models a shuttle. I then searched forward for the earliest
+legal return, which maximised the sit at the outstation. I then searched backward from a
+three-hour target, which was closer but still treated the arrival as free. It is not free:
+an aircraft that departs the origin at T ARRIVED at T minus the turnaround. The two
+movements are one rotation. The long gap belongs at the DESTINATION, where the aircraft
+flies another route, which is what John established earlier.
+
+AND IT CONSTRAINS THE DEPARTURE, WHICH IS THE PART THAT MATTERS. A departure whose implied
+arrival falls inside a restriction cannot be flown. On SJC-TPE against a 21:00-06:00 curfew
+the optimiser chose 06:30, which needs the aircraft on stand from 03:30, three and a half
+hours inside the restriction. It was choosing schedules nobody can operate.
+
+app/route_feed.py
+  turnaround_mins(): domestic 60, continental international 90, intercontinental 180, by
+  country match and a 3,000km continental threshold. Overridable per case with
+  feed_cfg["turnaround_mins"]. STATED AS PLANNING AVERAGES, NOT MEASUREMENTS, so they can
+  be argued with: a widebody off a thirteen-hour sector needs deep cleaning, full catering,
+  a crew change and a fuel uplift, and a domestic narrowbody turns in under an hour.
+  optimise_departure.permitted() now screens the arrival that feeds the departure against
+  the origin's hours, and the hub departure that fed THAT against the destination's.
+
+app/cortex_app.py
+  _schedule_times derives the return arrival as the departure minus the turnaround and
+  stops searching. Where the implied arrival or the return departure falls inside a
+  restriction it draws the schedule and NAMES the conflict, rather than moving the times to
+  hide a departure that should have been rejected where departures are chosen.
+  The turnaround is computed once per run from the two countries and the great circle, put
+  into feed_cfg, and passed to both the optimiser and the schedule builder, so they cannot
+  disagree.
+
+Measured: SJC-TPE 180 min, LHR-JFK 180, SCL-LIM 90 (the LATAM case), SJC-AUS 60.
+With a 21:00-06:00 curfew and a 180-minute turn the permitted departures are 09:00 to
+20:30, the earliest fed by an arrival at 06:00 as the restriction lifts. The same curfew on
+a domestic route with a 60-minute turn permits 07:00 to 20:30. Before this change the
+optimiser was free to pick 06:00 to 20:30 on both.
+
+Avia Solutions Limited. All rights reserved.

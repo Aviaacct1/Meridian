@@ -656,7 +656,7 @@ def _econ_block(each_way, aircraft, freq, home, dest_airport, gcd, econ_share, p
 
 
 def _schedule_times(o_code, d_code, o, d, block_min, dep_out=11.0, turn_h=2.0,
-                    restricted=None, restricted_dest=None, ground_h=3.0):
+                    restricted=None, restricted_dest=None):
     """Indicative local dep/arr clock times from block time and an approximate timezone offset (by
     longitude). Illustrative only: not curfew-, slot- or connection-optimised, but gives the schedule
     a sensible shape. Outbound departs the origin late morning; the return turns at the destination."""
@@ -702,7 +702,17 @@ def _schedule_times(o_code, d_code, o, d, block_min, dep_out=11.0, turn_h=2.0,
     # is no minimum turn at the destination, because the returning aircraft is not the one that
     # arrived.
     arr_dest_local = dep_out + bh + (tzd - tzo)
-    target_arr_origin = dep_out - ground_h                     # land this long before departing
+    # THE RETURN ARRIVAL IS THE TURNAROUND BEFORE THE DEPARTURE, NOT A SEARCH. The aircraft turns
+    # at the origin: it lands, sits on stand for a standard turnaround, and departs. Those two
+    # movements are one rotation and are tied together, which is what John corrected on
+    # 14 August. The long gap sits at the DESTINATION, where the aircraft flies another route.
+    #
+    # Both earlier attempts searched for a return time, one forward and one backward, and both
+    # were wrong for the same reason: a search treats the arrival as free when it is determined.
+    # If the implied arrival falls inside a restriction then the DEPARTURE is not flyable, and
+    # that belongs in optimise_departure's permitted() rather than being papered over here.
+    ground_h = turn_h
+    target_arr_origin = dep_out - ground_h
     dep_ret = (target_arr_origin - bh - (tzo - tzd)) % 24.0
     ret_note = None
     if restricted or restricted_dest:
@@ -710,23 +720,19 @@ def _schedule_times(o_code, d_code, o, d, block_min, dep_out=11.0, turn_h=2.0,
             import route_feed as _RF
             w_o = _RF.parse_windows(restricted) if restricted else []
             w_d = _RF.parse_windows(restricted_dest) if restricted_dest else []
-            found = None
-            for step in range(0, 24 * 4):                      # quarter-hours, working backwards
-                cand = (dep_ret - step * 0.25) % 24.0
-                arr_origin = (cand + bh + (tzo - tzd)) % 24.0
-                if _RF.in_window(int(round(cand * 60)) % 1440, w_d):
-                    continue
-                if _RF.in_window(int(round(arr_origin * 60)) % 1440, w_o):
-                    continue
-                found = cand
-                break
-            if found is None:
-                # Stated, never silently drawn illegal. A window this wide is a real finding about
-                # the airport pair rather than a bug in the search.
-                ret_note = ("no return departure in 24 hours clears both airports' restricted "
-                            "hours")
-            else:
-                dep_ret = found
+            _arr_m = int(round(((dep_out - ground_h) % 24.0) * 60)) % 1440
+            _dep_m = int(round(dep_ret * 60)) % 1440
+            bad = []
+            if _RF.in_window(_arr_m, w_o):
+                bad.append("the arrival that feeds this departure lands inside the origin's "
+                           "restricted hours")
+            if _RF.in_window(_dep_m, w_d):
+                bad.append("the return departs inside the destination's restricted hours")
+            if bad:
+                # Drawn as it stands and NAMED. A schedule that cannot be flown must not be shown
+                # silently, and moving it here would hide an infeasible departure rather than
+                # rejecting it where the departure is chosen.
+                ret_note = "; ".join(bad)
         except ValueError as e:                                # unreadable window: say so
             ret_note = str(e)
     # What the draw actually costs at the outstation, stated rather than left to be worked out
@@ -899,6 +905,14 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
     # return.
     _rh_disp = restricted_hours or os.environ.get("AVIA_RESTRICTED_HOURS") or None
     _rd_disp = restricted_hours_dest or os.environ.get("AVIA_RESTRICTED_HOURS_DEST") or None
+    # THE TURNAROUND, BY FLIGHT TYPE. It ties the return arrival to the outbound departure, so it
+    # constrains which departures are flyable as well as what the schedule draws. Domestic,
+    # continental international and intercontinental are three different numbers and using one for
+    # all three puts an impossible stand time on a widebody or an idle hour on a narrowbody.
+    import route_feed as _RFT
+    _turn_min = _RFT.turnaround_mins((o or {}).get("country"), (d or {}).get("country"), gcd,
+                                     feed_cfg)
+    feed_cfg["turnaround_mins"] = _turn_min
     dep_basis = ("set by the caller" if dep_time_mins is not None else
                  "indicative only, no operator named so no connecting feed is built")
     if airline:
@@ -918,7 +932,7 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
                         dest_codes, ctx["year"], airline, bmin, freq, feed_cfg,
                         step=int(os.environ.get("AVIA_DEP_STEP", 120)),
                         refine=int(os.environ.get("AVIA_DEP_REFINE", 30)),
-                        restricted=_rh, restricted_dest=_rd)
+                        restricted=_rh, restricted_dest=_rd, turn_mins=_turn_min)
                     S[_dk] = (_b, _i)
                 except Exception as _e:
                     S[_dk] = (None, {"error": str(_e)})
@@ -1168,6 +1182,7 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
         # 11:00 departure while the demand behind it knew nothing of any departure time at all.
         "schedule": dict(_schedule_times(home, dest_airport, o, d, bmin,
                                          dep_out=((dep_mins / 60.0) if dep_mins is not None else 11.0),
+                                         turn_h=(_turn_min / 60.0),
                                          restricted=_rh_disp, restricted_dest=_rd_disp),
                          basis=dep_basis, partners=(_partners or None),
                          forecast_year=fy, growth_basis=growth_basis,
