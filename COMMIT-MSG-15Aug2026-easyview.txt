@@ -1,0 +1,31 @@
+Easy view and departure chart: John's 15 August corrections
+
+The easy view gains the two inputs a client actually argues about and loses
+the one that was an engine switch in client clothes:
+
+- Seat count box beside the aircraft: blank sizes from the carrier's own
+  configuration or the type table as before; after a run the placeholder
+  shows the seat count used and its source, so overrides start from a
+  stated number. Sent to /api/forecast now and to /api/optimise ready for
+  when that endpoint takes seats.
+- Stimulation posture in plain words: Standard (calibrated type factor),
+  Conservative (1.00, no stimulation), Aggressive (type +0.20, a labelled
+  working assumption). The Expert box still overrides with an exact value.
+- Connectivity floor moved to Expert mode.
+
+Expert mode split into Judgement and Calibration groups. Judgement (market,
+share, stimulation, growth, year, attractiveness, radius, cabin, plan LF)
+shows as before. Calibration constants (coverage, feed rates, dominance,
+connection coefficients, circuity, indirect factor, the floor) sit behind
+one confirming click that says the back-test set them. Everything stays
+overridable per the house rule; nothing is merely hidden. Stale 0.85 cabin
+placeholder now reads measured.
+
+The departure chart now stands alone: forecast year, basis and unit on the
+SVG itself; the point to point leg drawn as a shaded band between the total
+and connecting series (one carried basis, so the gap IS the P2P leg, and on
+a bound route the band visibly narrows as connecting crowds P2P out); the
+caption names the band and states that scoring is on the outbound
+departure.
+
+Files: app/cortex_dashboard.html
