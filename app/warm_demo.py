@@ -105,7 +105,7 @@ def _wait_up(base, secs=90):
     t0 = time.time()
     while time.time() - t0 < secs:
         try:
-            urllib.request.urlopen(base + "/login", timeout=2)
+            urllib.request.urlopen(base + "/signin", timeout=2)
             return True
         except urllib.error.HTTPError:
             return True          # any HTTP answer means it's up
@@ -115,10 +115,27 @@ def _wait_up(base, secs=90):
 
 
 def _opener(base, password):
+    """Sign in and keep the cookies. THE ENDPOINT IS /signin, NOT /login.
+
+    warm_demo posted to /login and cortex_app has served /signin since the entry page was rebuilt,
+    so the warm-up failed with a bare "HTTP Error 404: Not Found. Check AVIA_PASSWORD" and pointed
+    at the password, which was not the problem. Nothing had run this path since the rename.
+
+    The form is parsed by cortex_app.signin_post from the raw urlencoded body and takes password,
+    next and an optional email. It sets obs_entered, and obs_session as well when a password is
+    configured; with no password set the sign-in is a presentation layer and anyone proceeds.
+    """
     jar = http.cookiejar.CookieJar()
     op = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(jar))
-    data = urllib.parse.urlencode({"password": password}).encode()
-    op.open(base + "/login", data=data, timeout=15)     # sets the cortex_auth cookie in the jar
+    data = urllib.parse.urlencode({"password": password, "next": "/welcome",
+                                   "email": "warm@aviasolutions.com"}).encode()
+    op.open(base + "/signin", data=data, timeout=15)
+    # PROVE THE COOKIE EXISTS rather than assume the POST worked. A 303 to /signin?err=1 is a
+    # perfectly successful HTTP call and means the password was refused, which would otherwise
+    # surface much later as an unexplained redirect on the first warm forecast.
+    if not any(c.name == "obs_entered" for c in jar):
+        raise RuntimeError("signed in but no obs_entered cookie came back: the password was "
+                           "refused, or the entry page changed again")
     return op
 
 
@@ -142,7 +159,11 @@ def main():
     ap.add_argument("--python", default=None, help="python.exe to launch the server (default: ./.venv else current)")
     ap.add_argument("--sabre", default=None, help="Sabre store path (sets AVIA_SABRE for the server)")
     ap.add_argument("--oag", default=None, help="OAG store path (sets AVIA_OAG for the server)")
-    ap.add_argument("--password", default=os.environ.get("AVIA_PASSWORD", "aviacortex2026"))
+    # QSI_PASSWORD is the variable the SERVER reads (_load_password); AVIA_PASSWORD kept as a
+    # fallback because older notes name it. The literal default only matters while no gate is set.
+    ap.add_argument("--password", default=(os.environ.get("QSI_PASSWORD")
+                                           or os.environ.get("AVIA_PASSWORD")
+                                           or "aviacortex2026"))
     ap.add_argument("--engine", choices=("qsi", "bt2"), default="qsi",
                     help="which engine answers. DEFAULT qsi, the shipped one, and the shell cannot "
                          "override it: the model rebuilt on 13 August has not had its accuracy "
