@@ -240,7 +240,8 @@ def feed_side(sabre_db, oag_db, week, origin_airports, hub, year, capture=DEFAUL
 
     # US-market credibility rule. od_source leads with DOT DB1B on the all-US pairs of the
     # scope and leaves the rest on Sabre, so a US airport sees its own domestic feed measured
-    # on the government figure it validates against. Off unless AVIA_OD_SOURCE is set.
+    # on the government figure it validates against. ON BY DEFAULT (auto) since 15 August
+    # 2026; AVIA_OD_SOURCE=sabre reverts to the pre-DOT read.
     import od_source as _OS
     market, _src, _dot_share = _OS.feed_market(_sabre_beyond, origin_airports, scope, year,
                                                factor_indirect=_fac, group="dest")
@@ -283,8 +284,13 @@ def feed_side(sabre_db, oag_db, week, origin_airports, hub, year, capture=DEFAUL
                         for city in sorted(market, key=lambda c: -captured.get(c, 0.0))}
                 return total, pdew, dmap
             return total, pdew
-        except Exception:
+        except Exception as _e:
+            # THE FALLBACK IS NAMED, NOT ONLY COUNTED. Only backtest.py ever read the
+            # counter; on the live path a run whose feed dropped to V1 still carried a
+            # payload claiming the QSI basis at k. cortex_app now reads these keys and the
+            # page states the basis that RAN. Found in the 15 August review.
             feed_cfg["_qsi_fallbacks"] = feed_cfg.get("_qsi_fallbacks", 0) + 1
+            feed_cfg["_qsi_fallback_err"] = ("beyond: %s: %s" % (type(_e).__name__, _e))[:300]
     onward = hub_onward_carriers(oag_db, week, hub) if airline else {}
     dom = hub_dominance(oag_db, week, hub, airline) if feed_cfg else 0.0
     cap = _cap_eff(capture, dom, feed_cfg)
@@ -441,8 +447,10 @@ def behind_feed(sabre_db, oag_db, week, origin_airports, dest_airports, year, ca
                         for y in sorted(market, key=lambda c: -captured.get(c, 0.0))}
                 return total, pdew, dmap
             return total, pdew
-        except Exception:
+        except Exception as _e:
+            # Mirror of the beyond side: the fallback is named, not only counted.
             feed_cfg["_qsi_fallbacks"] = feed_cfg.get("_qsi_fallbacks", 0) + 1
+            feed_cfg["_qsi_fallback_err"] = ("behind: %s: %s" % (type(_e).__name__, _e))[:300]
     onward = inbound_carriers(oag_db, week, origin_airports) if airline else {}
     base = (feed_cfg.get("behind_cap", capture) if feed_cfg else capture)
     dom = hub_dominance(oag_db, week, (origin_airports[0] if origin_airports else None), airline) if feed_cfg else 0.0

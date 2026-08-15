@@ -37,6 +37,11 @@ def parse_args():
                    help="stated, never inferred: the contract carries fares without a currency and "
                         "guessing puts the wrong symbol on every revenue figure")
     p.add_argument("--report-only", action="store_true", help="run and report, write nothing")
+    p.add_argument("--allow-warnings", action="store_true",
+                   help="write a contract even when the forecast payload carries warnings. "
+                        "By default a warned run is REFUSED: a deck must never be built on a "
+                        "crashed feed layer, a silent V1 fallback or an empty departure board, "
+                        "and John's 15 August ruling is refuse here, warn on the portal.")
     return p.parse_args()
 
 
@@ -128,6 +133,14 @@ def main():
             kw["growth"] = _g
         try:
             fc = CA.calibrated_forecast(case["origin"], case["dest"], **kw)
+            # A WARNED RUN DOES NOT BECOME A DECK. The payload's warnings list is empty on a
+            # clean run; anything in it means a number was not produced the way the page
+            # will claim it was. The portal renders a warned run with the warning stated;
+            # a contract is a client artefact and is refused instead.
+            _warns = fc.get("warnings") or []
+            if _warns and not a.allow_warnings:
+                raise RuntimeError("forecast carries warnings and --allow-warnings is not "
+                                   "set: " + "; ".join(str(w) for w in _warns))
             # "segments" carries the eight-segment judgement inputs and is the one case key that is
             # NOT a forecast setting, so it is passed to the contract rather than to the engine.
             contract = contract_from_forecast(fc, currency=a.currency,

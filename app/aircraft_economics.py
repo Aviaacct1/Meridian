@@ -442,6 +442,12 @@ class RoutePnL:
     # --- Form 41 cost calibration (optional): anchor generic cost to the carrier's filed CASM ---
     casm_benchmark_c: Optional[float] = None      # carrier system CASM, US cents/ASK (Form 41 + T1)
     carrier_avg_stage_km: Optional[float] = None  # carrier avg stage length km, for the stage adjustment
+    # --- the carrier's own cabin, when OAG holds its configuration (15 August 2026) ---
+    # The demand cap took the carrier's seat count and this P&L kept the type table's, so
+    # one payload carried two seat bases circa 10% apart on the agreed SJC-TPE case. Any
+    # left None falls back to the table, so default behaviour is unchanged.
+    econ_seats_override: Optional[int] = None
+    bus_seats_override: Optional[int] = None
 
     def _charges(self, code, override):
         """Resolved airport charges: override (current-year, e.g. RDC) wins;
@@ -461,8 +467,10 @@ class RoutePnL:
         o, o_src = self._charges(self.origin, self.origin_charges)
         d, d_src = self._charges(self.dest, self.dest_charges)
         bh = 2 * self.block_min_oneway / 60.0
-        econ_ow = ac["econ_seats"] * self.econ_lf
-        bus_ow = ac["bus_seats"] * self.bus_lf
+        _e_seats = self.econ_seats_override if self.econ_seats_override is not None else ac["econ_seats"]
+        _b_seats = self.bus_seats_override if self.bus_seats_override is not None else ac["bus_seats"]
+        econ_ow = _e_seats * self.econ_lf
+        bus_ow = _b_seats * self.bus_lf
         pax_turn = 2 * (econ_ow + bus_ow)
         # revenue
         econ_rev = 2 * econ_ow * self.econ_fare_ow
@@ -548,7 +556,7 @@ class RoutePnL:
         # is stretched up on a short route and down on a long one). Inactive unless a benchmark is
         # supplied, so default behaviour is unchanged.
         casm_calibration = None; casm_target_c = None
-        _ask0 = (ac["econ_seats"] + ac["bus_seats"]) * self.distance_nm * NM_TO_KM * 2
+        _ask0 = (_e_seats + _b_seats) * self.distance_nm * NM_TO_KM * 2
         if self.casm_benchmark_c and self.carrier_avg_stage_km and _ask0 > 0:
             _rk = max(self.distance_nm * NM_TO_KM, 50.0)
             casm_target_c = self.casm_benchmark_c * (self.carrier_avg_stage_km / _rk) ** 0.35
@@ -561,7 +569,7 @@ class RoutePnL:
         # standalone = route on its own; with-incentive = airline's actual P&L given support
         profit_standalone = gross_rev - total_cost_standalone
         profit_with_incentive = profit_standalone + incentive_value
-        seats = ac["econ_seats"] + ac["bus_seats"]
+        seats = _e_seats + _b_seats
         cask = total_cost_standalone / (seats * self.distance_nm*NM_TO_KM * 2)
         pax_var = catering + per_pax + indirect_fixed
         fixed_costs = total_cost_standalone - pax_var

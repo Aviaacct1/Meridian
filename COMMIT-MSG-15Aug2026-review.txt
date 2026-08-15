@@ -1,0 +1,13 @@
+Independent review: beta path, feed level, claims basis, silent failures, method drift
+
+REVIEW_Meridian_Fable_15Aug2026.md: fresh review against the 14-15 August log.
+Verdict: show at Routes, beta then November launch, do not sell in October.
+Five cannot-ship items (feed level k, claims arm mismatch, silent feed
+failures, od_source payload contradiction, proxy fare), ten new unlogged
+silent-default findings with file and line, the five open questions confirmed
+or reframed, the 6 July findings graded closed or open, and a comparison of
+Meridian against the 2013-2025 QSI record from Egnyte: same method at the
+connecting layer, two departures (cannibalisation dropped, k uncalibrated),
+both restorable.
+
+Files: REVIEW_Meridian_Fable_15Aug2026.md, COMMIT-MSG-15Aug2026-review.txt

@@ -617,6 +617,7 @@ def forecast(sabre_db, oag_db, week, origin, dest_codes, competing_airports, *, 
     feed_beyond = feed_behind = 0.0
     beyond_pdew = behind_pdew = {}
     beyond_detail = behind_detail = {}
+    _feed_err = None
     if airline and dest_airport:
         try:
             import route_feed as RFEED
@@ -639,10 +640,19 @@ def forecast(sabre_db, oag_db, week, origin, dest_codes, competing_airports, *, 
                 for _dm in (beyond_detail, behind_detail):
                     for _c in _dm.values():
                         _c["base"] *= g; _c["captured"] *= g; _c["pdew"] *= g
-        except Exception:
+        except Exception as _e:
+            # A CRASHED FEED LAYER IS NOT A THIN FEED. This except used to zero both sides
+            # and empty the detail maps with no record anywhere, so a missing MCT file or a
+            # broken wave cache deleted the largest component of a hub forecast and the
+            # payload read as a clean result. The zeros stay (the portal renders with a
+            # named warning; deck_from_cases refuses), but the failure is now on the record
+            # in both the feed_cfg and the result. Found in the 15 August review.
             feed_beyond = feed_behind = 0.0
             beyond_pdew = behind_pdew = {}
             beyond_detail = behind_detail = {}
+            _feed_err = ("feed layer: %s: %s" % (type(_e).__name__, _e))[:300]
+            if feed_cfg is not None:
+                feed_cfg["_feed_error"] = _feed_err
     # Item 9: capped market-size discount on the P2P capture, keyed off the MEASURED market (natural),
     # so a thin-market over-read is trimmed while mid/large markets (already unbiased) are untouched.
     # Applied to captured only (the P2P over-read); the feed carries its own calibration.
@@ -915,6 +925,9 @@ def forecast(sabre_db, oag_db, week, origin, dest_codes, competing_airports, *, 
         "p2p_carried": round(p2p_carried), "connecting_carried": round(conn_carried),
         "p2p_share": round(p2p_share_v, 3),
         "feed_beyond": round(feed_beyond), "feed_behind": round(feed_behind),
+        # None on a clean run. A string here means the feed layer CRASHED and the zeros
+        # above are a fault, not a market: the portal warns, deck_from_cases refuses.
+        "feed_error": _feed_err,
         "total_demand": round(total_demand), "stimulation": stimulation,
         "induced": induced, "induced_lf": induced_lf_used, "induced_fare": induced_fare_used,
         "aircraft": aircraft, "frequency": freq, "annual_capacity": round(annual_capacity),

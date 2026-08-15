@@ -1,0 +1,46 @@
+Provenance and basis fixes from the 15 August review (R3-R10)
+
+The recurring shape, closed at seven more sites: a missing input substituting
+a neutral default in silence, or a payload stating a basis the run did not use.
+
+- od_source payload truth: cortex_app carried its own copy of the
+  AVIA_OD_SOURCE default ("sabre") and diverged when the default moved to
+  auto; the payload now reads od_source.mode(), which owns the default.
+  Stale "off unless set" comments corrected (od_source, route_feed).
+- Feed failures surfaced: the outer feed except in route_forecast records
+  feed_error instead of zeroing in silence; the V2-to-V1 fallback in
+  route_feed is named with its exception, not only counted; failed board
+  reads in qsi_feed are counted and named (a failed origin board inflates
+  capture to 1.0 at k=1.0, it does not degrade); the circuity latch reports
+  itself. The payload carries a warnings list and basis_ran on feed_level;
+  the dashboard renders warnings above the basis line; deck_from_cases
+  REFUSES a warned run unless --allow-warnings (John's ruling: portal
+  warns, deck refuses).
+- Proxy fare named: economics carries fare_basis and fare_is_proxy, and a
+  proxy fare raises a payload warning. od_source._sabre_fare docstring now
+  tells the truth about where the gap is stated.
+- Carrier seats reach the P&L: _econ_block takes seats_override, cabins
+  scaled proportionally; RoutePnL gains econ/bus_seats_override and uses
+  them for revenue, CASK, ASK and breakeven. Removes the 306-versus-336
+  two-bases defect on SJC-TPE. seats_basis stated in economics.
+- split_floor truth: the payload records the floor the run used from
+  feed_cfg; forecast_to_contract reads it (old chain kept only as fallback
+  for pre-15 August contracts). The pack no longer prints "off" on every
+  deck. Contract _settings also carries the payload warnings.
+- Cabin sentinel unified: /api/forecast, /api/report and the pitch job now
+  treat econ_share 0/unset as "measure it from Sabre", the /api/optimise
+  convention, so the measured cabin split is reachable from the dashboard.
+  BEHAVIOUR CHANGE BY DESIGN: a default run now uses the measured split,
+  labelled, instead of the assumed 85/15 mislabelled "set by the caller".
+- Growth label follows the number: a failed CAGR measurement now says
+  ASSUMED 3%, it no longer wears the measured label.
+- AUTO gauge failure warns: the silent fall-through to A21X is named in
+  auto_aircraft_failed and the warnings list.
+- app/test_feed_provenance.py: five fixture tests, no store needed,
+  covering the board-read record, the share-inflation hazard, the named
+  fallback and a source-level regression guard on the feed except.
+
+Files: app/cortex_app.py, app/od_source.py, app/route_feed.py,
+app/route_forecast.py, app/qsi_feed.py, app/aircraft_economics.py,
+app/forecast_to_contract.py, app/deck_from_cases.py,
+app/cortex_dashboard.html, app/test_feed_provenance.py

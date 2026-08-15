@@ -379,6 +379,10 @@
           <div id="curfewBasis" class="hidden" style="font-family:var(--sans);font-size:10.5px;color:var(--muted);margin-top:5px;line-height:1.55"></div>
         </div>
         <div id="runline" class="runline"></div>
+        <!-- Run warnings. Empty and hidden on a clean run. Anything here means a number on
+             this page was not produced the way the basis line claims, so it renders above
+             the basis, in the reader's path, not in a tooltip. -->
+        <div id="runWarnings" style="display:none;margin:-6px 0 10px;padding:10px 12px;border:1px solid #c0392b;border-radius:6px;background:#fdf0ee;color:#7b241c;font-size:13px"></div>
         <div id="basis" class="foot-note" style="margin:-6px 0 16px"></div>
         <div id="cap" class="banner ok"></div>
         <div id="airfield" class="banner ok hidden"></div>
@@ -1097,6 +1101,15 @@ function showErr(m){ $("#err").textContent="Could not forecast this pair: "+m; $
 
 function render(d){
   if(!d || !d.ok){ showErr((d&&d.error)||"unknown error"); return; }
+  // A warned run renders, with the warning stated where the eye lands (John's 15 August
+  // ruling: the portal warns, the deck builder refuses). A basis in the payload and not
+  // on the page is a basis nobody checks.
+  (function(){ const w=$("#runWarnings"); if(!w) return;
+    const ws=(d.warnings||[]);
+    if(ws.length){ w.style.display="block";
+      w.innerHTML="<b>This run is not clean.</b> "+ws.map(x=>String(x)).join("<br>");
+    } else { w.style.display="none"; w.innerHTML=""; }
+  })();
   $("#ctxpill").innerHTML="OAG week <b>"+(d.week||"-")+"</b> · Sabre <b>"+(d.year||"-")+"</b>";
   STATE.sabreYear=d.year||STATE.sabreYear||2025;
   $("#basis").textContent=`Demand from Sabre ${d.year} O&D and OAG schedules week ${d.week}. Steady-state estimate; the Expert view lets you project to a future start year.`;

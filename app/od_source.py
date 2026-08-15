@@ -30,8 +30,9 @@ or YYZ, so an international market reads Sabre whatever the mode. A route such a
 SJC-TPE has no all-US market on any leg, since route_feed measures the behind leg
 from each feeder to the route DESTINATION rather than to the origin.
 
-Nothing changes until AVIA_OD_SOURCE is set and db1b.duckdb exists, so the
-calibrated baseline is untouched until it is deliberately backtested.
+DEFAULT auto SINCE 15 AUGUST 2026 (John's decision; see _mode). A back-test that
+must reproduce the pre-DOT baseline sets AVIA_OD_SOURCE=sabre explicitly: the 9 August
+reproduction chain was measured under sabre and does not reproduce under the default.
 """
 import os
 
@@ -61,6 +62,14 @@ def _mode():
     To revert on the workstation, no code change: $env:AVIA_OD_SOURCE = "sabre".
     """
     return os.environ.get("AVIA_OD_SOURCE", "auto").strip().lower()
+
+
+def mode():
+    """The configured mode, for anything that REPORTS it. cortex_app's payload carried its
+    own copy of this default and the two diverged the day the default changed: the engine
+    read DOT while the page said sabre. One function owns the default; reporters call it.
+    """
+    return _mode()
 
 
 def _db1b_path():
@@ -411,9 +420,11 @@ def _db1b_feed(coupons_db, origins, dests, year, factor_indirect, group):
 def _sabre_fare(SC, sabre_db, competing_airports, dest_codes, year):
     """Sabre's average fare for the same market, on the basis the revenue build expects.
 
-    Returns 0.0 rather than raising if Sabre cannot answer: a missing fare is a stated gap
-    downstream, and a DB1B fare substituted here would be a silent basis change, which is
-    the fault this function exists to prevent.
+    Returns 0.0 rather than raising if Sabre cannot answer, and a DB1B fare substituted
+    here would be a silent basis change, which is the fault this function exists to
+    prevent. The gap IS stated downstream since 15 August: a zero from here reaches
+    _econ_block's distance proxy, which now labels itself fare_is_proxy and raises a
+    payload warning, so a missing fare can no longer impersonate a measured one.
     """
     try:
         _, _, fare = SC.destination_market_split(sabre_db, competing_airports, dest_codes,

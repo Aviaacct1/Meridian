@@ -373,8 +373,14 @@ def contract_from_forecast(fc, currency="USD", growth_rate=None, ancillary_per_p
                  % (_fl.get("qsi_k"), _fl.get("basis") or "basis not stated",
                     _fl.get("back_test_k")))
     contract["_settings"] = {
-        "split_floor": (fc.get("settings") or {}).get("split_floor",
-                                                      (case or {}).get("split_floor")),
+        # The payload's own record of the floor the run USED (cortex_app writes it from the
+        # feed_cfg the engine read). The old chain read fc["settings"], which no module has
+        # ever written, so every deck said "off"; it stays only as the fallback for replayed
+        # contracts built before 15 August.
+        "split_floor": fc.get("split_floor",
+                              (fc.get("settings") or {}).get("split_floor",
+                                                             (case or {}).get("split_floor"))),
+        "warnings": fc.get("warnings") or [],
         "growth_basis": _sched.get("growth_basis"),
         "base_year": fc.get("year"),
         "curfew_cost": _curfew,

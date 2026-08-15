@@ -26,6 +26,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 if HERE not in sys.path:
     sys.path.insert(0, HERE)
 import geonames as G, routing as R, catchment as C, route_demand as RD
+import od_source as ODS   # owns the AVIA_OD_SOURCE default; reporters must not carry a copy
 
 DUMP = os.path.join(HERE, "cities5000.txt")
 CACHE = os.path.join(HERE, "genoa_drive.json")
@@ -550,16 +551,39 @@ def _ownership_view(y, annual, aircraft, freq, weeks, block_min, profit_key):
 
 def _econ_block(each_way, aircraft, freq, home, dest_airport, gcd, econ_share, plan_lf,
                 econ_fare, bus_fare, fuel_price, carrier_type, weeks=52.0, p2p_share=1.0, prorate=0.67,
-                fixed_overrides=None, charges_override=None):
+                fixed_overrides=None, charges_override=None, seats_override=None):
     try:
         import route_engine as RE
         from aircraft_economics import AIRCRAFT, RoutePnL, AnnualRoutePnL
         ac = AIRCRAFT[aircraft]
-        e_yr = ac["econ_seats"] * freq * weeks; b_yr = ac["bus_seats"] * freq * weeks
+        # THE CARRIER'S OWN SEAT COUNT REACHES THE P&L. The seats override was applied to
+        # annual_capacity (the demand cap) and never to this block, so the agreed SJC-TPE
+        # case capped demand at China Airlines' 306 while the load factors, spill and every
+        # cost per seat ran on the table's 336: two bases under one payload, capacity.load
+        # against economics.econ_lf circa 10% apart. The two cabins scale proportionally,
+        # because the config source carries a total, not a split. Found 15 August.
+        _tbl_seats = (ac["econ_seats"] or 0) + (ac["bus_seats"] or 0)
+        _e_seats, _b_seats = ac["econ_seats"], ac["bus_seats"]
+        seats_basis = "generic type table (%d seats)" % _tbl_seats
+        if seats_override and _tbl_seats and abs(seats_override - _tbl_seats) >= 1:
+            _sf = float(seats_override) / _tbl_seats
+            _e_seats = int(round(ac["econ_seats"] * _sf))
+            _b_seats = int(seats_override) - _e_seats
+            seats_basis = ("carrier configuration (%d seats, cabins scaled from the type "
+                           "table's %d)" % (int(seats_override), _tbl_seats))
+        e_yr = _e_seats * freq * weeks; b_yr = _b_seats * freq * weeks
         e_lf = min((each_way * econ_share) / e_yr if e_yr else 0, plan_lf)
         b_lf = min((each_way * (1 - econ_share)) / b_yr if b_yr else 0, plan_lf)
         dist_nm = round(gcd / 1.852); bmin = round(RE.block_min(dist_nm))
-        fare = econ_fare if (econ_fare and econ_fare > 0) else max(180, round(dist_nm * 0.11))
+        # A MISSING FARE IS SAID, NOT INVENTED IN SILENCE. The distance proxy stays as the
+        # last resort so the page still renders, but it now names itself: revenue, margin
+        # and breakeven on a proxy fare are indistinguishable from measured ones without
+        # this label, and od_source._sabre_fare's "stated gap downstream" was never stated.
+        _fare_is_proxy = not (econ_fare and econ_fare > 0)
+        fare = econ_fare if not _fare_is_proxy else max(180, round(dist_nm * 0.11))
+        fare_basis = ("distance proxy: max(180, %d nm x 0.11) = %d USD one-way; NO measured "
+                      "fare reached the P&L" % (dist_nm, round(fare))) if _fare_is_proxy \
+                     else "supplied (user, induced or measured Sabre; see econ_fare upstream)"
         # PRORATE the connecting share: a connecting pax contributes LESS to THIS segment than a local one
         # (the through fare is prorated across both legs and connecting itineraries are discounted). So value
         # the connecting share at a fraction of the local fare, matching how an FSC books the flight. Default
@@ -597,6 +621,8 @@ def _econ_block(each_way, aircraft, freq, home, dest_airport, gcd, econ_share, p
             _ch["provenance"] = "set by the caller"
             _ch["is_plug"] = False
         rp = RoutePnL("New entrant", aircraft, home, dest_airport, dist_nm, bmin,
+                      econ_seats_override=(_e_seats if seats_override else None),
+                      bus_seats_override=(_b_seats if seats_override else None),
                       econ_lf=e_lf, bus_lf=b_lf, econ_fare_ow=fare, bus_fare_ow=bus_fare,
                       airline_type=at, aircraft_age=2, origin_charges=_ch["origin"],
                       dest_charges=_ch["dest"], fuel_price_usd_kg=fp_used,
@@ -610,7 +636,7 @@ def _econ_block(each_way, aircraft, freq, home, dest_airport, gcd, econ_share, p
         # as fares/fuel/frequency/load-factor/premium sliders move, without another server call.
         _pax = y.get("pax_turn") or 1
         cost_model = {
-            "econ_seats": ac["econ_seats"], "bus_seats": ac["bus_seats"],
+            "econ_seats": _e_seats, "bus_seats": _b_seats,
             "fuel_kg_per_turn": (y["fuel"] / fp_used) if fp_used else 0.0,
             "fixed_per_turn": (y["maintenance"] + y["landing"] + y["nav"] + y["handling"]
                                + y["ownership"] + y["insurance"] + y["crew"]),
@@ -635,9 +661,11 @@ def _econ_block(each_way, aircraft, freq, home, dest_airport, gcd, econ_share, p
         }
         return {"economics_ok": True, "economics": {
             "econ_fare": fare, "market_fare": _mkt_fare, "effective_fare": round(fare),
+            "fare_basis": fare_basis, "fare_is_proxy": _fare_is_proxy,
+            "seats_basis": seats_basis,
             "connecting_share": round(1.0 - _psh, 3), "prorate": prorate,
             "econ_lf": round(e_lf, 3), "bus_lf": round(b_lf, 3), "spilled": round(spilled),
-            "seats": ac["econ_seats"] + ac["bus_seats"], "revenue": y["gross_rev"],
+            "seats": _e_seats + _b_seats, "revenue": y["gross_rev"],
             "fuel": y["fuel"], "maintenance": y["maintenance"], "crew": y["crew"],
             "ownership": y["ownership"] + y["insurance"],
             "airport_nav_other": (y["landing"] + y["per_pax"] + y["handling"] + y["nav"]
@@ -837,12 +865,20 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
         if not growth:
             # The measured market CAGR, same two-year Sabre measure the projection build uses and
             # the same clamp: a two-year burst is not a sustained rate.
+            # A FAILED MEASUREMENT IS NOT A MEASUREMENT. Both fallback paths below used to
+            # take 3% and the basis line still said "measured market CAGR", so an assumed
+            # rate travelled to the deck wearing a measured label. The flag keeps the label
+            # on the same basis as the number. Found in the 15 August review.
+            _growth_measured = True
             try:
                 _mk = SC.destination_market_split(ctx["sabre_db"], competing, dest_codes, year=base_year)[1] or 0.0
                 _mk2 = SC.destination_market_split(ctx["sabre_db"], competing, dest_codes, year=base_year - 2)[1] or 0.0
-                growth = ((float(_mk) / _mk2) ** 0.5 - 1.0) if (_mk and _mk2 > 0) else 0.03
+                if _mk and _mk2 > 0:
+                    growth = (float(_mk) / _mk2) ** 0.5 - 1.0
+                else:
+                    growth, _growth_measured = 0.03, False
             except Exception:
-                growth = 0.03
+                growth, _growth_measured = 0.03, False
             growth = max(min(growth, 0.20), -0.05)
             # TAPER, and use the SAME taper the projection build uses further down rather than a
             # second rule. A measured two-year CAGR on this route reads 20%, which is the clamp
@@ -857,8 +893,12 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
                 _cum *= (1.0 + _r)
             # Hand the engine the single equivalent rate, since it applies (1+growth)**growth_years.
             growth = (_cum ** (1.0 / growth_years) - 1.0) if growth_years else 0.0
-            growth_basis = (f"measured market CAGR tapered to a 3% long run: {_cum - 1:+.1%} "
-                            f"over {growth_years} yr from {base_year}")
+            growth_basis = ((f"measured market CAGR tapered to a 3% long run: {_cum - 1:+.1%} "
+                             f"over {growth_years} yr from {base_year}")
+                            if _growth_measured else
+                            (f"ASSUMED 3% long run, the market CAGR could not be measured "
+                             f"for this market: {_cum - 1:+.1%} over {growth_years} yr "
+                             f"from {base_year}"))
         else:
             growth_basis = f"{growth:.2%} over {growth_years} yr from {base_year}, rate set by the caller"
     # THE DEPARTURE TIME, and it is an INPUT to the demand rather than a decoration on the output.
@@ -1222,7 +1262,7 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
         # and not a footnote. od_source partitions each feed scope, DOT for the all-US pairs and
         # Sabre for the rest, so a leg is rarely one source or the other: dot_share says how much
         # of the market actually came from DB1B. Reported the same way as forecast_engine and
-        # feed_level, and for the same reason. Sabre throughout until AVIA_OD_SOURCE is set.
+        # feed_level, and for the same reason. Default auto since 15 August 2026.
         "od_source": {
             # route_forecast line 488 already routes the P2P market through od_source and reports
             # what answered, so this READS the engine rather than asking the config what it would
@@ -1233,13 +1273,50 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
             "behind": feed_cfg.get("_behind_source", "Sabre ODPOO"),
             "beyond_dot_share": feed_cfg.get("_beyond_dot_share", 0.0),
             "behind_dot_share": feed_cfg.get("_behind_dot_share", 0.0),
-            "mode": os.environ.get("AVIA_OD_SOURCE", "sabre"),
+            # od_source owns the default. This line carried its own copy ("sabre") and the
+            # two diverged on 15 August when the default moved to auto: the engine read DOT
+            # while the page said sabre, on the exact claim the US pitch depends on.
+            "mode": ODS.mode(),
         },
+        # THE FLOOR THE RUN USED, from the feed_cfg the engine read, not from the case that
+        # asked. forecast_to_contract read a settings key nothing wrote and the pack printed
+        # "Connecting floor off" on every deck, including default runs where it is on.
+        "split_floor": bool(feed_cfg.get("split_floor", True)),
         "feed_level": ({"qsi_k": float(qsi_k),
                         "qsi_k_behind": float(qsi_k_behind) if qsi_k_behind is not None else float(qsi_k),
                         "basis": ("default" if (qsi_k == 1.0 and qsi_k_behind is None) else "caller"),
-                        "back_test_k": 0.06}
+                        "back_test_k": 0.06,
+                        # THE BASIS THAT RAN, not the basis that was asked for. A feed side
+                        # that threw fell back to the V1 flat feed with only a counter that
+                        # nothing on this path read, so the payload claimed a QSI run at k
+                        # after the engine had run something else. Found 15 August.
+                        "basis_ran": ("crashed" if r.get("feed_error")
+                                      else ("v1_fallback" if feed_cfg.get("_qsi_fallbacks")
+                                            else "qsi")),
+                        "fallbacks": feed_cfg.get("_qsi_fallbacks", 0),
+                        "fallback_error": feed_cfg.get("_qsi_fallback_err"),
+                        "board_read_fails": feed_cfg.get("_board_read_fails", 0),
+                        "circuity_screen_off": bool(feed_cfg.get("_circuity_screen_off"))}
                        if dep_mins is not None else None),
+        # MACHINE-READABLE WARNINGS, one list, so the page and the deck builder read one
+        # place. Empty on a clean run. Anything here means a number on this payload is not
+        # what a clean run would have produced.
+        "warnings": [w for w in (
+            (("feed layer crashed and both feed sides are zero: " + str(r.get("feed_error")))
+             if r.get("feed_error") else None),
+            (("QSI feed fell back to the V1 flat feed (%d side%s): %s"
+              % (feed_cfg.get("_qsi_fallbacks", 0),
+                 "s" if feed_cfg.get("_qsi_fallbacks", 0) != 1 else "",
+                 feed_cfg.get("_qsi_fallback_err") or "unrecorded"))
+             if feed_cfg.get("_qsi_fallbacks") else None),
+            (("%d departure-board read(s) failed; affected airports scored on an empty "
+              "board: %s" % (feed_cfg.get("_board_read_fails", 0),
+                             ", ".join(feed_cfg.get("_board_read_failed", [])[:8])))
+             if feed_cfg.get("_board_read_fails") else None),
+            ("the circuity screen was disabled by a coordinates failure and competitor "
+             "itineraries were not distance-screened"
+             if feed_cfg.get("_circuity_screen_off") else None),
+        ) if w],
         "distance_nm": round(gcd / 1.852), "block_min": bmin, "week": ctx["week"], "year": ctx["year"],
     }
     # THE COMPETITION BUCKET. Every Avia forecast in the client format splits connecting markets into
@@ -1288,7 +1365,15 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
         out.update(_econ_block(carried_ew, aircraft, freq, home, dest_airport, gcd, econ_share,
                                plan_lf, econ_fare, bus_fare, fuel_price, ct, weeks=season_weeks,
                                p2p_share=r.get("p2p_share"), fixed_overrides=fixed_overrides,
-                               charges_override=charges_override))
+                               charges_override=charges_override,
+                               seats_override=(int(float(seats)) if seats else None)))
+        # A proxy fare is a warning, not a footnote: every revenue figure downstream of it
+        # is invented, and deck_from_cases refuses a warned run.
+        _ec = out.get("economics") or {}
+        if _ec.get("fare_is_proxy"):
+            out.setdefault("warnings", []).append(
+                "no measured fare reached the P&L; revenue, margin and breakeven run on a "
+                "distance proxy (" + str(_ec.get("fare_basis")) + ")")
     return out
 
 
@@ -1447,7 +1532,7 @@ def _attach_viability(fc):
 
 @app.get("/api/forecast")
 def api_forecast(origin: str, dest: str, airline: str = "", carrier_type: str = "FSC",
-                 aircraft: str = "A21X", freq: int = 7, econ_share: float = 0.85,
+                 aircraft: str = "A21X", freq: int = 7, econ_share: float = 0.0,
                  plan_lf: float = 0.875, econ_fare: float = 0.0, bus_fare: float = 1400.0,
                  fuel_price: float = 0.0, growth_years: int = 0, econ: bool = True,
                  stimulation: float = 0.0, growth: float = 0.0, att_exponent: float = -1.0,
@@ -1474,7 +1559,15 @@ def api_forecast(origin: str, dest: str, airline: str = "", carrier_type: str = 
     # AUTO GAUGE: a blank / "AUTO" / "Unselected" aircraft sizes the metal to MEASURED demand at this frequency
     # (demand first, then the gauge), so an over-large aircraft can never be handed to the engine to fill. Optimise
     # then refines airline and type on top. This is the default assessment path.
+    # ONE SENTINEL FOR THE CABIN, everywhere: 0 (or unset) means "measure it from Sabre",
+    # the same convention /api/optimise has always used. This endpoint hard-defaulted 0.85,
+    # so calibrated_forecast's measured-share branch could never fire from the dashboard and
+    # every default run carried the old assumption labelled "set by the caller". A literal 0
+    # produced e_lf = 0 and nonsense economics with no warning; it is a sentinel now.
+    _es = (econ_share if (econ_share and econ_share > 0) else None)
+    _es_gauge = _es if _es is not None else 0.85   # the gauge pre-pass needs a number
     _auto_ac = None
+    _auto_fail = None
     if (aircraft or "").strip().upper() in ("", "AUTO", "UNSELECTED"):
         try:
             import aircraft_select as ASsel
@@ -1485,17 +1578,20 @@ def api_forecast(origin: str, dest: str, airline: str = "", carrier_type: str = 
             if _dem and _dnm > 0:
                 _at = carrier_type if carrier_type in ("FSC", "LCC", "ULCC") else "FSC"
                 _wk = 28.0 if season == "summer" else 24.0 if season == "winter" else 52.0
-                aircraft, _ = ASsel.select_aircraft(_dnm, _dem, freq, plan_lf=plan_lf, econ_share=econ_share,
+                aircraft, _ = ASsel.select_aircraft(_dnm, _dem, freq, plan_lf=plan_lf, econ_share=_es_gauge,
                                 econ_fare_ow=max(180, round(_dnm * 0.11)), bus_fare_ow=bus_fare,
                                 airline_type=_at, airline_iata=(airline or None), weeks=_wk)
                 _auto_ac = aircraft
-        except Exception:
-            pass
+        except Exception as _e:
+            # AUTO THAT FAILED IS SAID. The silent pass fell through to A21X and a user who
+            # asked AUTO on a widebody-length sector got a narrowbody cap presented as a
+            # normal sizing. The fallback stays; the payload now names it and warns.
+            _auto_fail = "%s: %s" % (type(_e).__name__, _e)
         if not _auto_ac:
             aircraft = "A21X"
     fc = calibrated_forecast(
         origin, dest, airline=airline, carrier_type=carrier_type, aircraft=aircraft, freq=freq,
-        econ_share=econ_share, plan_lf=plan_lf, econ_fare=(econ_fare or None), bus_fare=bus_fare,
+        econ_share=_es, plan_lf=plan_lf, econ_fare=(econ_fare or None), bus_fare=bus_fare,
         fuel_price=(fuel_price or None), growth_years=growth_years, with_econ=econ,
         stimulation=(stimulation if stimulation > 0 else None), growth=growth,
         att_exponent=(att_exponent if att_exponent >= 0 else None), catchment_mult=catchment_mult,
@@ -1517,6 +1613,11 @@ def api_forecast(origin: str, dest: str, airline: str = "", carrier_type: str = 
     if isinstance(fc, dict) and fc.get("ok"):
         if _auto_ac:
             fc["auto_aircraft"] = _auto_ac      # UI shows which gauge the demand sized to
+        if _auto_fail:
+            fc["auto_aircraft_failed"] = _auto_fail
+            fc.setdefault("warnings", []).append(
+                "AUTO gauge sizing failed (%s); the run fell back to an A21X and every "
+                "capacity figure is sized on it" % _auto_fail)
         _record_run(origin, dest, season)       # feeds the welcome-screen counter + recent runs
         _attach_airfield(fc, aircraft, plan_lf)
         _attach_range_margin(fc, aircraft)
@@ -2075,7 +2176,7 @@ def _xlsx_to_csv_zip(xlsx_path, zip_path):
 
 @app.get("/api/report")
 def api_report(origin: str, dest: str, airline: str = "", carrier_type: str = "FSC",
-               aircraft: str = "A21X", freq: int = 7, econ_share: float = 0.85, plan_lf: float = 0.875,
+               aircraft: str = "A21X", freq: int = 7, econ_share: float = 0.0, plan_lf: float = 0.875,
                econ_fare: float = 0.0, bus_fare: float = 1400.0, fuel_price: float = 0.0, growth_years: int = 0,
                part: str = "both", season: str = "annual",
                seats: float = 0.0, partners: str = "", forecast_year: int = 0,
@@ -2121,7 +2222,10 @@ def api_report(origin: str, dest: str, airline: str = "", carrier_type: str = "F
             return JSONResponse({"ok": False, "error": "dep_time must be HH:MM or HHMM in 24-hour "
                                  "local time, got %r" % dep_time}, status_code=400)
     fc = calibrated_forecast(origin, dest, airline=(airline or None), carrier_type=carrier_type,
-                             aircraft=aircraft, freq=freq, econ_share=econ_share, plan_lf=plan_lf,
+                             aircraft=aircraft, freq=freq,
+                             # 0 is the measure-it sentinel, /api/forecast's convention
+                             econ_share=(econ_share if (econ_share and econ_share > 0) else None),
+                             plan_lf=plan_lf,
                              econ_fare=(econ_fare or None), bus_fare=bus_fare,
                              fuel_price=(fuel_price or None), growth_years=growth_years, with_econ=True,
                              season=season,
@@ -2251,7 +2355,8 @@ def _run_pitch_job(job_id, p):
         _stage(job_id, "sizing the market and running the forecast")
         fc = calibrated_forecast(p["origin"], p["dest"], airline=(p["airline"] or None),
                                  carrier_type=p["carrier_type"], aircraft=p["aircraft"], freq=p["freq"],
-                                 econ_share=p["econ_share"], plan_lf=p["plan_lf"],
+                                 econ_share=(p["econ_share"] if (p.get("econ_share") and p["econ_share"] > 0) else None),
+                                 plan_lf=p["plan_lf"],
                                  econ_fare=(p["econ_fare"] or None), bus_fare=p["bus_fare"],
                                  fuel_price=(p["fuel_price"] or None), with_econ=True,
                                  season=p.get("season", "annual"))
@@ -2300,7 +2405,7 @@ def _run_pitch_job(job_id, p):
 
 @app.get("/api/pitch/start")
 def api_pitch_start(origin: str, dest: str, airline: str = "", carrier_type: str = "FSC",
-                    aircraft: str = "A21X", freq: int = 7, econ_share: float = 0.85,
+                    aircraft: str = "A21X", freq: int = 7, econ_share: float = 0.0,
                     plan_lf: float = 0.875, econ_fare: float = 0.0, bus_fare: float = 1400.0,
                     fuel_price: float = 0.0, season: str = "annual"):
     """Kick off a researched airline pitch as a background job (it runs web research + verification,

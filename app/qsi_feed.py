@@ -152,11 +152,21 @@ def _hub_arrival_mins(origin, hub, dep_time_mins, flying_mins, cfg):
 _COORD_FAIL = False
 
 
-def _circuity_ok(a, via, b, factor):
+def _circuity_ok(a, via, b, factor, cfg=None):
     """origin->via->b must be <= factor x direct. Pass-through when coordinates are unknown
-    (synthetic tests / minor airports), matching route_feed.on_the_way's behaviour."""
+    (synthetic tests / minor airports), matching route_feed.on_the_way's behaviour.
+
+    THE LATCH IS NO LONGER SILENT. One exception used to set _COORD_FAIL and disable the
+    circuity screen for the remainder of the process with no record anywhere: every
+    subsequent route in that process scored its competitors unscreened and nothing said so.
+    The latch stays, because the plausible cause (a missing coordinates dependency) is
+    permanent for the process and retrying it per itinerary is waste, but it is now written
+    to cfg so the payload can state that the screen was off. Found in the 15 August review.
+    """
     global _COORD_FAIL
     if _COORD_FAIL:
+        if cfg is not None:
+            cfg["_circuity_screen_off"] = True
         return True
     try:
         from route_feed import _coords, _gc
@@ -169,6 +179,8 @@ def _circuity_ok(a, via, b, factor):
         return ((_gc(ca, cv) or 0) + (_gc(cv, cb) or 0)) <= factor * direct
     except Exception:
         _COORD_FAIL = True
+        if cfg is not None:
+            cfg["_circuity_screen_off"] = True
         return True
 
 
@@ -294,17 +306,26 @@ def _share(new_itins, comp_itins, logit_lambda=1.0):
     return (q_new / q_all) if q_all > 0 else 0.0
 
 
-def _dep_boards(boards, week, airports):
+def _dep_boards(boards, week, airports, cfg=None):
+    """A FAILED BOARD READ IS COUNTED, NEVER ABSORBED. An empty row set used to be
+    indistinguishable from a read that crashed, and the consequence is not neutral: a
+    failed ORIGIN board empties the competitor set, _share then returns q_new/q_all = 1.0
+    for every market the new route reaches, and at qsi_k 1.0 the feed captures the entire
+    connecting market. A silent failure here INFLATES the forecast rather than degrading
+    it. Found in the 15 August review."""
     out = {}
     for a in airports:
         try:
             out[a] = boards.dep_rows(week, a)
         except Exception:
             out[a] = []
+            if cfg is not None:
+                cfg["_board_read_fails"] = cfg.get("_board_read_fails", 0) + 1
+                cfg.setdefault("_board_read_failed", []).append(a)
     return out
 
 
-def _grouped_dep_board(boards, week, airport):
+def _grouped_dep_board(boards, week, airport, cfg=None):
     """(rows-by-destination, board country) for an airport's departure board, memoised on the
     provider object so the dep-time sweep and the 4000-route pre-test group each board once."""
     memo = getattr(boards, "_qf_grouped", None)
@@ -317,6 +338,9 @@ def _grouped_dep_board(boards, week, airport):
             rows = boards.dep_rows(week, airport)
         except Exception:
             rows = []
+            if cfg is not None:
+                cfg["_board_read_fails"] = cfg.get("_board_read_fails", 0) + 1
+                cfg.setdefault("_board_read_failed", []).append(airport)
         by_arr = {}
         for r in rows:
             if r.get("arr"):
@@ -380,7 +404,7 @@ def beyond_capture(boards, week, origin_airports, hub, markets, airline,
     except Exception:
         pass
 
-    origin_boards = _dep_boards(boards, week, list(origin_airports))
+    origin_boards = _dep_boards(boards, week, list(origin_airports), cfg=cfg)
     # WHICH AIRPORTS MAY BE A COMPETING CONNECTING POINT, and this was wrong in a way that pushed the
     # two feed sides apart. `origin_airports` means different things on the two sides: route_forecast
     # passes the WHOLE 44-airport catchment to the beyond side and the SINGLE route origin to the
@@ -411,7 +435,7 @@ def beyond_capture(boards, week, origin_airports, hub, markets, airline,
         leg1s = leg1s_by_hub.get(h)
         if not leg1s:
             continue
-        by_arr, hc = _grouped_dep_board(boards, week, h)
+        by_arr, hc = _grouped_dep_board(boards, week, h, cfg=cfg)
         hub_info[h] = (leg1s, by_arr, hc)
 
     shares, dmap = {}, {}
@@ -427,7 +451,7 @@ def beyond_capture(boards, week, origin_airports, hub, markets, airline,
             rows_hm = by_arr.get(m)
             if not rows_hm:
                 continue
-            if not _circuity_ok(o0, h, m, circ):
+            if not _circuity_ok(o0, h, m, circ, cfg=cfg):
                 continue
             comp_itins.extend(_collapse(leg1s, rows_hm, h, hc, mct, maxc, fcap, partners))
         s = _share(new_itins, comp_itins, lam)
@@ -463,7 +487,11 @@ def behind_capture(boards, week, origin_airports, dest_airports, feeders, airlin
         try:
             rows = boards.arr_rows(week, o)
         except Exception:
+            # Counted, never absorbed: a failed arrivals board ZEROES the behind side and a
+            # zero reads exactly like a thin feed. Mirror of _dep_boards' rule.
             rows = []
+            cfg["_board_read_fails"] = cfg.get("_board_read_fails", 0) + 1
+            cfg.setdefault("_board_read_failed", []).append(o)
         if rows and org_country is None:
             org_country = _board_country(rows, "arr")
         for r in rows:
@@ -485,20 +513,20 @@ def behind_capture(boards, week, origin_airports, dest_airports, feeders, airlin
             new_itins = _collapse(rows_y, [leg2_new], o0, org_country, mct, maxc, fcap, partners)
         comp_itins = []
         if y not in feeder_boards:
-            yb_by_arr, _yc = _grouped_dep_board(boards, week, y)
+            yb_by_arr, _yc = _grouped_dep_board(boards, week, y, cfg=cfg)
             feeder_boards[y] = yb_by_arr
         yb_by_arr = feeder_boards[y]
         cand = {h for h, rows in yb_by_arr.items()
                 if h not in origin_airports and h not in dest_airports
                 and sum(r.get("freq") or 0 for r in rows) >= minhf}
         for h in cand:
-            by_arr, hc = _grouped_dep_board(boards, week, h)
+            by_arr, hc = _grouped_dep_board(boards, week, h, cfg=cfg)
             rows_hd = []
             for d in dest_airports:
                 rows_hd.extend(by_arr.get(d) or [])
             if not rows_hd:
                 continue
-            if not _circuity_ok(y, h, d0, circ):
+            if not _circuity_ok(y, h, d0, circ, cfg=cfg):
                 continue
             comp_itins.extend(_collapse(yb_by_arr.get(h) or [], rows_hd, h, hc, mct, maxc, fcap, partners))
         s = _share(new_itins, comp_itins, lam)
