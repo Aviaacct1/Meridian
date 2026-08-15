@@ -41,20 +41,28 @@ tests; `Meridian-run.bat` launcher; the Routes stand design brief
 
 ---
 
-## OWED FIRST: the acceptance run (ten minutes, do before anything else)
+## ~~OWED FIRST: the acceptance run~~ DONE 15 August late night: PASSED
 
-The 6x/85k run John saw was NOT the acceptance case: optimiser-chosen carrier (B77W 358),
-default year, floor ON. The acceptance case is: **SJC-TPE, airline CI, aircraft A359, seat
-count 306, forecast year 2028, curfew 21:00-06:00, frequency blank, Expert -> Show
-calibration constants -> Connectivity floor OFF, Optimise.** Pass mark: 4-5x weekly,
-total circa 110-135k two-way (John's historic testing, the 2025 analyst's 107.9k, and the
-0.235/0.26 k agreement all point there). If it fails, read `feed_level` in the payload
-(level_engine must say v1), then investigate before building anything; rollback exists.
+**The acceptance case passes: CI, A359, 5x weekly at a planned 82.8%, 131,812 two-way at
+forecast 2026; steady-state equivalent 121,151, inside the historic 110-135k band; circa
+143k at the 2027 default, inside John's 135-145k.** The engine and the k decision were
+never the fault. Full account in `bt2/bt2_experiments.log` from ACCEPTANCE-CLOSE: the
+Schedule box is the SEASON picker and Unselected let the optimiser run seasonal totals
+(which also closes the LF check: the slider reconciles exactly on season weeks); the
+forecast-year feature was growing the market at a 20%-clamped post-COVID rebound CAGR;
+the pass mark predated the feature.
 
-While there, two small checks: the slider line's load factor should reconcile with the
-capacity block (an 82.6% against a 358-seat 6x schedule did not obviously, 15 August),
-and the contract field count read 52 of 56 against 13 August's recorded 53; same four
-named gaps, so likely a stale count, but confirm which.
+Two rulings shipped on the back of it (COMMIT-MSG-15Aug2026-forecastyear / -growthtrend):
+default forecast year is the next full calendar year, and market growth is the 2015-2019
+pre-COVID trend via `market_trend()`, one definition, two-way pair sum, cached (the old
+measure scanned the store twice inside every optimiser arm). New diagnostic
+`app/sabre_directionality_check.py`: 2013/2015 are POO, all else ND; never measure
+cross-year growth one-directional across 2015/2016.
+
+Still owed from the checks: the contract field count (52 v 53 of 56, name the four gaps),
+the canonical store root (the workstation resolves C:\Avia\sabre.duckdb; records say
+E:\Avia), and the label batch: season and year on the slider line and headline, the Watch
+demand header when it serves T-100, the Schedule box renamed to Season.
 
 ## Job 1: the Watch page visual layer (John: "stunning visuals are a Meridian basic")
 
@@ -125,6 +133,13 @@ API keys) so the Watch briefing works.
 10. John personally: stand booking decision with Charlotte (hold a stand), brief to the
     brand team, redistribution/PI/legal quotes in motion, the analyst footnote question
     (FOOTNOTE-TENSION-UNRESOLVED), tester email list, Cloudflare hostname.
+11. Small correction owed in Observatory_Routes2026_stand_brief.docx before it goes to
+    the designers: section 3's fascia line said Avia Solutions to match the diaries;
+    John ruled 15 August that the exhibitor registers as The Aviation Observatory, so
+    fascia, diary and panels all carry the Observatory name, with "An institution of
+    Avia Solutions" as the masthead line. The stand concept v0.1 is right as drawn; the
+    15 August critique's other five changes (screen as hero, self-serve to the aisle
+    edge, the QR beyond the stand, Atlas to the screens, lighting and stools) stand.
 
 September (parked, deliberate): V2 spread work (per-market bounds, behind mechanism,
 competition split) default-off and back-tested first; the local-leg under-read (0.56
