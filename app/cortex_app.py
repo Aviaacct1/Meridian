@@ -1825,6 +1825,87 @@ def api_watch(airport: str, competitors: str = ""):
     return JSONResponse(out)
 
 
+@app.get("/api/watch/series")
+def api_watch_series(airport: str):
+    """The Watch page's two chart series, vintage-labelled, plus store freshness.
+
+    SEATS: departing scheduled seats by day of week, latest snapshot against the
+    year-earlier one (route_watch.daily_seats; the dedupe lives there with its
+    evidence). MONTHLY: passengers by calendar month, anchor year against the year
+    before, from the DOT T-100 census for a US airport (departing onboard, the
+    standing US ruling) and the ACI store elsewhere (two-way throughput). The two
+    sources measure OPPOSITE bases, so the payload names which was measured and the
+    page derives the other, marked, by the stated factor of two. Every figure here
+    is an actual; the page must not let one read as a forecast."""
+    import route_watch as RW
+    airport = (airport or "").strip().upper()
+    sabre_db, oag_db = _db_paths()
+    out = {"ok": True, "airport": airport}
+    try:
+        out["seats"] = RW.daily_seats(oag_db, airport)
+    except Exception as e:
+        out["seats"] = {"ok": False, "error": "daily seats failed: %s" % e}
+    # WHICH SOURCE ANSWERS THE MONTHLY CHART. Same rule as the demand table above:
+    # a US airport reads the DOT census; everywhere else reads ACI where the store
+    # holds the airport. No fallback across the US boundary in either direction: a
+    # Sabre substitute here would put a GDS sample on an axis labelled census.
+    _ctry = None
+    try:
+        import airportsdata
+        _ctry = (airportsdata.load("IATA").get(airport) or {}).get("country")
+    except Exception:
+        _ctry = None
+    monthly = {"ok": False, "error": "no monthly source holds this airport"}
+    try:
+        import airport_profile as APF
+        import config as CFG
+        if _ctry == "US":
+            _series, _note = APF.read_t100_monthly(str(CFG.T100_DUCKDB), airport)
+            _src, _meas = "US DOT T-100", "departing"
+            _basis = ("US DOT T-100, departing onboard passengers at %s by month, "
+                      "actuals; %s" % (airport, _note or ""))
+        else:
+            _series, _note = APF.read_aci_monthly(str(CFG.ACI_DUCKDB), airport)
+            _src, _meas = "ACI", "twoway"
+            _basis = ("ACI monthly returns, two-way terminal passengers at %s, "
+                      "actuals; %s" % (airport, _note or ""))
+        if _series:
+            # Anchor on the latest reported month; the chart reads that calendar
+            # year against the one before, month by month. A month with no return
+            # is null and stays null: the page draws a gap, not a zero.
+            _anchor = max(y for y, _m, _p in _series)
+            _by = {(y, m): p for y, m, p in _series}
+            monthly = {"ok": True, "source_label": _src, "measured": _meas,
+                       "factor": 2, "year": _anchor, "prior_year": _anchor - 1,
+                       "months": [{"month": _m,
+                                   "cur": (round(_by[(_anchor, _m)])
+                                           if (_anchor, _m) in _by else None),
+                                   "prior": (round(_by[(_anchor - 1, _m)])
+                                             if (_anchor - 1, _m) in _by else None)}
+                                  for _m in range(1, 13)],
+                       "basis": _basis}
+        else:
+            monthly = {"ok": False, "error": _note or "no monthly series"}
+    except Exception as e:
+        monthly = {"ok": False, "error": "monthly series failed: %s" % e}
+    out["monthly"] = monthly
+    # STORE FRESHNESS, so September's unwatched refresh test is visible on the page
+    # that a tester actually opens. refresh_pickup's wrapper writes
+    # {source: {label, result, detail, date}}; absence is reported as absence.
+    try:
+        import json as _json
+        _sp = os.environ.get("AVIA_REFRESH_STATUS", r"E:\Avia\refresh_status.json")
+        if os.path.exists(_sp):
+            with open(_sp, encoding="utf-8") as _fh:
+                out["freshness"] = {"ok": True, "status": _json.load(_fh)}
+        else:
+            out["freshness"] = {"ok": False,
+                                "error": "no refresh status file has been written yet"}
+    except Exception as e:
+        out["freshness"] = {"ok": False, "error": "refresh status unreadable: %s" % e}
+    return JSONResponse(out)
+
+
 @app.get("/api/briefing")
 def api_briefing(airport: str, city: str = "", country: str = "", force: int = 0):
     """The Observatory briefing: one live research call per airport per day, cached."""

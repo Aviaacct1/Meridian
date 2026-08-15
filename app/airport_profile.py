@@ -515,6 +515,92 @@ def read_t100(path, iata, years=None, min_months=12, service_class=T100_SCHEDULE
     return whole, note
 
 
+def read_t100_monthly(path, iata, service_class=T100_SCHEDULED):
+    """Departing onboard passengers by MONTH at a US airport, from DOT T-100 segment.
+
+    read_t100's rules, unchanged (its docstring carries the evidence): the `seg` table
+    BY NAME because the store holds the same rows twice and probing can take the
+    unparsed copy; scheduled class only; `origin` because T-100 counts passengers on
+    the aircraft departing, one-directional, never halved. The one difference is the
+    grain: GROUP BY year AND month, for the Watch page's month-against-same-month
+    chart. A missing month is absent from the result, not zero: DOT publishes in
+    arrears and a blank is a not-yet-filed return.
+
+    Returns (series, note) with series as [(year, month, pax)] ascending.
+    """
+    try:
+        con = _connect(path)
+    except Exception as e:
+        return [], "could not open the T-100 store at %s (%s)" % (path, e)
+    try:
+        tabs = {r[0].lower() for r in con.execute("SHOW TABLES").fetchall()}
+        if T100_TABLE not in tabs:
+            return [], ("the T-100 store has no %r table. Tables seen: %s. This "
+                        "reader will not fall back to another one, because the "
+                        "store also holds the same rows unparsed."
+                        % (T100_TABLE, ", ".join(sorted(tabs)) or "none"))
+        rows = con.execute(
+            "SELECT TRY_CAST(year AS INTEGER), TRY_CAST(month AS INTEGER), "
+            "       SUM(TRY_CAST(passengers AS DOUBLE)) "
+            "FROM %s WHERE UPPER(TRIM(origin)) = ? AND UPPER(TRIM(class)) = ? "
+            "GROUP BY 1, 2 ORDER BY 1, 2" % T100_TABLE,
+            [iata.upper(), service_class.upper()]).fetchall()
+    except Exception as e:
+        return [], "the T-100 store did not answer as expected (%s: %s)" % (
+            type(e).__name__, e)
+    finally:
+        try:
+            con.close()
+        except Exception:
+            pass
+    series = [(int(y), int(m), float(p or 0)) for y, m, p in rows
+              if y is not None and m is not None and 1 <= int(m) <= 12]
+    if not series:
+        return [], "%s has no scheduled T-100 service in the store" % iata.upper()
+    note = ("scheduled service only (T-100 class %s); DOT publishes in arrears, so "
+            "the series legitimately ends behind a non-US airport's" % service_class)
+    return series, note
+
+
+def read_aci_monthly(path, iata):
+    """Two-way terminal passengers by MONTH from the ACI store, for one airport.
+
+    Reads `aci_monthly` directly against the schema load_aci.py fixed on 7 August
+    2026 (read_aci's docstring carries why probing this store is unsafe). ACI
+    throughput is arrivals plus departures plus transit, TWO-WAY, the opposite basis
+    to T-100; the caller labels it. A month the airport did not report is absent from
+    the result, never zero: a blank in ACI is an unfiled return, not empty terminals.
+
+    Returns (series, note) with series as [(year, month, pax)] ascending.
+    """
+    if not path or not os.path.exists(path):
+        return [], "no ACI store at %s" % path
+    try:
+        con = _connect(path)
+    except Exception as e:
+        return [], "could not open the ACI store at %s (%s)" % (path, e)
+    try:
+        rows = con.execute(
+            "SELECT TRY_CAST(year AS INTEGER), TRY_CAST(month AS INTEGER), "
+            "       SUM(passengers) FROM aci_monthly "
+            "WHERE UPPER(TRIM(iata)) = ? GROUP BY 1, 2 ORDER BY 1, 2",
+            [iata.upper()]).fetchall()
+    except Exception as e:
+        return [], "the ACI store did not answer as expected (%s: %s)" % (
+            type(e).__name__, e)
+    finally:
+        try:
+            con.close()
+        except Exception:
+            pass
+    series = [(int(y), int(m), float(p or 0)) for y, m, p in rows
+              if y is not None and m is not None and 1 <= int(m) <= 12]
+    if not series:
+        return [], "%s is not in the ACI store" % iata.upper()
+    return series, ("ACI monthly returns; a month the airport did not file is a gap "
+                    "on the chart, not a zero")
+
+
 def aci_country(path, iata):
     """The country ACI files this airport under, or "" if it is not in the store.
 

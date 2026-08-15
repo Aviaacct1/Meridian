@@ -1,0 +1,54 @@
+Watch page visual layer (Job 1, 16 August) and the season/year label batch
+
+The Watch page gets its two charts in the Observatory grammar, the page moves
+off the old Georgia/#B8860B palette onto the shared tokens, and the dashboard
+now states season and year beside every headline figure, which is the labelling
+that sent three acceptance runs to seasonal totals read against annual pass
+marks on 15 August.
+
+- route_watch.daily_seats: departing seats by day of week, latest snapshot
+  against the year-earlier one. DEPARTING, not two-way: a based rotation
+  counts twice summed both ways (John's ruling, 15 August). Dedupe to one
+  record per (carrier, flight_no, dep, arr, local_dep_time) with max(mask)
+  BEFORE summing, the frequency_frame trap: the store repeats one schedule
+  record per region label. A record with no operating-day mask is counted
+  out and named, never spread.
+- pick_weeks fix, found by the new fixture test: an airport holding a
+  single weekly label fell through to an empty monthly spine and reported
+  "no snapshots" while holding one. One label now answers, with the stated
+  no-comparison note. capacity_moves behaviour otherwise unchanged.
+- airport_profile.read_t100_monthly: read_t100's rules (seg BY NAME, class
+  F only, origin = departing onboard) at monthly grain. read_aci_monthly:
+  aci_monthly by year and month, two-way; an unfiled month is a gap, never
+  a zero. Both refuse rather than probe.
+- /api/watch/series: the two chart series plus store freshness. US airports
+  read the DOT census, elsewhere ACI, no fallback across that boundary; the
+  payload names the measured basis and the page derives the other, marked ~
+  with the factor of two stated (the standing both-bases ruling). Freshness
+  reads AVIA_REFRESH_STATUS (refresh_pickup's wrapper writes it), so
+  September's unwatched refresh test is visible on the page a tester opens.
+- cortex_watch.html: Observatory tokens and fonts (Newsreader/Inter/IBM
+  Plex Mono, brass #D4A249); both plates in the dashboard's grammar:
+  registration corner ticks, brass observed, ink dashed comparator, direct
+  labels never legends, Newsreader italic annotation, provenance rail under
+  every figure with source, units, period and method, actuals stated.
+  Human dates via pretty_label on chart labels; ISO stays in the mono rail.
+  Also fixed in passing: a competitor block carrying {error} rendered empty
+  tables; the error now shows.
+- Label batch (dashboard): the "Schedule" box is renamed Season with the
+  season-totals warning in its title; the headline basis and the Total
+  forecast card state forecast year and season span; the slider note states
+  the span and year next to the figures. The Watch demand header already
+  names its source (shipped 15 August); verified, not re-done.
+- test_watch_series.py: 20 fixture checks, no stores needed: the region
+  duplicate counted once, dotted masks, the maskless record named, the
+  arrival-only and freighter exclusions, the T-100 twin-table refusal,
+  charter exclusion, arrears months absent, the ACI gap-not-zero rule, and
+  the single-snapshot answer. All pass, as do the existing fixture suites
+  (test_airport_profile 36, test_refresh_pickup, test_feed_provenance).
+
+Owed on the workstation, not doable from the Dev PC (no stores here):
+/api/watch/series against real data for SJC (T-100 monthly), a non-US ACI
+airport (EDI or BLQ), and one airport with a maskless record count; the one
+look at the demand table's numbers rendering on a real airport; chart eyeball
+against the brand guide. Ask before any run over circa twenty minutes.

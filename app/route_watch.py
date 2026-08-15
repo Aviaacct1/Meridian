@@ -87,7 +87,16 @@ def pick_weeks(con, airport=None):
     latest label holding the airport; prior = the label nearest one year before it.
     The gap is REPORTED rather than assumed healthy."""
     weekly, monthly = _labels(con, airport)
-    form, labels = ("weekly", weekly) if len(weekly) >= 2 else ("monthly", monthly)
+    # Prefer the spine that can actually compare. A single weekly label used to fall
+    # through to an EMPTY monthly spine and the airport reported "no snapshots" while
+    # holding one (caught by the fixture test, 16 August); one label is an answer with
+    # a stated no-comparison note, not an absence.
+    if len(weekly) >= 2:
+        form, labels = "weekly", weekly
+    elif len(monthly) >= 2:
+        form, labels = "monthly", monthly
+    else:
+        form, labels = ("weekly", weekly) if weekly else ("monthly", monthly)
     if not labels:
         return None, None, "no weekly or monthly snapshots hold this airport", None
     if len(labels) == 1:
@@ -197,6 +206,91 @@ def capacity_moves(db, airport, competitors=None):
                                                   % pretty_label(cur)}
             else:
                 out["competitors"][c] = one(c)
+        return out
+    finally:
+        con.close()
+
+
+DAY_NAMES = ("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+
+
+def daily_seats(db, airport):
+    """Departing seats by day of week, the latest snapshot against the year-earlier one.
+
+    DEPARTING seats, not two-way: a based rotation departs and returns, and summing both
+    directions counts the same aircraft twice (John's ruling, 15 August). The basis is
+    stated in the payload so the chart can state it.
+
+    THE DEDUPE, and it is the trap frequency_frame documents: days_of_op is a
+    seven-character mask (digits 1-7 = operating days, SSIM convention, 1 = Monday) and
+    the store repeats one schedule record per REGION label, so a straight sum over rows
+    multiplies every flight by the number of regions that see it. One figure per
+    (carrier, flight_no, dep, arr, local_dep_time), max(mask) and max(seats) across the
+    duplicates (they are copies of one record), BEFORE any summing.
+
+    A record whose mask holds no digit cannot be placed on a day. It is left out and
+    COUNTED, never spread evenly: flag rather than fill."""
+    airport = (airport or "").strip().upper()
+    con = _con(db)
+    try:
+        cur, prior, note, form = pick_weeks(con, airport)
+        if not cur:
+            return {"ok": False, "error": note or "no snapshots hold this airport"}
+        svc = _svc_filter(con)
+
+        def one(week):
+            rows = con.execute(
+                f"WITH d AS ("
+                f"  SELECT carrier, flight_no, dep_airport, arr_airport, local_dep_time, "
+                f"         max(coalesce(days_of_op, '')) AS mask, "
+                f"         max(coalesce(TRY_CAST(seats_total AS DOUBLE), 0.0)) AS seats "
+                f"  FROM oag WHERE week = ? AND dep_airport = ? AND {svc} "
+                f"  GROUP BY 1, 2, 3, 4, 5) "
+                f"SELECT mask, seats FROM d", [week, airport]).fetchall()
+            days = [0.0] * 7
+            unplaced = 0
+            for mask, seats in rows:
+                hit = False
+                for ch in str(mask or ""):
+                    if ch in "1234567":
+                        days[int(ch) - 1] += float(seats or 0)
+                        hit = True
+                if not hit:
+                    unplaced += 1
+            return [round(v) for v in days], unplaced
+
+        cur_days, cur_un = one(cur)
+        out = {"ok": True, "airport": airport, "days": list(DAY_NAMES),
+               "week": cur, "week_display": pretty_label(cur), "label_form": form,
+               "current": cur_days,
+               "basis": ("OAG scheduled passenger service, departing seats by day of "
+                         "operation at %s (SSIM days, Monday first), deduplicated to one "
+                         "record per flight. %s snapshot %s against %s. Static extract, "
+                         "not a live feed."
+                         % (airport, form.capitalize(), pretty_label(cur),
+                            pretty_label(prior)))}
+        notes = []
+        if prior and prior != cur:
+            out["prior_week"], out["prior_week_display"] = prior, pretty_label(prior)
+            prior_days, pri_un = one(prior)
+            out["prior"] = prior_days
+            if pri_un:
+                notes.append("%d prior-snapshot record%s carried no operating-day mask "
+                             "and %s left out, not spread"
+                             % (pri_un, "" if pri_un == 1 else "s",
+                                "is" if pri_un == 1 else "are"))
+        else:
+            notes.append("no year-earlier snapshot holds this airport; the comparator "
+                         "series is absent, not zero")
+        if cur_un:
+            notes.append("%d current-snapshot record%s carried no operating-day mask "
+                         "and %s left out, not spread"
+                         % (cur_un, "" if cur_un == 1 else "s",
+                            "is" if cur_un == 1 else "are"))
+        if note:
+            notes.append(note)
+        if notes:
+            out["notes"] = notes
         return out
     finally:
         con.close()

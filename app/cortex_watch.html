@@ -3,29 +3,42 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
 <title>The Observatory · Meridian - Route Watch</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;1,6..72,400&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
-  /* The Observatory palette, matching the dashboard family. */
+  /* ---- Observatory tokens, matching cortex_dashboard.html. This page ran the old
+     Georgia/#B8860B palette until 16 August 2026; John approved bringing the
+     Observatory tokens and fonts across, so the two pages are one product. ---- */
   :root{
-    --paper:#F6F3EC; --screen:#FAF8F3; --card:#FFFFFF; --line:#E3DED2;
-    --text:#26313B; --body:#3A444E; --muted:#6E6A5E; --accent:#B8860B;
-    --sans:"Helvetica Neue",Arial,sans-serif; --serif:Georgia,"Times New Roman",serif;
-    --mono:"SF Mono",Consolas,monospace;
+    --ink:#0F1B28; --ink-900:#0B141D;
+    --brass:#D4A249; --brass-deep:#A97C33; --brass-soft:#F1E6CD;
+    --paper:#F6F3EC; --screen:#FAF8F3; --card:#F6F3EC; --grey:#C4CDD6;
+    --line:#E2DCCC; --line-ink:#24313F;
+    --text:#26313B; --body:#3A444E; --muted:#6E6A5E; --muted-ink:#8FA0B0;
+    --signal:#CE3B2A; --signal-soft:#E7A79B;
+    --serif:'Newsreader',Georgia,'Times New Roman',serif;
+    --sans:'Inter',-apple-system,'Segoe UI',Roboto,system-ui,sans-serif;
+    --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
   }
   *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:var(--serif);background:var(--screen);color:var(--text);font-size:14.5px;line-height:1.5;padding:28px 34px;max-width:1180px;margin:0 auto}
+  body{font-family:var(--serif);background:var(--screen);color:var(--text);-webkit-font-smoothing:antialiased;font-size:14.5px;line-height:1.5;padding:28px 34px;max-width:1180px;margin:0 auto}
+  ::selection{background:var(--brass-soft)}
   h1{font-size:24px;font-weight:500}
   .strap{font-family:var(--sans);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin:2px 0 18px}
   .bar{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:14px}
   .fld label{display:block;font-family:var(--sans);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
-  .fld input{font-family:var(--mono);font-size:13px;padding:7px 9px;border:1px solid var(--line);border-radius:5px;background:var(--card);width:150px}
-  button{font-family:var(--sans);font-size:12.5px;font-weight:600;padding:8px 16px;border:1px solid var(--line);border-radius:6px;background:var(--text);color:#F4F1EA;cursor:pointer}
-  button.ghost{background:var(--card);color:var(--text)}
+  .fld input{font-family:var(--mono);font-size:13px;padding:7px 9px;border:1px solid var(--line);border-radius:2px;background:#FFFFFF;width:150px}
+  button{font-family:var(--sans);font-size:12.5px;font-weight:600;padding:8px 16px;border:1px solid var(--line);border-radius:2px;background:var(--ink);color:#F4F1EA;cursor:pointer}
+  button.ghost{background:#FFFFFF;color:var(--text)}
   button[disabled]{opacity:.5;cursor:default}
+  :focus-visible{outline:2px solid var(--brass);outline-offset:2px}
   .basis{font-family:var(--sans);font-size:10.5px;color:var(--muted);margin:6px 0 18px;line-height:1.55}
-  .warn{border:1px solid #c0392b;background:#fdf0ee;color:#7b241c;border-radius:6px;padding:10px 12px;font-family:var(--sans);font-size:12.5px;margin:10px 0}
+  .warn{border:1px solid var(--signal);background:#fdf0ee;color:#7b241c;border-radius:2px;padding:10px 12px;font-family:var(--sans);font-size:12.5px;margin:10px 0}
   .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:14px 16px}
+  .card{background:#FFFFFF;border:1px solid var(--line);border-radius:2px;padding:14px 16px}
   .card h3{font-family:var(--sans);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
   table{width:100%;border-collapse:collapse;font-family:var(--sans);font-size:12px}
   th{font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-align:left;padding:4px 6px;border-bottom:1px solid var(--line)}
@@ -39,6 +52,15 @@
   .hidden{display:none}
   .full{grid-column:span 2}
   a.back{font-family:var(--sans);font-size:11px;color:var(--muted);text-decoration:none}
+  /* provenance rail, copied from the dashboard so a figure is never published bare */
+  .prov{font-family:var(--sans);font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin-top:14px;padding-top:9px;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;gap:6px 16px;align-items:baseline}
+  .prov b{font-weight:600;color:var(--muted)}
+  .prov .val{font-family:var(--serif);text-transform:none;letter-spacing:0;font-size:12px;color:var(--body);font-style:normal}
+  .prov .mono{font-family:var(--mono);text-transform:none;letter-spacing:0;font-size:11px;color:var(--body)}
+  /* store freshness: a mono line, ISO dates, machine context by design */
+  .fresh{font-family:var(--mono);font-size:11px;color:var(--body);margin:0 0 14px;line-height:1.7}
+  .fresh b{font-family:var(--sans);font-weight:600;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-right:6px}
+  .fresh .bad{color:var(--signal)}
 </style>
 </head>
 <body>
@@ -53,9 +75,14 @@
     <button id="briefBtn" class="ghost" title="One live research call per airport per day; cached after that.">Briefing</button>
   </div>
   <div id="err" class="warn hidden"></div>
+  <div id="fresh" class="fresh hidden"></div>
   <div id="basis" class="basis"></div>
 
   <div id="out" class="grid hidden">
+    <div class="card full" id="seatsCard"><h3 id="hSeats">Departing seats by day of week</h3>
+      <div id="chSeats"></div><div id="seatsNote" class="basis" style="margin:8px 0 0"></div><div id="seatsProv"></div></div>
+    <div class="card full" id="monthlyCard"><h3 id="hMonthly">Monthly passengers</h3>
+      <div id="chMonthly"></div><div id="monthlyNote" class="basis" style="margin:8px 0 0"></div><div id="monthlyProv"></div></div>
     <div class="card"><h3 id="hNew">New services</h3><div id="tNew"></div></div>
     <div class="card"><h3>Dropped services</h3><div id="tDrop"></div></div>
     <div class="card full"><h3>Changed frequency or capacity (&#8805;10%)</h3><div id="tChg"></div></div>
@@ -68,8 +95,160 @@
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const fmt=n=>Number(n||0).toLocaleString("en-GB");
+// compact figure for a chart axis: 12.4m / 52k / 850
+const fmtK=v=>v>=1e6?(v/1e6).toFixed(1)+"m":v>=1e4?Math.round(v/1e3)+"k":v>=1e3?(v/1e3).toFixed(1)+"k":String(Math.round(v));
 function err(m){ const e=$("#err"); e.textContent=m; e.classList.remove("hidden"); }
 function clearErr(){ $("#err").classList.add("hidden"); }
+
+// single-sourced chart palette, mirroring the CSS tokens so SVG colour never drifts
+// (same constant as the dashboard; brass is the observed series, ink dashed the comparator)
+const PAL={ink:'#0F1B28',brass:'#D4A249',brassDeep:'#A97C33',signal:'#CE3B2A',guide:'#E3DDCD',axis:'#C9C2B2',muted:'#6E6A5E'};
+const MO=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+function provRail(source,units,period,method){
+  return '<div class="prov">'
+    +'<span><b>Source</b> <span class="val">'+source+'</span></span>'
+    +'<span><b>Units</b> <span class="val">'+units+'</span></span>'
+    +'<span><b>Period</b> <span class="mono">'+period+'</span></span>'
+    +'<span><b>Method</b> <span class="val">'+method+'</span></span>'
+  +'</div>';
+}
+// the corner registration ticks every Observatory plate carries
+function regTicks(L,R,T,B){
+  return `<g stroke="${PAL.ink}" stroke-width="1" fill="none">
+    <path d="M${L} ${T} h10 M${L} ${T} v10"></path><path d="M${R} ${T} h-10 M${R} ${T} v10"></path>
+    <path d="M${L} ${B} h10 M${L} ${B} v-10"></path><path d="M${R} ${B} h-10 M${R} ${B} v-10"></path>
+  </g>`;
+}
+
+// DEPARTING SEATS BY DAY OF WEEK: brass bars are the latest snapshot, the ink dashed
+// step is the year-earlier comparator. Departing, not two-way: a based rotation
+// departs and returns, and both directions counts the aircraft twice (John, 15 Aug).
+function drawSeats(s){
+  const card=$("#seatsCard");
+  if(!s||!s.ok){ card.classList.remove("hidden");
+    $("#chSeats").innerHTML='<div class="basis">'+esc((s&&s.error)||"no seats series")+"</div>";
+    $("#seatsNote").textContent=""; $("#seatsProv").innerHTML=""; return; }
+  const cur=s.current||[], pri=s.prior||null, days=s.days||["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+  const mx=Math.max(1,...cur,...(pri||[]));
+  const W=700,H=210,L=46,R=686,T=16,B=176;
+  const yOf=v=>B-(v/mx)*(B-T);
+  const bw=(R-L)/7*0.56;
+  const bars=cur.map((v,i)=>{
+    const cx=L+(R-L)*(i+0.5)/7;
+    return `<rect x="${(cx-bw/2).toFixed(1)}" y="${yOf(v).toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(B-yOf(v),1).toFixed(1)}" fill="${PAL.brass}"></rect>`;
+  }).join("");
+  // the comparator as a dashed ink step across each day's slot, never a second bar:
+  // one hue per series, and the dashed rule is the guide's comparator grammar
+  const steps=pri?pri.map((v,i)=>{
+    const cx=L+(R-L)*(i+0.5)/7;
+    return `<line x1="${(cx-bw/2-6).toFixed(1)}" y1="${yOf(v).toFixed(1)}" x2="${(cx+bw/2+6).toFixed(1)}" y2="${yOf(v).toFixed(1)}" stroke="${PAL.ink}" stroke-width="1.4" stroke-dasharray="4 3"></line>`;
+  }).join(""):"";
+  const dayLbls=days.map((d,i)=>{const cx=L+(R-L)*(i+0.5)/7;
+    return `<text x="${cx.toFixed(1)}" y="194" text-anchor="middle">${d}</text>`;}).join("");
+  // direct labels in series colour, never a legend
+  const lblCur=`<text x="${L+8}" y="${T+12}" font-family="'Inter',sans-serif" font-size="10" font-weight="600" fill="${PAL.brassDeep}">${esc(s.week_display||s.week)}</text>`;
+  const lblPri=pri?`<text x="${L+8}" y="${T+26}" font-family="'Inter',sans-serif" font-size="10" font-weight="600" fill="${PAL.ink}">${esc(s.prior_week_display||s.prior_week)} (dashed)</text>`:"";
+  // the day that moved most, said on the plate in the annotation voice
+  let ann="";
+  if(pri){
+    let bi=-1,bd=0;
+    cur.forEach((v,i)=>{ if(pri[i]>0){ const d=(v-pri[i])/pri[i]; if(Math.abs(d)>Math.abs(bd)){bd=d;bi=i;} } });
+    if(bi>=0&&Math.abs(bd)>=0.05){
+      const cx=L+(R-L)*(bi+0.5)/7;
+      ann=`<text x="${cx.toFixed(1)}" y="${(yOf(cur[bi])-8).toFixed(1)}" text-anchor="middle" font-family="Newsreader,serif" font-style="italic" font-size="12" fill="${PAL.brassDeep}">${days[bi]} ${bd>0?"+":""}${Math.round(bd*100)}%</text>`;
+    }
+  }
+  const yMid=yOf(mx*0.5);
+  $("#chSeats").innerHTML=`<svg viewBox="0 0 ${W} ${H}" style="width:100%" role="img" aria-label="Departing seats by day of week">
+    ${regTicks(L,R,T,B)}
+    <line x1="${L}" y1="${yMid.toFixed(1)}" x2="${R}" y2="${yMid.toFixed(1)}" stroke="${PAL.guide}" stroke-width="1"></line>
+    <line x1="${L}" y1="${B}" x2="${R}" y2="${B}" stroke="${PAL.ink}" stroke-width="1.2"></line>
+    <line x1="${L}" y1="${T}" x2="${L}" y2="${B}" stroke="${PAL.axis}" stroke-width="1"></line>
+    <text x="${L-6}" y="${yMid+3}" text-anchor="end" font-family="'IBM Plex Mono',monospace" font-size="9" fill="${PAL.muted}">${fmtK(mx*0.5)}</text>
+    <text x="${L-6}" y="${T+3}" text-anchor="end" font-family="'IBM Plex Mono',monospace" font-size="9" fill="${PAL.muted}">${fmtK(mx)}</text>
+    ${bars}${steps}${lblCur}${lblPri}${ann}
+    <g font-family="'IBM Plex Mono',monospace" font-size="9" fill="${PAL.muted}">${dayLbls}</g>
+  </svg>`;
+  $("#hSeats").textContent="Departing seats by day of week · "+esc(s.airport||"");
+  $("#seatsNote").textContent=(s.notes&&s.notes.length?s.notes.join(". ")+".":"");
+  $("#seatsProv").innerHTML=provRail("OAG schedules","Departing seats per day, scheduled passenger service",
+    esc((s.prior_week_display||"no comparator"))+" v "+esc(s.week_display||s.week||""),
+    "One record per flight (deduplicated), SSIM operating days; static extract, actuals as scheduled");
+}
+
+// MONTHLY PASSENGERS: brass is the anchor year, ink dashed the year before, month by
+// month. A month with no return is a GAP in the line, never a zero. Both bases are
+// stated under the plate: the measured one plain, the derived one marked ~ (x2 rule).
+function drawMonthly(m){
+  const card=$("#monthlyCard");
+  if(!m||!m.ok){ card.classList.remove("hidden");
+    $("#chMonthly").innerHTML='<div class="basis">'+esc((m&&m.error)||"no monthly series")+"</div>";
+    $("#monthlyNote").textContent=""; $("#monthlyProv").innerHTML=""; return; }
+  const ms=m.months||[];
+  const vals=ms.flatMap(x=>[x.cur,x.prior]).filter(v=>v!=null);
+  const mx=Math.max(1,...vals);
+  const W=700,H=210,L=46,R=686,T=16,B=176;
+  const yOf=v=>B-(v/mx)*(B-T);
+  const xOf=i=>L+(R-L)*(i+0.5)/12;
+  // a polyline that BREAKS at a null month, so a gap draws as a gap
+  const path=(key)=>{
+    let d="",pen=false;
+    ms.forEach((x,i)=>{ const v=x[key];
+      if(v==null){ pen=false; return; }
+      d+=(pen?" L":" M")+xOf(i).toFixed(1)+" "+yOf(v).toFixed(1); pen=true; });
+    return d.trim();
+  };
+  const dCur=path("cur"), dPri=path("prior");
+  const lastIdx=(key)=>{ let k=-1; ms.forEach((x,i)=>{ if(x[key]!=null) k=i; }); return k; };
+  const lc=lastIdx("cur"), lp=lastIdx("prior");
+  const monthLbls=MO.map((mo,i)=>`<text x="${xOf(i).toFixed(1)}" y="194" text-anchor="middle">${mo}</text>`).join("");
+  const yMid=yOf(mx*0.5);
+  $("#chMonthly").innerHTML=`<svg viewBox="0 0 ${W} ${H}" style="width:100%" role="img" aria-label="Monthly passengers, ${m.year} against ${m.prior_year}">
+    ${regTicks(L,R,T,B)}
+    <line x1="${L}" y1="${yMid.toFixed(1)}" x2="${R}" y2="${yMid.toFixed(1)}" stroke="${PAL.guide}" stroke-width="1"></line>
+    <line x1="${L}" y1="${B}" x2="${R}" y2="${B}" stroke="${PAL.ink}" stroke-width="1.2"></line>
+    <line x1="${L}" y1="${T}" x2="${L}" y2="${B}" stroke="${PAL.axis}" stroke-width="1"></line>
+    <text x="${L-6}" y="${yMid+3}" text-anchor="end" font-family="'IBM Plex Mono',monospace" font-size="9" fill="${PAL.muted}">${fmtK(mx*0.5)}</text>
+    <text x="${L-6}" y="${T+3}" text-anchor="end" font-family="'IBM Plex Mono',monospace" font-size="9" fill="${PAL.muted}">${fmtK(mx)}</text>
+    ${dPri?`<path d="${dPri}" fill="none" stroke="${PAL.ink}" stroke-width="1.4" stroke-dasharray="4 3"></path>`:""}
+    ${dCur?`<path d="${dCur}" fill="none" stroke="${PAL.brass}" stroke-width="2"></path>`:""}
+    ${lc>=0?`<text x="${Math.min(xOf(lc)+8,R-4).toFixed(1)}" y="${(yOf(ms[lc].cur)-6).toFixed(1)}" font-family="'Inter',sans-serif" font-size="10" font-weight="600" fill="${PAL.brassDeep}">${m.year} actual</text>`:""}
+    ${lp>=0?`<text x="${Math.min(xOf(lp)+8,R-4).toFixed(1)}" y="${(yOf(ms[lp].prior)+14).toFixed(1)}" font-family="'Inter',sans-serif" font-size="10" font-weight="600" fill="${PAL.ink}">${m.prior_year} actual</text>`:""}
+    <g font-family="'IBM Plex Mono',monospace" font-size="9" fill="${PAL.muted}">${monthLbls}</g>
+  </svg>`;
+  const meas=m.measured==="departing"?"departing":"two-way";
+  const derv=m.measured==="departing"?"two-way":"departing";
+  $("#hMonthly").textContent="Monthly passengers ("+meas+") · "+esc(m.source_label||"");
+  // both bases on the latest reported month, the measured plain, the derived marked ~
+  let bases="";
+  const li=lastIdx("cur");
+  if(li>=0){
+    const v=ms[li].cur, dv=m.measured==="departing"?v*2:Math.round(v/2);
+    bases="Latest reported month "+MO[li]+" "+m.year+": "+fmt(v)+" "+meas+" · ~ "+fmt(dv)+" "+derv+
+      " (factor of two, derived). ";
+  }
+  const gaps=ms.filter(x=>x.cur==null&&ms.some(y=>y.cur!=null)).length;
+  $("#monthlyNote").textContent=bases+(m.basis||"");
+  $("#monthlyProv").innerHTML=provRail(esc(m.source_label||"store"),
+    "Passengers per month, "+meas+" (measured); ~ marks the derived basis",
+    m.prior_year+"-"+m.year+", actuals",
+    m.measured==="departing"?"DOT T-100 segment, scheduled class, departing onboard":"ACI monthly returns; an unfiled month is a gap, not a zero");
+}
+
+function renderFresh(f){
+  const el=$("#fresh");
+  if(!f){ el.classList.add("hidden"); return; }
+  if(!f.ok){ el.innerHTML="<b>Stores</b> "+esc(f.error||"freshness unknown"); el.classList.remove("hidden"); return; }
+  const st=f.status||{};
+  const bits=Object.keys(st).map(k=>{
+    const s=st[k]||{};
+    const bad=String(s.result||"").toLowerCase().indexOf("fail")>=0||String(s.result||"").toLowerCase().indexOf("stale")>=0;
+    return "<span"+(bad?' class="bad"':"")+">"+esc(s.label||k)+" · "+esc(s.result||"?")+(s.date?" · "+esc(s.date):"")+"</span>";
+  });
+  el.innerHTML="<b>Stores</b> "+(bits.join(" &nbsp;&#183;&nbsp; ")||"nothing recorded");
+  el.classList.remove("hidden");
+}
 
 function movesTable(rows, kind){
   if(!rows||!rows.length) return '<div class="basis">None between the two snapshots.</div>';
@@ -84,12 +263,24 @@ function movesTable(rows, kind){
   return `<table>${head}${body}</table>`;
 }
 
+function loadSeries(ap){
+  // the two chart series and the store freshness line; failure here is named in the
+  // cards rather than sinking the tables that already loaded
+  fetch("/api/watch/series?airport="+ap).then(r=>r.json()).then(d=>{
+    drawSeats(d.seats); drawMonthly(d.monthly); renderFresh(d.freshness);
+  }).catch(e=>{
+    $("#chSeats").innerHTML='<div class="basis">series failed: '+esc(e.message||e)+"</div>";
+    $("#chMonthly").innerHTML='<div class="basis">series failed: '+esc(e.message||e)+"</div>";
+  });
+}
+
 function load(){
   clearErr();
   const ap=($("#ap").value||"").trim().toUpperCase();
   if(ap.length!==3){ err("enter a three-letter airport code"); return; }
   const b=$("#load"); b.disabled=true; b.textContent="Loading…";
   const q=new URLSearchParams({airport:ap}); const c=($("#comp").value||"").trim(); if(c) q.set("competitors",c);
+  loadSeries(ap);
   fetch("/api/watch?"+q).then(r=>r.json()).then(d=>{
     if(!d.ok){ err(d.error||"watch failed"); return; }
     $("#out").classList.remove("hidden");
@@ -104,8 +295,9 @@ function load(){
       $("#tComp").innerHTML=comps.map(c=>{
         const m=d.competitors[c];
         return `<h3 style="margin-top:10px">${esc(c)}</h3>`+
+          (m.error?`<div class="basis">${esc(m.error)}</div>`:
           `<div class="basis">New</div>`+movesTable(m.new)+
-          `<div class="basis">Dropped</div>`+movesTable(m.dropped);
+          `<div class="basis">Dropped</div>`+movesTable(m.dropped));
       }).join("");
     }
     const dem=d.demand||{};

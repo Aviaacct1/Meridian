@@ -266,8 +266,13 @@
               <select id="ctype"><option value="FSC">Full service</option><option value="LCC">Low cost</option><option value="ULCC">Ultra low cost</option></select></div>
             <div class="fld" style="grid-column:span 2"><label>Aircraft <span id="fleetNote" style="font-family:var(--sans);font-size:8.5px;letter-spacing:.06em;color:var(--brass-deep);font-weight:600"></span></label><select id="aircraft"></select></div>
             <div class="fld" style="grid-column:span 2"><label>Freq / week</label><input id="freq" type="number" min="1" max="35" placeholder="blank = optimise"></div>
-            <div class="fld" style="grid-column:span 2"><label>Schedule</label>
-              <select id="season"><option value="">Unselected (optimise)</option><option value="annual">Year-round</option><option value="summer">Summer (S)</option><option value="winter">Winter (W)</option></select></div>
+            <!-- SEASON, not "Schedule": this box picks the season the run totals over, and the
+                 old name sent three acceptance runs to seasonal totals read against annual pass
+                 marks before anyone saw why (ACCEPTANCE-CLOSE, 15 August). Unselected lets the
+                 optimiser choose, and a seasonal run reports SEASON totals, which the headline
+                 and slider now state. -->
+            <div class="fld" style="grid-column:span 2"><label>Season</label>
+              <select id="season" title="Which part of the year the run totals over. A summer or winter choice returns that season's totals, not annual figures; the headline states which."><option value="">Unselected (optimiser picks)</option><option value="annual">Year-round</option><option value="summer">Summer (S)</option><option value="winter">Winter (W)</option></select></div>
             <!-- CHOSEN, NOT TYPED, for the same reason as the curfew: a client asking for a
                  specific departure should not be able to introduce a format error into the run.
                  Blank still means optimise. Quarter-hours, because that is the resolution the
@@ -922,8 +927,14 @@ function readSlider(pts){
            : `  ·  point to point ${fmt(Math.round(p2p_ew*2))}`+
              `  ·  connecting feed ${fmt(Math.round(conn_ew*2))}`)+
     (lf!==null?`  ·  load factor ${(lf*100).toFixed(1)}%`:""));
+  // SEASON AND YEAR ON THE SLIDER LINE (the label batch): the reader comparing this
+  // figure with a pass mark or a published total needs its year and its span stated
+  // where the figure is, not recalled from the form above.
+  const _sm=(STATE.season&&STATE.season.mode)||"annual";
+  const _span=_sm==="annual"?"a year":`the ${_sm} season (${(STATE.season&&STATE.season.weeks)||"?"} weeks): season totals, not annual`;
   setTxt("curveReadNote",
-    "Two-way, passengers a year. Derived from the curve and this run's own carried figures, so "+
+    "Two-way passengers over "+_span+(STATE.fy?", at forecast year "+STATE.fy:"")+
+    ". Derived from the curve and this run's own carried figures, so "+
     "these are the engine's numbers rather than an interpolation, and they reconcile with the "+
     "headline above."+
     (bound ? "  AT THIS DEPARTURE THE AIRCRAFT FILLS, so the total is the ceiling and the split "+
@@ -1162,7 +1173,21 @@ function render(d){
   })();
   $("#ctxpill").innerHTML="OAG week <b>"+(d.week||"-")+"</b> · Sabre <b>"+(d.year||"-")+"</b>";
   STATE.sabreYear=d.year||STATE.sabreYear||2025;
-  $("#basis").textContent=`Demand from Sabre ${d.year} O&D and OAG schedules week ${d.week}. Steady-state estimate; the Expert view lets you project to a future start year.`;
+  // SEASON AND YEAR ON THE HEADLINE (the label batch, 15 August). Three acceptance runs
+  // were read as failures because a seasonal total sat under a headline that never said
+  // season, against annual pass marks. The two facts a number needs to be compared with
+  // anything are its year and the part of the year it totals over, so they are stated
+  // here and again on the slider line, next to the numbers rather than in a tooltip.
+  STATE.fy=(d.schedule&&d.schedule.forecast_year)||d.year;
+  (function(){
+    const _sm=(d.season&&d.season.mode)||"annual";
+    const _yr=(STATE.fy&&STATE.fy!==d.year)
+      ?`Forecast year ${STATE.fy}, grown from the Sabre ${d.year} base`
+      :`Steady state at the Sabre ${d.year} base`;
+    const _se=(_sm==="annual")?"year-round figures"
+      :`${_sm} season figures (${(d.season&&d.season.weeks)||"?"} weeks): season totals, not annual`;
+    $("#basis").textContent=`Demand from Sabre ${d.year} O&D and OAG schedules week ${d.week}. ${_yr}; ${_se}.`;
+  })();
   // Confidence band moved to the Track Record tab; the forecast summary shows only the new-market provenance flag.
   if(d.confidence && d.confidence.modelled){ $("#basis").textContent += "  New-market route: forecast is modelled from comparable launches, not a measured market."; }
   // The objective changed on 8 August from maximum profit to passengers at the planning load factor,
@@ -1214,7 +1239,9 @@ function render(d){
   const _cf=Math.max(_tot-_ptp,0);                                              // total-preserving: PtP + Connecting = Total, on the carried basis
   const kpis=[
     ["Addressable market", fmt(dem.natural*2), `Two way; each way ${fmt(dem.natural)} · ${d.dest.city} catchment`],
-    ["Total forecast", fmt(_tot*2), `Two way; each way ${fmt(_tot)}, incl. feed`],
+    ["Total forecast", fmt(_tot*2), `Two way; each way ${fmt(_tot)}, incl. feed · `+
+      ((STATE.fy&&STATE.fy!==d.year)?`forecast ${STATE.fy}`:`${d.year} steady state`)+
+      (((d.season&&d.season.mode)||"annual")!=="annual"?` · ${d.season.mode} season totals`:"")],
     ["Point-to-point", fmt(_ptp*2), `Two way; each way ${fmt(_ptp)} · captured from the ${fmt(dem.natural)} local market`],
     ["Connecting feed", fmt(_cf*2), _cf>0 ? `Two way; each way ${fmt(_cf)} · carried onto and off the network` : "Point-to-point carrier"],
   ];
