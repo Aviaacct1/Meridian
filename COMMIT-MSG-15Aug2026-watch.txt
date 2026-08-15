@@ -1,0 +1,33 @@
+Route Watch and the Observatory briefing: the monitoring option's skeleton
+
+The +5k monitoring tier from the 15 August pricing note, version one, honest
+about its basis on every block.
+
+- app/route_watch.py: capacity moves at an airport (new, dropped, changed
+  services at >=10%, out and in, competitors beside them), latest weekly OAG
+  snapshot against the nearest year-earlier snapshot, chosen by DATE not
+  string order (the OAG-WEEK trap); the gap is reported when it is not a
+  clean year. Demand trend by Sabre vintage, two-way, with the
+  SOURCE-YEAR-2021 caveat in the basis line. Every block states that the
+  store is a static extract, not a live feed: continuous weeks are a data
+  subscription decision. Known-answer tested on a synthetic store: new /
+  dropped / changed classify exactly, monthly-form labels are ignored.
+- app/news_brief.py: five curated news items for the airport's route
+  development team via the existing Claude research pipeline. One live call
+  per airport per day, cached under LOCAL_CACHE's parent (never the repo);
+  an item without a source and URL is dropped rather than shown; a missing
+  API key refuses clearly instead of rendering an empty panel.
+- app/cortex_watch.html + /watch page, /api/watch and /api/briefing in
+  cortex_app; Route Watch added to the dashboard nav.
+- _db_paths: the stale C:\Avia literal fallback (pre-git Dev PC folder,
+  exists on no current machine) now falls back to config's per-machine
+  store paths; the env vars still win. Same stale-default shape the review
+  closed elsewhere.
+
+Post-pull check (workstation): open /watch, load a real airport, confirm
+the two snapshot labels read sensibly and the demand vintages match the
+airport profile. The briefing button needs ANTHROPIC_API_KEY and costs one
+research call per airport per day.
+
+Files: app/route_watch.py, app/news_brief.py, app/cortex_watch.html,
+app/cortex_app.py, app/cortex_dashboard.html

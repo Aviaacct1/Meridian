@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Observatory · Meridian - Route Watch</title>
+<style>
+  /* The Observatory palette, matching the dashboard family. */
+  :root{
+    --paper:#F6F3EC; --screen:#FAF8F3; --card:#FFFFFF; --line:#E3DED2;
+    --text:#26313B; --body:#3A444E; --muted:#6E6A5E; --accent:#B8860B;
+    --sans:"Helvetica Neue",Arial,sans-serif; --serif:Georgia,"Times New Roman",serif;
+    --mono:"SF Mono",Consolas,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--serif);background:var(--screen);color:var(--text);font-size:14.5px;line-height:1.5;padding:28px 34px;max-width:1180px;margin:0 auto}
+  h1{font-size:24px;font-weight:500}
+  .strap{font-family:var(--sans);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin:2px 0 18px}
+  .bar{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:14px}
+  .fld label{display:block;font-family:var(--sans);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+  .fld input{font-family:var(--mono);font-size:13px;padding:7px 9px;border:1px solid var(--line);border-radius:5px;background:var(--card);width:150px}
+  button{font-family:var(--sans);font-size:12.5px;font-weight:600;padding:8px 16px;border:1px solid var(--line);border-radius:6px;background:var(--text);color:#F4F1EA;cursor:pointer}
+  button.ghost{background:var(--card);color:var(--text)}
+  button[disabled]{opacity:.5;cursor:default}
+  .basis{font-family:var(--sans);font-size:10.5px;color:var(--muted);margin:6px 0 18px;line-height:1.55}
+  .warn{border:1px solid #c0392b;background:#fdf0ee;color:#7b241c;border-radius:6px;padding:10px 12px;font-family:var(--sans);font-size:12.5px;margin:10px 0}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:14px 16px}
+  .card h3{font-family:var(--sans);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+  table{width:100%;border-collapse:collapse;font-family:var(--sans);font-size:12px}
+  th{font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-align:left;padding:4px 6px;border-bottom:1px solid var(--line)}
+  td{padding:4px 6px;border-bottom:1px solid var(--line);color:var(--body)}
+  td.num{font-family:var(--mono);text-align:right}
+  .tag{display:inline-block;font-size:9px;letter-spacing:.08em;padding:1px 6px;border-radius:8px;border:1px solid var(--line);color:var(--muted)}
+  .brief-item{padding:9px 0;border-bottom:1px solid var(--line)}
+  .brief-item b{font-family:var(--sans);font-size:13px}
+  .brief-item .why{font-size:12.5px;color:var(--body);margin:2px 0}
+  .brief-item .src{font-family:var(--sans);font-size:10.5px;color:var(--muted)}
+  .hidden{display:none}
+  .full{grid-column:span 2}
+  a.back{font-family:var(--sans);font-size:11px;color:var(--muted);text-decoration:none}
+</style>
+</head>
+<body>
+  <a class="back" href="/">&#8592; Dashboard</a>
+  <h1>Route Watch</h1>
+  <div class="strap">Capacity moves, demand trend and the day's briefing, for one airport</div>
+
+  <div class="bar">
+    <div class="fld"><label>Airport (IATA)</label><input id="ap" placeholder="e.g. SJC" maxlength="3"></div>
+    <div class="fld"><label>Competitor airports, comma separated</label><input id="comp" placeholder="e.g. SFO,OAK" style="width:220px"></div>
+    <button id="load">Load watch</button>
+    <button id="briefBtn" class="ghost" title="One live research call per airport per day; cached after that.">Briefing</button>
+  </div>
+  <div id="err" class="warn hidden"></div>
+  <div id="basis" class="basis"></div>
+
+  <div id="out" class="grid hidden">
+    <div class="card"><h3 id="hNew">New services</h3><div id="tNew"></div></div>
+    <div class="card"><h3>Dropped services</h3><div id="tDrop"></div></div>
+    <div class="card full"><h3>Changed frequency or capacity (&#8805;10%)</h3><div id="tChg"></div></div>
+    <div class="card full hidden" id="compCard"><h3>Competitor moves</h3><div id="tComp"></div></div>
+    <div class="card full"><h3>Demand trend</h3><div id="tDem"></div><div id="demBasis" class="basis"></div></div>
+    <div class="card full hidden" id="briefCard"><h3>The Observatory briefing</h3><div id="tBrief"></div><div id="briefBasis" class="basis"></div></div>
+  </div>
+
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmt=n=>Number(n||0).toLocaleString("en-GB");
+function err(m){ const e=$("#err"); e.textContent=m; e.classList.remove("hidden"); }
+function clearErr(){ $("#err").classList.add("hidden"); }
+
+function movesTable(rows, kind){
+  if(!rows||!rows.length) return '<div class="basis">None between the two snapshots.</div>';
+  const chg = kind==="chg";
+  const head = chg ? "<tr><th>Carrier</th><th>Airport</th><th>Dir</th><th>Freq was &#8594; is</th><th>Weekly seats was &#8594; is</th></tr>"
+                   : "<tr><th>Carrier</th><th>Airport</th><th>Dir</th><th>Weekly freq</th><th>Weekly seats</th></tr>";
+  const body = rows.map(r=> chg
+    ? `<tr><td>${esc(r.carrier)}</td><td>${esc(r.airport)}</td><td>${esc(r.direction)}</td><td class="num">${r.freq[0]} &#8594; ${r.freq[1]}</td><td class="num">${fmt(r.seats[0])} &#8594; ${fmt(r.seats[1])}</td></tr>`
+    : `<tr><td>${esc(r.carrier)}</td><td>${esc(r.airport)}</td><td>${esc(r.direction)}</td><td class="num">${r.weekly_freq??""}</td><td class="num">${r.weekly_seats!=null?fmt(r.weekly_seats):""}</td></tr>`).join("");
+  return `<table>${head}${body}</table>`;
+}
+
+function load(){
+  clearErr();
+  const ap=($("#ap").value||"").trim().toUpperCase();
+  if(ap.length!==3){ err("enter a three-letter airport code"); return; }
+  const b=$("#load"); b.disabled=true; b.textContent="Loading…";
+  const q=new URLSearchParams({airport:ap}); const c=($("#comp").value||"").trim(); if(c) q.set("competitors",c);
+  fetch("/api/watch?"+q).then(r=>r.json()).then(d=>{
+    if(!d.ok){ err(d.error||"watch failed"); return; }
+    $("#out").classList.remove("hidden");
+    $("#basis").textContent=d.basis+(d.vintage_note?("  NOTE: "+d.vintage_note+".")  :"");
+    $("#hNew").textContent="New services at "+ap+" ("+d.prior_week+" &#8594; "+d.week+")".replace(/&#8594;/,"→");
+    $("#tNew").innerHTML=movesTable(d.moves.new);
+    $("#tDrop").innerHTML=movesTable(d.moves.dropped);
+    $("#tChg").innerHTML=movesTable(d.moves.changed,"chg");
+    const comps=Object.keys(d.competitors||{});
+    $("#compCard").classList.toggle("hidden",!comps.length);
+    if(comps.length){
+      $("#tComp").innerHTML=comps.map(c=>{
+        const m=d.competitors[c];
+        return `<h3 style="margin-top:10px">${esc(c)}</h3>`+
+          `<div class="basis">New</div>`+movesTable(m.new)+
+          `<div class="basis">Dropped</div>`+movesTable(m.dropped);
+      }).join("");
+    }
+    const dem=d.demand||{};
+    if(dem.ok && dem.series && dem.series.length){
+      $("#tDem").innerHTML="<table><tr><th>Sabre vintage</th><th>Two-way O&amp;D passengers</th></tr>"+
+        dem.series.map(s=>`<tr><td>${s.year}</td><td class="num">${fmt(s.pax)}</td></tr>`).join("")+"</table>";
+      $("#demBasis").textContent=dem.basis||"";
+    } else {
+      $("#tDem").innerHTML='<div class="basis">'+esc(dem.error||"no demand series")+"</div>";
+    }
+  }).catch(e=>err(e.message||e)).finally(()=>{ b.disabled=false; b.textContent="Load watch"; });
+}
+
+function briefing(){
+  clearErr();
+  const ap=($("#ap").value||"").trim().toUpperCase();
+  if(ap.length!==3){ err("enter a three-letter airport code"); return; }
+  const b=$("#briefBtn"); b.disabled=true; b.textContent="Curating…";
+  fetch("/api/briefing?airport="+ap).then(r=>r.json()).then(d=>{
+    $("#briefCard").classList.remove("hidden");
+    if(!d.ok){ $("#tBrief").innerHTML='<div class="basis">'+esc(d.error)+"</div>"; $("#briefBasis").textContent=""; return; }
+    $("#tBrief").innerHTML=(d.items||[]).map(i=>
+      `<div class="brief-item"><b>${esc(i.headline)}</b><div class="why">${esc(i.why||"")}</div>`+
+      `<div class="src">${esc(i.source)} &#183; ${esc(i.date||"")} &#183; <a href="${esc(i.url)}" target="_blank" rel="noopener">source</a></div></div>`).join("")
+      || '<div class="basis">Nothing sourced today.</div>';
+    $("#briefBasis").textContent=(d.basis||"")+(d.cached?"  Served from today's cache.":"");
+  }).catch(e=>err(e.message||e)).finally(()=>{ b.disabled=false; b.textContent="Briefing"; });
+}
+
+$("#load").onclick=load;
+$("#briefBtn").onclick=briefing;
+$("#ap").addEventListener("keydown",e=>{ if(e.key==="Enter") load(); });
+</script>
+</body>
+</html>

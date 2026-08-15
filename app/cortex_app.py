@@ -37,6 +37,7 @@ DASH = os.path.join(HERE, "cortex_dashboard.html")
 CATCH = os.path.join(HERE, "cortex_catchment.html")
 HELP = os.path.join(HERE, "cortex_help.html")
 ECON = os.path.join(HERE, "cortex_economics.html")
+WATCH = os.path.join(HERE, "cortex_watch.html")
 
 
 def _latest_served_index():
@@ -363,8 +364,16 @@ STIM_BY_TYPE = {"FSC": 1.15, "LCC": 1.35, "ULCC": 1.80, "REGIONAL": 1.15, "CHART
 
 
 def _db_paths():
-    return (os.environ.get("AVIA_SABRE", r"C:\Avia\sabre.duckdb"),
-            os.environ.get("AVIA_OAG", r"C:\Avia\oag.duckdb"))
+    # The literal C:\Avia fallback was the pre-git Dev PC data folder, which exists on no
+    # current machine; config resolves the stores per machine and the env vars still win.
+    # Same stale-default shape the 15 August review closed elsewhere.
+    try:
+        import config as _CFG
+        _sab, _oag = str(_CFG.SABRE_DUCKDB), str(_CFG.OAG_DUCKDB)
+    except Exception:
+        _sab, _oag = r"C:\Avia\sabre.duckdb", r"C:\Avia\oag.duckdb"
+    return (os.environ.get("AVIA_SABRE", _sab),
+            os.environ.get("AVIA_OAG", _oag))
 
 
 def resolve_oag_week(con, want=None):
@@ -1662,6 +1671,41 @@ def catchment_page():
     if os.path.exists(CATCH):
         return open(CATCH, encoding="utf-8").read()
     return "<h1>Catchment</h1><p>cortex_catchment.html not found.</p>"
+
+
+@app.get("/watch", response_class=HTMLResponse)
+def watch_page():
+    if os.path.exists(WATCH):
+        return open(WATCH, encoding="utf-8").read()
+    return "<h1>Route Watch</h1><p>cortex_watch.html not found.</p>"
+
+
+@app.get("/api/watch")
+def api_watch(airport: str, competitors: str = ""):
+    """The monitoring view: capacity moves and the demand trend, vintage-labelled.
+    Static-extract basis; route_watch states it on every block."""
+    import route_watch as RW
+    sabre_db, oag_db = _db_paths()
+    comp = [c.strip() for c in (competitors or "").split(",") if c.strip()]
+    try:
+        out = RW.capacity_moves(oag_db, airport, comp)
+    except Exception as e:
+        return JSONResponse({"ok": False, "error": "watch failed: %s" % e}, status_code=500)
+    try:
+        out["demand"] = RW.demand_trend(sabre_db, airport)
+    except Exception as e:
+        # The demand block is independent of the capacity block; a failure here is named
+        # in its own slot rather than sinking the page.
+        out["demand"] = {"ok": False, "error": str(e)}
+    return JSONResponse(out)
+
+
+@app.get("/api/briefing")
+def api_briefing(airport: str, city: str = "", country: str = "", force: int = 0):
+    """The Observatory briefing: one live research call per airport per day, cached."""
+    import news_brief as NB
+    return JSONResponse(NB.brief(airport, city or None, country or None,
+                                 force=bool(force)))
 
 
 @app.get("/help", response_class=HTMLResponse)
