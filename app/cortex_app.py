@@ -993,23 +993,24 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
             dep_basis = ("optimised for this airline's connections" if dep_mins is not None
                          else f"NOT OPTIMISED, placeholder 11:00 - {(feed_opt or {}).get('error', 'no result')}")
         if dep_mins is not None:
-            # THE FEED LEVEL. route_feed line 261 is captured = pax x k x qshare, so k multiplies the
-            # whole connecting capture. It was hardcoded at 1.0 here and nowhere else, which made the
-            # level invisible and untestable: no caller, no case file and no API route could move it.
+            # THE LEVEL AND THE TIMING ARE DIFFERENT JOBS, SPLIT 15 AUGUST 2026 ON THE PAIRED
+            # SWEEP (John's decision; K-SWEEP-DECIDED in the log). The six-arm paired sweep on
+            # the pinned set measured the V2 QSI feed unable to beat the V1 flat feed on the
+            # connecting leg at ANY k (within +/-20%: 6.0-8.3% across a 16.7x range of k,
+            # V1 control 8.2%, median 1.01), and the tool's own pre-registered rule fired: a
+            # level that cannot beat the control is a feed not earning its place. So:
             #
-            # It is exposed because the level the live path runs and the level the back-test measured
-            # are NOT THE SAME NUMBER. backtest.py --qsi-k defaults to 0.06 and route_feed falls back
-            # to 0.06 when the key is absent, so QSI-FEED-CLEAN of 12 August graded a feed running at
-            # 6% of the QSI share. LEVEL-VS-SHAPE measured that same arm as still under-reading actual
-            # connecting traffic by a median 1.62x, which puts the level that reaches outturn near
-            # 0.10. Whether 1.0 here is on that scale is NOT established: the arm read its boards from
-            # the pin wave cache at the route's actual flown time, this path reads OagBoards at the
-            # optimiser's chosen time, and two different board sources need not return a comparable
-            # qshare. That is the measurement this parameter exists to make.
+            #   LEVEL:  V1 flat capture, the model every accuracy claim was measured on,
+            #           carries the forecast numbers. qsi_feed stays FALSE for feed_side.
+            #   TIMING: the QSI schedule-quality model keeps the departure optimiser, the
+            #           curfew cost and the bank analysis (optimise_departure above never
+            #           read this flag), because only it can see a clock, and a uniform
+            #           level multiplier cannot move an argmax.
             #
-            # DEFAULT IS 1.0, so every existing call, the frozen baseline cases and the SJC-TPE ladder
-            # return exactly what they returned before. Nothing here moves a published figure.
-            feed_cfg.update({"qsi_feed": True, "dep_time_mins": int(dep_mins),
+            # ROLLBACK IS ONE SETTING, no code: $env:AVIA_FEED_LEVEL = "qsi" restores the
+            # V2 level at qsi_k exactly as it ran before this change.
+            _lvl_qsi = os.environ.get("AVIA_FEED_LEVEL", "v1").strip().lower() == "qsi"
+            feed_cfg.update({"qsi_feed": bool(_lvl_qsi), "dep_time_mins": int(dep_mins),
                              "flying_mins": int(bmin), "route_freq": freq,
                              "route_origin": home, "qsi_k": float(qsi_k)})
             # Set only when named. route_feed line 407 reads qsi_k_behind with qsi_k as the fallback,
@@ -1295,13 +1296,20 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
                         "qsi_k_behind": float(qsi_k_behind) if qsi_k_behind is not None else float(qsi_k),
                         "basis": ("default" if (qsi_k == 1.0 and qsi_k_behind is None) else "caller"),
                         "back_test_k": 0.06,
+                        # THE LEVEL/TIMING SPLIT of 15 August: which model carried the
+                        # NUMBERS. "v1" is the decision default (the calibrated flat feed,
+                        # the model the accuracy evidence was measured on); "qsi" only when
+                        # AVIA_FEED_LEVEL=qsi restores the old behaviour. Timing is always
+                        # the QSI schedule-quality model and is reported by dep_basis.
+                        "level_engine": ("qsi" if feed_cfg.get("qsi_feed") else "v1"),
+                        "timing_engine": "qsi schedule quality",
                         # THE BASIS THAT RAN, not the basis that was asked for. A feed side
                         # that threw fell back to the V1 flat feed with only a counter that
                         # nothing on this path read, so the payload claimed a QSI run at k
                         # after the engine had run something else. Found 15 August.
                         "basis_ran": ("crashed" if r.get("feed_error")
                                       else ("v1_fallback" if feed_cfg.get("_qsi_fallbacks")
-                                            else "qsi")),
+                                            else ("qsi" if feed_cfg.get("qsi_feed") else "v1"))),
                         "fallbacks": feed_cfg.get("_qsi_fallbacks", 0),
                         "fallback_error": feed_cfg.get("_qsi_fallback_err"),
                         "board_read_fails": feed_cfg.get("_board_read_fails", 0),

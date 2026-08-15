@@ -1,0 +1,28 @@
+The level and the timing are different jobs: V2 parked as level, V1 carries
+
+John's decision on the paired k sweep (K-SWEEP-RESULT, K-SWEEP-DECIDED in
+the log). Six arms, 2,987 routes paired, no arm short. The connecting-leg
+grade is flat (6.0-8.3% within 20%) across a 16.7x range of k and the V1
+control (8.2%, median 1.01) beats or ties every V2 arm, so the tool's own
+pre-registered rule fired: V2 does not earn the level. The total-based
+table's monotone improvement with k is the compensation pattern predicted
+in advance and is not a basis for choosing k.
+
+- LEVEL: V1 flat capture carries the forecast numbers. This aligns the
+  product with the feed model every accuracy claim was measured on and
+  closes the evidence/product arm mismatch in the evidence's favour.
+- TIMING: the QSI schedule-quality model keeps the departure optimiser,
+  curfew cost and bank analysis (that path never read the level flag;
+  a uniform multiplier cannot move an argmax).
+- ROLLBACK: $env:AVIA_FEED_LEVEL = "qsi" restores the V2 level at qsi_k
+  exactly as before, one setting, no code.
+- Payload: feed_level gains level_engine / timing_engine; basis_ran says
+  v1 when v1 ran by decision.
+
+Acceptance test on the workstation after pull: SJC-TPE CI A359 2028 with
+the curfew should optimise to 4-5x weekly (the historic result and the
+2025 analyst's neighbourhood), not 10x. John's hand-tuned k=0.26 and the
+back-test's best cell (0.235) agree; the V1 level should land the same
+place by a third route.
+
+Files: app/cortex_app.py, bt2/bt2_experiments.log
