@@ -33,49 +33,60 @@ def _con(db):
     return duckdb.connect(db, read_only=True)
 
 
-def _weekly_labels(con, airport=None):
-    """The YYYY-MM-DD week labels, as dates, ascending. Other label forms excluded.
+def _labels(con, airport=None):
+    """The airport's snapshot labels by form: weekly YYYY-MM-DD and monthly YYYY-MM,
+    each as (date, label) ascending. Half-month and half-year label forms are excluded
+    on purpose; they belong to their own spine and must never mingle with these.
 
-    airport, when given, restricts to weeks that actually CONTAIN that airport: with
-    weekly REGIONAL pulls (John's cadence decision, 15 August), the newest week in the
-    store may cover one region only, and picking it globally would compare an airport
-    against a snapshot that never held it and report every service as dropped."""
+    airport, when given, restricts to labels that actually CONTAIN that airport: with
+    REGIONAL pulls (Jess's monthly template, one file per region), the newest label in
+    the store may cover one region only, and picking it globally would compare an
+    airport against a snapshot that never held it and report every service as dropped."""
     if airport:
         rows = con.execute(
             "SELECT DISTINCT week FROM oag WHERE dep_airport = ? OR arr_airport = ?",
             [airport, airport]).fetchall()
     else:
         rows = con.execute("SELECT DISTINCT week FROM oag").fetchall()
-    out = []
+    weekly, monthly = [], []
     for (w,) in rows:
         w = str(w or "").strip()
-        if len(w) == 10:
-            try:
-                out.append((_dt.date.fromisoformat(w), w))
-            except ValueError:
-                continue
-    return sorted(out)
+        try:
+            if len(w) == 10:
+                weekly.append((_dt.date.fromisoformat(w), w))
+            elif len(w) == 7:
+                monthly.append((_dt.date(int(w[:4]), int(w[5:7]), 1), w))
+        except ValueError:
+            continue
+    return sorted(weekly), sorted(monthly)
 
 
 def pick_weeks(con, airport=None):
-    """(current_label, prior_label, gap_note). Current = latest weekly snapshot holding
-    the airport; prior = the snapshot nearest 364 days before it. The gap is REPORTED
-    rather than assumed healthy: a store with only two adjacent weeks returns them and
-    says so."""
-    weeks = _weekly_labels(con, airport)
-    if not weeks:
-        return None, None, "no weekly-form snapshots in the store"
-    cur_d, cur = weeks[-1]
-    target = cur_d - _dt.timedelta(days=364)
-    prior_d, prior = min(weeks[:-1] or weeks, key=lambda t: abs((t[0] - target).days))
+    """(current_label, prior_label, gap_note, form). Weekly snapshots are preferred
+    where the airport has them; otherwise the monthly spine, which is what Jess's
+    regional template actually produces (established from the Egnyte Data Store on
+    15 August: <Region> <Mon> <YYYY>.xlsx, monthly, seven regions). Current = the
+    latest label holding the airport; prior = the label nearest one year before it.
+    The gap is REPORTED rather than assumed healthy."""
+    weekly, monthly = _labels(con, airport)
+    form, labels = ("weekly", weekly) if len(weekly) >= 2 else ("monthly", monthly)
+    if not labels:
+        return None, None, "no weekly or monthly snapshots hold this airport", None
+    if len(labels) == 1:
+        return labels[0][1], labels[0][1], "only one snapshot holds this airport; no comparison possible", form
+    cur_d, cur = labels[-1]
+    target = (cur_d - _dt.timedelta(days=364)) if form == "weekly" else \
+             _dt.date(cur_d.year - 1, cur_d.month, 1)
+    prior_d, prior = min(labels[:-1], key=lambda t: abs((t[0] - target).days))
     gap = abs((prior_d - target).days)
     note = None
-    if prior == cur:
-        note = "only one weekly snapshot is loaded; no comparison possible"
-    elif gap > 42:
+    if form == "weekly" and gap > 42:
         note = ("nearest prior snapshot is %s, %d days from a clean year-on-year; read "
                 "the deltas as indicative" % (prior, gap))
-    return cur, prior, note
+    elif form == "monthly" and gap > 62:
+        note = ("nearest prior month is %s, not the same month a year earlier; seasonal "
+                "differences are in the deltas" % prior)
+    return cur, prior, note, form
 
 
 def _svc_filter(con):
@@ -115,7 +126,7 @@ def capacity_moves(db, airport, competitors=None):
     airport = (airport or "").strip().upper()
     con = _con(db)
     try:
-        cur, prior, note = pick_weeks(con, airport)
+        cur, prior, note, form = pick_weeks(con, airport)
         if not cur or prior == cur:
             return {"ok": False, "error": note or "no comparable snapshots"}
         svc = _svc_filter(con)
@@ -146,8 +157,9 @@ def capacity_moves(db, airport, competitors=None):
                     "changed": sorted(changed, key=lambda r: -(r["seats"][1] or 0))[:40]}
 
         out = {"ok": True, "airport": airport, "week": cur, "prior_week": prior,
-               "basis": ("OAG scheduled passenger service, weekly snapshot %s against %s. "
-                         "Static extract, not a live feed." % (cur, prior)),
+               "label_form": form,
+               "basis": ("OAG scheduled passenger service, %s snapshot %s against %s. "
+                         "Static extract, not a live feed." % (form, cur, prior)),
                "moves": one(airport), "competitors": {}}
         if note:
             out["vintage_note"] = note
@@ -157,7 +169,8 @@ def capacity_moves(db, airport, competitors=None):
                 continue
             # A competitor in a region the chosen snapshot does not cover must say so,
             # not report its every service as dropped.
-            c_weeks = {w for _, w in _weekly_labels(con, c)}
+            _cw, _cm = _labels(con, c)
+            c_weeks = {w for _, w in (_cw if form == "weekly" else _cm)}
             if cur not in c_weeks:
                 out["competitors"][c] = {"error": "not covered by snapshot %s; its region "
                                                   "may not be in this pull" % cur}
