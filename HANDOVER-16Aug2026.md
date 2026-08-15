@@ -111,9 +111,19 @@ API keys) so the Watch briefing works.
 ## The week to 27 August (John's deadline: full working model, then holiday; six-analyst
 ## beta while away; possibly Bologna or Bristol as a friendly airport)
 
-1. Acceptance run + the two small checks (above). TODAY.
-2. Watch visual layer (Job 1). 1-2 days.
-3. Cloudflare + password + API key (Job 2). 0.5 day once the hostname is named.
+1. ~~Acceptance run + the two small checks.~~ DONE 15 Aug late night, PASSED (see the
+   rewritten section above). Still open from the checks: contract field count, canonical
+   store root, the label batch.
+2. Watch visual layer (Job 1). 1-2 days. NEXT.
+3. ~~Cloudflare + password + API key (Job 2).~~ DONE 15 Aug late night, built live in
+   John's dashboard: meridian.aviacortex.com -> workstation:8010 and
+   atlas.aviacortex.com -> workstation:8000 on the ask-avia (workstation) tunnel, both
+   behind Access apps sharing the reusable "meridian" email policy (seven addresses)
+   with One-time PIN enabled; verified end to end from the Dev PC (OTP -> Observatory
+   sign-in). globalforecast retired: Public Bypass app deleted, route and DNS removed.
+   ANTHROPIC_API_KEY set on the workstation. REMAINING: John confirms the origin gate
+   (setx QSI_PASSWORD + QSI_DEMO_ENTRY=0, restart, console lines; a WRONG password must
+   be rejected), and optionally renames the tunnel to "workstation".
 4. Forecast pack Job 2 corrections (HANDOVER-15Aug2026.md carries the list: slide-32
    table columns incl. pre-stimulation forecast-year demand, disclaimer naming The
    Aviation Observatory, airport-code columns, images via SlotResolver, catchment map
