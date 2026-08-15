@@ -867,7 +867,15 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
     # 2025 loaded the default output is 2026 rather than 2025. An explicit growth/growth_years from
     # the caller still wins, so every existing call is unchanged.
     base_year = int(ctx["year"] or 0)
-    fy = int(forecast_year) if forecast_year else (base_year + 1 if base_year else None)
+    # THE DEFAULT FORECAST YEAR IS THE NEXT FULL CALENDAR YEAR (John's ruling, 15 August 2026:
+    # mid 2026, the default answer is 2027, not the data year plus one). The base year still sets
+    # the growth span, so Sabre 2025 to a 2027 default is two years of growth, and the growth
+    # weights run from that span. A base year fresher than the calendar keeps the old rule via
+    # max(). An explicit forecast_year from the caller wins unchanged; typing the base year gives
+    # steady state, which is the zero-growth-years path.
+    import datetime as _dty
+    fy = (int(forecast_year) if forecast_year
+          else (max(base_year + 1, _dty.date.today().year + 1) if base_year else None))
     growth_basis = "set by the caller"
     if fy and base_year and not growth_years:
         growth_years = max(0, fy - base_year)
@@ -1404,10 +1412,17 @@ def api_basis():
     """
     ctx = _live_ctx()
     base = int(ctx.get("year") or 0)
+    # The default is the NEXT FULL CALENDAR YEAR (John's ruling, 15 August 2026), not the data
+    # year plus one: mid 2026 on a Sabre 2025 base, the default answer is 2027, grown over the
+    # two-year span. max() keeps the old rule if the base ever runs ahead of the calendar. The
+    # year list still starts at base + 1 so the near years stay offered, and the base year itself
+    # is offered first as the steady-state choice.
+    import datetime as _dty
+    _dfy = max(base + 1, _dty.date.today().year + 1) if base else None
     return JSONResponse({"ok": bool(base), "sabre_year": base, "oag_week": ctx.get("week"),
                          "oag_week_basis": ctx.get("week_basis"),
-                         "default_forecast_year": (base + 1) if base else None,
-                         "years": [base + i for i in range(1, 11)] if base else []})
+                         "default_forecast_year": _dfy,
+                         "years": [base + i for i in range(0, 11)] if base else []})
 
 
 @app.get("/api/fleet")

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""
+r"""
 Avia Solutions - Sabre store directionality check, 15 August 2026.
 ==================================================================
 WHY THIS EXISTS. The SJC-TPE acceptance run reads a catchment O&D market of
