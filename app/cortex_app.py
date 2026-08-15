@@ -1754,6 +1754,20 @@ def api_watch(airport: str, competitors: str = ""):
             # The demand block is independent of the capacity block; a failure here is
             # named in its own slot rather than sinking the page.
             dem = {"ok": False, "error": str(e)}
+    # BOTH BASES, ALWAYS (John's ruling, 15 August): US airports speak in departing
+    # passengers, the rest of the world in two-way, and a page read by both audiences
+    # states both. One column is measured, the other derived by the factor of two and
+    # marked as derived on the page, per the data-integrity rule.
+    if dem and dem.get("ok"):
+        _is_dot = "T-100" in (dem.get("basis") or "")
+        dem["source_label"] = "US DOT T-100" if _is_dot else "Sabre O&D"
+        dem["measured"] = "departing" if _is_dot else "twoway"
+        for _s in dem.get("series") or []:
+            _p = _s.get("pax") or 0
+            if _is_dot:
+                _s["pax_departing"], _s["pax_twoway"] = _p, round(_p * 2)
+            else:
+                _s["pax_twoway"], _s["pax_departing"] = _p, round(_p / 2)
     out["demand"] = dem
     return JSONResponse(out)
 

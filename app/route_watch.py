@@ -33,6 +33,24 @@ def _con(db):
     return duckdb.connect(db, read_only=True)
 
 
+def pretty_label(label):
+    """A snapshot label for HUMAN text: '25 May 2026' or 'July 2026' (house style,
+    DD Month YYYY, no leading zero). ISO stays in machine contexts (payload fields,
+    manifests, the mono provenance rail) where the brand guidelines want it. John's
+    ruling, 15 August: a heading is for people, and three continents read this page."""
+    label = str(label or "").strip()
+    try:
+        if len(label) == 10:
+            d = _dt.date.fromisoformat(label)
+            return "%d %s %d" % (d.day, d.strftime("%B"), d.year)
+        if len(label) == 7:
+            return "%s %d" % (_dt.date(int(label[:4]), int(label[5:7]), 1).strftime("%B"),
+                              int(label[:4]))
+    except ValueError:
+        pass
+    return label
+
+
 def _labels(con, airport=None):
     """The airport's snapshot labels by form: weekly YYYY-MM-DD and monthly YYYY-MM,
     each as (date, label) ascending. Half-month and half-year label forms are excluded
@@ -157,9 +175,11 @@ def capacity_moves(db, airport, competitors=None):
                     "changed": sorted(changed, key=lambda r: -(r["seats"][1] or 0))[:40]}
 
         out = {"ok": True, "airport": airport, "week": cur, "prior_week": prior,
+               "week_display": pretty_label(cur), "prior_week_display": pretty_label(prior),
                "label_form": form,
                "basis": ("OAG scheduled passenger service, %s snapshot %s against %s. "
-                         "Static extract, not a live feed." % (form, cur, prior)),
+                         "Static extract, not a live feed."
+                         % (form, pretty_label(cur), pretty_label(prior))),
                "moves": one(airport), "competitors": {}}
         if note:
             out["vintage_note"] = note
@@ -172,8 +192,9 @@ def capacity_moves(db, airport, competitors=None):
             _cw, _cm = _labels(con, c)
             c_weeks = {w for _, w in (_cw if form == "weekly" else _cm)}
             if cur not in c_weeks:
-                out["competitors"][c] = {"error": "not covered by snapshot %s; its region "
-                                                  "may not be in this pull" % cur}
+                out["competitors"][c] = {"error": "not covered by the snapshot of %s; its "
+                                                  "region may not be in this pull"
+                                                  % pretty_label(cur)}
             else:
                 out["competitors"][c] = one(c)
         return out

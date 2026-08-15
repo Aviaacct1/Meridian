@@ -94,7 +94,7 @@ function load(){
     if(!d.ok){ err(d.error||"watch failed"); return; }
     $("#out").classList.remove("hidden");
     $("#basis").textContent=d.basis+(d.vintage_note?("  NOTE: "+d.vintage_note+".")  :"");
-    $("#hNew").textContent="New services at "+ap+" ("+d.prior_week+" → "+d.week+")";
+    $("#hNew").textContent="New services at "+ap+" ("+(d.prior_week_display||d.prior_week)+" → "+(d.week_display||d.week)+")";
     $("#tNew").innerHTML=movesTable(d.moves.new);
     $("#tDrop").innerHTML=movesTable(d.moves.dropped);
     $("#tChg").innerHTML=movesTable(d.moves.changed,"chg");
@@ -110,9 +110,18 @@ function load(){
     }
     const dem=d.demand||{};
     if(dem.ok && dem.series && dem.series.length){
-      $("#tDem").innerHTML="<table><tr><th>Sabre vintage</th><th>Two-way O&amp;D passengers</th></tr>"+
-        dem.series.map(s=>`<tr><td>${s.year}</td><td class="num">${fmt(s.pax)}</td></tr>`).join("")+"</table>";
-      $("#demBasis").textContent=dem.basis||"";
+      // Both bases, always: US airports speak departing, everyone else two-way. The
+      // header names the SOURCE that answered (the hard-coded "Sabre vintage" over a
+      // DOT series was caught by John on the first real page). The derived column is
+      // marked with a tilde; only one of the two was measured.
+      const meas=dem.measured||"twoway";
+      const mk=(v,isMeas)=>(isMeas?"":"~ ")+fmt(v);
+      $("#tDem").innerHTML="<table><tr><th>"+esc(dem.source_label||"Vintage")+" vintage</th>"+
+        "<th>Departing passengers</th><th>Two-way passengers</th></tr>"+
+        dem.series.map(s=>`<tr><td>${s.year}</td>`+
+          `<td class="num">${mk(s.pax_departing, meas==="departing")}</td>`+
+          `<td class="num">${mk(s.pax_twoway, meas==="twoway")}</td></tr>`).join("")+"</table>";
+      $("#demBasis").textContent=(dem.basis||"")+"  ~ marks the derived basis (factor of two); the other column is measured.";
     } else {
       $("#tDem").innerHTML='<div class="basis">'+esc(dem.error||"no demand series")+"</div>";
     }

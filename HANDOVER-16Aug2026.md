@@ -72,6 +72,19 @@ ticks, the Inter provenance rail under every figure with source/units/period/met
   as available; label the vintage.
 - Serve as a new `/api/watch/series?airport=` endpoint; draw inline SVG in
   cortex_watch.html in the house grammar (the dashboard's curve code is the pattern).
+- STANDING PRODUCT RULING (John, 15 August, applies to EVERY demand figure including
+  these charts): US airports speak in DEPARTING passengers, the rest of the world in
+  TWO-WAY. Show both bases everywhere, the measured one plain, the derived one marked ~
+  with the factor stated. Already implemented on the Watch demand table; carry it into
+  the charts and anywhere else a passenger total appears.
+- SECOND STANDING RULING (John, 15 August): dates in HUMAN text spell out as
+  DD Month YYYY ("25 May 2026"), because readers span three continents; ISO YYYY-MM-DD
+  stays in machine contexts only (payload fields, manifests, the mono provenance rail,
+  where the brand guidelines want it). route_watch.pretty_label() is the helper; use it
+  on every label a person reads, including chart axes and titles.
+- Also verify on a real airport that the demand table's passenger NUMBERS render; on
+  John's 15 August screenshots the year rows showed but the figures were not visible,
+  which is either a cropped screenshot or a rendering defect. One look settles it.
 - Watch page also owed: a "store freshness" line reading refresh_status.json (the
   refresh_pickup wrapper writes it), so September's unwatched test is visible.
 
