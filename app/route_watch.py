@@ -33,9 +33,19 @@ def _con(db):
     return duckdb.connect(db, read_only=True)
 
 
-def _weekly_labels(con):
-    """The YYYY-MM-DD week labels, as dates, ascending. Other label forms excluded."""
-    rows = con.execute("SELECT DISTINCT week FROM oag").fetchall()
+def _weekly_labels(con, airport=None):
+    """The YYYY-MM-DD week labels, as dates, ascending. Other label forms excluded.
+
+    airport, when given, restricts to weeks that actually CONTAIN that airport: with
+    weekly REGIONAL pulls (John's cadence decision, 15 August), the newest week in the
+    store may cover one region only, and picking it globally would compare an airport
+    against a snapshot that never held it and report every service as dropped."""
+    if airport:
+        rows = con.execute(
+            "SELECT DISTINCT week FROM oag WHERE dep_airport = ? OR arr_airport = ?",
+            [airport, airport]).fetchall()
+    else:
+        rows = con.execute("SELECT DISTINCT week FROM oag").fetchall()
     out = []
     for (w,) in rows:
         w = str(w or "").strip()
@@ -47,11 +57,12 @@ def _weekly_labels(con):
     return sorted(out)
 
 
-def pick_weeks(con):
-    """(current_label, prior_label, gap_note). Current = latest weekly snapshot; prior =
-    the snapshot nearest 364 days before it. The gap is REPORTED rather than assumed
-    healthy: a store with only two adjacent weeks returns them and says so."""
-    weeks = _weekly_labels(con)
+def pick_weeks(con, airport=None):
+    """(current_label, prior_label, gap_note). Current = latest weekly snapshot holding
+    the airport; prior = the snapshot nearest 364 days before it. The gap is REPORTED
+    rather than assumed healthy: a store with only two adjacent weeks returns them and
+    says so."""
+    weeks = _weekly_labels(con, airport)
     if not weeks:
         return None, None, "no weekly-form snapshots in the store"
     cur_d, cur = weeks[-1]
@@ -104,7 +115,7 @@ def capacity_moves(db, airport, competitors=None):
     airport = (airport or "").strip().upper()
     con = _con(db)
     try:
-        cur, prior, note = pick_weeks(con)
+        cur, prior, note = pick_weeks(con, airport)
         if not cur or prior == cur:
             return {"ok": False, "error": note or "no comparable snapshots"}
         svc = _svc_filter(con)
@@ -142,7 +153,15 @@ def capacity_moves(db, airport, competitors=None):
             out["vintage_note"] = note
         for c in (competitors or [])[:4]:
             c = (c or "").strip().upper()
-            if c and c != airport:
+            if not c or c == airport:
+                continue
+            # A competitor in a region the chosen snapshot does not cover must say so,
+            # not report its every service as dropped.
+            c_weeks = {w for _, w in _weekly_labels(con, c)}
+            if cur not in c_weeks:
+                out["competitors"][c] = {"error": "not covered by snapshot %s; its region "
+                                                  "may not be in this pull" % cur}
+            else:
                 out["competitors"][c] = one(c)
         return out
     finally:
