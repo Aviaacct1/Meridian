@@ -1,0 +1,18 @@
+Route Watch: John's first-look corrections (names, DOT trend, arrow bug)
+
+- Carrier and airport names ride beside the IATA codes, muted, codes kept
+  (airline_names + airportsdata; presentation-only enrichment, so its
+  failure may be quiet per the 6 July rule).
+- The demand trend at a US airport now reads US DOT T-100 departing
+  onboard actuals (scheduled service, the read_t100 basis note carried
+  onto the page) and falls back to Sabre O&D elsewhere, labelled either
+  way. A US airport page no longer leads with a GDS sample.
+- The raw &#8594; entity in the New-services heading is fixed.
+
+Deferred to the next session, agreed scope rather than omission: the
+visual layer (paired daily-seats chart this year against last, monthly
+traffic vs last year, drawn to the Observatory data-visualisation
+standard with the provenance rail), and Cloudflare tunnel access for the
+six testers.
+
+Files: app/cortex_app.py, app/cortex_watch.html

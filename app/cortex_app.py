@@ -1699,12 +1699,62 @@ def api_watch(airport: str, competitors: str = ""):
         out = RW.capacity_moves(oag_db, airport, comp)
     except Exception as e:
         return JSONResponse({"ok": False, "error": "watch failed: %s" % e}, status_code=500)
+    # NAMES BESIDE CODES (John, 15 August): a page for a route development team still
+    # speaks IATA, but the name saves the mental lookup. Presentation only, so its
+    # failure may be quiet, per the 6 July rule: a fallback that changes the answer must
+    # never be silent; one that degrades presentation may be.
+    _ap = None
+    if out.get("ok"):
+        try:
+            import airline_names as AN
+            import airportsdata
+            _ap = airportsdata.load("IATA")
+
+            def _enrich(mv):
+                for lst in (mv.get("new"), mv.get("dropped"), mv.get("changed")):
+                    for _r in (lst or []):
+                        _r["carrier_name"] = AN.AIRLINES.get((_r.get("carrier") or "").upper(), "")
+                        _rec = _ap.get((_r.get("airport") or "").upper())
+                        _r["airport_name"] = ((_rec.get("city") or _rec.get("name") or "")
+                                              if _rec else "")
+            _enrich(out.get("moves") or {})
+            for _cv in (out.get("competitors") or {}).values():
+                if isinstance(_cv, dict) and "error" not in _cv:
+                    _enrich(_cv)
+        except Exception:
+            pass
+    # DEMAND TREND: a US airport reads the DOT census, not a GDS sample (John's standing
+    # US ruling, restated on the Watch page 15 August). T-100 departing onboard
+    # passengers where the store holds the airport; Sabre O&D otherwise, labelled.
+    _ctry = None
     try:
-        out["demand"] = RW.demand_trend(sabre_db, airport)
-    except Exception as e:
-        # The demand block is independent of the capacity block; a failure here is named
-        # in its own slot rather than sinking the page.
-        out["demand"] = {"ok": False, "error": str(e)}
+        _ctry = ((_ap or {}).get((airport or "").strip().upper()) or {}).get("country")
+    except Exception:
+        _ctry = None
+    dem = None
+    if _ctry == "US":
+        try:
+            import airport_profile as APF
+            import config as CFG
+            _t100 = str(CFG.T100_DUCKDB)
+            if os.path.exists(_t100):
+                _series, _note = APF.read_t100(_t100, airport)
+                if _series:
+                    dem = {"ok": True, "airport": (airport or "").upper(),
+                           "series": [{"year": int(y), "pax": round(float(p))}
+                                      for y, p in _series],
+                           "basis": "US DOT T-100, departing onboard passengers at the "
+                                    "airport, actuals; " + (_note or "")}
+        except Exception:
+            dem = None   # fall through to Sabre, which labels itself
+    if dem is None:
+        try:
+            dem = RW.demand_trend(sabre_db, airport)
+        except Exception as e:
+            # The demand block is independent of the capacity block; a failure here is
+            # named in its own slot rather than sinking the page.
+            dem = {"ok": False, "error": str(e)}
+    out["demand"] = dem
     return JSONResponse(out)
 
 

@@ -74,11 +74,13 @@ function clearErr(){ $("#err").classList.add("hidden"); }
 function movesTable(rows, kind){
   if(!rows||!rows.length) return '<div class="basis">None between the two snapshots.</div>';
   const chg = kind==="chg";
-  const head = chg ? "<tr><th>Carrier</th><th>Airport</th><th>Dir</th><th>Freq was &#8594; is</th><th>Weekly seats was &#8594; is</th></tr>"
+  // Codes stay (this audience speaks IATA); the name rides beside them, muted.
+  const cell=(code,name)=>`${esc(code)}${name?` <span style="color:var(--muted)">${esc(name)}</span>`:""}`;
+  const head = chg ? "<tr><th>Carrier</th><th>Airport</th><th>Dir</th><th>Freq was → is</th><th>Weekly seats was → is</th></tr>"
                    : "<tr><th>Carrier</th><th>Airport</th><th>Dir</th><th>Weekly freq</th><th>Weekly seats</th></tr>";
   const body = rows.map(r=> chg
-    ? `<tr><td>${esc(r.carrier)}</td><td>${esc(r.airport)}</td><td>${esc(r.direction)}</td><td class="num">${r.freq[0]} &#8594; ${r.freq[1]}</td><td class="num">${fmt(r.seats[0])} &#8594; ${fmt(r.seats[1])}</td></tr>`
-    : `<tr><td>${esc(r.carrier)}</td><td>${esc(r.airport)}</td><td>${esc(r.direction)}</td><td class="num">${r.weekly_freq??""}</td><td class="num">${r.weekly_seats!=null?fmt(r.weekly_seats):""}</td></tr>`).join("");
+    ? `<tr><td>${cell(r.carrier,r.carrier_name)}</td><td>${cell(r.airport,r.airport_name)}</td><td>${esc(r.direction)}</td><td class="num">${r.freq[0]} → ${r.freq[1]}</td><td class="num">${fmt(r.seats[0])} → ${fmt(r.seats[1])}</td></tr>`
+    : `<tr><td>${cell(r.carrier,r.carrier_name)}</td><td>${cell(r.airport,r.airport_name)}</td><td>${esc(r.direction)}</td><td class="num">${r.weekly_freq??""}</td><td class="num">${r.weekly_seats!=null?fmt(r.weekly_seats):""}</td></tr>`).join("");
   return `<table>${head}${body}</table>`;
 }
 
@@ -92,7 +94,7 @@ function load(){
     if(!d.ok){ err(d.error||"watch failed"); return; }
     $("#out").classList.remove("hidden");
     $("#basis").textContent=d.basis+(d.vintage_note?("  NOTE: "+d.vintage_note+".")  :"");
-    $("#hNew").textContent="New services at "+ap+" ("+d.prior_week+" &#8594; "+d.week+")".replace(/&#8594;/,"→");
+    $("#hNew").textContent="New services at "+ap+" ("+d.prior_week+" → "+d.week+")";
     $("#tNew").innerHTML=movesTable(d.moves.new);
     $("#tDrop").innerHTML=movesTable(d.moves.dropped);
     $("#tChg").innerHTML=movesTable(d.moves.changed,"chg");
