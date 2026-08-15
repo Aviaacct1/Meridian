@@ -13,8 +13,8 @@ up and ingests unwatched (September holiday test), OAG API later removes the man
   (folder id 43639896-1747-45fc-b347-9a60f74ed389). Also holds Jess's extraction
   scripts (`Data Extraction*.py`) and `Sabre_header_check.txt`, the field template the
   format validator should be built against.
-- `/Shared/Company Data/18 Products/Data/OAG/` exists and is EMPTY. Either adopt it as
-  the pickup folder for new OAG drops or ignore it; decide with Jess, do not guess.
+- `/Shared/Company Data/18 Products/Data/OAG/` exists and is EMPTY. DECIDED (John,
+  15 August): the pickup point stays `QSI/Data Store`, where Jess already delivers.
 
 ## Naming, as it actually is
 

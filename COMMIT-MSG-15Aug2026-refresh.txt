@@ -1,0 +1,29 @@
+Refresh pickup core: the plan decided provably, nothing moved by default
+
+app/refresh_pickup.py: scans QSI/Data Store (the confirmed pickup point),
+classifies every file against the naming as it actually is (case variants
+canonicalised, half-month files held for their own spine, Sabre variant
+tokens ignored in favour of the year), checks the manifest, and prints a
+plan: ingest, reingest (drop-and-reload of a re-arrived label, never a
+second copy), confirm (Sabre annual loads run by hand, a 7GB world load is
+deliberate), hold (THE VINTAGE GUARD: a Sabre year still in progress must
+not advance the engine's base year), refuse, skip. --plan-only is the
+default; --execute runs OAG monthly loads through oag_ingest_periodic one
+file at a time, updates the manifest only on success, and writes a status
+line per source to refresh_status.json for the Watch page's store-freshness
+line. Re-ingest additionally needs --allow-reingest: a changed historical
+file is a decision, not an accident.
+
+app/test_refresh_pickup.py: seven known-answer tests using the real names
+from the 15 August Egnyte survey, no store needed. All pass.
+
+Also: REFRESH-PIPELINE-NOTE-15Aug2026.md records John's decision that the
+pickup point stays QSI/Data Store.
+
+Not yet wired (deliberately, workstation session): the scheduled task, the
+portal stop/start bracket with db_registry.reset(), the Watch page freshness
+line, Sabre monthly template (needs designing with Jess before any monthly
+Sabre file exists).
+
+Files: app/refresh_pickup.py, app/test_refresh_pickup.py,
+REFRESH-PIPELINE-NOTE-15Aug2026.md
