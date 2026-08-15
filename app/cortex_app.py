@@ -376,6 +376,56 @@ def _db_paths():
             os.environ.get("AVIA_OAG", _oag))
 
 
+# THE MARKET GROWTH RATE IS THE PRE-COVID TREND (John's ruling, 15 August 2026). The old measure,
+# base year against two years back, read the post-COVID rebound as a rate: on SJC-TPE it measured
+# 21.8%, hit the 20% clamp, and compounded a market that is still BELOW its 2019 peak to 22% above
+# that peak within two years. Recovery is not growth. The trend is measured 2015 to 2019, the last
+# clean pre-COVID span the store holds on a like-for-like basis.
+#
+# MEASURED ON THE TWO-WAY PAIR SUM, deliberately: the store holds 2015 in POO form and 2016-2019
+# in ND form (sabre_directionality_check, 15 August), and a one-direction read means a different
+# thing under each convention (the true-origin share against a flat half). The two-way sum of both
+# directions is identical under either convention, so the trend does not inherit a 15% step from a
+# file format change in 2016.
+_TREND_Y0, _TREND_Y1 = 2015, 2019
+_TREND_MIN_PAX = 2000          # below this a pair-year is noise, not a trend observation
+_TREND_CLAMP = (-0.05, 0.15)   # structural trend, generously clamped against thin-market noise
+_TREND_CACHE = {}
+
+
+def market_trend(sabre_db, competing, dest_codes):
+    """The pre-COVID market trend for one catchment pair, or None with the reason.
+
+    Returns (cagr, note). Cached per (competing, dest_codes): the optimiser's frequency sweep
+    calls the forecast repeatedly and this must not add four store scans to every arm."""
+    import sabre_catchment as SC
+    key = (str(sabre_db), tuple(sorted(competing or ())), tuple(sorted(dest_codes or ())))
+    if key in _TREND_CACHE:
+        return _TREND_CACHE[key]
+    out = (None, "trend not measured")
+    try:
+        def _two_way(year):
+            a = SC.destination_market_split(sabre_db, competing, dest_codes, year=year)[1] or 0.0
+            b = SC.destination_market_split(sabre_db, dest_codes, competing, year=year)[1] or 0.0
+            return float(a) + float(b)
+        m0, m1 = _two_way(_TREND_Y0), _two_way(_TREND_Y1)
+        if m0 < _TREND_MIN_PAX or m1 < _TREND_MIN_PAX:
+            out = (None, "pair too thin in %d/%d to carry a trend (%.0f / %.0f two-way)"
+                   % (_TREND_Y0, _TREND_Y1, m0, m1))
+        else:
+            cagr = (m1 / m0) ** (1.0 / (_TREND_Y1 - _TREND_Y0)) - 1.0
+            clamped = max(min(cagr, _TREND_CLAMP[1]), _TREND_CLAMP[0])
+            note = ("pre-COVID trend %d-%d, %.1f%%/yr on the two-way pair"
+                    % (_TREND_Y0, _TREND_Y1, clamped * 100))
+            if clamped != cagr:
+                note += " (measured %.1f%%, clamped)" % (cagr * 100)
+            out = (clamped, note)
+    except Exception as e:
+        out = (None, "trend measurement failed (%s: %s)" % (type(e).__name__, e))
+    _TREND_CACHE[key] = out
+    return out
+
+
 def resolve_oag_week(con, want=None):
     """Choose the OAG schedule basis DELIBERATELY, and return (label, n_regions, why).
 
@@ -880,42 +930,32 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
     if fy and base_year and not growth_years:
         growth_years = max(0, fy - base_year)
         if not growth:
-            # The measured market CAGR, same two-year Sabre measure the projection build uses and
-            # the same clamp: a two-year burst is not a sustained rate.
+            # THE RATE IS THE PRE-COVID TREND (market_trend above; John's ruling, 15 August 2026),
+            # replacing the two-year measure that read the post-COVID rebound as growth.
             # A FAILED MEASUREMENT IS NOT A MEASUREMENT. Both fallback paths below used to
             # take 3% and the basis line still said "measured market CAGR", so an assumed
             # rate travelled to the deck wearing a measured label. The flag keeps the label
             # on the same basis as the number. Found in the 15 August review.
-            _growth_measured = True
-            try:
-                _mk = SC.destination_market_split(ctx["sabre_db"], competing, dest_codes, year=base_year)[1] or 0.0
-                _mk2 = SC.destination_market_split(ctx["sabre_db"], competing, dest_codes, year=base_year - 2)[1] or 0.0
-                if _mk and _mk2 > 0:
-                    growth = (float(_mk) / _mk2) ** 0.5 - 1.0
-                else:
-                    growth, _growth_measured = 0.03, False
-            except Exception:
-                growth, _growth_measured = 0.03, False
-            growth = max(min(growth, 0.20), -0.05)
+            _tr, _tr_note = market_trend(ctx["sabre_db"], competing, dest_codes)
+            _growth_measured = _tr is not None
+            growth = _tr if _tr is not None else 0.03
             # TAPER, and use the SAME taper the projection build uses further down rather than a
-            # second rule. A measured two-year CAGR on this route reads 20%, which is the clamp
-            # ceiling and a post-COVID recovery burst rather than a sustained rate; compounded flat
-            # over five years it would give 2.5x and an absurd forecast. The projection holds the
-            # measured rate for two years then decays it to a 3% long run, which is the same shape
-            # as the 2025 analyst's own +16% / +7% / +7% build. Two growth rules in one file is how
-            # /api/forecast and /api/optimise came apart twice before.
+            # second rule. The trend still tapers to the 3% long run beyond year two: a strong
+            # pre-COVID market trend held flat for five years over-projects the same way a burst
+            # does, only slower. Same shape as the 2025 analyst's own +16% / +7% / +7% build.
+            # Two growth rules in one file is how /api/forecast and /api/optimise came apart
+            # twice before.
             _cum, _lr = 1.0, 0.03
             for _n in range(1, growth_years + 1):
                 _r = growth if _n <= 2 else max(_lr, growth - (growth - _lr) * (_n - 2) / 3.0)
                 _cum *= (1.0 + _r)
             # Hand the engine the single equivalent rate, since it applies (1+growth)**growth_years.
             growth = (_cum ** (1.0 / growth_years) - 1.0) if growth_years else 0.0
-            growth_basis = ((f"measured market CAGR tapered to a 3% long run: {_cum - 1:+.1%} "
+            growth_basis = ((f"{_tr_note}, tapered to a 3% long run: {_cum - 1:+.1%} "
                              f"over {growth_years} yr from {base_year}")
                             if _growth_measured else
-                            (f"ASSUMED 3% long run, the market CAGR could not be measured "
-                             f"for this market: {_cum - 1:+.1%} over {growth_years} yr "
-                             f"from {base_year}"))
+                            (f"ASSUMED 3% long run ({_tr_note}): {_cum - 1:+.1%} "
+                             f"over {growth_years} yr from {base_year}"))
         else:
             growth_basis = f"{growth:.2%} over {growth_years} yr from {base_year}, rate set by the caller"
     # THE DEPARTURE TIME, and it is an INPUT to the demand rather than a decoration on the output.
@@ -1147,16 +1187,14 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
         cabin_basis = "set by the caller"
     each_way = r["total_demand"]               # unconstrained market demand: drives the multi-year build + spill
     carried_ew = r["carried_forecast"]         # capacity-bound forecast: the headline total, economics, PDEW, band
-    # MULTI-YEAR BUILD: grow demand at the MEASURED market CAGR (dest market this year vs 2 years back),
-    # so a pitch forecasts to the launch year and out ~5 years, not just the current Sabre year. Same
-    # measure the back-test uses. Demand grows; capacity is fixed, so the build shows when a route fills
-    # and when it needs upsizing. Induced routes start at the comparable-launch fill and mature from there.
-    try:
-        _m2 = SC.destination_market_split(ctx["sabre_db"], competing, dest_codes, year=ctx["year"] - 2)[1] or 0.0
-        _cagr = ((float(_mkt) / _m2) ** 0.5 - 1.0) if (_mkt and _m2 > 0) else 0.03
-    except Exception:
-        _cagr = 0.03
-    _cagr = max(min(_cagr, 0.20), -0.05)          # clamp: a measured burst over 2yr isn't a sustained rate
+    # MULTI-YEAR BUILD: grow demand at the PRE-COVID TREND (market_trend; John's ruling, 15 August
+    # 2026, replacing the two-year measure that read the rebound as a rate), so a pitch forecasts
+    # to the launch year and out ~5 years, not just the current Sabre year. ONE rate definition
+    # with the forecast-year growth above, which is the point. Demand grows; capacity is fixed, so
+    # the build shows when a route fills and when it needs upsizing. Induced routes start at the
+    # comparable-launch fill and mature from there.
+    _trc, _ = market_trend(ctx["sabre_db"], competing, dest_codes)
+    _cagr = _trc if _trc is not None else 0.03
     _capf = float(r["annual_capacity"] or 0)
     _build = []
     # TAPER the growth beyond ~2 years toward a long-run trend: a hot short-term CAGR compounded flat over
