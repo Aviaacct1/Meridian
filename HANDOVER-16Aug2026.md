@@ -66,6 +66,23 @@ demand header when it serves T-100, the Schedule box renamed to Season.
 
 ## Job 1: the Watch page visual layer (John: "stunning visuals are a Meridian basic")
 
+SCOPED 15 August in session, so the next session starts at the build, not the reading:
+the daily-seats chart is DEPARTING seats by day of week (John approved; two-way double
+counts a based rotation), basis stated on the chart. days_of_op is a seven-character
+mask (digits 1-7 = operating days) and the store repeats one schedule record per region
+label, so DEDUPE by (carrier, flight_no, dep, arr, dep_time) taking max(mask) BEFORE
+summing seats, the capacity_frame.py fix. T-100 monthly reader: follow read_t100's
+rules (seg table BY NAME, class F only, origin = departing onboard) but GROUP BY month;
+the existing reader is annual. refresh_status.json is {source: {label, result, detail,
+date}} at AVIA_REFRESH_STATUS, default E:\Avia\refresh_status.json. Chart grammar: copy
+cortex_dashboard.html's season plate (registration corner ticks, PAL constants, brass
+observed, ink dashed comparator, direct labels, Newsreader italic annotations) and its
+provRail()/.prov CSS for the rail; John approved bringing the Observatory tokens and
+fonts into cortex_watch.html, which still runs the old Georgia/#B8860B palette. Fold in
+the label batch while in the file: the Watch demand table header must say T-100 when it
+serves T-100 (header is hard-coded "Sabre vintage"), the season/basis labels on the
+dashboard slider line, and rename the dashboard's "Schedule" box to "Season".
+
 Charts to the Observatory data-visualisation standard (brand guidelines v1.1: brass is
 the observed line, ink dashed for comparators, direct labels never legends, registration
 ticks, the Inter provenance rail under every figure with source/units/period/method).
