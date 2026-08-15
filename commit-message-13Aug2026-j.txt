@@ -1,0 +1,48 @@
+The maturation test, and the half-year union behind a switch that is off
+
+NEITHER JOB IS AN OVERNIGHT ONE and my framing of them was wrong. The six capture files in
+bt2_relaxed were written 4 to 5 minutes apart in one sequence on 9 August, 2016 at 17:42
+through 2025 at 18:04, so a cohort is circa 5 minutes and only 2016 and 2017 need
+rebuilding. BLIND-ON-PIN-COHORTS already timed the refit at 14 seconds. Those mtimes are on
+the Dev PC's copy and would be copy times if the folder was robocopied, so timing one cohort
+settles it.
+
+bt2/connecting_maturation.py answers GRADING-YEAR-AS-THE-RULER without an arm. backtest
+--horizons already grades Y+1, Y+2 and Y+3 but on the P2P leg only, so the connecting
+version is two indexed preagg lookups per route with no forecast and no engine. For every
+route the arm graded it reads od_p2p and sector_adj at each horizon, reports connecting as
+sector less pure P2P, and gives one ratio: connecting at Y2 over Y1 on the same route. It
+refuses to run without a preagg store carrying sector_adj rather than full-scanning Sabre
+9,000 times, re-checks that sector never reads below pure P2P on the two years RULER-SOUND
+never looked at, and counts a route only where both horizons are positive.
+
+THE SAMPLE IS THE LIMIT and it is stated before any number is read. Sabre stops at 2025 and
+2020 to 2022 are unusable:
+
+  cohort 2016   Y1 2017, Y2 2018, Y3 2019     all three clean
+  cohort 2017   Y1 2018, Y2 2019, Y3 2020     Y3 dropped, COVID
+  cohort 2018   Y1 2019, Y2 2020, Y3 2021     Y2 and Y3 dropped, COVID
+  cohort 2024   Y1 2025, Y2 2026, Y3 2027     Y2 and Y3 dropped, no Sabre
+
+So the ratio is measurable on 2016 and 2017 only, and the three-point series on 2016 alone.
+The 2024 cohort with its 248 reinstatements cannot be spoken for.
+
+THE HALF-YEAR UNION is built in bt2_capture_core.load_legs, which now takes a list of labels
+and can read the half-year label alongside the monthly one. The date predicate is untouched:
+eff_from and eff_to carry the real dates, so selecting the 15th to the 21st out of a
+six-month label is the same question asked of a larger row set and only the label list grows.
+_half_year_label returns None for anything that is not a plain YYYY-MM inside 2015 to 2017,
+so a single-week label cannot ask for the half-year of a week and 2018 onward cannot be
+widened by accident.
+
+IT IS OFF BY DEFAULT AND THAT IS THE POINT. AVIA_BT2_HALFYEAR=1 turns it on. Turning it on
+changes capa, qcx and legs_n for every route whose pre-launch month falls in 2015 to 2017,
+which is the whole of cohorts 2016 and 2017. It goes on in both chains with a rebuild and a
+re-measure, or in neither. That is ONE-IMPLEMENTATION applied to a switch rather than to a
+function, and DEFAULT-OFF-SWITCHES is the reason to say so out loud.
+
+  bt2/connecting_maturation.py   NEW
+  app/bt2_capture_core.py        load_legs takes a label list; the half-year helper
+  bt2/bt2_experiments.log        3 entries
+
+Avia Solutions Limited. All rights reserved.

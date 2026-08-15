@@ -1,0 +1,38 @@
+Forecast pack: the fifteen pages a forecast run produces on its own
+
+deck/forecast_pack.py. John's ruling of 14 August is one forecast per deck: a
+person runs a forecast, optimises it, settles on one they like, and wants that
+forecast as something sendable. The 40-page Observatory deck needs a research
+pack; this needs only the contract.
+
+The page list is a copy rather than a design. It is the forecast section of
+China Airlines TPE-SJC Forecast 17Sep25.pptx, slides 6, 7 and 32 to 41, which is
+a shape a client has already accepted, with a cover, a disclaimer and a summary
+page in front of it. Cover, disclaimer, summary, competition at both airports,
+the three addressable markets, the traffic forecast table, connecting at the hub,
+connecting at the origin, the methodology divider and its four pages, this
+forecast against the last, and the catchment.
+
+Nothing in it computes a forecast. Every figure is read from the deck contract by
+its own key, and the contract is checked by app/contract_legs_check.py before it
+gets here.
+
+Two pages fail open. Alliance seat share comes from the OAG store and not from
+the contract, so without it that page is dropped: a competitive claim with no
+measurement behind it is worse than no page. The comparison against a previous
+forecast needs a previous contract, and a first run of a pair has none, so it is
+dropped rather than drawn empty.
+
+The summary page carries the basis of the run beside the answer: frequency,
+gauge, seat count and its source, service year, connecting floor setting and the
+departure time basis. All four contract defects corrected earlier today came from
+a figure travelling without its basis.
+
+The schedule page improves on the one it copies. Slide 37 of the 2025 deck says
+the schedule "seeks to mitigate night curfew restrictions at SJC" and states no
+figure, because none was computed. This one carries what the restriction costs.
+
+Smoke tested on a hand-built contract: 13 pages, both conditional pages dropped
+and named. The render path is untested and needs a run on the workstation.
+
+Log: FORECAST-PACK-BUILT.

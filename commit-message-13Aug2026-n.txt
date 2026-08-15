@@ -1,0 +1,52 @@
+Grading basis questions 1 and 2 answered: p2p_carried is not launch_pax
+
+The document said that if they differ, option A carries the same fault as option B and the
+choice collapses. It differs.
+
+FOUR TRANSFORMATIONS, and a client's P2P number passes through all four: captured, the
+uncapped local demand leg; the 87.5% plan cap at route_forecast line 760, which caps P2P and
+connecting together and then pro-rates P2P by carried/total_demand at line 772; the
+connectivity floor at lines 790 to 803; and the payload figure. launch_pax passes through
+none of them, being a count of passengers whose whole journey was the nonstop, at whatever
+load factor the airline achieved.
+
+ON THE FROZEN CASE, SJC-TPE CI A359 306 seats 4x 2028, two-way, every figure already in the
+log and the arithmetic between them reconciling to the passenger:
+
+  captured, uncapped local demand      87,948
+  after the 87.5% plan cap pro-rate    83,408    x0.9484
+  after the connectivity floor         50,068    x0.6003
+  what the client is shown             50,068
+
+So the number a claim measured on launch_pax would describe and the number on the page
+differ by a factor of 1.757.
+
+AND THE CAP COUPLES THE LEGS. It pro-rates the local leg because connecting demand competed
+for the same seats, so a route whose feed is over-large reports a smaller P2P figure with no
+change in the local market at all. RECUT-RESULT measured that feed over-reading by circa ten
+times, so the feed level reaches the local number as well as the connecting one.
+
+QUESTION 2. launch_pax is sum(passengers) where itinerary='NON-STOP' and source_year=L,
+grouped on least/greatest so both directions are summed and not averaged, over the full
+calendar year rather than the months operated, with no cabin, point-of-sale or carrier
+condition. The carrier recorded beside it is picked separately as the largest
+operating_airline by passengers, so it names the busiest operator and not necessarily the
+launching one.
+
+FOUND WHILE ANSWERING IT, and not previously recorded: launch_pax is filtered to NON-STOP
+while base_mkt at line 76 has no itinerary filter at all. The MINBASE and MAXRATIO
+exclusions therefore compare a nonstop-only numerator against an all-itineraries
+denominator, so the 2,000 floor is a lower bar than it reads and the 5x ceiling bites less
+often than a like-for-like ratio would. Neither is wrong provided it is stated, and it is
+stated nowhere. It bears on Task 3.
+
+WHAT IS LEFT TO DECIDE is narrower than v3.0 framed it and it is commercial: re-grade on the
+client's number, publish the claim on a named intermediate, or change what the page shows so
+the claim and the number are the same quantity. The answer document sets out all three. I
+would not start the wiring until one is chosen, because the wiring is where the claim
+attaches.
+
+  GRADING-BASIS-ANSWER-13Aug2026.md   NEW
+  bt2/bt2_experiments.log             4 entries
+
+Avia Solutions Limited. All rights reserved.

@@ -1,0 +1,37 @@
+Both machines agree on every line: the declared baseline, recorded in the runbook
+
+The Dev PC brought to the pin, airportsdata 20260315 to 20260803 and scikit-learn 1.7.2 to
+1.9.0, with numpy holding at 2.3.5 and no downgrade. Both machines now return the same figure
+set on byte-identical data.
+
+  calibrated +-20%                83.2%
+  calibrated +-10%                70.0%
+  blind, route level              60.9%
+  tier A                          88.2%
+  portfolios of 10                87.7%
+  portfolios of 20                93.2%
+  short-haul, domestic or LCC     72.6%
+  long-haul, international, FSC   39.8%
+  sister flag set                 424 of 6,524, having been 428 unpinned
+
+Build: python 3.12.10, sklearn 1.9.0, numpy 2.3.5, scipy 1.18.0, airportsdata 20260803, on
+both DESKTOP-3R7OQVJ and Donatello.
+
+Byte-identical data plus a declared environment now gives byte-identical output including the
+feature count. Anything measured from here is reproducible on either machine, and that has
+never been true before.
+
+The table is written into RUNBOOK-WIRING as the baseline to reproduce before the wiring
+changes anything, with the instruction to stop if it does not come back.
+
+WHAT IT CANNOT YET SAY, and it is the open item for the site rather than the code. The
+published 92 and 86 sit on the mixed basis, 595 routes graded on US DOT DB1B and 5,929 on
+Sabre MIDT per V1.3-MIXED of 9 August. Every figure above is Sabre throughout, and nothing in
+bt2_claimset produces the mixed basis: bt2_lib has no DOT path and the outturn_source column
+V1.3-MIXED describes is not in launch_profile. So the mixed artefacts were made by something
+that has not been identified, and finding it is the prerequisite for any restatement.
+
+  RUNBOOK-WIRING-14Aug2026.md   the baseline table and the mixed-basis caveat
+  bt2/bt2_experiments.log       2 entries
+
+Avia Solutions Limited. All rights reserved.

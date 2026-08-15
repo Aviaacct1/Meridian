@@ -1,0 +1,43 @@
+Pin scikit-learn: the drift since 9 August was the library, proved on two machines
+
+The Dev PC reproduces 9 August exactly on every line. Same artefacts, same sample of 6,524,
+same config, same target, the only difference being the library.
+
+                     calibrated   +-10%   tier A   portfolios of 20   blind route
+  1.7.2, Carte           84.6%    72.4%    87.3%        94.7%            60.9%
+  1.9.0, aviaremote1     83.2%    70.0%    88.2%        93.2%            60.9%
+  9 August record        84.6%    72.4%    87.3%        94.7%            60.9%
+
+So nothing we changed made anything worse, which was the standing instruction, and it is now
+answered by measurement rather than by assurance.
+
+THE PATTERN WAS PREDICTED BEFORE THE RUN AND CONFIRMED BY IT. The blind route figure is
+identical to the decimal on both machines because its config is regularised at minleaf=60
+and l2=5.0. The calibrated pair moves because its config runs minleaf=5 with no l2 and is
+essentially unregularised, so it is sensitive to how a library breaks a tie between equally
+good splits.
+
+CLAIM-ADVICE of 9 August recommended leading on the blind figures because they are
+comparable across samples. This is a second and independent reason: they are also the only
+ones stable across a library version. A calibrated number is a statement about how hard the
+model was allowed to fit its own history and about which release did the fitting.
+
+scikit-learn was not in requirements.txt at all, which is why it came to be installed by hand
+on the workstation. It is now pinned to 1.7.2, the version the published figures were
+measured on, with the two-machine table written into the file beside the pin and the same
+reasoning airportsdata already carries: a library version is an input to a client number and
+belongs beside the store vintage. Changing it means re-measuring the claim set and restating
+the site, in that order.
+
+SMALL AND OPEN. Base strength resolved on 5,855 of 6,524 on both machines, but the sister
+flag was set on 428 rows on the Dev PC and 424 on the workstation. That is feature
+construction in bt2_g12_exp.attach, which runs before any fitting, so the library cannot be
+the cause. Most likely the two E:\Avia\bt2_relaxed copies are not byte-identical, since they
+are different drives on different machines. Worth an md5 of base_strength_*.json and
+metro_ns_*.json on both before the wiring: four routes of feature difference is small, but it
+is not nothing.
+
+  app/requirements.txt      scikit-learn==1.7.2, with the measurement beside it
+  bt2/bt2_experiments.log   4 entries
+
+Avia Solutions Limited. All rights reserved.

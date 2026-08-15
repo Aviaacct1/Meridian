@@ -1,0 +1,51 @@
+The boards are identical, so the feed level gap is real; and a basis error of my own
+
+Three results, and the first is the one that matters.
+
+THE BOARDS AGREE EXACTLY. board_scale_test on 40 pin routes, k held at 1.0 in both calls
+and only the boards object differing: median 1.000, p25 1.000, p75 1.000, min 1.000, max
+1.000. Not one route moved. Hub departure board after dedupe, same week both readers, cache
+median 458 against store median 458. So CacheBoards and OagBoards return the same qshare, k
+is directly comparable across the two paths, and the back-test ran the connecting feed at
+one seventeenth of the shipped level. That was the worse of the two branches and it is the
+one that landed.
+
+THE CONSEQUENCE IS ARITHMETIC, not a new run. k is a pure multiplier, so LEVEL-VS-SHAPE's
+measured median re-levels directly: the QSI feed at k=0.06 needed x1.62 to reach actual
+connecting on the 1,881 routes intersecting the two arms, so at k=1.0 it would over-read
+that quantity by circa 10.3 times on the median route. Against that, FEED-LEVELS has the
+live path at k=1.0 reading 24,080 two-way against the 2025 analyst's 25,999, which is 0.93x.
+Both are real measurements and they cannot both describe one quantity.
+
+Stating the basis of each before anyone reaches for the comparison. The back-test's actual
+connecting is outturn_pax less p2p_outturn, a Sabre-derived residual on routes that
+launched. The analyst's is his own connecting forecast on one route that has not.
+FLOOR-EVIDENCED measured Sabre under-counting transfer traffic at 2.07x on 335 routes
+touching a major Asian hub and 2.50x on 476 long-haul routes, and SJC-TPE is both. So part
+of a ten-fold gap is a known under-count in the grading quantity and the rest is not
+accounted for. This is not resolved and must not be resolved by argument.
+
+THE HALF-YEAR UNION IS THE FIX, measured on two months with the control passing on both.
+Distinct departing flights in load_legs' own 15th-to-21st window:
+
+  2017-08   JNB 24 to 396    CAI 47 to 277    DXB 379 to 632    DOH 216 to 301
+  2016-03   JNB 23 to 431    CAI 43 to 244    DXB 384 to 672    DOH 178 to 356
+
+The control held. TPE 403 monthly, 1 in the half-year, 403 together. LHR 763 monthly, 78 in
+the half-year, 763 together, so the London flights that appear in both are absorbed by
+distinct counting rather than double counted. JNB recovers to 396 against 401 in 2018-08 and
+DXB to 632 against 639, so the recovered world is the right size.
+
+A BASIS ERROR OF MINE, in the tool written this morning to catch basis errors. The
+--coverage table counts distinct flights in the whole label with no date window, so a
+half-year label counts six months of schedule variation while a month counts one month.
+Scoring every label against a single overall best held months against half-years: JNB's
+"best 528" was 2015-H2, which flagged most of 2018 to 2025 as SHORT when those months are
+complete. Within grain, JNB's monthly best is 473 and 2018-08 reads 85% rather than 76%.
+Grains are now scored separately and never against each other. The 2015-2017 monthly labels
+still read 4 to 5% and that finding is untouched.
+
+  app/oag_label_check.py    the share table scored within label grain
+  bt2/bt2_experiments.log   5 entries
+
+Avia Solutions Limited. All rights reserved.

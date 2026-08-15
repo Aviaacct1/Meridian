@@ -1,0 +1,42 @@
+SJC-TPE sits inside the population, the hub effect is mostly haul, and the grading year is next
+
+THE CELL ANSWERS IT. Long haul and a named Asian or Gulf hub, n=70: median 0.235, IQR 0.122
+to 0.628, k needed 0.235, in band 8.6%. It is the best cell in the table on both the level
+and the band, and it is still 4.26 times below the shipped 1.0. Allowing the FLOOR-EVIDENCED
+long-haul 2.50x under-count takes it to 0.587, short by 1.70x. So SJC-TPE sits inside this
+population, not outside it, and the live path agreeing with the 2025 analyst at k=1.0 is not
+explained by the route being an unusual type.
+
+I OVERSTATED SHAPE-CONFIRMED AND AM WITHDRAWING THE STRENGTH OF IT, not its direction.
+Holding haul constant, the hub effect shrinks:
+
+  within long haul    0.235 against 0.192, a factor of 1.22 (n=70 against 379)
+  within short haul   0.118 against 0.068, a factor of 1.74 (n=114 against 1,328)
+  reported marginal   0.181 against 0.090, a factor of 2.01
+
+The marginal figure sits above both conditional ones because the hub group is 38% long haul
+against the non-hub group's 22%, so it carries the mix. FLOOR-EVIDENCED's 2.07x hub and
+2.50x long haul were also separate marginal cuts and carry the same confound. The two agree
+on a quantity they both confound the same way, which is not the independent corroboration I
+claimed this morning. Direction and rough size stand.
+
+THE CANDIDATE THAT IS MATERIAL AND NOT YET MEASURED is GRADE-BASIS arriving on the
+connecting side. Meridian forecasts a maturity year: forecast_year defaults to the base data
+year plus one and every client case runs 2027 or 2028. The arm grades at --offset 1, the
+route's first full year, when an airline has not built or sold its connecting itineraries.
+If connecting traffic matures over two or three years then outturn_pax less p2p_outturn at
+L+1 is systematically short of what a maturity-year forecast should show, and the ruler is
+wrong rather than the feed. Testable in one 45-minute run at --offset 2, and it bears on the
+P2P leg and the published accuracy as much as on the feed.
+
+MY RECOMMENDATION IS NOT TO MOVE k. The spread survives every cut: the best cell puts 8.6%
+of routes within +-20% and Europe and North America put 0.0%, against an IQR spanning a
+factor of seventeen. Changing the level would move every client number, including the
+SJC-TPE figures that reconcile with the analyst, in exchange for re-centring a distribution
+that still does not describe the route in front of you. Settle the grading year first, then
+decide the level, and nothing about the connecting leg changes on a client deliverable until
+both are done.
+
+  bt2/bt2_experiments.log   4 entries
+
+Avia Solutions Limited. All rights reserved.

@@ -1,0 +1,30 @@
+The 163 are rounding, so the maturation result stands unqualified
+
+Every flagged route-year reported a shortfall of median 0, p90 0 and max 0 passengers. So
+sector equals pure P2P to floating point and the route carries no connecting traffic at all.
+That is legitimate, and it is the same case RULER-SOUND found on 635 of 3,072 routes on the
+graded year. Calling it impossible was my label rather than the data. preagg's od_p2p and
+the leg explosion computed here therefore agree, and the maturation figures rest on one
+basis after all.
+
+MATURATION-REFUTED stands unqualified. Connecting-specific growth over the local leg is 2.6%
+at Y2 and 2.9% at Y3, against the 10.2 a maturation explanation would have needed to close
+RECUT-RESULT on its own. The grading year is not why the shipped feed over-reads.
+
+THE COUNT ITSELF IS THE SMALLER FINDING. Two runs on identical inputs, same store and same
+arm CSV, returned 163 and then 166. DuckDB sums in parallel and the order of a float
+addition decides whether sector less P2P lands at exactly zero or a hair below it, so a
+route flips between buckets run to run. That is the unordered-result trap of the
+capture-share bug in a new costume: nothing is wrong with the data and the count is simply
+not a stable quantity.
+
+Fixed with a half-passenger tolerance. Below that is zero connecting traffic and is named as
+such. A real shortfall still reports its size, because thousands would be a basis mismatch
+between the two builds rather than a rounding difference, and that would put the whole
+comparison in question. The summary line now says which of the two it found rather than
+asserting either.
+
+  bt2/connecting_maturation.py   the tolerance and the summary line
+  bt2/bt2_experiments.log        2 entries
+
+Avia Solutions Limited. All rights reserved.

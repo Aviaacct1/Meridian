@@ -1,0 +1,32 @@
+Forecast year defaults to the next full calendar year (John's ruling, 15 Aug)
+
+The 14-15 August forecast-year feature defaulted to base data year plus one,
+which mid 2026 on a Sabre 2025 base produced a 2026 default. John's ruling:
+the default is the next full calendar year, 2027 today, with the growth span
+still measured from the base year (2025 -> 2027 is two years of growth).
+
+Diagnosis behind it, recorded in the session: the SJC-TPE acceptance run read
+a market 1.65x the 11 August figure. Not the store (sabre_directionality_check
+ruled out a directionality shift: 2024 and 2025 are both ND, US-origin share
+57-60%), not the level engine, but the growth build compounding the measured
+two-year CAGR (a post-COVID rebound clamped at 20%) over three years to 2028.
+De-grown, the engine's 7x figure reads 122k two-way, inside the historic band.
+
+Changes:
+- cortex_app.calibrated_forecast: blank forecast_year now defaults to
+  max(base + 1, calendar year + 1). Explicit years win unchanged; typing the
+  base year gives steady state (zero growth years).
+- cortex_app.api_basis: default_forecast_year on the same rule; the year list
+  now offers the base year first as the steady-state choice.
+- cortex_dashboard.html: the year select labels the steady-state option, both
+  year fields' titles and the Expert placeholder state the new default; the
+  stale "steady-state" promise on a blank field is gone.
+- app/sabre_directionality_check.py: raw docstring (SyntaxWarning fix).
+
+Still open, awaiting John's rule: the growth RATE itself. The measured 2023 to
+2025 CAGR reads recovery as growth (the pair is still below its 2019 peak) and
+the 20% clamp lets it compound past the pre-COVID high. Proposed rule in the
+session notes; not changed here.
+
+Files: app/cortex_app.py, app/cortex_dashboard.html,
+       app/sabre_directionality_check.py

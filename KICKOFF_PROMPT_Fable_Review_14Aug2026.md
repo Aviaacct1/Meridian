@@ -15,6 +15,40 @@ is weak and what is dangerous, not what is impressive.
 subordinate to that. Give him a path, ordered, with effort estimates, and be explicit about what can
 ship with a caveat versus what cannot ship at all.
 
+## Access, before you read a line of code
+
+**Cowork attaches the PROJECT folder automatically, `C:\Users\Carte\OneDrive\Documents\Claude\
+Projects\Avia QSI Tool`. THAT IS NOT THE REPO.** It holds handovers and kickoffs and also a STALE
+`app\` copy that predates the current build and looks exactly like a working copy. Do not read it and
+never write to it.
+
+**The repo is `C:\AviaDev`. Ask for it yourself with the folder-access tool before reading anything.**
+
+**The data stores are on the workstation and Cowork cannot mount them.** `E:\Avia` holds
+sabre.duckdb (16GB), oag.duckdb (16GB), db1b.duckdb, db1b_coupons.duckdb, preagg.duckdb, the wave
+cache and turnarounds_2025.json. Anything under `E:` has to be read by a command John runs, so ask for
+the ONE command that gets what you need rather than a series of round trips.
+
+**Two machines, and do not confuse them.** Editing happens on the Dev PC at `C:\AviaDev`. Running
+happens on the workstation at `C:\src\meridian`, data root `E:\Avia`. Code moves only by git push on
+the Dev PC then git pull on the workstation. Never tell John to run something you have just written
+without that step. Label every command block with the machine and put a `cd` in front of every
+command.
+
+**Never run git, not even a read-only `git status`.** It strands `.git\index.lock` on the mount and
+blocks John's commits. Answer provenance questions with `ls`, `md5sum` and by reading files. Hand him
+commit messages as files and he runs every git command himself.
+
+**PowerShell:** `$env:NAME = "value"`, never `set`. ONE-LINE commands, no backtick continuations, and
+avoid nested double quotes inside a `python -c` string: PowerShell strips doubled single quotes before
+Python sees them, which broke three commands on 14 August.
+
+**Do not use the multiple-choice question tool.** It does not render for John. Put questions in the
+body as numbered plain text, with your recommendation named.
+
+**A long-running command needs his say-so.** A back-test arm is 44 minutes; a full sweep is four and a
+half hours; an OAG scan is minutes. Ask before anything over about twenty minutes.
+
 ## What the tool is
 
 Given a city pair, Meridian measures the addressable O&D market from Sabre MIDT, apportions it across

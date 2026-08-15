@@ -1,0 +1,51 @@
+Commit message for the 14 August work. Written by the session, run by John.
+
+BEFORE YOU STAGE ANYTHING: run git status --short on the Dev PC and read it. app/warm_demo.py was
+already modified before this session started and is NOT mine. Stage only the four files named below.
+
+----- commit message starts -----
+
+Optimise: name the carrier even when the client fixes the gauge
+
+cortex_app.api_optimise suppressed airline_iata whenever the client fixed an
+aircraft, which discarded the carrier's own cabin as well as the candidate pool
+it was not being asked for. airline_iata does two jobs in aircraft_select:
+candidates() uses it to build a pool, and only when no explicit fleet is given,
+while select_aircraft reads it a second time into capacity_frame.config_for for
+the configuration that carrier flies the type in. Passing both is safe because
+the explicit fleet keeps precedence for the pool.
+
+Measured effect: a fixed A350-900 for China Airlines was sized on the generic
+table's 336 seats against the 306 the carrier flies, 9.8% more capacity than the
+metal carries, and every figure downstream of the seat count moves with it: the
+load factor the optimiser selects on, the plan cap, the spill and the P&L.
+
+The optimised payload now carries seats and seats_source, so the page states
+whether the seat count came from the carrier's own configuration or from the
+generic type table rather than leaving a reader to assume.
+
+Adds bt2/fixed_gauge_seats_check.py, which reproduces the defect, proves the fix
+moves the seat count to the store's figure, and checks that naming the carrier
+does NOT widen a client-fixed gauge, which is the only way the fix could do harm.
+
+Adds bt2/plan_lf_targets.py for LF-CAP-OPEN: achieved sector load factor per
+launch, cut by carrier type and by haul, with the type cut reported both
+marginally and with haul held. The control runs first and stops the run if a
+material share of launches carry more passengers than the seats flown. Changes
+no engine constant and writes nothing the engine reads.
+
+Log: WEIGHT-IS-A-NULL-TEST, OPTIMISER-MATCHES-THE-MARKET, CAP-IS-THE-CROWDING,
+WEIGHT-AFTER-THE-CAP-INVERTS, CAP-IS-NOT-IN-THE-PUBLISHED-CLAIM,
+CAP-IS-LOAD-BEARING, FIXED-GAUGE-DROPPED-THE-CARRIER, PLAN-LF-TOOL,
+THE-FIT-ALREADY-EXISTS.
+
+----- commit message ends -----
+
+The four files:
+
+  app/cortex_app.py
+  bt2/fixed_gauge_seats_check.py
+  bt2/plan_lf_targets.py
+  bt2/bt2_experiments.log
+
+Avia Solutions Limited. All rights reserved.

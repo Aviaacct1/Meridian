@@ -1,0 +1,40 @@
+Correct the pin: neither machine was compliant, and the published figures were never declared
+
+Measured on both machines. The Dev PC carries airportsdata 20260315, the workstation carries
+20260803, and requirements.txt declares 20260803. So the sister flag difference of 428
+against 424 is explained.
+
+THE CONSEQUENCE IS LARGER THAN THE SYMPTOM. The machine that reproduces 9 August exactly is
+the Dev PC, running airportsdata 20260315 and sklearn 1.7.2. 20260315 is not the declared
+pin: the airportsdata pin was set to 20260803 on 11 August, two days after the 9 August claim
+set was produced. So the published figures describe an environment the repo has never
+declared, and neither machine is compliant with it.
+
+MY PIN OF AN HOUR AGO IS CHANGED, from scikit-learn==1.7.2 to 1.9.0, and the reasoning
+replaced. Pinning to "the version the published figures were measured on" was reasoning from
+an incomplete picture: those figures were also measured on an undeclared airportsdata, so
+chasing them would mean unpinning 20260803 and undoing a deliberate decision.
+
+Pinned to the run host instead. The workstation is where clients are served from, cortex_app
+reads airportsdata 20260803 live, and bt2_g12_exp.metro_map builds the sister feature from
+the same library, so the model's features and the engine's geography must come from one
+release.
+
+CONSEQUENCE, AND IT IS NOT OPTIONAL. The claim set is re-measured once on the declared pair
+and the site restated if the figures move. The 9 August numbers become history produced on an
+undeclared environment, which is what they always were.
+
+THE LESSON, separated from the arithmetic, because John's question was whether anything since
+the back-test made the result worse. The answer is no. No code change moved a figure. Every
+difference found today is an environment difference between two machines that had never been
+compared: two libraries, one pinned and installed on only one host, the other unpinned and
+installed by hand, moving a calibrated pair by 2.4 points and a feature on four routes.
+
+A claim is a measurement plus an environment. The estate already knew that for airportsdata
+and had not applied it to scikit-learn, had not put either on the output, and had never
+checked that two machines matched. All three are now closed.
+
+  app/requirements.txt      scikit-learn==1.9.0, with the reasoning rewritten
+  bt2/bt2_experiments.log   3 entries
+
+Avia Solutions Limited. All rights reserved.

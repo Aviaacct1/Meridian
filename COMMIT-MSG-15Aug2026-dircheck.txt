@@ -1,0 +1,12 @@
+Diagnostic: Sabre store directionality check (read-only)
+
+The SJC-TPE acceptance run reads a market 1.65x the 11 August payload's figure
+with no code change in the market path. destination_market_split takes a
+directionality parameter that market_split never passes, and the store holds
+years in POO or ND form; an airport total is blind to the difference, a
+directional pair read is not. app/sabre_directionality_check.py prints the
+store's contents by year x directionality, the Bay Area <-> Taipei pair both
+directions, and the true-origin split on the pair, so the mechanism is named
+from the data. Read-only, no engine change, no store change.
+
+Files: app/sabre_directionality_check.py

@@ -1,0 +1,50 @@
+Wire the calibrated model into route_forecast: the local leg, and seven rulings
+
+Step 2 of RUNBOOK-WIRING, on the engine side. route_forecast.forecast takes a
+p2p_demand_override which replaces the local demand leg. Nothing calls it yet, so no figure
+moves.
+
+THE THING THE RUNBOOK DID NOT KNOW, found by writing the wiring rather than by planning it.
+Line 587 computes captured = market x share x dshare x stimulation, and that is the right
+place for the model's number, but SEVEN further multipliers are applied to captured between
+there and the plan cap. Each needed a ruling, and each comment in the file states the answer:
+
+  market_factor      a trim learned to correct the QSI capture on large markets
+  airport_capture    a per-airport correction from the engine's own past errors
+  dest_thin_factor   corrects demand "under-allocated BY THE CATCHMENT MODEL"
+  haul_trim          corrects the engine's haul bias, and gcd is a model feature
+  freq_discount      corrects being "over-credited BY THE QSI SHARE"; freq is a feature
+  induced floor      floors demand the engine under-reads on new markets
+  bucket_correct     fitted on TOTAL error across the whole launch history
+
+All seven are corrections to the QSI engine's own error and none of them transfers. BT2 is
+trained on outturn directly, so applying them would be correcting one engine's bias on
+another engine's number. All seven are suppressed when the model answers.
+
+season_share is the only one applied. It is a property of the schedule being flown and the
+model does not contain it.
+
+THE YEAR BASIS, settled explicitly. Line 489 grows market to the forecast year before line
+587, so captured is a forecast-year figure, while BT2 is anchored on base_mkt, the measured
+O&D in the latest full year, so its output is current-year. The override is multiplied by
+(1+growth)**growth_years and by nothing else. No separate maturity factor: connecting_
+maturation measured the local leg at x1.013 from year one to year two and x1.104 to year
+three, and market growth over two years accounts for most of that, so a route-specific ramp
+is not separable from the growth already applied. Both would double count the same ten per
+cent.
+
+THE BUILD LIST IS REWRITTEN WITH THE ARITHMETIC. _bld is the table that goes on a slide, and
+its four QSI steps describe a derivation that did not happen when the model produced the
+local leg. The model path now prints the measured catchment market for context, the model's
+own figure, and the growth carry-forward if there is one: three lines that are true instead
+of four that are not.
+
+ONE COST, RECORDED RATHER THAN WORKED AROUND. bucket_correct multiplies the feed as well as
+captured, so suppressing it also removes the feed's share. Applying half of an old fit to
+half of a new number would be worse. The way back is to refit bucket_correct on whichever
+engine ships.
+
+  app/route_forecast.py     p2p_demand_override, seven guards, the build list
+  bt2/bt2_experiments.log   4 entries
+
+Avia Solutions Limited. All rights reserved.

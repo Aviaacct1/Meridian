@@ -1,0 +1,36 @@
+The report endpoint could not build the agreed SJC-TPE case
+
+/api/report is the deck and workbook path, and its signature took aircraft, freq and
+growth_years and nothing else of what a client case actually turns on. A deck built from it
+for SJC-TPE would have used a generic A21X at 7x weekly, no named partner, no forecast year
+and the default growth taper, which GROWTH-IS-THE-GAP measured at a 20.00% CAGR, the clamp
+ceiling and a post-COVID recovery burst.
+
+The agreed ladder runs a 306-seat A350-900 at 4x with Southwest counted as a partner, at 2027
+or 2028, on post-recovery growth. So the deck and the scenario table would have described the
+same route and disagreed by tens of thousands of passengers, which is worse than having no
+deck.
+
+SIX PARAMETERS ADDED, each one something a client case turns on:
+
+  seats          the carrier's own configuration each way from OAG, not the generic table.
+                 China Airlines flies the A350-900 at 306 against the table's 336
+  partners       codes counted as commercial partners on the connecting feed. A partnership
+                 is a fact about a deal, not a property of a schedule
+  forecast_year  the maturity year the client is shown
+  growth         an explicit market growth path, per John's ruling that client work states
+                 its own rather than taking the default taper
+  split_floor    the connectivity floor; 1 is what ships
+  dep_time       HH:MM or HHMM. Omitted, the optimiser picks the time for the airline
+
+dep_time is parsed by name rather than leniently. The first version stripped every colon, so
+"12:0:0" became "1200" and answered 12:00, and "1:2:3" would have answered 01:23: a malformed
+input producing a plausible time, and a departure time silently wrong by hours moves the whole
+connecting feed. It now takes at most one colon, digits only, hours 0 to 23 and minutes 0 to
+59, and returns a 400 naming what it received. Tested on thirteen forms including 2500, 1265,
+"noon" and the empty string, which correctly means the optimiser chooses.
+
+  app/cortex_app.py         six parameters on /api/report, dep_time validation
+  bt2/bt2_experiments.log   2 entries
+
+Avia Solutions Limited. All rights reserved.

@@ -1,0 +1,7 @@
+Handover: week list updated for the 15 August late session
+
+Items 1 (acceptance, PASSED) and 3 (Cloudflare access, built live in the
+dashboard) marked done with their outcomes; Job 1 (Watch visual layer) marked
+next. Also carries the earlier OWED FIRST rewrite and the log entries commit.
+
+Files: HANDOVER-16Aug2026.md

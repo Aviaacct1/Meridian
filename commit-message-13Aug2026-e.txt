@@ -1,0 +1,40 @@
+The half-year labels are in the store, so test the fallback rather than buy the data
+
+Measured, and it withdraws the reading rather than the finding.
+
+oag_label_check --like 201%-H% returns six labels, each carrying exactly two regions:
+
+  2015-H1  1,410,747 rows      2015-H2  1,522,075
+  2016-H1  1,516,193           2016-H2  1,620,404
+  2017-H1  1,647,641           2017-H2  1,735,757
+
+Five monthly regions plus two half-year regions is seven. The world is complete for 2015 to
+2017 and it is split across two label forms. So REGION-COVERAGE's reading that the store is
+SHORT of intra-African and intra-Gulf flying is withdrawn, nothing needs buying, and nothing
+needs downloading. Handover item 6 is not an Egnyte load.
+
+THE FINDING SURVIVES THE CORRECTION. REGION-CONSEQUENCE said cohorts 2016 and 2017 measured
+capa, qcx and legs_n against a world missing that connectivity, and that is still true,
+because load_legs reads ONE label. On a monthly label it sees five regions. On a half-year
+label it would build "2017-H1-15", which is not a date, and return nothing. The data is
+present and unreachable from either side. The diagnosis changes and the remedy goes from an
+OAG purchase to a query.
+
+WHAT THIS COMMIT ADDS is the fallback tested before it is written into load_legs.
+oag_label_check --month YYYY-MM --coverage IATA,IATA counts distinct departing flights at
+the named airports in load_legs' own 15th-to-21st window on eff_from and eff_to, three
+ways: the monthly label alone, the half-year label alone, and the two together. Distinct
+counting is deliberate, so an overlap between labels is counted once.
+
+The control is inside the test. A monthly-region airport must gain nothing while an African
+or Gulf one is restored to a normal month. If both move, the labels overlap and the union is
+not a clean reconstruction, and we know that before a cohort is rebuilt.
+
+Also fixed: --pairs read a local name that lived in main, so lifting the block into its own
+function left it undefined. It now takes the folder as an argument. Nobody had run --pairs
+since the block moved.
+
+  app/oag_label_check.py    --month, and the --pairs fix
+  bt2/bt2_experiments.log   4 entries
+
+Avia Solutions Limited. All rights reserved.

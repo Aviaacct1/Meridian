@@ -1,0 +1,27 @@
+Unset and set-to-the-default are the same environment
+
+econ_baseline check stopped dead and refused to compare a single field, on a false positive:
+
+  ENVIRONMENT AVIA_FORECAST_ENGINE: captured '', now 'qsi'
+
+The baseline was frozen with the variable unset and the run set it explicitly to qsi, which
+is what unset means, since bt2_forecast line 40 reads
+os.environ.get("AVIA_FORECAST_ENGINE", "qsi"). So the one tool built to prove a switch
+harmless could not do it because the switch had been named.
+
+Fixed with a declared default per variable, normalised on both sides before comparison. Only
+variables with a real default are listed, and the default has to match the code that reads
+it. Tested: unset against qsi is the same, unset against bt2 is still caught, "qsi" against
+"BT2" is still caught, and a variable with no declared default is compared as before.
+
+SEPARATELY, THE SWITCH-OFF RUN IS CLEAN. scenario_runner on all sixteen SJC-TPE cases with
+AVIA_FORECAST_ENGINE=qsi returns the frozen ladder unchanged: 2027 4x 109,764 and 5x 119,306;
+2028 4x 117,448, 5x 127,658 and 6x 137,200, with every capture share as before. The model
+call, the seven suppressions and p2p_demand_override do not reach the default path. The
+wiring is inert until the switch is set, which is what step 3 promised and is now
+demonstrated rather than asserted.
+
+  app/econ_baseline.py      declared defaults in the environment check
+  bt2/bt2_experiments.log   2 entries
+
+Avia Solutions Limited. All rights reserved.

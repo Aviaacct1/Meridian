@@ -1,0 +1,18 @@
+Contract: scale the city rows on the feed sides, not on feed_total
+
+Follows the previous commit. contract_legs_check caught the fix in it on the
+first real run: 15 of 16 contracts passed and the failure was "floor ON as
+shipped", the only case with split_floor true.
+
+When the floor is on, route_forecast line 867 has already scaled the feed detail
+and both feed sides by conn_carried / feed, and it never reassigns feed, so
+demand.feed_total stays the raw pre-floor figure. Scaling the rows by
+connecting_carried / feed_total therefore reapplied a scaling that had already
+happened, and a top-fifteen subtotal of 49% of its leg became 107% of it.
+
+The denominator is now feed_beyond + feed_behind, which is the feed as the rows
+now stand under either setting. The ratio is 1.0 when the engine has done the
+work and the cap ratio when it has not, read off the figures rather than off a
+flag. Tested on both payload shapes.
+
+Log: FLOOR-DOUBLE-SCALED, ANALYST-MEASURED.

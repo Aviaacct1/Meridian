@@ -1,0 +1,26 @@
+The gap report could not fail, so it reported no gaps
+
+The first run said "9 blocks with figures, 0 empty" on all sixteen cases. That is not a clean
+result. _blocks counted a block as full if any one field was populated, so a block carrying
+one field of twenty read as complete, on the one screen whose entire purpose was to show
+where the gaps are.
+
+It also ignored the actionable part. deck_contract writes a sibling _need note against each
+empty field to say why it is empty, which is the list of tables to populate stated in its own
+words, and the report was not reading them at all.
+
+It now reports the fill ratio per block and per case, every missing key by name, and the
+_need note deck_contract gave for each, sorted so the emptiest block comes first.
+
+Checked against the old logic on a contract with one full block and one carrying a single
+field of four. The old version called it fine. The new one reads 1 of 4, names q, r and s,
+and prints the two reasons deck_contract recorded.
+
+Eighth instance today of a check that reported success without testing anything, and the
+fourth of mine. The rule earned earlier still holds: a control that cannot fail is not a
+control.
+
+  app/deck_from_cases.py    fill ratios, named gaps, the _need notes
+  bt2/bt2_experiments.log   2 entries
+
+Avia Solutions Limited. All rights reserved.

@@ -1,0 +1,27 @@
+Pin the demo server's engine to a flag, because the shell was carrying bt2
+
+An operational safeguard, and a live risk rather than a theoretical one.
+
+warm_demo builds the server environment with dict(os.environ), so AVIA_FORECAST_ENGINE=bt2
+sitting in the launching shell, which is exactly where it was on the evening of 13 August
+after the wiring was tested, would have been inherited by the portal. It would have served
+calibrated-model numbers to a client with no announcement, and the model rebuilt that night
+under the pinned scikit-learn has not had its accuracy measured: every published figure
+describes an artefact fitted under a different release.
+
+The engine now comes from a --engine flag and nowhere else, default qsi. It is deliberately
+not a setdefault, so a stale export cannot reach a client. The value is printed at start-up
+every time, the shell's value is named when it has been overridden, and bt2 carries a warning
+on the same line.
+
+AND THE SECOND HALF OF THE SAME FAULT. warm_demo is idempotent and re-warms an existing
+listener rather than relaunching, but a server already running was started with its own
+engine and this run cannot change it. Printing "forecast engine: QSI" over a listener started
+with bt2 would be the silent-default shape on the one screen meant to prevent it. It now says
+that a running server keeps the engine it was started with, and that a restart is needed for
+certainty.
+
+  app/warm_demo.py          --engine, pinned not inherited, announced at start-up
+  bt2/bt2_experiments.log   2 entries
+
+Avia Solutions Limited. All rights reserved.

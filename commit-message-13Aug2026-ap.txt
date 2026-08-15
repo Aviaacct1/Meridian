@@ -1,0 +1,48 @@
+Close four of the seven gap blocks: most of them were the adapter passing nothing
+
+With a report that discriminates, all sixteen cases read 36 of 56 fields, 64%, identically,
+so the twenty gaps are structural rather than case-dependent:
+
+  economics_year1            48%   ancillary_revenue, three avg_ow_fare figures,
+                                   block_hours_per_departure, cask and more
+  catchment                  50%   top_markets_beyond_hub
+  segment_forecast           50%   rows
+  summary_and_schedule       60%   connecting_market_over_hub, over_destination
+  connecting_at_hub          67%   cities
+  connecting_at_destination  67%   cities
+  route_metadata             79%   airline_iata, origin_city_code, destination_city_code
+  revenue_build             100%
+  revenue_forecast          100%
+
+MOST OF IT WAS THE ADAPTER PASSING NOTHING, not the model failing to produce it.
+
+cortex_app._feed_list already carries code, name, country, base, share, forecast and pdew per
+city whenever the engine returns its detail, which is exactly what the contract's connecting
+tables want, and the first adapter passed connecting=None and left four blocks empty for no
+reason. Now mapped.
+
+DIRECTION IS STATED RATHER THAN ASSUMED. route_feed.feed_side defines beyond as the origin
+catchment to the destinations beyond the hub, and behind as the hub's feeders to the route
+destination. case["hub_airport"] is the destination, so beyond maps to connecting_at_hub and
+behind to connecting_at_destination. Verify on the first deck: the two tables must sum to the
+payload's feed_beyond and feed_behind and not to each other's. Getting these the wrong way
+round is the error made twice today.
+
+Three more closed. growth_rate now passes the forecast's own projection CAGR, so the deck's
+years two and three project on the rate the forecast ran rather than a default nobody chose,
+which is GROWTH-IS-THE-GAP applied to the deck. And route_metadata's three fields are filled:
+airline_iata from the payload, and the two city codes from the airport code, named as standing
+in because the payload carries no IATA metro code and a deck printing the airport where a city
+belongs is right far more often than a blank is.
+
+A pdew-only city row is dropped rather than tabled, because a city line with a blank demand
+and a blank share is worse than one fewer row.
+
+WHAT REMAINS is segment_forecast.rows, which needs segment_model and the live Sabre cabin
+split, and the fare and cost detail in economics_year1. Both are real gaps rather than
+plumbing.
+
+  app/forecast_to_contract.py   connecting tables, growth rate, route metadata
+  bt2/bt2_experiments.log       3 entries
+
+Avia Solutions Limited. All rights reserved.

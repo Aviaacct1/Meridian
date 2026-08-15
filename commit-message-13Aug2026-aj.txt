@@ -1,0 +1,33 @@
+The model declined because it cannot be read: a pickle is version locked, not version sensitive
+
+The switch was set, the code was on the workstation, and the decline reason on every case is:
+
+  could not load E:\Avia\bt2_relaxed\bt2_model_v1_3.pkl: No module named '_loss'
+
+A pickled scikit-learn estimator is version LOCKED. The artefact was written under an older
+release and 1.9.0 cannot unpickle it, because sklearn's internal module paths moved. So
+bt2_forecast has been unable to load the model on the workstation since the fresh install of
+12 August, and nobody had noticed because nothing called it until tonight.
+
+MY PIN CHANGE COMPOUNDED IT. I moved the pin to 1.9.0 an hour ago and had the Dev PC brought
+to it, so the model is now unloadable on both machines rather than one.
+
+THE DISTINCTION I SHOULD HAVE DRAWN BEFORE CHANGING THE PIN. bt2_claimset refits from scratch
+and never touches the pickle, so every version measurement tonight, the 84.6 against 83.2 and
+the two-machine reproduction, said nothing about whether the artefact could be loaded. One
+sensitivity moves a figure by 2.4 points; the other makes the model unreadable. "Pin the
+library" was right and incomplete: the artefact has to be rebuilt under the pin, and a
+rebuilt model is a different model whose claim set must be re-measured.
+
+TWO CHANGES SO THIS ANNOUNCES ITSELF NEXT TIME. bt2_build_v13 writes build_env into the
+pickle, the same stamp bt2_claimset prints, plus the target, so an artefact can no longer be
+silent about what wrote it. And bt2_forecast.load recognises the mismatch shape and names the
+scikit-learn version this process is running, with the rebuild command and the warning that a
+rebuilt model is a different model. Tonight that cost an hour of narrowing down from a bare
+"No module named '_loss'".
+
+  app/bt2_forecast.py       the version-mismatch hint on load failure
+  bt2/bt2_build_v13.py      build_env and target recorded in the artefact
+  bt2/bt2_experiments.log   3 entries
+
+Avia Solutions Limited. All rights reserved.

@@ -1,0 +1,25 @@
+Make scenario_runner say which engine answered, because it could not
+
+The run with AVIA_FORECAST_ENGINE=bt2 returned figures identical to the run without it, all
+sixteen cases to the passenger, and nothing on screen could say why. Three very different
+explanations fit equally well: the shell variable may not have been set, the pull may not
+have carried the cortex_app commit, or bt2_forecast may have declined on every case.
+
+A tool built to compare two engines that cannot say which engine answered is the exact
+failure it exists to prevent, and it is mine.
+
+scenario_runner now carries local_engine, engine_mode, engine_tier and engine_declined as
+columns, prints the engine on each console line, and prints the decline reason underneath
+when there is one. So a run that looks unchanged says whether the model was asked, whether it
+answered, and if not, what it objected to.
+
+READ FROM THE PAYLOAD, NOT FROM THE SHELL. The columns come from r["forecast_engine"], which
+cortex_app fills from what actually happened, and not from os.environ. Those are the two
+things that differed tonight, and reporting the environment would have printed "bt2" on a run
+where the model never answered. Same rule as the qsi_k columns added earlier today: report
+what the engine did, never what it was asked for.
+
+  app/scenario_runner.py    four engine columns, the console line, the decline reason
+  bt2/bt2_experiments.log   2 entries
+
+Avia Solutions Limited. All rights reserved.

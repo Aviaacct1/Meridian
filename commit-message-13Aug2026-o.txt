@@ -1,0 +1,50 @@
+Three grading targets, so the claim set can be re-measured under each basis
+
+FLAG BEFORE ANY RUN, because "what happens to the 92 and 86" presupposes knowing what they
+are. Those two figures appear in exactly three places, all 12 August documents, and in no
+code: the handover, GRADING-BASIS-QUESTION and the GRADE-BASIS log entry. bt2_claimset's own
+docstring says the published fitted figures are 89.8% within +-20% and 82.5% within +-10% on
+n=2,915 over 2016-2019 and 2025, and that its reconstruction returns 89.2% and 81.4%.
+ESTATE-INDEX version 11 says 89% and 82% on 2,915 launches. So 92 and 86 are either a
+different sample, a different config, or a figure that propagated without a source.
+
+The run sidesteps it by reporting the FULL claim set under each target, so whatever the
+published pair turns out to be, it is in the table. And there is no single "the claim":
+bt2_claimset produces the calibrated figure at +-20% and +-10%, the blind route-level figure
+which is the circa 60%, tier A on the narrowest tenth of predicted spread, and portfolios of
+10 and 20 which is the published 94%. A basis change moves five numbers and they will not
+move together.
+
+THE THREE TARGETS, all measured on the same pair in the same launch year so only the
+definition moves:
+
+  nonstop      launch_pax, itinerary='NON-STOP'. THE DEFAULT, and what every published
+               figure describes. An existing run is unchanged.
+  p2p_outturn  backtest.py's local definition, screening the connecting column rather than
+               the itinerary label. A target in its own right because it ought to equal
+               launch_pax and nobody has checked, while the pin grades fc_over_p2p against
+               one and the model trains on the other.
+  sector       the leg-adjacency total, the whole quantity a client is shown.
+
+A missing alt_targets file is a hard stop rather than a fall back to the default, because a
+run that silently graded on launch_pax while the operator believed it was grading on sector
+would produce the published figure under a heading saying otherwise. load_clean prints the
+target beside the artifact count, since the 1.1x-seats rule catches a different number of
+routes under each target and two targets therefore produce two populations.
+
+THE CONTROL RUNS FIRST. launch_pax is recomputed with bt2_discover's own filter and compared
+against what discovery already wrote. More than one pair in a hundred disagreeing stops the
+run, because then the filter reproduced here is not the filter discovery used and neither
+new target can be trusted.
+
+All three queries were tested against a hand-built table with known answers before touching
+the store: five itineraries on one pair including a reverse-direction nonstop and an
+SJC-LAX-TPE where the two airports are not consecutive. nonstop returns 107 and p2p returns
+107, both summing the reverse direction; sector returns 172 and puts the LAX itinerary's 10
+passengers onto SJC-LAX and LAX-TPE instead.
+
+  bt2/build_alt_targets.py   NEW
+  bt2/bt2_lib.py             AVIA_BT2_TARGET, the hard stop, the population note
+  bt2/bt2_experiments.log    4 entries
+
+Avia Solutions Limited. All rights reserved.

@@ -1,0 +1,37 @@
+Annualise the seats: the first cross-check run divided a full year by a partial one
+
+THE FIRST RUN IS WITHDRAWN AND THE FAULT IS MINE. seats_ly is the seats operated in the
+launch year over the months operated. The arm's p2p_outturn and outturn_pax are the graded
+year, L+1, a full twelve months. Dividing one by the other scales by 12/months, so two
+identical routes launching in January and in November differ by a factor of six on a
+quantity that is meant to be a load factor.
+
+The tell was in the output and I should have read it before anything else: seats x k on the
+sector total scored 21.1% against the 74.5% the null control gave for the same segment on a
+matched basis. k still read a median 1.004, but only because it is fitted to the median while
+the spread around it carried the launch month. months_operated was in launch_profile the
+whole time.
+
+THE ONE FIGURE THE ERROR DOES NOT TOUCH, because it compares the engine against outturn with
+no seats in it: on 730 long-haul international FSC routes the engine's captured_uncapped
+reads a median 0.617 of actual local outturn. It under-reads the local market by a factor of
+1.62 on the segment Avia pitches, landing within +-20% on 13.4% of routes and within +-10%
+on 5.9%.
+
+Set that beside RECUT-RESULT. On the same kind of route the local leg reads 1.62x low while
+the connecting feed at the shipped level reads circa 4 to 10x high. The split is wrong in
+both directions at once and the two errors partly cancel in the total, which is how a
+capacity-bound case still looks plausible.
+
+THE FIVE RULES ARE NOT QUOTABLE from that run: engine alone 13.4%, seats x k 16.3%,
+geometric mean 17.1%, clamped 16.3%, switch 14.8%. None of it survives the correction. What
+the synthetic check already established is that the clamp can only fix routes where the
+engine is wrong in the tail, and a median of 0.617 says this engine is wrong in the middle.
+
+The script now annualises seats by months_operated and prints the months distribution above
+the results, so the correction is visible in the output rather than buried in a commit.
+
+  bt2/seats_crosscheck.py   annualise by months_operated; report the distribution
+  bt2/bt2_experiments.log   3 entries
+
+Avia Solutions Limited. All rights reserved.

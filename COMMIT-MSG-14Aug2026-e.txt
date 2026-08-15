@@ -1,0 +1,45 @@
+Contract: the legs and the total are now the same route
+
+Four defects in the contract layer, none in the engine, found by reading the
+SJC-TPE contract against the 2025 China Airlines deck.
+
+deck_contract wrote the total carried into point_to_point_total. It was written
+against assess(), where directional_demand was the local leg. cortex_app sets
+demand.total to carried_ew and route_forecast computes that as
+min(captured + feed, capacity x plan cap), so the connecting passengers are
+already inside it. The contract reported 109,764 as point to point when it is the
+whole route, and showed no connecting contribution in the summary.
+
+grand_total then added both connecting legs to a figure that already contained
+them, taking 109,764 to 123,266. Against 127,296 seats that is 96.8% with a plan
+cap of 87.5%, which is not a forecast because the aircraft cannot carry it.
+
+connecting_at_hub.total was the sum of the city table, and cortex_app._feed_list
+takes top=15, so it was the fifteen largest cities presented as a leg: 13,502
+against an implied 26,356. forecast_to_contract's docstring says to verify exactly
+this on the first deck. The subtotal now travels as top_cities_forecast with the
+rule beside it, and the leg total is the carried connecting leg split across the
+two sides on the pre-cap feed ratio.
+
+route_forecast scales its feed detail to the carried leg only when split_floor is
+on, and every SJC-TPE case runs it off, so the city rows sat at the raw pre-cap
+level under a post-cap leg total. connecting_from_forecast now scales the rows to
+the carried leg by one ratio, leaving every city's share exactly as measured and
+moving only the level, and reports _rows_basis and _rows_scale.
+
+Adds app/contract_legs_check.py: four invariants over a folder of contracts, one
+per defect above. Legs sum to the total; the total fits the metal; point to point
+is not identical to the total on a route with connecting traffic; a city subtotal
+never exceeds its leg. It prints the load factor three ways because their
+disagreement is the diagnosis. Tested in both directions on fixtures: the
+14 August shape fails, the corrected shape passes.
+
+forecast_to_contract emits p2p_demand_ew, feed_beyond_ew and feed_behind_ew so
+the contract can state a demand and a carried figure for the same leg, and can
+split the connecting leg without inventing a ratio.
+
+No engine constant and no forecast method changes in this commit.
+
+Log: CONTRACT-CALLED-THE-TOTAL-LOCAL, GRAND-TOTAL-DOUBLE-COUNTED,
+CITY-TABLES-ARE-TOP-FIFTEEN, TWO-BASES-IN-ONE-BLOCK, LEGS-CHECK,
+LF-WITHDRAWAL-WITHDRAWN, ANALYST-THREE-WAY.

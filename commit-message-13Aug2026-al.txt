@@ -1,0 +1,33 @@
+warm_demo signed in at /login and the app has served /signin since the entry rebuild
+
+The portal launched and the warm-up failed with:
+
+  FAILED: could not log in (HTTP Error 404: Not Found). Check AVIA_PASSWORD.
+
+which pointed at the password, and the password was not the problem. warm_demo posts to
+/login in two places, the readiness probe and the sign-in, and cortex_app has served /signin
+since the entry page was rebuilt. Nothing had run this path since the rename, which is the
+same shape as the --pairs report reading a variable that had moved: a tool nobody exercises
+until the day it is needed.
+
+Both are corrected to /signin, and the form now carries next and email as
+cortex_app.signin_post parses them.
+
+AND THE SIGN-IN NOW PROVES ITSELF. It checks that an obs_entered cookie came back rather
+than treating a successful HTTP call as a successful sign-in. cortex_app returns a 303 to
+/signin?err=1 when a password is refused, which is a perfectly good HTTP response, and that
+would otherwise have surfaced much later as an unexplained redirect on the first warm
+forecast.
+
+Every other endpoint warm_demo touches was checked against cortex_app rather than only the
+one that failed, because a single stale path implies the file has drifted: /signin,
+/api/pitch/health, /, /trackrecord and /methodology all exist. Only /login was dead.
+
+Worth recording that the engine pin worked on the same run: "forecast engine: QSI (the
+shipped QSI engine) [shell said bt2, overridden]". The safeguard caught a live bt2 export in
+the launching shell on its first outing.
+
+  app/warm_demo.py          /signin in both places, cookie check on sign-in
+  bt2/bt2_experiments.log   2 entries
+
+Avia Solutions Limited. All rights reserved.

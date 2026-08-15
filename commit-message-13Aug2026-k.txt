@@ -1,0 +1,36 @@
+Compute the connecting leg in one grouped pass, because the preagg store has no sector table
+
+The preagg store was built with --skip-sector, so preagg.has_sector is False and
+sector_traffic falls back to one full Sabre scan per route. On 3,072 routes across three
+horizons that is 9,000 scans of 286.5m rows and is not a run anyone should start. od_p2p and
+od_single are present, so the local leg stays an indexed lookup and only the connecting leg
+needed solving.
+
+connecting_maturation now computes it, one grouped pass per year rather than one scan per
+route, using build_preagg.SQL_SECTOR_ADJ verbatim including its DISTINCT on (year, rid,
+pax). That DISTINCT is the whole counting rule: it counts an itinerary once per distinct
+pair rather than once per leg occurrence, and a different rule here would produce a number
+that cannot be held against anything else in this programme. Rows are pre-filtered to
+itineraries touching a pinned airport and the explosion is joined back to the pinned pairs,
+a year at a time so memory is bounded and progress is visible.
+
+rowid is only exposed on base tables, which build_preagg's own comment records, so the
+script probes for it and says so out loud if it falls back to a window row number. A view
+would otherwise double-count a two-leg itinerary onto the same pair, silently.
+
+TESTED AGAINST A KNOWN ANSWER rather than trusted, which is the check the silent-fallback
+shape keeps earning. Four itineraries on one pair: SJC-TPE nonstop 100, SJC-TPE-HKG 40 on
+the beyond side, SEA-SJC-TPE 25 on the behind side, and SJC-LAX-TPE 10 where SJC and TPE are
+not consecutive. Correct sector is 165 and correct connecting is 65. Both rid forms return
+exactly 165.0 and the SJC-LAX-TPE itinerary is excluded. So the leg adjacency, the
+both-directions normalisation and the once-per-itinerary rule are verified before the query
+touches 286.5m rows.
+
+THE DURABLE FIX, not done tonight, is build_preagg.py without --skip-sector. That builds
+sector_adj once and makes every future arm cheaper, but it explodes the whole store rather
+than the pinned pairs, so it is its own job.
+
+  bt2/connecting_maturation.py   the grouped sector pass and the rowid probe
+  bt2/bt2_experiments.log        3 entries
+
+Avia Solutions Limited. All rights reserved.

@@ -1,0 +1,34 @@
+Show what the curfew costs, and the seat basis, on the page
+
+optimise_departure has always computed the unrestricted optimum beside the
+permitted one and returned unrestricted_dep, unrestricted_score and cost_pax with
+it, expressly so the cost of a restriction can be quoted rather than hidden. Its
+own docstring calls that figure the argument an airport takes to a curfew review
+and says it is worth more than the forecast it comes from. cortex_app puts the
+whole dict into the payload at schedule.optimised. The page read res.optimised,
+which is the airline and gauge block, and never touched schedule.optimised, so
+neither the unrestricted departure nor its cost has ever reached a screen.
+
+The schedule panel now shows the restriction entered, the permitted departure,
+the departure the route would take without the restriction, and the cost. Hidden
+unless a restriction was entered, because with no curfew there is no cost.
+
+The basis is printed under the figure, because a reader will assume the wrong
+one. cost_pax is the difference in connecting DEMAND won at the two departure
+times, scored with no capture scaling, no connectivity re-split and no capacity
+cap between it and the client. It is not a carried-passenger figure. Where the
+run is capacity bound the seats sell at either departure time and only the mix
+moves, so the carried cost is smaller and can be nil; the page says so whenever
+the run spills.
+
+Also puts the seat count and seats_source on the schedule line. The payload has
+carried both since the carrier configuration was measured on 10 August and the
+page showed neither, so a schedule sized on China Airlines' own 306-seat A350-900
+read on screen exactly like one sized on the generic 336. That is how the
+fixed-gauge defect corrected this morning ran unnoticed: a basis that is in the
+payload and not on the page is a basis nobody checks.
+
+Verified by parse and by a behaviour check over three payload shapes: no curfew
+entered, curfew without spill, curfew with spill.
+
+Log: CURFEW-COST-WAS-DISCARDED, COST-PAX-IS-NOT-CARRIED, SEAT-BASIS-ON-THE-PAGE.

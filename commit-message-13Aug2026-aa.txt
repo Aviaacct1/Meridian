@@ -1,0 +1,27 @@
+Manifest the Dev PC's BT2 sample, so the four-route sister flag difference can be located
+
+bt2_claimset run on both machines on the same day reported base strength resolved on 5,855
+of 6,524 launches on each, but the sister flag set on 428 rows on the Dev PC and 424 on the
+workstation. That happens in bt2_g12_exp.attach, which runs before any fitting, so the
+scikit-learn version cannot be the cause.
+
+The likeliest explanation is that the two E:\Avia\bt2_relaxed copies are not byte-identical.
+They are different drives on different machines and nothing has ever compared them.
+
+bt2/bt2_relaxed_manifest_DevPC_13Aug2026.txt carries an md5 and byte size for every file
+bt2_lib.load_master and bt2_g12_exp.attach read: six base_strength, six metro_ns, six
+capture, six launch_profile, six growth and six launches. The PowerShell one-liner that
+produces the comparable list on the workstation is in the file's header.
+
+A base_strength or metro_ns difference explains the sister flag directly. A capture or
+launch_profile difference is more serious, because those are the model's own inputs and
+LABEL-2018-08 already records the capture files as stale against the OAG store after the Asia
+label fold of 11 August.
+
+Four routes of feature difference is small. It is not nothing, and the wiring is about to be
+built on top of these files.
+
+  bt2/bt2_relaxed_manifest_DevPC_13Aug2026.txt   NEW
+  bt2/bt2_experiments.log                        1 entry
+
+Avia Solutions Limited. All rights reserved.

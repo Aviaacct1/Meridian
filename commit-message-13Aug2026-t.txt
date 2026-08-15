@@ -1,0 +1,39 @@
+Stop the cross-check: three basis errors in an hour, all mine, all the same family
+
+--min-months DOES NOT SELECT YEAR-ROUND SERVICES. bt2_profile counts months_operated from
+the launch month to year end, so 12 means the route launched in January, not that it runs
+year-round. A July launch flying every month thereafter reads 6. So --min-months 11 selected
+January and February launches, 33 long-haul routes, and discarded every year-round service
+that started later in the year. The output said so and I did not read it: median 12, p10 11,
+p90 12.
+
+That is the third correction on this script inside an hour. First the seats were a partial
+year against a full one. Then annualising them assumed every route becomes year-round. Now
+the filter meant to separate those two cases turns out to select launch month instead. Each
+correction revealed the next, which is the signal that the method is wrong rather than the
+arithmetic.
+
+THE LINE IS STOPPED. The join loses 1,479 of the arm's 3,072 rows before any filter and 33
+survive after two. The script's own guard fired and the rule comparison from that run must
+not be quoted. A fourth patch would be fitting the method to the data.
+
+THE CLEAN VERSION, if the idea is worth testing at all, is an arm at --offset 0. It grades
+against the launch year and puts seats, traffic and forecast on one set of months, with no
+annualising and no seasonality question. Forty-five minutes, and it removes the whole class
+of error rather than the instance.
+
+WHAT SURVIVES TONIGHT is one figure, and it survives because it contains no seats and needed
+no join correction. On 730 long-haul international FSC routes the engine's captured_uncapped
+reads a median 0.617 of actual local outturn, landing within +-20% on 13.4% and within +-10%
+on 5.9%. On the 33 January launches it reads 0.473, so the under-read may deepen on routes
+with a full launch year, though 33 is not a sample.
+
+The engine under-reads the long-haul local market by circa 1.6x. The clamp and the switch
+cannot repair it: the synthetic check established they only reach routes wrong in the tail
+and this is a fault in the middle. A direct level correction by haul and carrier type,
+measured the way FLOOR-EVIDENCED did it for the connecting side, is the smaller and
+better-posed job, and it needs no gauge and no join.
+
+  bt2/bt2_experiments.log   3 entries
+
+Avia Solutions Limited. All rights reserved.

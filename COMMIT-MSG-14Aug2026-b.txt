@@ -1,0 +1,27 @@
+Plan LF: measured, and withdraw the transfer correction that was never measured
+
+LF-CAP-OPEN answered on 2,871 launches. Haul does not move achieved load factor:
+medians 0.771, 0.790, 0.777 and 0.782 across the four cuts, a range of 1.9 points,
+so per-haul variation of the cap is not supported. Carrier type does, and it
+survives holding haul: ULCC above FSC by 4 to 6 points in all three cuts with
+enough routes to read. The shipped 0.875 sits at the 85.5th percentile of what
+launches actually achieve, which is where a cap belongs, so it stands.
+
+Withdraws the transfer-correction caveat this file shipped with yesterday. It
+said the Sabre numerator reads low by the 2.07x and 2.50x of FLOOR-EVIDENCED.
+FLOOR-EVIDENCED measures "the multiplier the FLAT feed needs to reach" actual
+connecting, with the Sabre residual as the target: it is a measurement of the
+engine's under-read, not of Sabre's coverage. Applying it as a Sabre correction
+is arithmetically impossible on this population. Median connecting share of the
+sector on 336 long-haul launches is 0.572, so at 2.50x the median achieved load
+factor goes from 0.782 to 1.360 with 78% of launches above 100%, and at 2.07x to
+1.185 with 71%. The docstring and the printed output now carry the refutation and
+the run that produced it.
+
+The control's exclusions are now written to plan_lf_achieved_excluded.csv with
+the reason on each row. Previously the run reported a count of 155 impossible
+launches and the worst case and kept the rows, so the filter could not be audited
+and the charter-market hypothesis for them could not be checked.
+
+Log: PLAN-LF-MEASURED, FLOOR-EVIDENCED-WAS-MISREAD, UNDER-COUNT-IS-IMPOSSIBLE,
+THE-SOFTENING-IS-WITHDRAWN, EXCLUSIONS-NOW-WRITTEN.

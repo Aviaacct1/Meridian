@@ -1,0 +1,32 @@
+Fill the fields build_contract hardcodes to None, which no argument could reach
+
+64% to 75%, six of the eight expected fields closed, and the two that did not are not gaps in
+the model. deck_contract sets origin_city_code and destination_city_code to a literal None in
+the dict at lines 382 and 383, with a _need note beside them, so passing them in `case`
+reaches nothing at all and the first adapter did exactly that. The same shape at lines 398
+and 402 for both schedule legs' dep_time and arr_time.
+
+They are now filled in _fill_hardcoded, after the contract is built, and only where the
+payload genuinely carries the figure. A field the payload cannot supply is left as
+deck_contract wrote it, so its _need note still reads and the gap report still counts it.
+
+THE SCHEDULE TIMES CARRY THEIR BASIS. They come from cortex_app._schedule_times, whose own
+docstring calls them illustrative: not curfew-, slot- or connection-optimised. A deck
+printing a departure time that an airline reads as a proposal, with no note, is worse than
+one printing none. So the _need line is rewritten rather than cleared: "indicative" where the
+payload says so, "departure time set by the caller" where the caller named one. The basis
+travels onto the block instead of being dropped at the boundary, which is the rule dep_basis
+already follows on the portal page.
+
+breakeven_load_factor is closed: the economics module produces it as breakeven_lf and
+deck_contract does not read it.
+
+cask is deliberately left alone. It is cost per available seat kilometre, the payload carries
+no such figure, and deriving it would mean choosing between an annual and a per-departure
+cost basis on a line nobody would check. That is the choice that has gone wrong seven times
+today, so it stays a named gap rather than a guessed number.
+
+  app/forecast_to_contract.py   _fill_hardcoded: city codes, schedule times, breakeven
+  bt2/bt2_experiments.log       3 entries
+
+Avia Solutions Limited. All rights reserved.

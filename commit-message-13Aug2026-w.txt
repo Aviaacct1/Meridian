@@ -1,0 +1,42 @@
+A level cannot fix the local leg either: the ceiling is below doing nothing
+
+The control passed at the derived tolerance and the measurement is decisive in the direction
+I did not expect.
+
+  n=2,948   median multiplier needed 1.789   IQR 0.753 to 6.082   within +-20% 11.3%
+
+  ceiling, perfect global level              10.9%
+  ceiling, perfect haul x type level         10.9%
+  leave-one-cohort-out, global                10.9%
+  leave-one-cohort-out, by haul               11.0%
+  leave-one-cohort-out, by carrier type       10.7%
+  leave-one-cohort-out, by haul x type        11.2%
+
+A perfect level, fitted on the same routes it scores, reads BELOW the uncorrected figure.
+Every segmented version lands inside a point of doing nothing. The reason is in the IQR: it
+straddles 1.0 on every cut, so the engine over-reads on the lower quartile and under-reads
+by six times or more on the upper one in the same population, and a median shift moves mass
+out of the band on one side faster than it moves it in on the other.
+
+THE FINDING UNDERNEATH IT is that both legs of the engine are now measured as route-level
+uninformative. The IQR of actual over forecast spans a factor of 8.1 on all routes, 8.6
+international and 4.2 on long-haul FSC. FEED-IS-UNINFORMATIVE said the same of the
+connecting side in July at an IQR of 2.666 in logs. The total looks plausible because the two
+errors partly cancel and the plan cap hides the rest.
+
+THE ONE CUT THAT CHANGES THE SIGN is domestic against international. Domestic n=347 reads a
+median 0.799 with 17.0% in band, so the engine over-reads there. International n=2,601 reads
+2.066 with 10.6%. That is a factor of 2.6 between the medians and the largest conditional
+difference measured today, and it still does not earn its place, because the spread inside
+each is far larger than the gap between them. Carry it as a diagnostic, not a correction.
+
+WHAT IT DOES TO THE WIRING, which is where the day opened. The thing the calibrated model
+would replace is now measured at 11.3% within +-20% at route level and is not repairable by
+a level on any segment tried. The pin score already had the calibrated model at 22.4%
+against the Cortex path's 12.6% on the same 1,555 routes, p<0.0001. So the case for wiring is
+stronger tonight than it was this morning, and the blocker is unchanged and is John's: which
+quantity the claim attaches to.
+
+  bt2/bt2_experiments.log   4 entries
+
+Avia Solutions Limited. All rights reserved.

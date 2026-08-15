@@ -1,0 +1,45 @@
+The feed level over-reads circa tenfold, the floor's shape is corroborated, and the spread is the finding
+
+Measured on 1,891 routes of backtest_qsifeed_11Aug2026.csv re-levelled from k=0.06 to the
+shipped k=1.0. No engine run.
+
+VALIDATION FIRST. LEVEL-VS-SHAPE recorded the QSI feed needing x1.62 at k=0.06, which
+implies 0.0972 at k=1.0. The tool returns 0.098, a difference of 0.8%. So this is the same
+population read a different way rather than a new claim.
+
+ALL ROUTES: median actual over feed 0.098, IQR 0.020 to 0.348, k needed 0.098.
+
+THE FLOOR'S DESIGN IS INDEPENDENTLY CORROBORATED, and it is the positive finding.
+
+  by haul      0.062 (n=889, 1500-3000km)   0.083 (n=553)   0.196 (n=449, over 6000km)
+               a factor of 3.16 short to long
+  by hub       0.090 (n=1,707) to 0.181 (n=184) on a named Asian or Gulf destination,
+               a factor of 2.01, against the 2.07x FLOOR-EVIDENCED measured on outturn by a
+               completely different route
+  by carrier   FSC 0.114 against LCC 0.052, a factor of 2.19, the same story again
+
+Two independent measurements of one connecting under-count agreeing to within 3%.
+
+AND THE SHIPPED LEVEL STILL DOES NOT STAND. No cut of any size approaches 1.0. The highest
+is 0.196 on 449 long-haul routes, so even where the level suits best it is 5.1 times too
+high. Europe reads 0.017 on 197 routes, 59 times too high, and North America 0.063 on 187.
+Cohorts are flat at 0.073 to 0.147, so this is not a vintage effect. Allowing the full
+FLOOR-EVIDENCED 2.07x under-count in the grading quantity moves the hub cut to circa 0.36,
+still short by a factor of three. "Right for the case it was tuned on" is refuted: it is
+wrong everywhere and less wrong on long haul into a hub.
+
+THE SPREAD IS THE FINDING AND TUNING k WOULD BE THE WRONG WORK. The IQR runs 0.020 to
+0.348, a factor of seventeen across the middle half, and the in-band column never exceeds
+6.5% on any cut: 2.6% on 1500-3000km, 5.1% on long haul, 6.5% on the hub list, 0.0% on
+Europe and on North America. At any single value of k fewer than one route in fifteen lands
+within +-20% of its actual connecting traffic. Choosing k is choosing where to centre a
+distribution that does not describe the individual route.
+
+ADDED IN THIS COMMIT: the long-haul-and-hub cell, which the first run did not report. It is
+the SJC-TPE-comparable population and it decides whether the one route with an independent
+human comparator sits inside this behaviour or outside it.
+
+  bt2/feed_level_recut.py   the combined haul-and-hub cut
+  bt2/bt2_experiments.log   4 entries
+
+Avia Solutions Limited. All rights reserved.

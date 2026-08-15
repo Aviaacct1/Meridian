@@ -1,0 +1,47 @@
+Re-level the arm's connecting feed and cut the error, without a run
+
+BOARDS-ARE-IDENTICAL closed the confound: CacheBoards and OagBoards return the same qshare
+on every one of 40 pin routes, median 1.000 with min and max also 1.000, so qsi_k is
+directly comparable across the two paths and the 16.67x gap is one quantity rather than two
+incomparable ones.
+
+That leaves two measurements standing against each other. LEVEL-VS-SHAPE has the arm at
+k=0.06 needing x1.62 to reach actual connecting, which re-levels to an over-read of circa
+10x at k=1.0. FEED-LEVELS has the live path at k=1.0 reading 0.93x of the 2025 analyst on
+SJC-TPE. FLOOR-EVIDENCED offers the shape that might reconcile them: Sabre under-counts
+transfer traffic by 2.07x on routes touching a major Asian hub and 2.50x on long haul over
+6,000km, and SJC-TPE is both.
+
+bt2/feed_level_recut.py asks whether the over-read has that shape. k is a pure multiplier,
+so every figure is arithmetic on backtest_qsifeed_11Aug2026.csv: no engine, no store scan,
+no refit. It reports, per cut, the multiplier the feed still needs and the k that would put
+that cut's median route on the nose. Cuts by haul, by a named list of Asian and Gulf hubs as
+the destination, by the arm's own hub_dest flag, by carrier type, by region and by cohort.
+
+THE READING. If k needed climbs towards 1.0 on long haul and on the hub list while sitting
+near 0.06 on short haul, the shipped level is right for the case it was tuned on and wrong
+elsewhere, and one global k is the wrong instrument. If it is flat and low everywhere, the
+shipped level is too high and the SJC-TPE agreement needs another explanation. The IQR
+decides how much either reading is worth, because FEED-IS-UNINFORMATIVE recorded a spread of
+a factor of fourteen across the middle half of routes and a level cannot fix a spread.
+
+THE BASIS CAVEAT, in the tool's own docstring because it governs every figure it prints. The
+arm built its feed at the route's actual flown departure time, block and frequency from the
+pin wave cache. The live path builds it at the time the optimiser picks, which maximises
+connecting passengers, on a modelled block and the requested frequency. So this measures
+what the ARM's feed would read at k=1.0, not what the portal produces, and the optimiser
+biases the live figure upward by construction. It is the shape of the error, not the level
+the client is served.
+
+Routes carrying no connecting traffic (635 of 3,072, per RULER-SOUND) and routes the
+P2P_CARRIERS list zeroed are counted and never averaged in, since neither is a ratio.
+
+Smoke-tested on a synthetic arm CSV before the real one, because the whole result is one
+multiplication and a wrong scale would be invisible in the output. A route whose feed is
+exactly right at k=1.0 returns ratio 1.000 and k needed 1.000; one that over-reads returns
+0.004 on both; the zero-feed and no-connecting rows are skipped and counted.
+
+  bt2/feed_level_recut.py   NEW
+  bt2/bt2_experiments.log   3 entries
+
+Avia Solutions Limited. All rights reserved.

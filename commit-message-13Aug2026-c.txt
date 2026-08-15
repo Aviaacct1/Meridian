@@ -1,0 +1,29 @@
+Name the thin labels, and stop printing a literal 75%%
+
+Two more unconditional prints in oag_label_check, both found by reading the control output
+rather than the code.
+
+The thin-label header carried the Johannesburg finding whenever any label held fewer than
+seven region names, so a thin 2023 label would have been handed the 2015-2017 result. It
+now names the labels that are thin and marks the finding as RECORDED on the 2015 to 2017
+labels and not re-measured, with the instruction to run --coverage on the labels in front
+of you rather than reading the result across to them. That is the milder form of the fault
+fixed in the previous commit and it sat one line above it.
+
+The share line printed a literal 75%% because the string carried a doubled percent with no
+formatting applied to it.
+
+THE VERDICT BLOCK IS NOW TESTED IN BOTH DIRECTIONS on the Workstation, which is what makes
+it a measurement rather than a second assertion:
+
+  DXB, DOH, JNB, CAI on 201%-08   every 2015, 2016 and 2017 label SHORT. JNB 5/6/6% of its
+                                  own best, CAI 13/13/13%, DOH 48/54/60%, DXB 56/59/60%
+  TPE, PVG, HKG on the same       no label short, 82 to 100% throughout, and the script
+                                  prints the partitioning reading instead
+
+So Asia is complete, the Gulf and Africa are not, and the same code says both.
+
+  app/oag_label_check.py    the thin-label header names its labels; the percent literal
+  bt2/bt2_experiments.log   3 entries, including the arm wave-cache provenance check
+
+Avia Solutions Limited. All rights reserved.

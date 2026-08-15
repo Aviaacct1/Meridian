@@ -1,0 +1,48 @@
+The target sweep, and the control the sector result must survive
+
+THE THREE BASES ON ONE SAMPLE, relaxed, six cohorts, only the grading target moving.
+
+  blind, route level      nonstop 60.9%   p2p_outturn 61.0%   sector 78.5%
+  long-haul intl FSC              39.8%               40.2%          73.7%
+  short-haul dom or LCC           72.6%               72.5%          83.3%
+  calibrated +-20%                83.2%               85.4%          89.3%
+  portfolios of 20                93.2%               94.1%          98.8%
+  n                               6,524               6,524          6,478
+
+nonstop and p2p_outturn exclude exactly the same 286 artifacts of 6,810, so the population
+is identical and only the definition moved. Sector excludes 332 and scores on 46 fewer
+routes, which is what counting the connecting feed on the leg should do.
+
+ON THE CLIENT'S OWN NUMBER THE CLAIM IS BETTER, NOT WORSE, and the segment Avia actually
+pitches moves from 39.8% to 73.7%.
+
+THAT RE-READS BASIS-COSTS-33-POINTS. Holding population and grading year fixed and moving
+only the target takes the blind figure up by 17.6 points, so the 33 points lost against the
+pin cannot be the target. Population and grading year carry all of it and more. The pin
+score said the same independently on its own sample: 28.9% against total outturn versus
+22.4% against pure P2P, the larger denominator scoring better.
+
+THE TWO LOCAL DEFINITIONS ARE NOT THE SAME QUANTITY. p2p_outturn scores above nonstop by 2.2
+points calibrated at +-20% and 0.1 blind at route level, on an identical population. Small,
+and it matters because the pin grades fc_over_p2p against the connecting-column definition
+while the model trains on the itinerary label.
+
+AND THE SECTOR RESULT MUST NOT TRAVEL WITHOUT A CONTROL. The model predicts passengers per
+seat and multiplies by seats_ly. Sector traffic on a leg is close to seats times an achieved
+load factor, which sits in a narrow band on almost every route in the world, while the local
+market's share of those same seats runs from a few per cent to nearly all of them. A target
+that is nearly a load factor is easier to hit within +-20% than a target that is a share, so
+part of the +17.6 could be a property of the quantity rather than of the model.
+
+bt2/null_model_control.py forecasts every route as seats_ly times the median ratio of the
+other cohorts, leave one cohort out, scored exactly as bt2_claimset scores the model, and
+reports the target's own dispersion beside it. On synthetic distributions shaped like each
+target, and this is illustration rather than measurement, a constant scores 84.5% on a
+load-factor-like target and 18.5% on a share-like one. If the real null lands anywhere near
+the model, the sector claim is arithmetic on seats and the model's contribution is the
+distance above the floor rather than the figure itself.
+
+  bt2/null_model_control.py   NEW
+  bt2/bt2_experiments.log     4 entries
+
+Avia Solutions Limited. All rights reserved.

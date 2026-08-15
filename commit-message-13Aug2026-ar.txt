@@ -1,0 +1,45 @@
+Wire the eight-segment table: the last structural gap, and the engine was never going to have it
+
+John's point when he said we had come full circle is the right one, and the answer is that the
+eight-segment table is an ALLOCATION of the forecast total rather than a forecast. The engine
+computes one market, one capture share and one stimulation. The payload's catchment block
+carries the airport split, which airports feed the service area, and not the primary,
+secondary and contested ZONE tiers the table needs. So a week of work on which model
+forecasts was never going to produce this table, because it sits on top of whatever the engine
+produces.
+
+app/segment_inputs.py feeds catchment.tier_split, which already implements John's own
+definition in its own docstring, from the payload's own competing-airport coordinates so the
+tiers are measured over exactly the set the forecast used rather than a different one
+assembled for the purpose. It returns the zone split and the origin business share, both
+measured.
+
+IT CANNOT RETURN TWO THINGS AND SAYS SO BY NAME. origin_share, the origin-resident share of
+the two-way market, is not derivable: the payload carries no directional residency split.
+business_share_destination needs the same catchment analysis at the far airport or a stated
+assumption. Neither has a default here and neither will: a table built on an invented
+directional split moves every row on a page a client reads and presents a guess as a
+measurement. Where they are absent the rows are not built and the contract's _rows_need names
+exactly which inputs are outstanding.
+
+The twenty-four per-segment growth, stimulation and capture values may be given as a dict per
+segment, which is what the BA 2015 deck did, or as one value applied to all eight. A scalar is
+accepted and confessed: the contract note then says the table is a split of the route total
+rather than eight independent judgements, because that is not the same claim.
+
+It is called from the deck path rather than from calibrated_forecast because tier_split needs
+drive times from every locale to the home airport and to each competitor, so a five-competitor
+route is five times the catchment endpoint's work and every forecast would slow for a figure
+only the deck uses.
+
+app/cases_sjc_tpe_segments.json carries a worked segments block with the four judgement
+numbers as placeholders, on forecast settings identical to cases_sjc_tpe.json, so every demand
+figure must still match that file to the passenger.
+
+  app/segment_inputs.py             NEW, the tier split and the judgement check
+  app/forecast_to_contract.py       segments through to the contract, scalar confessed
+  app/deck_from_cases.py            "segments" accepted as a case key
+  app/cases_sjc_tpe_segments.json   NEW, a worked block to edit
+  bt2/bt2_experiments.log           3 entries
+
+Avia Solutions Limited. All rights reserved.

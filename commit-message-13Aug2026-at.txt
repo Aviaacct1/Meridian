@@ -1,0 +1,19 @@
+The GeoNames file was already there: resolve it the way the app does
+
+The segment table's only remaining blocker was "no GeoNames dump found; set AVIA_GEONAMES to
+cities5000.txt". cities5000.txt has been in app/ beside cortex_app.py the whole time, 14.9MB,
+which is exactly where cortex_app line 30 looks for it:
+
+  DUMP = os.path.join(HERE, "cities5000.txt")
+
+segment_inputs invented a second way of finding a file the app already resolves, and then
+reported a working install as broken.
+
+It now reads cortex_app.DUMP first and falls back to the same path beside itself, with
+AVIA_GEONAMES still winning where somebody keeps the dump elsewhere. John's ruling of 9 August
+is that everything is calculated in one place, and a path is calculated in one place too.
+
+  app/segment_inputs.py     resolve the dump the way the app does
+  bt2/bt2_experiments.log   1 entry
+
+Avia Solutions Limited. All rights reserved.

@@ -1,0 +1,46 @@
+Record that the 2015-2017 region gap is a loader question, not a missing-data one
+
+Handover item 6 says to load the Africa and Middle East workbooks from Egnyte for those
+years. They are already there, and the item as written buys data Avia already owns.
+
+WHAT IS ON EGNYTE. /Shared/Company Data/18 Products/QSI/Data Store holds monthly region
+files, and for Africa and Middle East those start at 2018: a filename search for "Aug 2015"
+returns exactly five, Asia, Europe, Latin America, North America and Southwest Pacific,
+which is precisely the five regions the 2015-08 label carries. The subfolder old\ holds the
+same regions for the missing years as HALF-YEAR files:
+
+  Africa H1 2015  222MB     Africa H2 2015  242MB
+  Africa H1 2016  231MB     Africa H2 2016  248MB
+  Africa H1 2017  257MB     Africa H2 2017  276MB
+  Africa H1 2018  271MB     Africa H2 2018  309MB
+
+So the coverage measurement was right about the monthly labels and wrong about the world.
+
+THE MECHANISM IS ONE LINE. oag_ingest_periodic.py line 133 reads os.listdir on the folder
+and keeps only names ending .xlsx, .xls or .xlsm, so a subfolder is returned as a name,
+fails the extension filter and is dropped in silence. The default folder is the Data Store
+root, so nothing in old\ is loaded by a default run. Not proven that they were never
+loaded, because the script carries an --only flag whose help text uses "Africa H1" as its
+worked example. The store is the arbiter and this commit does not pretend to settle it.
+
+AND IF THEY ARE LOADED, THE LEG QUERY STILL CANNOT READ THEM. oag_ingest_periodic line 9
+maps "Middle East H1 2015.xlsx" to the period key 2015-H1. bt2_capture_core.load_legs
+queries one label with week=? and builds its window as {mon}-15 to {mon}-21, so on 2017-H1
+that is "2017-H1-15", which is not a date. It is the same failure ONE-IMPLEMENTATION
+recorded for a single-week label and refused by name, arriving from the other direction.
+bt2_profile line 37 already counts the case as half_year_only_AF_ME and excludes those
+routes rather than reading them.
+
+THE CONTROL BEFORE ANY FIX. Rows carry eff_from and eff_to, so selecting the week of the
+15th to the 21st out of a half-year label is the same query with a different label and the
+same date window. Africa exists in BOTH forms for 2018. Slice 15 to 21 August 2018 from the
+monthly label and from the half-year label and compare distinct flights at JNB and CAI. If
+they agree the fallback is sound and 2015-2017 is recoverable without buying anything. If
+they do not, an OAG half-year pull states the schedule as filed at download rather than as
+filed each month, and we know that before rebuilding six cohorts.
+
+No code changes. Four log entries.
+
+  bt2/bt2_experiments.log   4 entries
+
+Avia Solutions Limited. All rights reserved.

@@ -249,6 +249,16 @@ compare_backtest_arms.py pairs on the routes ALL arms scored. Three unpinned dis
 would have shrunk the paired sample invisibly. The runbook now discovers once with
 --discover-only, pins the set, and runs all three arms against the pin.
 
+The launch years move with it, 2016-2019 to 2016,2017,2018,2024. 2024 is added because the
+six-year wave cache covers it and a post-COVID cohort bears directly on a connecting feed
+whose shape changed across the break; 2025 cannot be, since --offset 1 would grade it
+against 2026 and Sabre stops at 2025. 2019 is DROPPED because --offset 1 was grading it
+against 2020 OUTTURN. The --years help calls 2016-2019 the clean sample with 2020-2023
+excluded, but that excludes them as LAUNCH years and not as GRADING years, and --min-outturn
+then removes the worst-hit routes from the statistics, so the surviving 2019 cohort is
+selected on having come through COVID well. The four cohorts now grade against 2017, 2018,
+2019 and 2025, every one a normal year.
+
 Files, twelve: app/backtest.py, app/cortex_app.py, app/cortex_dashboard.html,
 app/requirements.txt, app/route_forecast.py, app/verify_connecting_build.py,
 bt2/compare_backtest_arms.py, bt2/coord_check.py, bt2/migrate_oag_asia_labels.py,

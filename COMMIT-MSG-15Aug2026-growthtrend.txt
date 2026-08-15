@@ -1,0 +1,27 @@
+Market growth rate: pre-COVID trend replaces the two-year measure (John's ruling)
+
+The two-year CAGR read the post-COVID rebound as a rate: SJC-TPE measured
+21.8%, hit the 20% clamp, and compounded a market still below its 2019 peak to
+22% above that peak in two years. John's ruling, 15 August: use the 2015-2019
+trend as the rate and replace what we had.
+
+market_trend() in cortex_app is the single definition, used by both the
+forecast-year growth and the multi-year projection build (one rate rule; two
+rules in one file is how /api/forecast and /api/optimise came apart before).
+Measured on the TWO-WAY pair sum deliberately: the store holds 2015 in POO
+form and 2016-2019 in ND (sabre_directionality_check), and a one-direction
+read means a different thing under each convention; the two-way sum is
+identical under both, so the trend cannot inherit a step from the 2016 file
+format change. Thin pairs (< 2,000 two-way in either year) refuse and fall to
+an ASSUMED 3%, named in the basis. Clamp -5% to +15%. Cached per pair, so the
+frequency-sensitive optimiser sweep no longer re-scans the store per arm; the
+old measure ran two scans inside every arm, so this is also a runtime gain.
+
+The taper to a 3% long run beyond year two stays: a strong pre-COVID trend
+held flat over-projects the same way a burst does, only slower.
+
+Expected on SJC-TPE (from the diagnostic's own store reads): trend 8.8%/yr,
+2027 default circa +18% on the 2025 base. Verify with the acceptance case at
+the 2027 default after pulling.
+
+Files: app/cortex_app.py

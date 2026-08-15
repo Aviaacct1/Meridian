@@ -1,0 +1,34 @@
+The sample is byte-identical, so the sister flag difference is airportsdata
+
+All 36 files match on both machines, every md5 and every byte size: six base_strength, six
+metro_ns, six capture, six launch_profile, six growth and six launches. So the two
+E:\Avia\bt2_relaxed copies are the same data and the sister flag difference of 428 against
+424 is not a data difference.
+
+That also settles a larger question quietly. The 60.9% blind figure agreeing on both machines
+agrees by construction rather than by coincidence, because the inputs are provably the same.
+
+THE CAUSE IS THE ONE INPUT THE BUILD STAMP DID NOT REPORT. bt2_g12_exp.metro_map calls
+airportsdata.load("IATA") and builds the sister key from each endpoint's city and country
+strings, sorted and joined. A release that renames one city changes the key, the prior lookup
+then misses, and "prior > 1500" evaluates on 0.0 instead of the real figure, so the flag
+flips. With all 36 data files byte-identical and numpy the same on both machines, this is the
+only input left that can move it.
+
+airportsdata is already pinned at 20260803 in requirements.txt for the same class of reason:
+the qsi_share moved 0.2510 to 0.2513 between releases, measured on 11 August. What nobody had
+noticed is that it also reaches the CLAIM SET, through the sister feature.
+
+It is now on bt2_claimset's build line, via importlib.metadata since airportsdata exposes no
+__version__ attribute. It belongs there more than scikit-learn does: sklearn moves the
+calibrated pair by 2.4 points, and airportsdata moves a FEATURE, which reaches every figure
+including the blind ones.
+
+The check is now one line on each machine. Different versions explain the difference and the
+fix is to install the pin. The same version means something in metro_map is non-deterministic,
+which is a different and worse problem.
+
+  bt2/bt2_claimset.py       airportsdata in the build stamp
+  bt2/bt2_experiments.log   3 entries
+
+Avia Solutions Limited. All rights reserved.

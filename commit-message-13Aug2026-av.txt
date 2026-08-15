@@ -1,0 +1,32 @@
+Close economics_year1: six gaps were one missing figure, and the basis is stated
+
+deck_contract computes pax_rev_y1 as (route_pnl econ_rev + bus_rev) x turns, and carried as
+annual_pnl annual_pax. My mapping supplied neither name, so both read zero and every average
+fare, yield, PRASK and passenger revenue fell with them. Six fields, one cause. Also
+block_hours_per_departure, which deck_contract computes from case["block_min"] and the
+payload has carried all along.
+
+THE BASIS WAS ESTABLISHED RATHER THAN ASSUMED. cortex_app builds charges_per_turn as
+y["landing"] + y["nav"] + y["handling"] with no division, so every y figure is one round trip
+and economics.revenue is per turn. That is exactly the shape deck_contract's multiplication by
+turns expects.
+
+ONE REVENUE FIGURE IN A TWO-CABIN FIELD. The payload carries a single passenger revenue
+rather than a cabin split, so the whole of it goes in econ_rev with bus_rev zero. That is
+correct for every total downstream, because deck_contract only ever sums the two, and it is
+named in the route_pnl block because anything reading econ_rev alone would be reading a
+blended figure under a cabin label. gross_rev includes cargo, which has its own line, so cargo
+is removed first or both the passenger revenue and the average fare would carry it.
+
+THE ONE-GLANCE CHECK, before any of this travels: the resulting average one-way fare must land
+near the econ_fare the economics block already reports. Half or double means the per-turn
+reading is wrong and every figure in economics_year1 is wrong with it.
+
+What remains after this is not plumbing: avg_ow_fare_connecting, which deck_contract never
+sets; cask, which needs a cost per available seat kilometre the payload does not carry; and
+ancillary_revenue, which is a commercial benchmark rather than a model output.
+
+  app/forecast_to_contract.py   econ_rev, cargo, load factor, annual_pax, block_min
+  bt2/bt2_experiments.log       2 entries
+
+Avia Solutions Limited. All rights reserved.

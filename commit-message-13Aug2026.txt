@@ -1,0 +1,47 @@
+Expose the connecting feed level, and record that the shipped feed has never been tested
+
+The back-test and the live path run different feeds, and the consequence is not that the
+contradiction is resolved.
+
+route_feed line 261 is captured = pax x k x qshare, so qsi_k multiplies the whole
+connecting capture. backtest.py line 864 defaults --qsi-k to 0.06 and route_feed falls
+back to 0.06 when the key is absent, so QSI-FEED-CLEAN of 12 August graded a feed running
+at 6% of the QSI share. cortex_app line 852 hardcoded 1.0, in one place, reachable by no
+caller, no case file and no API route.
+
+Four further differences, each on its own basis: the arm took the route's actual flown
+departure time, block and frequency from the pin wave cache while the live path takes the
+optimiser's chosen time, the modelled block from GCD and the requested frequency; the arm
+read CacheBoards and the live path reads OagBoards; and the arm fell back to the flat feed
+on the 19.9% of the pin with no flown schedule, which the live path never does.
+
+Each k is calibrated to its own qshare, and the two qshare figures are not on one scale.
+FEED-LEVELS of 11 August measured the live path at k=1.0 against the 2025 analyst before
+split_share: connecting total 24,080 against his 25,999, which is 0.93x. So the live level
+is not an order of magnitude high, and QSI-FEED-CLEAN says nothing about the shipped feed
+in either direction.
+
+THE SHIPPED CONNECTING FEED HAS NEVER BEEN BACK-TESTED. What the client's connecting leg
+rests on is three route-level reconciliations against one analyst on one route, and
+FLOOR-AND-THE-ANALYST already records that agreeing with him on the mix is two methods
+inheriting one data limitation rather than validation. Testing it needs an arm run at the
+live configuration, k=1.0 on OagBoards with an optimised departure, which is a different
+arm from any run on 11 or 12 August and is not yet scoped.
+
+NO FIGURE MOVES. qsi_k defaults to 1.0 and qsi_k_behind to qsi_k, both are added at the end
+of the signature and every caller uses keywords, and econ_baseline freezes a named field
+list rather than the payload, so the new feed_level key does not reach its check.
+
+  app/cortex_app.py         qsi_k and qsi_k_behind as parameters; feed_level in the payload
+  app/scenario_runner.py    both as case keys and as three table columns, read from the
+                            payload rather than from the case
+  app/cases_qsi_k.json      NEW, and a SMOKE TEST only. Two cases: the default must
+                            reproduce the ladder, the named level must differ. It does not
+                            test the feed level and an earlier version wrongly claimed to
+  bt2/board_scale_test.py   NEW. Calls the shipped feed functions twice on one route with
+                            only the boards object differing, to measure whether qshare is
+                            on one scale across the two paths. k held at 1.0 in both calls
+  bt2/bt2_experiments.log   11 entries, of which 5 withdraw or correct 4 written earlier
+                            the same day
+
+Avia Solutions Limited. All rights reserved.

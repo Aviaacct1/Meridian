@@ -1,0 +1,41 @@
+The departure-time curve, and a departure picker instead of a text box
+
+JOHN, 14 August: "since optimise is looking at all options to decide best. Would it be
+possible to create a chart that shows the total two way over the course of 24 hours as a
+chart... That means that SJC could see easily if they want to choose a flight between say
+10am and 2pm, what would be the time to choose."
+
+THE CURVE ALREADY EXISTED AND WAS THROWN AWAY. optimise_departure scores every candidate
+departure across the day into `tried` and reported len(tried), a count. The scores went in
+the bin. An airport asking what a preferred slot window costs them is asking to read that
+curve, and returning it costs nothing.
+
+app/route_feed.py
+  info["curve"]: every candidate as dep, hhmm, total, beyond, behind and PERMITTED, so a
+  restricted hour can be distinguished from a genuine dip. Also info["turnaround_mins"].
+  return_arrival corrected. It was best + 2 x block + turn, where the aircraft would land
+  if it shuttled. It turns at the origin instead, so the inbound landed one turnaround
+  before this departure: best - turn.
+
+app/cortex_dashboard.html
+  The chart, drawn on every run that optimises a departure. Restricted hours shaded, both
+  halves of a window that crosses midnight handled; departures the aircraft cannot fly
+  marked, including those whose inbound would land inside a restriction; the chosen time
+  and, where a restriction moved it, the unrestricted optimum, both marked.
+  WHAT IT SHOWS IS STATED UNDER IT: connecting demand at each departure time, each way,
+  before capture scaling and before the capacity cap. Local demand does not vary with
+  departure time anywhere in the engine, which WEIGHT-IS-A-NULL-TEST established, so the
+  route total moves one for one with this curve until the aircraft fills. That is what
+  makes it readable as a total, and saying so is the difference between a chart and a
+  claim.
+  The departure input is a quarter-hour dropdown rather than a text box, for the reason the
+  curfew became one: a client asking for a specific time should not be able to introduce a
+  format error into the run. Blank still means optimise, and both readers of the field are
+  unchanged because a select yields .value exactly as an input did.
+
+STILL OPEN: the turnaround figures. 60, 90 and 180 minutes by flight type are planning
+averages with no source, and John's suggestion of an AIRCRAFT TYPE average is better than a
+regional one, since it is the aeroplane that sets the stand time. That wants a sourced
+table rather than three more invented numbers.
+
+Avia Solutions Limited. All rights reserved.

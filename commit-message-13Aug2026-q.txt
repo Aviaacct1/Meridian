@@ -1,0 +1,54 @@
+The sector figure is a load factor; and the seats cross-check, on long haul
+
+THE NULL CONTROL. A constant of 0.783 applied to seats, leave one cohort out and with no
+features at all, scores 77.8% within +-20% against the model's 78.5% on the sector target. On
+long-haul international FSC the constant BEATS the model, 74.5% against 73.7%. Sector's
+interquartile range of actual over seats spans a factor of 1.23 against nonstop's 1.64, which
+is the mechanism.
+
+  blind, route level      nonstop model 60.9%  null 53.2%  +7.7 | sector 78.5%  77.8%  +0.7
+  long-haul intl FSC                    39.8%       33.4%  +6.4 |        73.7%  74.5%  -0.8
+  portfolios of 20                      93.2%       60.1% +33.1 |        98.8%  97.8%  +1.0
+
+So re-grading on the client's number would raise the headline and hollow it out, while the
+published portfolio claim on the local leg is earned work: the null gets 60.1% there.
+
+THE 92 AND 86 ARE THE CALIBRATED PAIR, not the portfolios. Log line 138, 9 August V1.3-MIXED,
+records the site restated to calibrated 92% within +-20% and 86% within +-10%, portfolios of
+twenty 93%, blind 60.4% internal. They sit on the mixed basis, 595 routes graded on US DOT
+DB1B and 5,929 on Sabre MIDT, so today's Sabre-throughout run is not comparable with them.
+The comparable 9 August figure is CLAIMSET line 120: relaxed and Sabre, 84.6% and 72.4%.
+
+AND SOMETHING MOVED SINCE 9 AUGUST WHICH SHOULD NOT HAVE. Like for like:
+
+  calibrated +-20%    84.6 -> 83.2   -1.4
+  calibrated +-10%    72.4 -> 70.0   -2.4
+  portfolios of 20    94.7 -> 93.2   -1.5
+  tier A              87.3 -> 88.2   +0.9
+  blind route level   60.9 -> 60.9    0.0
+
+No capture file has been rebuilt, bt2_capture has not been re-run, and today's AVIA_BT2_TARGET
+defaults to nonstop. The leading candidate is VERSION-SENSITIVE: the fitted config runs
+minleaf=5 with no l2 and is essentially unregularised, while the blind config runs minleaf=60
+and l2=5.0 and did not move, which is the pattern a library change makes. Not asserted.
+bt2_claimset now stamps python, sklearn, numpy, scipy, user and host on every run, so a
+figure cannot travel without the build that produced it.
+
+THE SEATS CROSS-CHECK. The QSI engine estimates demand from catchment and capture knowing
+nothing about the aircraft; seats times a constant estimates it from the aircraft knowing
+nothing about the market. Two independent readings, so disagreement carries information.
+seats_crosscheck.py joins the arm to launch_profile for clean seats, since LF-MEASUREMENT-VOID
+killed the arm's own capacity column, restricts to long-haul international FSC, and scores
+five rules on captured_uncapped against p2p_outturn. k, the band and the threshold are all
+learned leave one cohort out.
+
+THE CONDITION IT RESTS ON, and it belongs on the page as much as in the code. Seats only
+carry information when the gauge is somebody else's judgement. True by construction in the
+back-test, true when a client brings a proposed aircraft, false when the tool picks the gauge
+or a user sweeps frequencies. Any feature built on this has to know which case it is in.
+
+  bt2/seats_crosscheck.py   NEW
+  bt2/bt2_claimset.py       the build stamp
+  bt2/bt2_experiments.log   4 entries
+
+Avia Solutions Limited. All rights reserved.

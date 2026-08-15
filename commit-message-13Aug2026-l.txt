@@ -1,0 +1,44 @@
+The grading year does not explain the feed, and a status line of mine that lied
+
+GRADING-YEAR-AS-THE-RULER IS REFUTED AS A MATERIAL EXPLANATION, and it was my hypothesis.
+
+Connecting traffic on the same route, later year over earlier:
+
+  Y2 over Y1   median 1.039   n=720     P2P on the same routes 1.013   n=1,287
+  Y3 over Y1   median 1.136   n=328     P2P 1.104                      n=550
+  Y3 over Y2   median 1.045   n=336
+
+The differential is the point. Connecting-specific growth over the local leg is x1.026 at
+Y2 and x1.029 at Y3, so 3% across two years, which is market growth rather than maturation.
+Closing RECUT-RESULT's tenfold over-read on maturation alone would have needed a Y2 over Y1
+of 10.2. The ruler is sound and RECUT-RESULT stands as measured: the shipped feed level
+over-reads by circa ten times and the grading year does not explain it.
+
+THE SECOND READING IS WORTH MORE THAN THE FIRST. The share of routes rising at all is 53.5%
+at Y2 and 52.2% on P2P, a coin flip, and the IQR of connecting Y2 over Y1 runs 0.742 to
+1.356, a spread of 1.83 across the middle half. Cohort 2016 reads 1.075 and cohort 2017
+reads 0.995 on the same measure, so the direction is not consistent between two adjacent
+cohorts. Route-level connecting traffic moves circa 30% either way year to year, so the
+quantity the feed is graded against is itself volatile. That compounds FEED-IS-UNINFORMATIVE
+rather than excusing it: part of the feed's spread is in the target.
+
+OPEN, AND IT QUALIFIES THE ABOVE. 163 route-years of circa 9,216, 1.8%, read sector below
+pure P2P, which is impossible. RULER-SOUND found zero of 3,072 on the graded year, and the
+difference is a basis one: the arm built both quantities from one source while this run
+mixes preagg's od_p2p with the leg explosion computed here. A shortfall of a few passengers
+is a rounding difference between two builds; a shortfall of thousands is a real mismatch.
+The first run reported only the count, so the magnitude now goes into the why column. Re-run
+and read it before the maturation medians are quoted as final.
+
+A STATUS LINE OF MINE LIED, and it is the same shape as the three found in other files
+today. This script printed "sector table present" unconditionally, because the line survived
+from the version that exited when the table was absent. It fired on a store that has no
+sector_adj at all, directly above the line reporting the leg explosion that only runs when
+the table is missing. The two lines contradicted each other on screen. It now names which
+path ran. Writing a status line before the code that decides the status is how this keeps
+happening.
+
+  bt2/connecting_maturation.py   the status line, the shortfall magnitudes
+  bt2/bt2_experiments.log        4 entries
+
+Avia Solutions Limited. All rights reserved.

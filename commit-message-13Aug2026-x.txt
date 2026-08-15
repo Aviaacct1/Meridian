@@ -1,0 +1,38 @@
+The wiring runbook, and the blocker found before any code was written
+
+RUNBOOK-WIRING-14Aug2026.md sets out wiring the calibrated model to the client path, for the
+session that builds it. Task 4 of the 12 August handover held the wiring on the grading
+basis; questions 1 and 2 of that basis are now answered and the answer changes what the
+wiring can claim.
+
+WHY IT IS NOW WORTH DOING, measured rather than argued. The engine being replaced reads
+11.3% within +-20% on 2,948 arm routes and 12.6% on the pin's 1,555, against the calibrated
+model's 22.4% on the same routes and same basis at p<0.0001. local_level_fit established that
+no multiplier rescues it: a perfect level fitted on its own routes scores 10.9%, below the
+uncorrected 11.3%, because the interquartile range spans a factor of 8.1 and straddles 1.0
+on every cut.
+
+THE BLOCKER, and it is not the one the handover named. bt2_gbm.X_of feeds the model
+log(months) as feature six and month_num as feature thirteen, and in training those two are
+perfectly collinear: months_operated = 13 - launch_month in every one of 6,810 rows.
+route_context.build defaults to months=12 and launch_mon=6, a pair that occurs zero times in
+training and cannot occur by construction, since all 192 rows with twelve months launched in
+January. A default live call would put the model off its own training manifold on every
+route. That is CAPA-IS-NOT-QSI-SHARE in a different feature and it is why the build did not
+start tonight.
+
+WHAT THE MODEL ACTUALLY PREDICTS, which nobody had stated: first-year local nonstop traffic
+for a route starting in a named month, because the target is launch_pax over the full
+calendar launch year against seats covering only the months operated. Meridian forecasts a
+maturity year. They reconcile on tonight's own measurement, the one that fell out of the
+refuted maturation hypothesis: the local leg grows x1.013 from Y1 to Y2 and x1.104 from Y1 to
+Y3, so a first-year output is within circa 10% of a third-year view and the adjustment is a
+stated factor rather than a guess.
+
+The runbook carries the build in four steps, the re-baseline with the instruction to set a
+date for it, what the wiring does not settle, and the two open items it must not touch.
+
+  RUNBOOK-WIRING-14Aug2026.md   NEW
+  bt2/bt2_experiments.log       3 entries
+
+Avia Solutions Limited. All rights reserved.

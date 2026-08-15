@@ -1,0 +1,26 @@
+The workbook writer expected three keys the builder never writes
+
+emit_workbook failed three times in succession on a live contract, each on a different key,
+because it had only ever run against ba_lhr_sjc_reference(), which fills every row by hand.
+
+  base_annual_demand   on two of the four summary rows
+  nr                   on the destination cities, which build_contract passes through exactly
+                       as given while wrapping the hub cities itself
+  annual_demand        on the destination TOTAL, which build_contract writes with
+                       annual_forecast and pdew alone
+
+All three are the writer expecting what the builder does not produce, in one file, and none is
+a model failure. Each is fixed with .get() rather than a new required key, because in every
+case the figure genuinely does not exist: the connecting build starts at the market rather
+than at a base that grew into it, so a blank cell states that and a zero would not.
+
+AFTER THE THIRD ROUND TRIP I STOPPED GUESSING ONE KEY AT A TIME and checked every hard
+subscript in emit_workbook against what build_contract writes, in one pass. Only three came
+back unmatched, r["segment"], r["annual_growth_rate"] and r["stimulation_factor"], and all
+three are written by segment_model rather than by build_contract, so they are correct.
+
+  Deck Generator/deck_contract.py   the destination total row
+  app/forecast_to_contract.py       nr and pdew on both connecting lists
+  bt2/bt2_experiments.log           2 entries
+
+Avia Solutions Limited. All rights reserved.

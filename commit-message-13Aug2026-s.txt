@@ -1,0 +1,40 @@
+Isolate the year-round services, because annualising the seats was not enough
+
+The correction moved things the right way and did not finish the job. seats x k on the
+sector total went from 21.1% to 35.5% and the local leg from 16.3% to 19.3%, against a null
+control figure of 74.5% on a matched basis.
+
+THE RESIDUAL HAS A NAMED CAUSE. Median months operated is 6 and p10 is 2, so scaling by
+12/months assumes a route that flew six months in its launch year goes on to fly twelve. On a
+genuinely seasonal service those months are the operating pattern rather than a partial view
+of it, annualising overstates the seats, and the ratio is dragged down. The arithmetic
+agrees: k for the local leg reads 0.347 here against the null control's 0.673, a ratio of
+1.94 against the x2.0 the median months implies.
+
+--min-months isolates it. 11 selects year-round services, where the scaling is nearly a
+no-op. If seats x k on the sector total then approaches 74.5%, seasonality was the whole
+residual and the test is usable on that subset alone.
+
+THE JOIN IS THE REAL LIMIT AND IT CAPS THIS LINE OF WORK. 1,479 of the arm's 3,072 rows have
+no launch_profile match at all, so nearly half the population is unreachable before any
+filter, and the long-haul cut leaves 730. The arm forecasts and grades at L+1 while
+launch_profile describes L, and nothing available says whether a route ran year-round in the
+graded year: the arm's own service column knows, but LF-MEASUREMENT-VOID established that its
+capacity column is annualised at 52 weeks and unusable.
+
+The clean version is an arm at --offset 0, which grades against the launch year and puts
+seats, traffic and forecast on one set of months with no annualising at all. Forty-five
+minutes, and it removes the entire class of error this script has now hit twice.
+
+THE FIGURE THAT HOLDS ACROSS BOTH RUNS, because it has no seats in it: on 730 long-haul
+international FSC routes the engine's captured_uncapped reads a median 0.617 of actual local
+outturn and lands within +-20% on 13.4% of them. The clamp and the switch cannot repair
+that. The synthetic check established they only touch routes wrong in the tail, and 0.617 is
+a fault in the middle. So the long-haul local leg wants a level correction measured directly,
+not a reconciliation against the aircraft, and that is a smaller and better-posed piece of
+work than the cross-check.
+
+  bt2/seats_crosscheck.py   --min-months; months carried into the output CSV
+  bt2/bt2_experiments.log   3 entries
+
+Avia Solutions Limited. All rights reserved.

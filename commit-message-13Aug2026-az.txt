@@ -1,0 +1,35 @@
+The deck contract is complete: JSON and workbook, from the live forecast
+
+Both write, on all three SJC-TPE cases. 53 of 56 fields carry a figure. Eight blocks at 100%:
+catchment, connecting_at_hub, connecting_at_destination, revenue_build, revenue_forecast,
+route_metadata, segment_forecast and summary_and_schedule. economics_year1 at 86%.
+
+Yesterday none of them did. run_observatory_pitch's own docstring recorded where we started:
+"Nothing in the deck reads a number from it. Do not read the output as a forecast of
+anything."
+
+WHAT IS LEFT is three fields and two numbers, and none is a model failure.
+avg_ow_fare_connecting is never set by deck_contract at all. cask needs a cost per available
+seat kilometre the payload does not carry. ancillary_revenue is a commercial benchmark. And
+origin_share at 0.62 and business_share_destination at 0.22 in the segments block are mine
+rather than measured, and they scale the whole eight-segment table.
+
+THE CHECK BEFORE ANY OF IT TRAVELS, and it has not been made yet: the average one-way fare in
+economics_year1 must land near the econ_fare the economics block already reports. Half or
+double means the per-turn reading of economics.revenue is wrong and every figure in that block
+is wrong with it. The reading was established from cortex_app building charges_per_turn with
+no division, so it is evidenced rather than assumed, but it has not been confirmed against an
+output.
+
+TWELVE UNEXERCISED PATHS IN ONE DAY is the finding of the session rather than any single
+number. Almost nothing that failed was wrong arithmetic. It was code that had never run on
+real data: the mixed-basis script, warm_demo's sign-in, --pairs, the model pickle, five
+writer-builder mismatches in emit_workbook, the GeoNames path, and three of my own controls
+that reported success without testing anything.
+
+Two rules earned: a control that cannot fail is not a control, and an error report naming the
+value but not the place is half a report.
+
+  bt2/bt2_experiments.log   4 entries
+
+Avia Solutions Limited. All rights reserved.

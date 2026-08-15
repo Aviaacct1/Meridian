@@ -1,0 +1,9 @@
+Records: acceptance close in the log and handover
+
+bt2_experiments.log gains ACCEPTANCE-CLOSE and GROWTH-TREND-RULE (15 August):
+the acceptance case passes (CI A359 5x, 131,812 two-way at 2026, steady-state
+121k inside the historic band), the three traps that made it read as a fail,
+the POO/ND store facts, and the two rulings shipped. HANDOVER-16Aug2026.md's
+OWED FIRST section updated to DONE with the remaining checks listed.
+
+Files: bt2/bt2_experiments.log, HANDOVER-16Aug2026.md

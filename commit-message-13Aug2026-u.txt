@@ -1,0 +1,43 @@
+Measure the level the engine's local leg needs, and whether a level can fix it at all
+
+bt2/local_level_fit.py is the better-posed job the cross-check pointed at. It measures the
+multiplier the local leg needs to reach outturn, captured_uncapped against p2p_outturn, both
+from the same arm row at the same graded year. No seats denominator, no join, no year
+mismatch: the three things that invalidated the cross-check twice. All 3,072 arm rows are
+available rather than the 730 that survived the join.
+
+THREE DISCIPLINES BUILT IN, each one paid for earlier in the programme.
+
+  Cuts are reported as a HAUL x TYPE cross-tab as well as singly, because
+  HUB-EFFECT-IS-MOSTLY-HAUL showed a marginal cut carrying another cut's mix: a hub effect of
+  x2.01 on the margin fell to x1.22 inside long haul.
+
+  Every multiplier is learned leave one cohort out, with a 30-route minimum before a segment
+  is used at all and a fall back to the global number below it.
+
+  A CEILING is reported: the band if every cut's median were corrected perfectly on its own
+  routes. That is fitted and unachievable, and it is the most a level correction of this
+  shape can ever buy.
+
+THE CEILING IS THE POINT, and the reading is fixed in advance. RECUT-RESULT and
+FEED-IS-UNINFORMATIVE both ended in the same place: a level cannot fix a spread. So the
+question is not what multiplier the long-haul local leg needs, which is already known to be
+circa 1.6, but whether applying it moves the band. If the ceiling sits close to the
+uncorrected figure, the local leg is not off by a level and no multiplier will rescue it.
+
+Checked on synthetic populations with known answers before touching the arm. A pure level
+fault with a tight spread recovers 47.8% to 74.1% against a ceiling of 73.9%. A spread fault
+goes 15.6% to 16.8% against a ceiling of 16.9%. The script separates the two cases, and the
+leave-one-cohort-out figure tracking the ceiling means it is not overfitting.
+
+AND IT HAS THE CONTROL THE CROSS-CHECK LACKED. The arm already carries fc_over_p2p, so the
+ratio computed here is checked against it row by row and the run stops if more than one per
+cent disagree by more than 2%. Worth noting that the cross-check's first two runs would both
+have passed such a check, because its fault was in a denominator brought from elsewhere
+rather than in the arm's own columns. Prefer a left and right hand side from one row wherever
+the measurement allows it.
+
+  bt2/local_level_fit.py    NEW
+  bt2/bt2_experiments.log   3 entries
+
+Avia Solutions Limited. All rights reserved.

@@ -1,0 +1,38 @@
+Close LF-CAP-OPEN: keep 0.875 global, redirect the refinement to the planning target
+
+The sensitivity run raised the scored population 73%, from 2,871 launches to
+4,963, and the centre did not move: median 0.778 in both runs, p75 0.841 in both,
+share above 0.875 at 14.5% then 14.4%. The conclusion does not depend on the
+filters.
+
+Corrects PLAN-LF-MEASURED, which said haul does nothing and had measured only the
+centre. The medians are still within 2.0 points across the four haul cuts, but
+the share above 0.875 is monotonic in the larger population, 11.6% to 17.8%, and
+p90 runs 0.883 to 0.907. Short haul has a thinner upper tail. A cap lives in the
+tail, so the centre was the wrong statistic for the question.
+
+Exact percentiles size the prize. At a constant 85.5th percentile the cap would be
+0.862 to 0.888 across the marginal cuts, a range whose midpoint is 0.875 exactly,
+and 0.853 to 0.900 across the ten crossed cells with 30 or more routes. Long haul
+clusters at 0.881 to 0.892. So the differences are 4 to 7 points at the median and
+2.0 to 4.7 at the 85th percentile: the tails converge where the middles do not.
+
+Keeps one global cap at 0.875. Worst case from doing so is 2.5 points of load
+factor, 2.9% of the carried total, on the 15.6% of routes where the cap binds,
+which is about an eighth of the plus or minus 20% tolerance on one route in six.
+
+The deciding argument is not the size. A per-cell cap fitted on achieved load
+factors would raise the ULCC medium-haul cap to 0.900, and CAP-IS-LOAD-BEARING
+measured 422 of the 818 pinned routes still over-forecasting by more than 20%
+with the cap holding them down. The cap is absorbing a demand over-read, so
+tuning it to observed load factors treats it as what it is labelled rather than
+what it does.
+
+The measurement is therefore the right basis for schedule_sizing.PLANNING_LF,
+which is a commercial statement about how full a schedule is written to fly, and
+the wrong basis for the engine brake. The brake stays global and labelled until
+the over-read it absorbs is fixed at source.
+
+No engine constant changes in this commit.
+
+Log: PLAN-LF-STABLE, HAUL-IS-A-TAIL-EFFECT, THE-TAILS-CONVERGE, LF-CAP-CLOSED.

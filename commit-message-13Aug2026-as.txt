@@ -1,0 +1,15 @@
+The report was swallowing the one line that explained the last empty block
+
+segment_forecast stayed at 50% with the segments block supplied, and the run could not say
+why. _blocks looked for _need_rows and rows_need, and deck_contract writes _rows_need. The
+leading-underscore form is the common one across that file, _rows_need, _origin_city_need,
+_schedule_times_need, and it was the one the lookup missed.
+
+So the single line explaining the last empty block was being swallowed by the report written
+to show it. Ninth instance today of a check that could not report what it existed to report,
+and the fifth of mine. All four naming forms are now tried.
+
+  app/deck_from_cases.py    the _need lookup
+  bt2/bt2_experiments.log   1 entry
+
+Avia Solutions Limited. All rights reserved.

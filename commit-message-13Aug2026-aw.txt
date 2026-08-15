@@ -1,0 +1,30 @@
+The workbook had never been run on a live contract
+
+95% of fields carry a figure and the JSON writes, but emit_workbook raised
+KeyError 'base_annual_demand' on every case, so the .xlsx never appeared.
+
+Line 589 reads s["base_annual_demand"] for all four summary rows, while build_contract writes
+that column only for point_to_point_total and connecting_at_hub_total.
+connecting_at_destination_total and grand_total carry forecast and pdew alone. The writer had
+only ever been exercised against ba_lhr_sjc_reference(), which fills all four rows by hand.
+
+Tenth instance today of a path nobody had run until the day it was needed.
+
+Fixed with .get() rather than by adding a required key, because those two rows genuinely have
+no base-year demand to state: the connecting build starts at the market rather than at a base
+that grew into it. A blank says that and a zero would not.
+
+The rest of emit_workbook was checked rather than only the line that failed, because one stale
+subscript implies the writer has drifted from the builder. zones, by_cabin, by_flow,
+top_markets_beyond_hub, annual_capacity, passengers, years and nr are all written by
+build_contract, so this was the only structural mismatch.
+
+WHERE THE DECK CONTRACT STANDS: 53 of 56 fields from the live forecast. Eight blocks at 100%.
+economics_year1 at 86%, and its three remaining gaps are not plumbing and not model failures:
+avg_ow_fare_connecting, which deck_contract never sets; cask, which needs a cost per available
+seat kilometre the payload does not carry; and ancillary_revenue, a commercial benchmark.
+
+  Deck Generator/deck_contract.py   emit_workbook tolerates the two summary rows
+  bt2/bt2_experiments.log           3 entries
+
+Avia Solutions Limited. All rights reserved.

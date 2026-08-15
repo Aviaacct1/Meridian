@@ -1,0 +1,33 @@
+Derive the control's tolerance from the stored precision, not from a flat 2%
+
+The run stopped at 184 of 2,948 rows and the fault was the tolerance rather than the data.
+
+backtest line 595 builds ratio_p2p from the UNROUNDED captured and p2p. Line 602 stores
+captured_uncapped as an integer, and line 604 stores p2p_outturn as an integer and
+fc_over_p2p to three decimals. So a ratio of two rounded integers cannot match a rounded
+ratio of two unrounded ones to a flat 2%. Rounding alone moves the ratio by 2.55% where
+captured is 20 and 5.05% where it is 10, and on an engine reading a median 0.617 against a
+100-passenger floor that is exactly a six per cent slice of the population.
+
+That is the TOLERANCE fault of 12 August in a new place, and the fourth of mine today. The
+tolerance is now derived from the write precision: 0.5/captured + 0.5/p2p on the ratio, plus
+0.0005 for the stored decimals.
+
+VERIFIED TO DISCRIMINATE, not merely to pass. On 20,000 synthetic rows built the way the
+arm's writer builds them, the derived tolerance flags zero. On 2,000 rows carrying a
+genuinely 15% different numerator it still flags 1,988. The control also now prints the
+first five disagreements with the rounding allowance beside each, because a bare count was
+what made the first stop unreadable.
+
+WORTH RECORDING AS PROCESS, at the end of a day with seven basis errors in it. The seats
+cross-check made three, each found only after it had produced a result that was then
+withdrawn. This script made one, and its own control caught it before any figure existed.
+That is what a left and right hand side from one row, plus a stated-precision check, buys.
+
+The rule earned today: build the control before the measurement, derive its tolerance from
+how the values were stored, and print the exceptions rather than the count.
+
+  bt2/local_level_fit.py    derived tolerance; exceptions printed
+  bt2/bt2_experiments.log   3 entries
+
+Avia Solutions Limited. All rights reserved.

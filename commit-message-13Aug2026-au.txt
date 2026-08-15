@@ -1,0 +1,19 @@
+An override that points at nothing must not beat a working default
+
+I told John to set AVIA_GEONAMES to E:\Avia\cities5000.txt, no file is there, and the
+precedence let the environment variable win even when it pointed at nothing. So the run
+failed while cities5000.txt sat in app/, where cortex_app line 30 already finds it. My fault
+twice over: the instruction and the precedence.
+
+An environment variable is a preference, not a promise that the file exists.
+
+Candidates are now tried in order, AVIA_GEONAMES then cortex_app.DUMP then beside the module,
+and the first one that exists is used. Where an override is set and misses, the fallback is
+taken and said in the basis line, because silently ignoring what somebody explicitly asked
+for is its own kind of wrong. On a genuine miss the error lists every path tried rather than
+naming one.
+
+  app/segment_inputs.py     ordered candidates, the fallback announced
+  bt2/bt2_experiments.log   1 entry
+
+Avia Solutions Limited. All rights reserved.

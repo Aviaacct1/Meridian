@@ -1,0 +1,32 @@
+Found what built the published pair: bt2_mixed_basis, guarded and its output fixed
+
+bt2/bt2_mixed_basis.py is what produced the mixed basis, and it was in the repo all along
+with an importable attach(). It grades US domestic launches against DOT DB1B and everything
+else against Sabre MIDT, which is John's rule of 5 August, and the db1b_outturn_2016 to 2024
+files it needs are already in bt2_relaxed.
+
+Its own docstring states the coverage honestly: DB1B Market quarters run 2000 to 2024 with
+2016 Q1 absent and nothing for 2025, so the 2016 cohort is scaled from three quarters and
+flagged, and US domestic launches in 2025 keep their Sabre grading. Lines 151 to 155 print
+Sabre throughout against mixed, blind and calibrated, which is exactly the comparison a site
+restatement needs. So the published pair is reproducible after all.
+
+GUARDED, because AVIA_BT2_TARGET could not collide with this before today. attach() overwrites
+r["actual"] with the DOT figure on US domestic launches, and DB1B is a local nonstop ticket
+count. Dropping it on top of the sector target would grade 595 routes on the local market and
+5,929 on the whole sector inside one sample, which is not a mixed ruler but a broken one. It
+now refuses by name unless the target is nonstop.
+
+The build stamp is printed here too, imported from bt2_claimset rather than copied, so the
+two lines cannot drift.
+
+AND THE SAME LITERAL-PERCENT FAULT I MADE IN oag_label_check THIS MORNING, found in this file
+while adding the guard. Line 155 passed "  calibrated within +-10%%" as a label argument,
+where the doubled percent is not consumed by the format operator and printed as "+-10%%", and
+it put 0.0 in the blind column as a placeholder that reads as a measurement of zero. It now
+prints both tolerances for both bases, four lines, no placeholders.
+
+  bt2/bt2_mixed_basis.py    the target guard, the build stamp, the output fix
+  bt2/bt2_experiments.log   3 entries
+
+Avia Solutions Limited. All rights reserved.

@@ -1,0 +1,38 @@
+Compute the coverage verdict instead of printing it regardless
+
+oag_label_check --coverage closed with an unconditional print, and it told the reader to
+withdraw a correct finding.
+
+Lines 162 to 165 asserted that a normal month at the named airports means the world is
+there, that the five-against-seven region count is the partitioning, and that the reading
+of a coverage gap is wrong. That sentence was written for TPE, PVG and HKG, which do come
+back normal. It then printed itself unchanged over DXB, DOH, JNB and CAI, where the table
+directly above it shows Johannesburg at 24 distinct departing flights in 2017-08 against
+402 in 2019-08.
+
+Distinct departing flights in August as a share of each airport's own best label:
+
+  JNB   5% / 6% / 6% in 2015-17 against 100% in 2018-19
+  CAI  13% / 13% / 13%
+  DOH  48% / 54% / 60%
+  DXB  56% / 59% / 60%
+
+So REGION-COVERAGE and REGION-CONSEQUENCE of 12 August stand. The store is short of
+intra-Africa and intra-Middle-East schedules for 2015 to 2017, and cohorts 2016 and 2017
+take every pre-launch month from that range.
+
+THE FIX is the same one already applied to dep_basis in cortex_app: a label must say what
+the code checked, not what its author expected. Each label is now scored against that
+airport's own best label, which keeps the comparison inside one airport and needs no
+external traffic figure. Anything below 75% is named SHORT, with the rule printed beside
+it so it can be argued with, on the ground that these airports did not grow by a quarter
+in a year. Where nothing falls short the script says so and prints the partitioning
+reading instead.
+
+This is the sixth instance of the recorded shape and the first where the silent default
+was a conclusion rather than a value.
+
+  app/oag_label_check.py    the verdict is computed from the table and named per airport
+  bt2/bt2_experiments.log   3 entries
+
+Avia Solutions Limited. All rights reserved.

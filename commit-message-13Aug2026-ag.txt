@@ -1,0 +1,42 @@
+Wire the calibrated model behind the switch: the switch is inert no longer
+
+Steps 2 and 3 of RUNBOOK-WIRING. cortex_app.calibrated_forecast builds the route context and
+calls bt2_forecast when AVIA_FORECAST_ENGINE=bt2, passing the result to route_forecast as
+p2p_demand_override.
+
+DEFAULT IS qsi AND NOTHING MOVES. bt2_forecast reads the switch itself and returns None when
+it is not set, so the block costs nothing on the shipped path and cannot change a client
+number until somebody sets it deliberately. months=12 with launch_mon=1, because
+route_context refuses any other twelve-month pair by name and that is the only twelve-month
+point on the training manifold.
+
+GATING TESTED ON FIVE PATHS: switch off, caller-named configuration, generic type table, no
+airline named, and an unknown aircraft with no seat count anywhere. The last three fall back
+to the QSI engine and the payload says why.
+
+SCHEDULED AGAINST INDICATIVE is bt2_forecast's own distinction, now wired to the one thing in
+cortex_app that carries it. When the caller passes seats, that is the carrier's own
+configuration measured from OAG and the back-test measured exactly that case, so the mode is
+scheduled. When seats is None the gauge comes from aircraft_economics.AIRCRAFT, which is
+Meridian's generic table and therefore Meridian's own choice, so anchoring a capacity model
+on it is circular and the mode is indicative.
+
+That is the same circularity John raised about seats times 0.78 earlier tonight, and
+bt2_forecast had already named it in its docstring on 9 August. Answered either way,
+labelled differently, never silently.
+
+THE PAYLOAD NAMES THE ENGINE. forecast_engine carries which engine produced the local leg,
+the switch value, the mode, the tier, the model version and population, the p25 to p75 range,
+and "declined" with the reason whenever the switch is on and the model did not answer. Plus
+qsi_corrections_applied, stated because it is the one thing a reader would otherwise assume
+wrongly: when the model answers, the seven QSI calibration factors are not applied on top of
+it.
+
+A page that does not say which engine answered is the silent-default shape this codebase has
+been caught by seven times, and here it is the difference between a figure that carries an
+accuracy claim and one that does not.
+
+  app/cortex_app.py         the model call, the gating, forecast_engine in the payload
+  bt2/bt2_experiments.log   3 entries
+
+Avia Solutions Limited. All rights reserved.

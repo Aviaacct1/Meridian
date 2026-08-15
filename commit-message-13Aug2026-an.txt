@@ -1,0 +1,47 @@
+Join the forecast to the Observatory deck: the adapter that never existed
+
+John was right and I had scoped "wired in" too narrowly. The 40-page Observatory deck is
+real, the forecast is real, and nothing connected them. run_observatory_pitch.py says so in
+its own docstring: "deck_contract.py is not yet wired into the connector, so the fc handed in
+here carries route identity and placeholder demand only. Nothing in the deck reads a number
+from it. Do not read the output as a forecast of anything."
+
+And /api/report does not build the Observatory deck at all. It imports route_deck, which is
+the summary PPTX and describes itself in its own header as a hand-typed summary. So the deck
+a client sees and the forecast the tool computes have never met.
+
+Everything downstream of the contract already works: deck_contract emits it, forecast_spec
+translates it, spec_from_research renders it. The break is one join, and deck_contract still
+expects the shape assess.py produced in the June chain.
+
+app/forecast_to_contract.py maps the calibrated_forecast payload onto the two dicts
+build_contract takes. THREE MAPPINGS ARE NOT OBVIOUS and each is an error already paid for:
+
+  CARRIED AGAINST DEMAND. The payload carries both. demand.total is carried after the 87.5%
+  plan cap; demand.total_demand is uncapped. CAPPED-VS-UNCAPPED records a claim quoted for a
+  week that compared one against the other. directional_demand takes the carried figure and
+  the uncapped one travels beside it under its own name.
+
+  SEATS. deck_contract._seats_for falls back to the generic AIRCRAFT table, where the A350-900
+  is 336. China Airlines flies it at 306. The forecast's own seat count is passed as a
+  cabin_config with the type's business fraction scaled to it, so the deck can never be sized
+  8 to 13% above the forecast it describes.
+
+  EACH WAY. The payload is each way throughout and nothing here doubles.
+
+The selftest passes all seven checks against the real aircraft table, including 306 against
+336.
+
+app/deck_from_cases.py runs a cases file, the same one scenario_runner takes so a deck and a
+scenario table cannot come from two definitions of one case, and emits a contract per route.
+--report-only writes nothing and lists which blocks carry figures and which are empty,
+aggregated across the set. That list is the answer to "I may need to come back and get the
+tables populated": deck_contract emits a gap as None with a _need note rather than a zero, so
+knowing the list before building a deck is the difference between populating tables and
+discovering them.
+
+  app/forecast_to_contract.py   NEW, the adapter and its selftest
+  app/deck_from_cases.py        NEW, the runner and the gap report
+  bt2/bt2_experiments.log       3 entries
+
+Avia Solutions Limited. All rights reserved.

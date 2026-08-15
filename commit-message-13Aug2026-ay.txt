@@ -1,0 +1,27 @@
+Two more writer-builder mismatches, and my sweep had a hole in it
+
+KeyError 'connecting_at_hub' came from rv["revenue"][k], not from the block of that name,
+which exists and is complete. revenue_forecast["revenue"] holds point_to_point, cargo,
+ancillary and total, and carries _connecting_revenue_need reading "needs connecting pax x
+connecting fare", so the two connecting lines are a stated gap rather than an oversight while
+the writer's loop asked for all six. The same shape in revenue_build's by_flow.
+
+All three loops now fall back to an empty row of the right width, so the sheet shows the line
+and leaves it blank, which is what the _need note describes.
+
+MY SWEEP HAD A HOLE IN IT. The pass I ran after the third failure excluded the variable
+`contract` and compared only top-level keys, so it could not see rv["revenue"][k] or
+rb["by_flow"][k], and it reported no remaining mismatches immediately before two more. A
+check that skips the one variable holding everything is not a check. Redone over every
+literal-key loop against build_contract, nested keys included, and it now comes back clean.
+
+AND THE TRACEBACK WAS THERE ALL ALONG. deck_from_cases printed only the exception message, so
+five failures were diagnosed from a bare key name when the traceback knew the file and line
+every time. It now prints the file, the line number and the source line. That is four round
+trips John did not need to make, and the fix is two lines.
+
+  Deck Generator/deck_contract.py   three loops tolerate a stated gap
+  app/deck_from_cases.py            the traceback location on a workbook failure
+  bt2/bt2_experiments.log           3 entries
+
+Avia Solutions Limited. All rights reserved.
