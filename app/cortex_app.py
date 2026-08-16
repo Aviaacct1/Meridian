@@ -131,7 +131,23 @@ async def _gate(request: Request, call_next):
     #    branded sign-in, so demo testers get the look and feel and click through to the app (see /signin POST).
     if not open_path and is_html_get and not request.cookies.get("obs_entered"):
         return RedirectResponse("/signin", status_code=302)
+    # 3) REFRESH bracket (item 8, 16 August 2026). While an ingest holds the write lock
+    #    on a store, the portal must not open new read connections against it (DuckDB is
+    #    single-writer). The refresh wrapper turns this on via /api/refresh/begin, the
+    #    ingest runs, /api/refresh/end turns it off; API work is refused honestly in
+    #    between rather than failing somewhere inside a query.
+    if REFRESH_PAUSED.get("on") and path.startswith("/api/") \
+            and not path.startswith("/api/refresh/"):
+        return JSONResponse({"ok": False, "error":
+                             "the data stores are being refreshed; the portal is "
+                             "paused for a few minutes. Try again shortly."},
+                            status_code=503)
     return await call_next(request)
+
+
+# The refresh bracket's one piece of state. A dict, not a bool, so the middleware and
+# the endpoints share one object and the since-time travels with it.
+REFRESH_PAUSED = {"on": False, "since": None}
 
 
 # ---- Meridian branded entry screens (sign-in / welcome / loading / error), wired to real state ----
@@ -3083,7 +3099,7 @@ def demo_leads_page():
             "a look.</p>" % bad) if bad else ""
     html = """<!DOCTYPE html><html lang="en-GB"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Meridian · Demo requests</title><style>
+<title>Meridian &middot; Demo requests</title><style>
 body{font-family:Georgia,serif;background:#f7f5f0;color:#1d1c18;margin:0;padding:16px;
      max-width:640px;margin-left:auto;margin-right:auto;}
 h1{font-size:20px;font-weight:600;margin:8px 0 2px;}
@@ -3120,3 +3136,45 @@ function act(id, action, btn){
 }
 </script></body></html>""" % (warn, body)
     return HTMLResponse(html)
+
+
+# ---------------------------------------------------------------- the refresh bracket
+# Item 8 (16 August 2026): the ingest brackets the portal rather than restarting it.
+# The portal is a console process launched by Meridian-run.bat, not a Windows service,
+# so a scheduled task cannot stop and start it cleanly; what the single-writer rule
+# actually requires is that the portal holds no store connections while the loader
+# writes. begin closes every registry connection and refuses new /api work (see the
+# gate's step 3); end closes again and resumes, so the first query after the refresh
+# re-opens against the NEW file handles (the 6 July S16 item, db_registry.reset()).
+# Both endpoints answer to the same origin gate as everything else; the wrapper
+# authenticates with QSI_PASSWORD over Basic auth.
+
+@app.post("/api/refresh/begin")
+def api_refresh_begin():
+    import time
+    import db_registry
+    REFRESH_PAUSED["on"] = True
+    REFRESH_PAUSED["since"] = time.time()
+    db_registry.reset()
+    return JSONResponse({"ok": True, "state": "paused",
+                         "note": "registry connections closed; /api refuses with 503 "
+                                 "until /api/refresh/end"})
+
+
+@app.post("/api/refresh/end")
+def api_refresh_end():
+    import db_registry
+    db_registry.reset()   # again, so nothing re-opened mid-window survives on old handles
+    REFRESH_PAUSED["on"] = False
+    REFRESH_PAUSED["since"] = None
+    return JSONResponse({"ok": True, "state": "resumed",
+                         "note": "the next query re-opens each store from its file"})
+
+
+@app.get("/api/refresh/state")
+def api_refresh_state():
+    import time
+    out = {"ok": True, "paused": bool(REFRESH_PAUSED.get("on"))}
+    if REFRESH_PAUSED.get("since"):
+        out["paused_for_s"] = int(time.time() - REFRESH_PAUSED["since"])
+    return JSONResponse(out)

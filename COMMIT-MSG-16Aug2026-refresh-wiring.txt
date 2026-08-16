@@ -1,0 +1,41 @@
+Item 8: the refresh wiring - weekly task, in-process bracket, run sheet
+
+The bracket is in-process rather than stop/start, and the handover wording
+changes with it: the portal is a console process launched by Meridian-run.bat,
+not a Windows service, so a scheduled task cannot restart it cleanly. What the
+DuckDB single-writer rule actually requires is that the portal holds no store
+connections while the loader writes, and that the first query afterwards
+re-opens against the new file handles.
+
+Changed:
+- app/cortex_app.py   POST /api/refresh/begin (db_registry.reset() + read-pause:
+  the gate's new step 3 refuses /api with an honest 503 while paused),
+  POST /api/refresh/end (reset again so nothing re-opened mid-window survives
+  on old handles, then resume; closes the 6 July S16 item), GET
+  /api/refresh/state. Both POSTs answer to the existing origin gate; the
+  wrapper authenticates with QSI_PASSWORD over Basic auth.
+
+New:
+- refresh_weekly.ps1   the scheduled-task target, beside the launcher in the
+  repo root: plan-only into the log always, then begin -> execute -> end with
+  the end call in a finally block, so a failed ingest can never leave the
+  portal paused. An unreachable portal is stated and the refresh proceeds (a
+  portal that is down holds no connections). schtasks registration line in the
+  header (weekly, Monday 06:30, run as the logged-on user for E: and
+  QSI_PASSWORD). NOT yet executed under PowerShell; the first -PlanOnly run on
+  the workstation is its parse check.
+- RUNSHEET-refresh-commissioning-16Aug2026.md   the watched catch-up to end
+  July: what the plan should show (vintage guard holds 2026 Sabre, half-month
+  files held to their own spine, Sabre confirm lines never auto-run), the
+  paste-the-plan step, the four post-execute checks, the Sabre by-hand
+  bracket, and the September unwatched test framing.
+
+Unchanged: app/refresh_pickup.py and its seven tests (still pass); Jess's
+downloads and the catch-up run itself stay with John per the run sheet.
+
+Tests: app/test_refresh_pickup.py 0 failures; app/test_demo_flow.py 58 checks
+0 failed; cortex_app compiles.
+
+Also carried in this commit: NOTE-Atlas-QSI-current-method-16Aug2026.md (the
+current-methodology note for the Atlas chat) and the handover item 7 and
+item 8 status notes.

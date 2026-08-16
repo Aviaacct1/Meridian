@@ -229,6 +229,15 @@ API keys) so the Watch briefing works.
 8. Refresh commissioning: catch OAG/Sabre up to end July WATCHED via refresh_pickup
    (--plan-only first, paste the plan), then wire the weekly scheduled task + portal
    stop/start bracket with db_registry.reset(). 1 day + Jess's downloads.
+   WIRING BUILT 16 August (commit owed: COMMIT-MSG-16Aug2026-refresh-wiring.txt):
+   the bracket is IN-PROCESS, not stop/start, because the portal is a console app a
+   scheduled task cannot restart cleanly: /api/refresh/begin closes the registry and
+   read-pauses /api with an honest 503, /api/refresh/end re-opens (S16 closed);
+   refresh_weekly.ps1 runs plan-only into the log, brackets the execute, end in a
+   finally block; schtasks line in the header. The WATCHED RUN itself is John's, on
+   the workstation: RUNSHEET-refresh-commissioning-16Aug2026.md, paste the plan into
+   the chat before executing. The ps1 has not run under PowerShell yet; the -PlanOnly
+   pass is its parse check.
 9. Tester onboarding: six analysts, access notes, feedback form. 0.5 day.
 10. John personally: stand booking decision with Charlotte (hold a stand), brief to the
     brand team, redistribution/PI/legal quotes in motion, the analyst footnote question
