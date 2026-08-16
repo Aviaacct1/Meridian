@@ -61,7 +61,7 @@ function Invoke-Portal([string]$path) {
 }
 
 Write-Log ("== Meridian watched refresh, {0} ==" -f $stamp)
-& py -3.12 (Join-Path $appDir "refresh_pickup.py") --plan-only 2>&1 | Tee-Object -FilePath $log -Append
+& py -3.12 (Join-Path $appDir "refresh_pickup.py") 2>&1 | Tee-Object -FilePath $log -Append
 if ($LASTEXITCODE -ne 0) {
     Write-Log "PLAN FAILED (exit $LASTEXITCODE); nothing was changed. Read the log."
     exit $LASTEXITCODE

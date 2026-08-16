@@ -202,6 +202,11 @@ def main():
     ap.add_argument("--manifest", default=DEFAULT_MANIFEST)
     ap.add_argument("--status", default=DEFAULT_STATUS)
     ap.add_argument("--oag-db", default=None, help="defaults to config.OAG_DUCKDB")
+    ap.add_argument("--plan-only", action="store_true",
+                    help="the explicit form of the default: print the plan, change "
+                         "nothing. Accepted because this module's own docstring has "
+                         "advertised it since 15 August; the flag not existing cost a "
+                         "watched run on 16 August.")
     ap.add_argument("--execute", action="store_true",
                     help="run the OAG monthly loads in the plan. Default is plan-only: "
                          "print the plan and change nothing.")
@@ -209,6 +214,8 @@ def main():
                     help="also run the drop-and-reload items; off by default so a "
                          "changed historical file is a decision, not an accident")
     args = ap.parse_args()
+    if args.plan_only and args.execute:
+        ap.error("--plan-only and --execute contradict each other; pass one")
     if not args.oag_db:
         sys.path.insert(0, HERE)
         import config as CFG

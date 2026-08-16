@@ -1,0 +1,13 @@
+Refresh: --plan-only exists now, and the wrapper no longer passes it
+
+refresh_pickup.py's own docstring has advertised --plan-only since 15 August,
+but argparse never defined it; plan-only was only ever the default. The first
+watched run on donatello failed on exactly that (exit 2, nothing changed,
+which is the failure mode working as designed).
+
+- app/refresh_pickup.py: --plan-only accepted as the explicit form of the
+  default, so the documented command is true; --plan-only with --execute
+  refuses loudly rather than letting one silently win.
+- refresh_weekly.ps1: the plan step passes no flag and relies on the default.
+
+Verified: py_compile clean; test_refresh_pickup.py 0 failures.
