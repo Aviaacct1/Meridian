@@ -314,8 +314,15 @@ def segments_from_case(fc, seg_case, base_year, service_year):
 
 
 def contract_from_forecast(fc, currency="USD", growth_rate=None, ancillary_per_pax=None,
-                           segment_rows=None, connecting=None, segments=None):
-    """The deck data contract for one live forecast, or a RuntimeError naming what is missing."""
+                           segment_rows=None, connecting=None, segments=None,
+                           catchment_ends=None):
+    """The deck data contract for one live forecast, or a RuntimeError naming what is missing.
+
+    catchment_ends, when given, is {"origin": profile, "destination": profile} from
+    cortex_app.catchment_profile: band populations and locale points per route end, for the
+    pack's catchment maps. A profile that failed carries ok=False with its reason and is
+    written as a named gap, so the page falls back to the zone definitions and says why
+    rather than drawing a map with nothing behind it."""
     miss = _need(fc)
     if miss:
         raise RuntimeError("cannot build a contract: " + "; ".join(miss))
@@ -391,6 +398,25 @@ def contract_from_forecast(fc, currency="USD", growth_rate=None, ancillary_per_p
         "feed_level_detail": (_fl or None),
         "od_source": outputs.get("od_source"),
     }
+    # THE CATCHMENT ENDS. Population by drive-time band and the locale points, one block per
+    # route end, produced by the same catchment_profile the portal's map page reads. The pack
+    # draws its maps from these; an end that failed keeps its reason so the page can say it.
+    if isinstance(contract.get("catchment"), dict):
+        _ce = catchment_ends or {}
+        _good = {s: p for s, p in _ce.items() if isinstance(p, dict) and p.get("ok")}
+        if _good:
+            contract["catchment"]["ends"] = _good
+            _bad = {s: p.get("error", "no reason recorded") for s, p in _ce.items()
+                    if s not in _good}
+            if _bad:
+                contract["catchment"]["_ends_partial"] = (
+                    "; ".join("%s: %s" % (s, w) for s, w in sorted(_bad.items())))
+        else:
+            contract["catchment"]["_ends_need"] = (
+                "; ".join("%s: %s" % (s, (p or {}).get("error", "no profile"))
+                          for s, p in sorted(_ce.items()))
+                or "no catchment profiles were passed; deck_from_cases computes them from the "
+                   "live context (GeoNames dump plus the drive engine)")
     _fill_hardcoded(contract, fc, case)
     _fill_forecast_table(contract, fc)
     _fill_competition(contract, fc)

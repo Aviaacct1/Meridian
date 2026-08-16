@@ -242,6 +242,72 @@ def catchment_map(path, w=5.6, h=5.0, dpi=210):
     return path
 
 
+def catchment_end_map(path, profile, w=5.6, h=5.0, dpi=210, max_labels=8):
+    """One route end's catchment, drawn from a catchment_profile dict rather than by hand.
+
+    catchment_map above is the SJC service area with hand-placed ellipses, kept for the decks
+    that used it. This one is general: every populated place from the profile, coloured by its
+    drive-time band to the airport (the same bands the portal's catchment page shows), sized by
+    population, the airport marked, the largest places named. Nothing here is styled by guess:
+    a place with no drive time (the engine could not route it, or no engine ran) is grey and
+    the caller's page says whether drive times were available.
+
+    profile = cortex_app.catchment_profile(code): {"airport": {code, city, lat, lon},
+    "radius_km", "bands", "locales": [{lat, lon, pop, drive, name}, ...]}.
+    """
+    ap = profile.get("airport") or {}
+    alat, alon = float(ap["lat"]), float(ap["lon"])
+    radius = float(profile.get("radius_km") or 220.0)
+    locs = profile.get("locales") or []
+    # frame: the radius either side, longitude widened by latitude so the frame is square-ish
+    # on the ground rather than in degrees
+    dlat = radius / 111.0 * 1.15
+    dlon = dlat / max(np.cos(np.radians(alat)), 0.2)
+    fig = plt.figure(figsize=(w, h))
+    ax = fig.add_axes([0, 0, 1, 1])
+    m = Basemap(projection="merc", llcrnrlon=alon - dlon, urcrnrlon=alon + dlon,
+                llcrnrlat=max(-82.0, alat - dlat), urcrnrlat=min(82.0, alat + dlat),
+                resolution="i", ax=ax)
+    fig.set_size_inches(w, w * m.aspect)
+    m.drawmapboundary(fill_color=SEA)
+    m.fillcontinents(color="#F4F6EC", lake_color=SEA)
+    m.drawcoastlines(linewidth=0.6, color="#9FB0C2")
+    m.drawcountries(linewidth=0.5, color=COAST)
+    # drive-time bands in the portal's order; grey is "no drive time", stated, not hidden
+    BAND_COL = [(30, MID), (60, "#7FC6F0"), (90, "#B8D9EF"), (120, "#D5E7F5")]
+    NO_DRIVE = "#B9C1CC"
+    mx = max((l.get("pop") or 0) for l in locs) or 1.0
+    for l in sorted(locs, key=lambda x: -(x.get("pop") or 0)):
+        x, y = m(l["lon"], l["lat"])
+        col = NO_DRIVE
+        d = l.get("drive")
+        if d is not None:
+            for bb, cc in BAND_COL:
+                if d <= bb:
+                    col = cc; break
+            else:
+                col = NO_DRIVE
+        r = 2.2 + 9.0 * ((l.get("pop") or 0) / mx) ** 0.5
+        ax.plot(x, y, "o", color=col, markersize=r, alpha=0.85, zorder=5,
+                markeredgecolor="white", markeredgewidth=0.5)
+    named = 0
+    for l in sorted(locs, key=lambda x: -(x.get("pop") or 0)):
+        if named >= max_labels or not l.get("name"):
+            continue
+        x, y = m(l["lon"], l["lat"])
+        ax.text(x, y + 0.008 * ax.get_ylim()[1], l["name"], fontsize=7.6,
+                fontweight="bold", color="#3A4A5E", ha="center", va="bottom", zorder=7)
+        named += 1
+    xa, ya = m(alon, alat)
+    ax.plot(xa, ya, "o", color=NAVY, markersize=11, zorder=8,
+            markeredgecolor="white", markeredgewidth=1.6)
+    ax.text(xa, ya - 0.026 * ax.get_ylim()[1], ap.get("code") or "", fontsize=12,
+            fontweight="bold", color=NAVY, ha="center", va="top", zorder=9)
+    fig.savefig(path, dpi=dpi)
+    plt.close(fig)
+    return path
+
+
 def beyond_map(path, cities, title_free=True, w=9.4, h=3.5, dpi=210):
     """Europe / Middle East / Africa markets beyond London, sized by demand."""
     fig = plt.figure(figsize=(w, h))

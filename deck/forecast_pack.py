@@ -395,8 +395,85 @@ def _against_prior(c, prior):
                    source=_src(c))
 
 
-def _catchment(c):
-    """Sep 25 slide 41. The map where one has been drawn, the zone definitions where it has not."""
+def _route_page(c, maps):
+    """The route as a great circle, with the schedule beneath it, as on the 2025 deck.
+
+    Dropped when the map could not be drawn: the schedule already appears in full on the
+    methodology page, so a route page without its map would be a duplicate table."""
+    img = (maps or {}).get("route")
+    if not img:
+        return None
+    rm = c.get("route_metadata") or {}
+    legs = _g(c, "summary_and_schedule", "schedule", default=[]) or []
+    rows = [[leg.get("sector") or "", leg.get("dep_time") or "-", leg.get("arr_time") or "-",
+             leg.get("operating_days") or "-", leg.get("aircraft") or "-"]
+            for leg in legs if leg.get("sector") and leg.get("sector") != "TOTAL"]
+    dist = rm.get("distance_nm")
+    return S.figure(img,
+                    table=({"head": ["Sector", "Departs", "Arrives", "Days", "Aircraft"],
+                            "rows": rows} if rows else None),
+                    title="The route",
+                    subtitle=("Great circle, %s nm" % _n(dist)) if dist else "Great circle",
+                    source="Source: OAG schedules, AviaSolutions analysis.")
+
+
+BAND_LABELS = [("30", "Within 30 minutes' drive"), ("60", "30 to 60 minutes"),
+               ("90", "60 to 90 minutes"), ("120", "90 to 120 minutes"),
+               ("999", "Beyond 120 minutes, or not routable")]
+
+
+def _catchment_end_pages(c, maps):
+    """One page per route end: the drive-time map and the population it holds, by band.
+
+    THESE ARE THE FIGURES deck_contract line 280 promised and never wired: zone geometry and
+    per-band population from the catchment module. The data comes through the contract from
+    cortex_app.catchment_profile, the same function the portal's catchment page reads, so the
+    deck and the portal can never show two different catchments for one airport."""
+    ends = _g(c, "catchment", "ends", default={}) or {}
+    if not ends:
+        return []
+    pages = []
+    for side in ("origin", "destination"):
+        p = ends.get(side)
+        if not isinstance(p, dict) or not p.get("ok"):
+            continue
+        ap = p.get("airport") or {}
+        bands = p.get("bands") or {}
+        rows = [[label, _n(bands.get(key))] for key, label in BAND_LABELS
+                if bands.get(key) is not None]
+        rows.append(["Total within %s km" % _n(p.get("radius_km")), _n(p.get("total_pop"))])
+        bullets = []
+        if p.get("drive_available"):
+            bullets.append("Drive times are least-cost road times from the same friction model "
+                           "the forecast uses.")
+        else:
+            bullets.append("Drive times were not available for this end; population is shown "
+                           "within the radius without banding.")
+        if p.get("capture") is not None:
+            bullets.append("Measured capture of the home catchment: %s (survey and mobility "
+                           "data)." % _pct(p.get("capture"), 1))
+        img = (maps or {}).get("catchment_%s" % side)
+        title = "The catchment at %s" % (ap.get("code") or side)
+        sub = "%s, population %s within %s km" % (ap.get("city") or ap.get("code") or "",
+                                                  _n(p.get("total_pop")), _n(p.get("radius_km")))
+        table = {"head": ["Drive-time band", "Population"], "rows": rows}
+        if img:
+            pages.append(S.figure(img, table=table, bullets=bullets, title=title, subtitle=sub,
+                                  source="Source: GeoNames population, AviaSolutions drive-time "
+                                         "model."))
+        else:
+            pages.append(S.table(table, bullets=bullets, title=title, subtitle=sub,
+                                 source="Source: GeoNames population, AviaSolutions drive-time "
+                                        "model."))
+    return pages
+
+
+def _catchment(c, maps=None):
+    """Sep 25 slide 41. The per-end map pages where the contract carries the ends; the zone
+    definitions table where it does not, with the contract's own reason stated."""
+    end_pages = _catchment_end_pages(c, maps)
+    if end_pages:
+        return end_pages
     # A ZONE VALUE IS EITHER A DICT OR A STRING. The contract carries {"definition": "..."} on some
     # zones and a bare string on others, and assuming the first shape threw on the first real run.
     # Keys beginning with an underscore are the contract's own gap notes and are not zones.
@@ -410,25 +487,90 @@ def _catchment(c):
         else:
             text = str(v) if v else "-"
         rows.append([str(k).replace("_", " ").title(), text])
+    need = _g(c, "catchment", "_ends_need")
     fig = _g(c, "catchment", "map_image")
     if fig:
-        return S.figure(fig, title="The catchment",
-                        table={"head": ["Zone", "Definition"], "rows": rows} if rows else None,
-                        source=_src(c))
+        return [S.figure(fig, title="The catchment",
+                         table={"head": ["Zone", "Definition"], "rows": rows} if rows else None,
+                         source=_src(c))]
     if not rows:
-        return None
-    return S.table({"head": ["Zone", "Definition"], "rows": rows},
-                   title="The catchment",
-                   subtitle=_g(c, "summary_and_schedule", "catchment_note"),
-                   source=_src(c))
+        return []
+    return [S.table({"head": ["Zone", "Definition"], "rows": rows},
+                    title="The catchment",
+                    subtitle=_g(c, "summary_and_schedule", "catchment_note"),
+                    bullets=([("Population by drive band is not on this page: %s" % need)]
+                             if need else None),
+                    source=_src(c))]
+
+
+def render_maps(c, out_dir, codename="pack"):
+    """The map images the pack references, drawn before the spec is built.
+
+    Returns {"route": path, "catchment_origin": path, "catchment_destination": path}, each key
+    present only when its map was actually drawn. Failures are printed with their reason and the
+    pages fall back (the route page is dropped, the catchment pages keep their population tables),
+    because a pack that cannot draw a map must still be a pack."""
+    maps = {}
+    try:
+        import avia_maps as AM
+    except Exception as e:                                   # noqa: BLE001
+        print("   MAPS     avia_maps unavailable (%s: %s); no maps on this pack"
+              % (type(e).__name__, e))
+        return maps
+    os.makedirs(out_dir, exist_ok=True)
+    stem = "".join(ch if ch.isalnum() or ch in "-_" else "_" for ch in (codename or "pack"))
+    rm = c.get("route_metadata") or {}
+    o, d = rm.get("origin_airport"), rm.get("destination_airport")
+    ends = _g(c, "catchment", "ends", default={}) or {}
+
+    def _coords(code, side):
+        p = ends.get(side) or {}
+        ap = p.get("airport") or {}
+        if ap.get("lat") is not None and ap.get("lon") is not None:
+            return (float(ap["lon"]), float(ap["lat"])), (ap.get("city") or code)
+        try:
+            import airportsdata
+            rec = airportsdata.load("IATA").get(code or "") or {}
+            if rec.get("lat") is not None:
+                return (float(rec["lon"]), float(rec["lat"])), (rec.get("city") or code)
+        except Exception:
+            pass
+        return None, code
+
+    try:
+        oc, oname = _coords(o, "origin")
+        dc, dname = _coords(d, "destination")
+        if oc and dc:
+            maps["route"] = AM.route_map(os.path.join(out_dir, stem + "_route.png"),
+                                         origin=oc, destination=dc,
+                                         origin_label=oname, destination_label=dname)
+    except Exception as e:                                   # noqa: BLE001
+        print("   MAPS     route map failed (%s: %s); the route page is dropped"
+              % (type(e).__name__, e))
+    for side in ("origin", "destination"):
+        p = ends.get(side)
+        if not isinstance(p, dict) or not p.get("ok"):
+            continue
+        try:
+            maps["catchment_%s" % side] = AM.catchment_end_map(
+                os.path.join(out_dir, "%s_catchment_%s.png" % (stem, side)), p)
+        except Exception as e:                               # noqa: BLE001
+            print("   MAPS     %s catchment map failed (%s: %s); its page keeps the population "
+                  "table" % (side, type(e).__name__, e))
+    return maps
 
 
 # --- assembly ---------------------------------------------------------------
 
 def build_pack(contract, *, codename, title=None, prepared_for="", date="",
                confidentiality="Commercial in Confidence", author="Avia Solutions",
-               alliance=None, prior=None):
-    """The spec. Pages that cannot be filled are dropped and the caller is told which."""
+               alliance=None, prior=None, maps=None):
+    """The spec. Pages that cannot be filled are dropped and the caller is told which.
+
+    THE PAGE LIST IS NAMED, NOT COUNTED. The first version detected drops by slicing the page
+    list at fixed indices, so adding one page would have silently misnamed every drop after it.
+    Each entry now carries its own name; a page function may also return a LIST of pages (the
+    catchment renders one per route end), in which case an empty list is the drop."""
     c = contract
     rm = c.get("route_metadata") or {}
     strap = "%s to %s" % (rm.get("origin_airport") or "", rm.get("destination_airport") or "")
@@ -436,26 +578,31 @@ def build_pack(contract, *, codename, title=None, prepared_for="", date="",
                   prepared_for=prepared_for, event="", date=date,
                   confidentiality=confidentiality, author=author)
     meta = {"title": title}
-    pages = [_cover(c, meta), _disclaimer(prepared_for), _summary(c), _competition(alliance),
-             _opportunity(c),
-             _forecast_table(c),
-             _connecting(c, "connecting_at_hub",
-                         "Passengers connecting at %s" % _g(c, "connecting_at_hub", "hub", default="the hub")),
-             _connecting(c, "connecting_at_destination",
-                         "Passengers connecting at %s" % (rm.get("origin_airport") or "the origin"))]
-    pages += _method_pages(c)
-    pages += [_against_prior(c, prior), _catchment(c)]
-    dropped = []
-    for name, p in zip(["cover", "disclaimer", "summary", "competition", "opportunity",
-                        "forecast table", "connecting at the hub", "connecting at the origin"],
-                       pages[:8]):
-        if p is None:
+    named = [("cover", _cover(c, meta)),
+             ("disclaimer", _disclaimer(prepared_for)),
+             ("summary", _summary(c)),
+             ("competition", _competition(alliance)),
+             ("opportunity", _opportunity(c)),
+             ("the route", _route_page(c, maps)),
+             ("forecast table", _forecast_table(c)),
+             ("connecting at the hub",
+              _connecting(c, "connecting_at_hub",
+                          "Passengers connecting at %s" % _g(c, "connecting_at_hub", "hub", default="the hub"))),
+             ("connecting at the origin",
+              _connecting(c, "connecting_at_destination",
+                          "Passengers connecting at %s" % (rm.get("origin_airport") or "the origin")))]
+    named += [("methodology", p) for p in _method_pages(c)]
+    named += [("this forecast against the last", _against_prior(c, prior))]
+    named += [("catchment", _catchment(c, maps))]
+    dropped, slides = [], []
+    for name, p in named:
+        if p is None or (isinstance(p, list) and not p):
             dropped.append(name)
-    if pages[-2] is None:
-        dropped.append("this forecast against the last")
-    if pages[-1] is None:
-        dropped.append("catchment")
-    spec["slides"] = [p for p in pages if p is not None]
+        elif isinstance(p, list):
+            slides.extend(p)
+        else:
+            slides.append(p)
+    spec["slides"] = slides
     return spec, dropped
 
 
@@ -480,9 +627,14 @@ def main():
     prior = json.load(open(a.prior, encoding="utf-8")) if a.prior else None
     alliance = json.load(open(a.alliance, encoding="utf-8")) if a.alliance else None
 
+    # The maps are drawn BEFORE the spec is built, because the spec references them by path.
+    # They live beside the output so a pack and its imagery travel together.
+    _maps_dir = os.path.join(os.path.dirname(os.path.abspath(a.out)) or ".", "pack_maps")
+    maps = render_maps(c, _maps_dir, codename=a.codename
+                       or _g(c, "route_metadata", "origin_airport", default="pack"))
     spec, dropped = build_pack(c, codename=a.codename or _g(c, "route_metadata", "origin_airport", default="Pack"),
                                title=a.title or None, prepared_for=a.prepared_for, date=a.date,
-                               alliance=alliance, prior=prior)
+                               alliance=alliance, prior=prior, maps=maps)
     S.paginate(spec)
     problems = S.check(spec)
     print("%d pages" % len(spec["slides"]))

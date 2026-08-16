@@ -1,0 +1,44 @@
+Forecast pack: the catchment and route maps that were never wired (Job 2 close)
+
+The 14 August corrections list was already largely in the committed code (the
+resolver, the Observatory disclaimer, the load factor label, the code columns,
+the year headings, the slide-32 pre-stimulation column and its six notes); this
+verifies those by reading and test, and builds the two pieces that never
+existed: the catchment page with population at each end, and the route map.
+
+- cortex_app.catchment_profile: the body of /api/catchment split into a
+  callable, one definition for the portal page and the deck contract, so the
+  two can never show different catchments for one airport. The endpoint's
+  behaviour is unchanged; it now wraps the function.
+- deck_from_cases computes a profile per route end (cached per airport per
+  invocation) and passes catchment_ends into the contract. A failed profile is
+  carried as ok=False with its reason, never thinned.
+- forecast_to_contract writes catchment.ends into the contract; a failed end
+  becomes _ends_partial, both failed becomes _ends_need, and no profiles at all
+  names where they come from. Flag, never fill.
+- avia_maps.catchment_end_map: the generalised per-end map, drawn from the
+  profile rather than by hand (catchment_map stays as the legacy SJC plate):
+  locales coloured by drive band and sized by population, airport marked, the
+  largest places named, grey for a locale the engine could not route.
+- forecast_pack: one catchment page per end (map, population by drive band,
+  measured capture where held), falling back to the population table without
+  basemap and to the zones table without ends, the reason stated; a route page
+  with the great circle and the schedule beneath it, dropped without its map
+  because the schedule already lives on the methodology page; render_maps draws
+  the images beside the output before the spec references them.
+- build_pack assembly rebuilt: pages carry their NAMES and a page function may
+  return a list, so the dropped-list can no longer be misnamed by adding a page
+  (the old version detected drops by slicing at fixed indices).
+- test_forecast_pack_maps.py: 19 fixture checks, no stores needed: the ends
+  through the contract with every failure shape named, the pre-stimulation
+  derivation clearing its need note, growth as total not CAGR, connecting legs
+  at x1.00, the pages and drops in every maps/no-maps combination, and a real
+  pptx render. Maps drawn for real where basemap is installed and skipped with
+  a statement where it is not. All existing suites still pass.
+
+Owed on the workstation: deck_from_cases cases_sjc_tpe.json --report-only to
+see the ends fill from the real GeoNames dump and drive engine; a full pack
+render for SJC-TPE to eyeball both catchment maps and the route page; a smoke
+check of /api/catchment after the refactor. The competition-split rows stay
+open by design: they are coupled to the Job 3 gap measurement and need John's
+call, not an overnight build.

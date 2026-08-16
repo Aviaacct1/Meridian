@@ -108,6 +108,7 @@ def main():
         os.makedirs(a.out, exist_ok=True)
 
     seen_thin, failed = {}, []
+    _CATCH_CACHE = {}          # airport code -> catchment profile, once per invocation
     for i, raw in enumerate(cases, 1):
         case = dict(defaults); case.update(raw)
         name = case.get("name") or "case %d" % i
@@ -133,6 +134,22 @@ def main():
             kw["growth"] = _g
         try:
             fc = CA.calibrated_forecast(case["origin"], case["dest"], **kw)
+            # THE CATCHMENT ENDS, for the pack's map page. Computed here because this process
+            # already holds the live context (the GeoNames dump and the drive engine); the
+            # contract builder stays a pure mapping. One profile per airport per invocation,
+            # cached, because a cases file often runs one route several ways. A failure is a
+            # NAMED gap on that end, never a thin answer: the pack falls back to the zone
+            # definitions table and says why.
+            _ends = {}
+            for _side, _code in (("origin", case["origin"]), ("destination", case["dest"])):
+                _code = (_code or "").strip().upper()
+                if _code not in _CATCH_CACHE:
+                    try:
+                        _CATCH_CACHE[_code] = CA.catchment_profile(_code)
+                    except Exception as _e:                  # noqa: BLE001
+                        _CATCH_CACHE[_code] = {"ok": False,
+                                               "error": "%s: %s" % (type(_e).__name__, _e)}
+                _ends[_side] = _CATCH_CACHE[_code]
             # A WARNED RUN DOES NOT BECOME A DECK. The payload's warnings list is empty on a
             # clean run; anything in it means a number was not produced the way the page
             # will claim it was. The portal renders a warned run with the warning stated;
@@ -144,7 +161,8 @@ def main():
             # "segments" carries the eight-segment judgement inputs and is the one case key that is
             # NOT a forecast setting, so it is passed to the contract rather than to the engine.
             contract = contract_from_forecast(fc, currency=a.currency,
-                                              segments=case.get("segments"))
+                                              segments=case.get("segments"),
+                                              catchment_ends=_ends)
         except Exception as e:                               # noqa: BLE001
             failed.append((name, "%s: %s" % (type(e).__name__, e)))
             print("  %-52s FAILED  %s" % (name[:52], e))

@@ -1928,65 +1928,77 @@ def economics_page():
     return "<h1>Economics</h1><p>cortex_economics.html not found.</p>"
 
 
-@app.get("/api/catchment")
-def api_catchment(place: str = "", origin: str = ""):
+def catchment_profile(q):
     """Drive-time catchment for one airport: the populated places within 220km, each with its
     least-cost drive minutes to the airport (same friction raster the forecast uses), banded
     0-30 / 30-60 / 60-90 / 90-120 / 120+. Returns total catchment population, the population
     reachable inside 120 minutes, and the measured capture share where we hold survey/mobility
-    truth (SJC etc.). Feeds the Catchment map page."""
-    q = (place or origin or "").strip()
+    truth (SJC etc.).
+
+    ONE DEFINITION, TWO CONSUMERS: the /api/catchment endpoint (the Catchment map page) and
+    deck_from_cases, which passes a profile per route end into the deck contract so the pack's
+    catchment page draws the same picture the portal shows. Split out 16 August 2026; a second
+    copy inside the contract builder would have been the divergence shape this codebase keeps
+    paying for. Raises rather than answering thinly: the caller decides what a missing dump or
+    drive engine means for its page."""
+    q = (q or "").strip()
     if not q:
-        return JSONResponse({"ok": False, "error": "no airport given"})
+        raise ValueError("no airport given")
+    import route_engine as RE, geo_resolve as GEO, route_forecast as RF
+    import airport_capture as ACAP
+    ctx = _live_ctx()
+    om = GEO.resolve_metro(q, served_index=ctx.get("served"), dump=DUMP, expand=False)
+    home = om["primary"]
+    ap = RE._airports(); o = ap.get(home)
+    if not o or o.get("lat") is None:
+        raise ValueError("could not resolve '%s' to an airport" % q)
+    olat, olon = float(o["lat"]), float(o["lon"])
+    radius = 220.0
+    locs = G.near_point(DUMP, olat, olon, radius, min_pop=5000, propensity=1.0)
+    pts = [(l.lat, l.lon) for l in locs]
+    times = None
     try:
-        import route_engine as RE, geo_resolve as GEO, route_forecast as RF
-        import airport_capture as ACAP
-        ctx = _live_ctx()
-        om = GEO.resolve_metro(q, served_index=ctx.get("served"), dump=DUMP, expand=False)
-        home = om["primary"]
-        ap = RE._airports(); o = ap.get(home)
-        if not o or o.get("lat") is None:
-            return JSONResponse({"ok": False, "error": f"could not resolve '{q}' to an airport"})
-        olat, olon = float(o["lat"]), float(o["lon"])
-        radius = 220.0
-        locs = G.near_point(DUMP, olat, olon, radius, min_pop=5000, propensity=1.0)
-        pts = [(l.lat, l.lon) for l in locs]
+        dt = RF._drive_engine()
+        if dt is not None:
+            times = dt.times_from(home, olat, olon, pts)
+    except Exception:
         times = None
-        try:
-            dt = RF._drive_engine()
-            if dt is not None:
-                times = dt.times_from(home, olat, olon, pts)
-        except Exception:
-            times = None
-        BANDS = [30, 60, 90, 120]
-        band_pop = {30: 0.0, 60: 0.0, 90: 0.0, 120: 0.0, 999: 0.0}
-        out = []; total = 0.0
-        for i, l in enumerate(locs):
-            drive = None
-            if times and i < len(times) and times[i] is not None:
-                try:
-                    drive = float(times[i])
-                except Exception:
-                    drive = None
-            b = 999
-            for bb in BANDS:
-                if drive is not None and drive <= bb:
-                    b = bb; break
-            pop = float(l.population or 0)
-            total += pop; band_pop[b] += pop
-            out.append({"lat": round(float(l.lat), 4), "lon": round(float(l.lon), 4),
-                        "pop": int(pop), "drive": (round(drive) if drive is not None else None),
-                        "name": getattr(l, "name", "") or ""})
-        out.sort(key=lambda r: -r["pop"])
-        cap = ACAP.capture_for(home)
-        reach120 = band_pop[30] + band_pop[60] + band_pop[90] + band_pop[120]
-        return JSONResponse({"ok": True,
+    BANDS = [30, 60, 90, 120]
+    band_pop = {30: 0.0, 60: 0.0, 90: 0.0, 120: 0.0, 999: 0.0}
+    out = []; total = 0.0
+    for i, l in enumerate(locs):
+        drive = None
+        if times and i < len(times) and times[i] is not None:
+            try:
+                drive = float(times[i])
+            except Exception:
+                drive = None
+        b = 999
+        for bb in BANDS:
+            if drive is not None and drive <= bb:
+                b = bb; break
+        pop = float(l.population or 0)
+        total += pop; band_pop[b] += pop
+        out.append({"lat": round(float(l.lat), 4), "lon": round(float(l.lon), 4),
+                    "pop": int(pop), "drive": (round(drive) if drive is not None else None),
+                    "name": getattr(l, "name", "") or ""})
+    out.sort(key=lambda r: -r["pop"])
+    cap = ACAP.capture_for(home)
+    reach120 = band_pop[30] + band_pop[60] + band_pop[90] + band_pop[120]
+    return {"ok": True,
             "airport": {"code": home, "city": o.get("city") or q, "country": o.get("country") or "",
                         "name": o.get("name") or "", "lat": olat, "lon": olon},
             "radius_km": radius, "total_pop": int(total), "reach_120_pop": int(reach120),
             "bands": {str(k): int(v) for k, v in band_pop.items()},
             "capture": (round(float(cap), 3) if cap is not None else None),
-            "drive_available": bool(times), "locales": out[:500]})
+            "drive_available": bool(times), "locales": out[:500]}
+
+
+@app.get("/api/catchment")
+def api_catchment(place: str = "", origin: str = ""):
+    """The Catchment map page's feed; the work is in catchment_profile."""
+    try:
+        return JSONResponse(catchment_profile(place or origin))
     except Exception as e:
         return JSONResponse({"ok": False, "error": str(e)})
 
