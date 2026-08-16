@@ -150,9 +150,69 @@ API keys) so the Watch briefing works.
 6. The floor question, measured not argued: with V1 level, is split_floor ON still right
    as default? RECONCILIATION-INVERTS says floor-off is closer on SJC-TPE; the v1_control
    arm ran floor as-shipped. One A/B on the pinned set answers it. 1 day.
-7. Routes one-route-per-email flow (demo lead capture: run route -> email HTML pack, one
-   per business email, consent tick, demonstration watermark; deck refusal machinery
-   already protects it). 2-3 days. Needed for testers anyway if they self-serve.
+7. Routes one-route-per-email flow. 2-3 days. Needed for testers anyway if they
+   self-serve. SCOPED IN FULL 16 August (decisions taken with John); build spec below,
+   so the next session starts at the first line of code.
+
+   ## Item 7 build spec (16 August, John's decisions inline)
+
+   THE FLOW. After a clean run, the dashboard offers "Email me this forecast": business
+   email field + consent tick (marketing consent, stored with the lead). Server builds
+   the HTML forecast pack for THAT run, stamps it DEMONSTRATION, and emails it as a
+   self-contained attachment. The pitch-jobs pattern (PITCH_JOBS + polling in
+   cortex_app) is the template: build in a background thread, the page polls, "sent"
+   is the terminal state. The performance memory rules this explicitly: the HTML pack
+   may run long and is SENT AFTER, never held on a spinner.
+
+   QUOTA (John's ruling, 16 August): one pack per email PER ROUTE, with the FIRST pack
+   free and automatic. Any further request from the same email is HELD PENDING with the
+   person's history beside it (what they already had, when), and needs an in-system
+   override by the Avia team before it sends. Rationale, his words: one-ever is too
+   inflexible (someone meets an airline in 20 minutes and wants 3 routes), but the team
+   must never route around the system by making packs and forwarding them, because
+   tracking of who got what is the point. The override is therefore ONE TAP on an admin
+   page, not a workaround.
+
+   THE PIECES:
+   - app/demo_mail.py: M365 SMTP transport (John's choice). smtp.office365.com:587
+     STARTTLS. Config from env / the gitignored secrets file, NEVER the repo:
+     AVIA_SMTP_HOST (default smtp.office365.com), AVIA_SMTP_PORT (587),
+     AVIA_SMTP_USER (the sending mailbox), AVIA_SMTP_PASS. Sender = user. Fail loudly
+     with the reason; a failed send leaves the lead recorded with status failed, never
+     silently dropped.
+   - app/demo_leads.py: the lead store, JSONL at AVIA_DEMO_LEADS (default
+     E:\Avia\demo_leads.jsonl; data on the workstation, never in the repo). One line
+     per event: ts, email, domain, route, run reference (payload hash or case line),
+     consent, status (sent / pending / approved+sent / declined / failed), approver,
+     pack filename. The quota check and the history read from this one file.
+   - Business-email check: reject the free-mail domains (gmail, outlook, yahoo,
+     icloud, proton, etc: a named list in demo_leads.py, editable) with a polite line;
+     the demo exists to capture airlines and airports, not hotmail.
+   - Endpoints in cortex_app: POST /api/demo/request (validates, quota-checks, builds
+     + sends or holds pending; returns the state and, when pending, says so honestly);
+     GET /api/demo/leads + POST /api/demo/approve for the admin page; admin page
+     /demo/leads behind the existing origin gate (it is already behind Cloudflare +
+     QSI_PASSWORD), listing pending requests with history and one-tap Approve /
+     Decline. Stand team uses it from a phone.
+   - THE PACK: the HTML forecast pack for the run. pitch_html.py renders the
+     researched pitch; the demo pack is the FORECAST pack (the 9-page set, John's
+     14 Aug ruling) rendered to HTML. If an HTML renderer for the forecast pack does
+     not exist yet (check deck/render paths), the first build target is
+     forecast_pack spec -> HTML, reusing deck_spec + the dashboard's house CSS.
+     DEMONSTRATION watermark: a fixed banner + diagonal watermark in the HTML, and
+     "Demonstration" in the title block; not removable by deleting one element.
+   - REFUSAL WIRING: a warned run is never emailed (deck_from_cases' rule: the portal
+     warns, a client artefact refuses). The request endpoint checks the payload's
+     warnings[] and refuses with the reason.
+   - Tests, no stores needed: quota logic (first free, second pending, override
+     sends, per-route semantics), the domain check, the lead-store round trip, the
+     watermark present in rendered HTML, refusal on a warned payload. Mail transport
+     tested with a fake SMTP class, never a live send.
+
+   JOHN'S OWN ACTIONS (blocking the live send, not the build): choose/create the
+   sending mailbox (meridian@ or observatory@aviasolutions.com), enable SMTP AUTH for
+   it in M365 admin, set AVIA_SMTP_USER / AVIA_SMTP_PASS on the workstation (setx, new
+   window). SPF already covers office365 sends if the domain sends mail normally.
 8. Refresh commissioning: catch OAG/Sabre up to end July WATCHED via refresh_pickup
    (--plan-only first, paste the plan), then wire the weekly scheduled task + portal
    stop/start bracket with db_registry.reset(). 1 day + Jess's downloads.
