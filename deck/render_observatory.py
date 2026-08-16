@@ -220,7 +220,13 @@ def _numericish(t, i):
 def _bullets(bl, dark=False):
     ink = DARK_INK if dark else INK
     out = []
-    for lead, rest in bl:
+    for item in bl:
+        # A bullet is either a (lead, rest) pair or a bare string. forecast_pack's
+        # notes are bare strings, which render_pptx has always accepted; the first
+        # HTML render of a forecast pack (the demo flow, 16 August 2026) threw here.
+        # A bare string is a bullet with no bold lead, not an error.
+        lead, rest = item if isinstance(item, (tuple, list)) else (None, item)
+        lead = lead or ""
         out.append('<div style="display:flex;gap:14px;margin-bottom:13px;">'
                    '<div style="flex:0 0 6px;height:6px;border-radius:50%%;'
                    'background:%s;margin-top:10px;"></div>'

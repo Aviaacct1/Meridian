@@ -1,0 +1,53 @@
+Item 7: the demo pack flow (one route per email), built and fixture-tested
+
+The 16 August spec end to end: after a clean run the dashboard offers "Email
+me this forecast" (work email + consent); the server re-runs that forecast
+from the page's own query, builds the HTML forecast pack stamped
+DEMONSTRATION, and emails it from a background thread on the pitch-jobs
+pattern. "Sent" is the terminal state; the page polls and need not wait.
+
+New:
+- app/demo_leads.py   the lead store (JSONL at AVIA_DEMO_LEADS, default
+  E:\Avia\demo_leads.jsonl), the quota, the free-mail domain refusal, and
+  typed coercion of the dashboard query. Quota as ruled: the first pack free
+  and automatic; every further request held pending with the person's
+  history; a failed send is not a delivered pack, so a retry stays free.
+- app/demo_mail.py    M365 SMTP transport, smtp.office365.com:587 STARTTLS,
+  config from env (AVIA_SMTP_HOST/PORT/USER/PASS), sender = the mailbox,
+  fail loudly with the reason; transport injectable so tests never send.
+- app/demo_pack.py    forecast payload -> contract (forecast_to_contract) ->
+  forecast_pack spec -> render_observatory self-contained HTML, plus the
+  three-layer DEMONSTRATION watermark: cover confidentiality in the spec,
+  a CSS generated-content stamp on every page (no element to delete), and
+  a fixed banner with the title amended. A warned run is refused with its
+  warnings named, deck_from_cases' rule.
+- app/test_demo_flow.py   58 offline checks: quota semantics, store round
+  trip, domain refusals, coercion, fake-SMTP transport, warned-run refusal,
+  the watermark layers, and the spec -> HTML render on a thin fixture
+  contract (thin blocks drop by name, never throw).
+
+Changed:
+- app/cortex_app.py   POST /api/demo/request (validates, quota-checks,
+  builds + sends in the background or holds pending and says so honestly),
+  GET /api/demo/status, GET /api/demo/leads, POST /api/demo/approve (the
+  one-tap release rebuilds from the stored params and records the
+  approver), GET /demo/leads admin page, phone-sized, behind the existing
+  origin gate. DEMO_JOBS on the pitch-jobs pattern. The free first pack is
+  recorded at request time, so a build that dies still left a lead on disk.
+- app/cortex_dashboard.html   the offer beside the report buttons, the
+  email + consent box, polling. STATE.lastQ keeps the exact query of the
+  run on screen and is cleared on an optimise sweep, so the emailed pack
+  can only be the run the visitor is looking at; a warned run disables the
+  offer (the server refuses independently).
+- deck/render_observatory.py   _bullets now takes a bare string as well as
+  a (lead, rest) pair. forecast_pack's notes are bare strings; render_pptx
+  always accepted them and the first HTML render of a forecast pack threw.
+
+Not in this commit, by design: the live mailbox. Sending waits on
+meridian@aviationobservatory.com (handover item 10, the deliverability
+list); until then a send fails loudly and the lead is recorded as failed,
+never silently dropped.
+
+Tests: app/test_demo_flow.py 58 checks, 0 failed.
+Regression: deck/test_forecast_pack_maps.py 16/0, deck/test_visual_layer.py
+32/0 (app/test_watch_series.py not runnable in the sandbox: no duckdb).

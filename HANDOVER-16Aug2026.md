@@ -153,6 +153,13 @@ API keys) so the Watch briefing works.
 7. Routes one-route-per-email flow. 2-3 days. Needed for testers anyway if they
    self-serve. SCOPED IN FULL 16 August (decisions taken with John); build spec below,
    so the next session starts at the first line of code.
+   BUILT 16 August, fixture-tested (58 checks in app/test_demo_flow.py; commit owed:
+   COMMIT-MSG-16Aug2026-demo-flow.txt). demo_leads / demo_mail / demo_pack, the four
+   endpoints + /demo/leads admin page, the dashboard offer, and the render_observatory
+   _bullets fix the first HTML pack render surfaced. The live send still waits on the
+   aviationobservatory.com mailbox (item 10); until then a send fails loudly and the
+   lead is recorded as failed. Workstation still owed: a real end-to-end run and one
+   pack eyeballed for the watermark and page set.
 
    ## Item 7 build spec (16 August, John's decisions inline)
 

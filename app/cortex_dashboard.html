@@ -474,6 +474,14 @@
           <button class="btn ghost" id="pitchBtn" onclick="pitchGenerate()" title="Web-researched airline pitch deck; takes a few minutes">Generate airline pitch (researched)</button>
           <span id="pitchNote" style="font-family:var(--serif);font-size:12px;color:var(--muted);align-self:center;font-style:italic"></span>
           <button class="btn ghost" onclick="window.print()">Print this page</button>
+          <button class="btn ghost" id="demoBtn" onclick="demoToggle()" title="A demonstration copy of this forecast pack, emailed to a work address">Email me this forecast</button>
+        </div>
+        <div id="demoBox" class="hidden" style="margin-top:10px;padding:12px 14px;border:1px solid var(--rule,#d8d3c4);border-radius:6px;max-width:560px">
+          <div style="font-family:var(--sans);font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;margin-bottom:8px">Email me this forecast</div>
+          <input id="demoEmail" type="email" placeholder="your work email address" style="width:100%;box-sizing:border-box;padding:9px 10px;font-size:14px;margin-bottom:8px">
+          <label style="display:block;font-size:12.5px;margin-bottom:10px"><input type="checkbox" id="demoConsent"> I agree The Aviation Observatory may contact me about Meridian.</label>
+          <button class="btn" id="demoSend" onclick="demoRequest()">Send the pack</button>
+          <div id="demoNote" style="font-family:var(--serif);font-size:12px;color:var(--muted);font-style:italic;margin-top:8px"></div>
         </div>
         <div class="foot-note">Indicative, for directional guidance only. Calibrated central estimate; per-route precision varies. Genoa to New York is the validated benchmark; other pairs are first-cut estimates.</div>
       </div>
@@ -841,7 +849,12 @@ function doForecast(){
   else if(_sp==="aggr"){ const _d={FSC:1.15,LCC:1.35,ULCC:1.80}[$("#ctype").value]||1.15;
     q.set("stimulation",(Math.round((_d+0.20)*100)/100).toString()); }
   expertParams(q);
-  fetch("/api/forecast?"+q).then(r=>r.json()).then(render).catch(e=>showErr(e.message||e))
+  fetch("/api/forecast?"+q).then(r=>r.json()).then(d=>{
+    // The demo email flow re-runs THIS query server-side, so the query is kept only
+    // when the run it produced is the one on screen. An optimise sweep clears it.
+    STATE.lastQ = (d && d.ok) ? q.toString() : null;
+    render(d);
+  }).catch(e=>showErr(e.message||e))
     .finally(()=>{btn.disabled=false;btn.textContent="Run assessment";});
 }
 // The forecast years come from the store, never from a literal in the page: the base is whichever
@@ -1094,6 +1107,7 @@ function optimise(){
   if(!o||!d){ showErr("enter an origin and destination first"); return; }
   const btn=$("#optimise"); btn.disabled=true; btn.innerHTML='<span class="spinner"></span>Optimising airlines…';
   $("#err").classList.add("hidden"); $("#results").classList.add("hidden"); $("#routeFlag").classList.add("hidden");
+  STATE.lastQ=null;   // an optimised sweep is not one run; the email offer needs a fresh assessment
   const q=new URLSearchParams({origin:o,dest:d,airline:$("#airline").value.trim(),carrier_type:$("#ctype").value,season:$("#season").value});
   const _ac=$("#aircraft").value; if(_ac) q.set("aircraft",_ac);          // honour a client-fixed gauge; blank = optimise it
   const _fq=($("#freq").value||"").trim(); if(_fq) q.set("freq",_fq);      // honour a client-fixed frequency; blank = optimise it
@@ -1160,6 +1174,36 @@ function pitchGenerate(){
 }
 function showErr(m){ $("#err").textContent="Could not forecast this pair: "+m; $("#err").classList.remove("hidden"); }
 
+// --- the demo pack flow: email me this forecast --------------------------------
+let DEMO_POLL=null;
+function demoToggle(){ const bx=$("#demoBox"); if(bx) bx.classList.toggle("hidden"); }
+function demoRequest(){
+  if(!STATE.lastQ){ $("#demoNote").textContent="Run an assessment first."; return; }
+  const em=($("#demoEmail").value||"").trim();
+  if(!em){ $("#demoNote").textContent="An email address is needed."; return; }
+  if(!$("#demoConsent").checked){ $("#demoNote").textContent="The consent box is needed before a pack can be emailed."; return; }
+  const btn=$("#demoSend"); btn.disabled=true; const t0=Date.now();
+  $("#demoNote").textContent="Requesting…";
+  const params=Object.fromEntries(new URLSearchParams(STATE.lastQ));
+  fetch("/api/demo/request",{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({email:em,consent:true,params:params})})
+  .then(r=>r.json()).then(s=>{
+    if(!s.ok){ btn.disabled=false; $("#demoNote").textContent=s.error||"the request failed"; return; }
+    if(s.state==="pending"){ btn.disabled=false; $("#demoNote").textContent=s.message||"Held for approval by the Avia team."; return; }
+    // building: the pack may take a while, so it is built in the background and SENT
+    // when ready; the page polls and the terminal state is "sent".
+    DEMO_POLL=setInterval(()=>{
+      fetch("/api/demo/status?job_id="+s.job_id).then(r=>r.json()).then(st=>{
+        const secs=Math.round((Date.now()-t0)/1000);
+        if(st.state==="running"){ $("#demoNote").textContent=(st.stage||"working")+"… ("+secs+"s; the pack is emailed when ready, you need not wait)"; return; }
+        clearInterval(DEMO_POLL); btn.disabled=false;
+        if(st.state==="sent"){ $("#demoNote").textContent="Sent to "+em+". One pack per route; further requests need a release by the Avia team."; }
+        else { $("#demoNote").textContent=st.error||"the pack could not be sent"; }
+      }).catch(e=>{ clearInterval(DEMO_POLL); btn.disabled=false; $("#demoNote").textContent=String(e.message||e); });
+    }, 3000);
+  }).catch(e=>{ btn.disabled=false; $("#demoNote").textContent=String(e.message||e); });
+}
+
 function render(d){
   if(!d || !d.ok){ showErr((d&&d.error)||"unknown error"); return; }
   // A warned run renders, with the warning stated where the eye lands (John's 15 August
@@ -1170,6 +1214,17 @@ function render(d){
     if(ws.length){ w.style.display="block";
       w.innerHTML="<b>This run is not clean.</b> "+ws.map(x=>String(x)).join("<br>");
     } else { w.style.display="none"; w.innerHTML=""; }
+  })();
+  // The email offer follows the run's state: a warned run is never emailed (the server
+  // refuses too; this is the honest face of it), and an optimise sweep is not one run.
+  (function(){ const b=$("#demoBtn"); if(!b) return;
+    const warned=(d.warnings||[]).length>0;
+    b.disabled = warned || !STATE.lastQ;
+    b.title = warned ? "a warned run is never emailed"
+      : (!STATE.lastQ ? "run an assessment first; the pack is built from a single run"
+      : "A demonstration copy of this forecast pack, emailed to a work address");
+    const bx=$("#demoBox"); if(bx){ bx.classList.add("hidden"); }
+    const n=$("#demoNote"); if(n){ n.textContent=""; }
   })();
   $("#ctxpill").innerHTML="OAG week <b>"+(d.week||"-")+"</b> · Sabre <b>"+(d.year||"-")+"</b>";
   STATE.sabreYear=d.year||STATE.sabreYear||2025;

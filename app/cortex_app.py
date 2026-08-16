@@ -2811,3 +2811,312 @@ def api_lookup(q: str = "", kind: str = "airport", limit: int = 8):
             "label": f'{(r.get("city") or r.get("name"))} ({r["iata"]}), {r.get("country","")}'}
            for *_, r in matches[:limit]]
     return JSONResponse({"results": res})
+
+
+# ---------------------------------------------------------------- the demo pack flow
+# One route per email (item 7, scoped 16 August 2026). After a clean run the dashboard
+# offers "Email me this forecast": the server re-runs THAT forecast from the page's own
+# query, builds the HTML forecast pack stamped DEMONSTRATION, and emails it. The
+# pitch-jobs pattern is the template: build in a background thread, the page polls,
+# "sent" is the terminal state, because the pack may run long and is sent after, never
+# held on a spinner. Quota, lead store and history live in demo_leads; transport in
+# demo_mail; the pack build in demo_pack. The admin page /demo/leads is a normal route,
+# so the existing origin gate (Cloudflare Access + QSI_PASSWORD) already covers it.
+import demo_leads as DL
+import demo_mail as DM
+import demo_pack as DP
+
+DEMO_JOBS = {}          # job_id -> {state, stage, started, error, email, route}
+_DEMO_CATCH_CACHE = {}  # airport code -> catchment profile, one per process
+
+
+def _demo_fc_defaults():
+    """api_forecast's own keyword defaults, read from its signature, so the demo request
+    accepts exactly the query the dashboard sent and nothing else. A new engine
+    parameter added to /api/forecast flows through here without a second list."""
+    import inspect
+    return {k: p.default for k, p in inspect.signature(api_forecast).parameters.items()
+            if p.default is not inspect.Parameter.empty}
+
+
+def _demo_catchment_ends(origin, dest):
+    """The per-end catchment profiles for the pack's map pages, cached per airport as
+    deck_from_cases does. A failure is a named gap on that end, never a thin answer:
+    the pack falls back to its zone table and says why."""
+    ends = {}
+    for side, code in (("origin", origin), ("destination", dest)):
+        code = (code or "").strip().upper()
+        if code not in _DEMO_CATCH_CACHE:
+            try:
+                _DEMO_CATCH_CACHE[code] = catchment_profile(code)
+            except Exception as e:                           # noqa: BLE001
+                _DEMO_CATCH_CACHE[code] = {"ok": False,
+                                           "error": "%s: %s" % (type(e).__name__, e)}
+        ends[side] = _DEMO_CATCH_CACHE[code]
+    return ends
+
+
+def _demo_mail_body(route):
+    return ("Thank you for your interest in Meridian.\n\n"
+            "Attached is a demonstration forecast pack for %s, built by Meridian, the "
+            "route forecasting model of The Aviation Observatory. The figures are a "
+            "calibrated central estimate for the route as run. This is a demonstration "
+            "document and is not for reliance or onward circulation.\n\n"
+            "One pack is sent per route per requester. For further routes, or to talk "
+            "to the team about the model, reply to this address.\n\n"
+            "The Aviation Observatory\nAn institution of Avia Solutions" % route)
+
+
+def _run_demo_send(job_id, lead_id, email, params, approver=None):
+    """The background build and send, for both the free first pack and an approved
+    release. Every exit appends a terminal event: sent, approved+sent, or failed with
+    the reason. A failed send is never silently dropped."""
+    import time
+    route = DL.route_key(params.get("origin"), params.get("dest"))
+    ref = DP.run_ref(params)
+
+    def _stage_d(text):
+        j = DEMO_JOBS.get(job_id)
+        if j is not None and j.get("state") == "running":
+            j["stage"] = text
+
+    def _fail(reason):
+        DL.append_event({"id": lead_id, "email": email, "route": route, "run_ref": ref,
+                         "status": "failed", "reason": str(reason)[:600],
+                         "approver": approver})
+        DEMO_JOBS[job_id] = {"state": "error", "error": str(reason), "email": email,
+                             "route": route}
+
+    try:
+        _stage_d("running the forecast")
+        kw = DL.coerce_params(params, _demo_fc_defaults())
+        resp = api_forecast(params.get("origin", ""), params.get("dest", ""), **kw)
+        fc = json.loads(bytes(resp.body))
+        DP.refuse_if_warned(fc)   # the portal warns; a client artefact refuses
+        _stage_d("building the demonstration pack")
+        ends = _demo_catchment_ends(params.get("origin"), params.get("dest"))
+        stem = "Meridian_Forecast_%s_%s_DEMO.html" % (route, ref)
+        out_path = os.path.join(DP.packs_dir(), stem)
+        DP.build_demo_pack_html(fc, out_path, catchment_ends=ends, prepared_for=email)
+        _stage_d("sending")
+        DM.send_pack(to=email,
+                     subject="Your Meridian route forecast: %s (demonstration)" % route,
+                     body=_demo_mail_body(route),
+                     attachment_path=out_path, attachment_name=stem)
+        DL.append_event({"id": lead_id, "email": email, "route": route, "run_ref": ref,
+                         "status": ("approved+sent" if approver else "sent"),
+                         "pack": stem, "approver": approver})
+        DEMO_JOBS[job_id] = {"state": "sent", "email": email, "route": route,
+                             "started": DEMO_JOBS.get(job_id, {}).get("started",
+                                                                      time.time())}
+    except DM.MailError as e:
+        _fail(e)
+    except Exception as e:                                   # noqa: BLE001
+        _fail("%s: %s" % (type(e).__name__, e))
+
+
+@app.post("/api/demo/request")
+async def api_demo_request(request: Request):
+    """Validates, quota-checks, then builds and sends in the background, or holds the
+    request pending and says so honestly. Body: {email, consent, params} where params
+    is the SAME query the dashboard's forecast ran with."""
+    import threading, time, uuid
+    try:
+        data = await request.json()
+    except Exception:
+        return JSONResponse({"ok": False, "error": "the request body was not JSON"},
+                            status_code=400)
+    email = DL.normalise_email(data.get("email"))
+    params = data.get("params") or {}
+    refusal = DL.email_refusal(email)
+    if refusal:
+        return JSONResponse({"ok": False, "error": refusal}, status_code=422)
+    if not data.get("consent"):
+        return JSONResponse({"ok": False, "error":
+                             "the consent box is needed before a pack can be emailed"},
+                            status_code=422)
+    if not (params.get("origin") and params.get("dest")):
+        return JSONResponse({"ok": False, "error":
+                             "no run to send: run a forecast first"}, status_code=422)
+    route = DL.route_key(params.get("origin"), params.get("dest"))
+    ref = DP.run_ref(params)
+    events, _bad = DL.read_events()
+    action, reason = DL.quota_decision(email, route, DL.merged(events))
+    lead = {"email": email, "domain": DL.email_domain(email), "route": route,
+            "run_ref": ref, "consent": True, "params": params}
+    if action == "pending":
+        lead.update({"status": "pending", "held": True, "reason": reason})
+        DL.append_event(lead)
+        return JSONResponse({"ok": True, "state": "pending", "message":
+                             "This request is held for a quick approval by the Avia "
+                             "team, because a pack has already been sent to this email. "
+                             "It will be emailed as soon as it is released."})
+    # the free first pack: recorded at request time so a build that dies still left a
+    # lead on disk (held false, so the admin page does not offer it for approval)
+    lead.update({"status": "pending", "held": False})
+    lead_id = DL.append_event(lead)
+    job_id = uuid.uuid4().hex[:12]
+    DEMO_JOBS[job_id] = {"state": "running", "stage": "starting",
+                         "started": time.time(), "email": email, "route": route}
+    threading.Thread(target=_run_demo_send, args=(job_id, lead_id, email, params),
+                     daemon=True).start()
+    return JSONResponse({"ok": True, "state": "building", "job_id": job_id})
+
+
+@app.get("/api/demo/status")
+def api_demo_status(job_id: str):
+    import time
+    j = DEMO_JOBS.get(job_id)
+    if not j:
+        return JSONResponse({"ok": False, "error": "unknown job"}, status_code=404)
+    out = {"ok": True, "state": j.get("state")}
+    if j.get("state") == "running":
+        out["stage"] = j.get("stage", "")
+        if j.get("started"):
+            out["elapsed_s"] = int(time.time() - j["started"])
+    if j.get("state") == "error":
+        out["error"] = j.get("error")
+    return JSONResponse(out)
+
+
+@app.get("/api/demo/leads")
+def api_demo_leads():
+    """Pending held requests with each requester's history, plus recent activity, for
+    the admin page. Reads the one JSONL file; nothing else holds lead state."""
+    events, bad = DL.read_events()
+    records = DL.merged(events)
+    pending = [r for r in records.values()
+               if r.get("status") == "pending" and r.get("held")]
+    pending.sort(key=lambda r: r.get("ts") or "")
+    for r in pending:
+        r["history"] = [{k: h.get(k) for k in ("ts", "route", "status", "approver")}
+                        for h in DL.history_for(r.get("email"), records)
+                        if h.get("id") != r.get("id")]
+    recent = sorted(records.values(), key=lambda r: r.get("ts") or "")[-40:]
+    slim = [{k: r.get(k) for k in ("id", "ts", "email", "route", "status", "held",
+                                   "approver", "reason", "pack")} for r in recent]
+    slim_pending = [{**{k: r.get(k) for k in ("id", "ts", "email", "route", "reason")},
+                     "history": r.get("history") or []} for r in pending]
+    return JSONResponse({"ok": True, "pending": slim_pending, "recent": slim,
+                         "unreadable_lines": bad})
+
+
+@app.post("/api/demo/approve")
+async def api_demo_approve(request: Request):
+    """The one-tap override: approve rebuilds the pack from the stored params and sends
+    it; decline records the decision. Body: {id, action, approver}."""
+    import threading, time, uuid
+    try:
+        data = await request.json()
+    except Exception:
+        return JSONResponse({"ok": False, "error": "the request body was not JSON"},
+                            status_code=400)
+    lead_id = (data.get("id") or "").strip()
+    act = (data.get("action") or "").strip().lower()
+    approver = (data.get("approver") or "").strip() or "Avia team"
+    if act not in ("approve", "decline"):
+        return JSONResponse({"ok": False, "error": "action must be approve or decline"},
+                            status_code=422)
+    events, _bad = DL.read_events()
+    rec = DL.merged(events).get(lead_id)
+    if not rec:
+        return JSONResponse({"ok": False, "error": "unknown request id"},
+                            status_code=404)
+    if not (rec.get("status") == "pending" and rec.get("held")):
+        return JSONResponse({"ok": False, "error":
+                             "this request is not awaiting approval (status %s)"
+                             % rec.get("status")}, status_code=409)
+    if act == "decline":
+        DL.append_event({"id": lead_id, "email": rec.get("email"),
+                         "route": rec.get("route"), "status": "declined",
+                         "approver": approver})
+        return JSONResponse({"ok": True, "state": "declined"})
+    params = rec.get("params") or {}
+    if not (params.get("origin") and params.get("dest")):
+        return JSONResponse({"ok": False, "error":
+                             "the stored request carries no run parameters"},
+                            status_code=409)
+    job_id = uuid.uuid4().hex[:12]
+    DEMO_JOBS[job_id] = {"state": "running", "stage": "starting",
+                         "started": time.time(), "email": rec.get("email"),
+                         "route": rec.get("route")}
+    threading.Thread(target=_run_demo_send,
+                     args=(job_id, lead_id, rec.get("email"), params),
+                     kwargs={"approver": approver}, daemon=True).start()
+    return JSONResponse({"ok": True, "state": "building", "job_id": job_id})
+
+
+@app.get("/demo/leads", response_class=HTMLResponse)
+def demo_leads_page():
+    """The admin page: pending requests with history and one-tap Approve / Decline.
+    Server-rendered, single column, large targets, because the stand team uses it from
+    a phone between conversations. Behind the same gate as every other route."""
+    def esc(s):
+        return (str(s or "").replace("&", "&amp;").replace("<", "&lt;")
+                .replace(">", "&gt;").replace('"', "&quot;"))
+    events, bad = DL.read_events()
+    records = DL.merged(events)
+    pending = sorted([r for r in records.values()
+                      if r.get("status") == "pending" and r.get("held")],
+                     key=lambda r: r.get("ts") or "")
+    cards = []
+    for r in pending:
+        hist = [h for h in DL.history_for(r.get("email"), records)
+                if h.get("id") != r.get("id")]
+        hrows = "".join("<div class='h'>%s · %s · %s%s</div>"
+                        % (esc((h.get("ts") or "")[:16].replace("T", " ")),
+                           esc(h.get("route")), esc(h.get("status")),
+                           (" by " + esc(h.get("approver"))) if h.get("approver") else "")
+                        for h in hist) or "<div class='h'>no earlier requests</div>"
+        cards.append(
+            "<div class='card' id='c-%s'>"
+            "<div class='rt'>%s</div><div class='em'>%s</div>"
+            "<div class='rs'>%s</div><div class='hist'>%s</div>"
+            "<div class='row'>"
+            "<button class='ap' onclick=\"act('%s','approve',this)\">Approve and send</button>"
+            "<button class='dc' onclick=\"act('%s','decline',this)\">Decline</button>"
+            "</div></div>"
+            % (esc(r.get("id")), esc(r.get("route")), esc(r.get("email")),
+               esc(r.get("reason")), hrows, esc(r.get("id")), esc(r.get("id"))))
+    body = "".join(cards) or "<p class='none'>Nothing awaiting approval.</p>"
+    warn = ("<p class='none'>%d unreadable line(s) in the lead store; the file wants "
+            "a look.</p>" % bad) if bad else ""
+    html = """<!DOCTYPE html><html lang="en-GB"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Meridian · Demo requests</title><style>
+body{font-family:Georgia,serif;background:#f7f5f0;color:#1d1c18;margin:0;padding:16px;
+     max-width:640px;margin-left:auto;margin-right:auto;}
+h1{font-size:20px;font-weight:600;margin:8px 0 2px;}
+.sub{font-size:12px;color:#6b6659;margin:0 0 16px;}
+.card{background:#fff;border:1px solid #d8d3c4;border-radius:8px;padding:14px 16px;
+      margin:0 0 12px;}
+.rt{font-size:17px;font-weight:700;letter-spacing:.04em;}
+.em{font-size:14px;margin:2px 0 6px;}
+.rs{font-size:12px;color:#8a6d1f;margin:0 0 8px;}
+.hist{border-top:1px solid #eee9dc;padding-top:6px;margin-bottom:10px;}
+.h{font-size:12px;color:#6b6659;padding:1px 0;}
+.row{display:flex;gap:10px;}
+button{flex:1;padding:12px 0;font-size:14px;font-weight:600;border-radius:6px;
+       border:1px solid #1d1c18;cursor:pointer;}
+.ap{background:#1d1c18;color:#f7f5f0;}
+.dc{background:#fff;color:#1d1c18;}
+.none{font-size:13px;color:#6b6659;}
+</style></head><body>
+<h1>Demo pack requests</h1>
+<p class="sub">One pack per email per route; the first is automatic. Approving sends
+the pack now and records who released it.</p>
+%s%s
+<script>
+function act(id, action, btn){
+  btn.disabled=true; btn.textContent=(action==='approve'?'Sending…':'Declining…');
+  fetch('/api/demo/approve',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({id:id,action:action,approver:''})})
+  .then(r=>r.json()).then(s=>{
+    if(!s.ok){ alert(s.error||'failed'); btn.disabled=false; return; }
+    var c=document.getElementById('c-'+id);
+    if(c){ c.style.opacity=0.45; c.querySelector('.row').innerHTML=
+      (action==='approve'?'Approved: building and sending.':'Declined.'); }
+  }).catch(e=>{ alert(e); btn.disabled=false; });
+}
+</script></body></html>""" % (warn, body)
+    return HTMLResponse(html)
