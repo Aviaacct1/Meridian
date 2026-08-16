@@ -209,10 +209,16 @@ API keys) so the Watch briefing works.
      watermark present in rendered HTML, refusal on a warned payload. Mail transport
      tested with a fake SMTP class, never a live send.
 
-   JOHN'S OWN ACTIONS (blocking the live send, not the build): choose/create the
-   sending mailbox (meridian@ or observatory@aviasolutions.com), enable SMTP AUTH for
-   it in M365 admin, set AVIA_SMTP_USER / AVIA_SMTP_PASS on the workstation (setx, new
-   window). SPF already covers office365 sends if the domain sends mail normally.
+   THE SENDER (John, 16 August): **meridian@aviationobservatory.com**. NOT yet up and
+   running, and it is a NEW DOMAIN, so the go-live list is longer than a mailbox:
+   domain added and verified in the M365 tenant, mailbox created and licensed, SMTP
+   AUTH enabled for it, SPF (include:spf.protection.outlook.com), DKIM enabled for the
+   domain, a DMARC record, then AVIA_SMTP_USER / AVIA_SMTP_PASS on the workstation
+   (setx, new window). A brand-new domain emailing cold recipients at Routes will land
+   in spam without SPF/DKIM/DMARC, and ideally sends a trickle of ordinary mail for a
+   couple of weeks first, so this list wants doing WELL BEFORE October, not the week
+   of the show. None of it blocks the build: the mail module reads config and is
+   tested against a fake transport; the live send is the only thing waiting.
 8. Refresh commissioning: catch OAG/Sabre up to end July WATCHED via refresh_pickup
    (--plan-only first, paste the plan), then wire the weekly scheduled task + portal
    stop/start bracket with db_registry.reset(). 1 day + Jess's downloads.
