@@ -183,11 +183,23 @@ def hub_dominance(oag_db, week, airport, airline):
     return sum(int(n or 0) for c, n in rows if (c or "").upper() == a) / tot
 
 
+def _fix_on(cfg):
+    """Whether the feed FIX is on, as distinct from a feed_cfg merely existing.
+
+    A cfg carrying _floor_only exists to switch the connectivity floor and NOTHING else:
+    the floor A/B (the 15 August handover's item 6) needs an arm identical to the shipped
+    V1 control apart from the floor, and before this helper any truthy cfg also zeroed
+    P2P carriers' feed, swapped the behind base capture and put _cap_eff onto the
+    dominance path, so the comparison would have measured three changes and called the
+    difference the floor. Every site that means "the fix is on" asks this, not bool(cfg)."""
+    return bool(cfg) and not cfg.get("_floor_only")
+
+
 def _cap_eff(base, dominance, cfg):
     """Feed capture scaled by the operating airline's hub dominance. cfg None = flat base (current
     behaviour, preserves the BA LHR-SJC calibration). With cfg: base x (floor + gain x dominance), so a
     fortress carrier scoops far more of its own feed than a spoke carrier of the same market."""
-    if not cfg:
+    if not _fix_on(cfg):
         return base
     return base * (cfg.get("dom_floor", 0.5) + cfg.get("dom_gain", 1.0) * dominance)
 
@@ -219,8 +231,9 @@ def feed_side(sabre_db, oag_db, week, origin_airports, hub, year, capture=DEFAUL
     H's feeders -> the route dest via O (behind). Per-city capture is alliance-weighted by the operating
     airline's connection onto the onward leg (online/alliance/interline). Returns (total, {city: pdew}).
     feed_cfg (the fix): zero for point-to-point carriers, and scale capture by the airline's dominance at
-    the hub (it scoops the onward bank at its own fortress)."""
-    if feed_cfg and airline and airline.upper() in P2P_CARRIERS:
+    the hub (it scoops the onward bank at its own fortress). A _floor_only cfg is not the fix
+    (_fix_on): it switches the connectivity floor downstream and must change nothing here."""
+    if _fix_on(feed_cfg) and airline and airline.upper() in P2P_CARRIERS:
         return (0.0, {}, {}) if detail else (0.0, {})
     _circ = (feed_cfg or {}).get("circuity", 1.35)
     _fac = (feed_cfg or {}).get("factor_indirect", factor_indirect)
@@ -292,7 +305,7 @@ def feed_side(sabre_db, oag_db, week, origin_airports, hub, year, capture=DEFAUL
             feed_cfg["_qsi_fallbacks"] = feed_cfg.get("_qsi_fallbacks", 0) + 1
             feed_cfg["_qsi_fallback_err"] = ("beyond: %s: %s" % (type(_e).__name__, _e))[:300]
     onward = hub_onward_carriers(oag_db, week, hub) if airline else {}
-    dom = hub_dominance(oag_db, week, hub, airline) if feed_cfg else 0.0
+    dom = hub_dominance(oag_db, week, hub, airline) if _fix_on(feed_cfg) else 0.0
     cap = _cap_eff(capture, dom, feed_cfg)
     # OPT-IN schedule banking: weight each onward market by the share of its frequency that is
     # genuinely connectable within MCT of the (optimised) hub arrival. Off by default; back-test first.
@@ -378,8 +391,9 @@ def behind_feed(sabre_db, oag_db, week, origin_airports, dest_airports, year, ca
     """BEHIND-origin feed: points that feed the origin, connecting there onto the O-D flight. Feeder ->
     origin -> destination. Alliance coefficient on the inbound feeder->origin leg. Returns (total, pdew).
     feed_cfg (the fix): zero for point-to-point carriers; use the (higher) behind base rate; and scale by
-    the airline's dominance at the ORIGIN - a carrier at its own fortress scoops most of its behind bank."""
-    if feed_cfg and airline and airline.upper() in P2P_CARRIERS:
+    the airline's dominance at the ORIGIN - a carrier at its own fortress scoops most of its behind bank.
+    A _floor_only cfg is not the fix (_fix_on) and must change nothing here."""
+    if _fix_on(feed_cfg) and airline and airline.upper() in P2P_CARRIERS:
         return (0.0, {}, {}) if detail else (0.0, {})
     _circ = (feed_cfg or {}).get("circuity", circuity)
     _fac = (feed_cfg or {}).get("factor_indirect", factor_indirect)
@@ -452,8 +466,8 @@ def behind_feed(sabre_db, oag_db, week, origin_airports, dest_airports, year, ca
             feed_cfg["_qsi_fallbacks"] = feed_cfg.get("_qsi_fallbacks", 0) + 1
             feed_cfg["_qsi_fallback_err"] = ("behind: %s: %s" % (type(_e).__name__, _e))[:300]
     onward = inbound_carriers(oag_db, week, origin_airports) if airline else {}
-    base = (feed_cfg.get("behind_cap", capture) if feed_cfg else capture)
-    dom = hub_dominance(oag_db, week, (origin_airports[0] if origin_airports else None), airline) if feed_cfg else 0.0
+    base = (feed_cfg.get("behind_cap", capture) if _fix_on(feed_cfg) else capture)
+    dom = hub_dominance(oag_db, week, (origin_airports[0] if origin_airports else None), airline) if _fix_on(feed_cfg) else 0.0
     cap = _cap_eff(base, dom, feed_cfg)
     captured = {y: pax * cap * conn_coeff(airline, onward.get(y, set()), feed_cfg) for y, pax in market.items()}
     total = sum(captured.values())

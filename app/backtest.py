@@ -883,16 +883,27 @@ def main():
             print(f"R1 pre-aggregation ON: {a.preagg} (per-route Sabre reads are point lookups)")
         else:
             print(f"WARNING --preagg {a.preagg} missing/invalid - falling back to full Sabre scans")
-    feed_cfg = ({"behind_cap": a.feed_behind_cap, "dom_gain": a.feed_dom_gain,
-                 "dom_floor": a.feed_dom_floor}
-                if (a.feed_fix or a.mct_banking or a.qsi_feed or a.no_split_floor) else None)
     # THE CONNECTIVITY FLOOR AS ITS OWN ARM. split_share re-splits the carried total using an
     # airport connectivity table and can only ever lift connecting, never cut it. It was sized for
     # the FLAT feed, which under-credited transfer traffic at non-US hubs. Whether it is still right
     # under the QSI feed is a separate question from whether the QSI feed is right, and folding the
     # two into one arm would leave no way to say which moved the score. Hence a third arm.
-    if feed_cfg is not None and a.no_split_floor:
-        feed_cfg["split_floor"] = False
+    #
+    # --no-split-floor ALONE builds a _floor_only cfg (16 August): the old construction gave it
+    # the feed-fix trio, and a truthy cfg also zeroed P2P carriers' feed, swapped the behind base
+    # capture onto behind_cap and put _cap_eff onto the dominance path (route_feed._fix_on carries
+    # the evidence). An arm meant to differ from the shipped control by the floor differed by four
+    # things and would have called the sum of them the floor.
+    if a.no_split_floor and not (a.feed_fix or a.mct_banking or a.qsi_feed):
+        feed_cfg = {"split_floor": False, "_floor_only": True}
+        print("floor-only arm: feed_cfg = %r (everything except the floor runs the "
+              "shipped V1 path; route_feed._fix_on)" % feed_cfg)
+    else:
+        feed_cfg = ({"behind_cap": a.feed_behind_cap, "dom_gain": a.feed_dom_gain,
+                     "dom_floor": a.feed_dom_floor}
+                    if (a.feed_fix or a.mct_banking or a.qsi_feed or a.no_split_floor) else None)
+        if feed_cfg is not None and a.no_split_floor:
+            feed_cfg["split_floor"] = False
     if feed_cfg is not None and a.preagg:
         feed_cfg["preagg"] = a.preagg
     if feed_cfg is not None and a.mct_banking:

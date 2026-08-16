@@ -1,0 +1,41 @@
+Floor A/B instrument (item 6): --no-split-floor alone now changes only the floor
+
+The floor question is decided by one A/B on the pinned set, and the instrument
+for it was confounded: --no-split-floor built the feed-fix cfg, and any truthy
+feed_cfg also zeroed P2P carriers' feed, swapped the behind base capture onto
+behind_cap and put _cap_eff onto the dominance path. An arm meant to differ
+from the shipped control by the floor differed by four things and would have
+called the sum of them the floor.
+
+- route_feed._fix_on: the one question every "is the fix on" site now asks,
+  instead of bool(cfg). A cfg carrying _floor_only is not the fix. Fixed at
+  the four sites: _cap_eff, the P2P zeroing in feed_side and behind_feed, and
+  the behind base capture / dominance reads in behind_feed.
+- backtest.py: --no-split-floor without --feed-fix/--mct-banking/--qsi-feed
+  builds {"split_floor": False, "_floor_only": True} and prints it, so the
+  arm's console states what ran. Combined with those flags, behaviour is
+  unchanged from before.
+- test_floor_only_arm.py: 13 fixture checks: _fix_on on all three shapes,
+  _cap_eff flat on the floor-only cfg and scaling under the fix, conn_coeff
+  identical either way, the floor read on all three shapes, and the P2P
+  zeroing gated off the floor-only arm (using a carrier actually in the set).
+  test_qsi_feed still passes.
+
+THE RUN ITSELF IS JOHN'S (the ask-first rule; it is hours, not minutes), on
+the workstation, into the 15 August sweep folder so the pairing includes the
+existing control and k arms:
+
+  cd C:\src\meridian\app
+  py -3.12 backtest.py --out E:\Avia\ksweep_15Aug\bt_floor_off.csv --jobs 12
+      --oag E:\Avia\oag.duckdb --sabre E:\Avia\sabre.duckdb
+      --routes-file E:\Avia\backtest_routes_11Aug2026.json
+      --preagg E:\Avia\preagg.duckdb
+      --wave-cache E:\Avia\qsi_wave_cache_pin_12Aug2026.duckdb
+      --resume --no-split-floor
+  py -3.12 qsi_k_sweep.py --out-dir E:\Avia\ksweep_15Aug --score-only
+
+Checks when reading it: the arm's console must print the floor-only feed_cfg
+line; in the scored table the fc/P2P control section for floor_off must sit on
+the v1_control values (the local leg does not touch the floor, so movement
+there means the arm is not clean); the decision reads from fc/OUTTURN and the
+connecting section, v1_control against floor_off, shape not winner.

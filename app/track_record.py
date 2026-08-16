@@ -97,6 +97,50 @@ def _source_path():
     return None
 
 
+# THE SHIPPED-CONFIGURATION ARM (John's item, 15 August; built 16 August). bt_v1_control.csv
+# is the k-sweep's control: the configuration the product actually ships (V1 carrying the
+# level, V2 the timing), re-run over the PINNED set of historical launches. It sits beside
+# the calibrated claim set so the page can say the evidence and the product are the same
+# machine, which is what closed the claims-arm mismatch on 15 August. E: is a per-logon
+# mapped drive over D:\Avia on the workstation, so both spellings are tried.
+_CONTROL_PATHS = [os.environ.get("AVIA_BT_CONTROL") or "",
+                  r"E:\Avia\ksweep_15Aug\bt_v1_control.csv",
+                  r"D:\Avia\ksweep_15Aug\bt_v1_control.csv",
+                  os.path.join(HERE, "bt_v1_control.csv")]
+
+
+def _control_path():
+    for p in _CONTROL_PATHS:
+        if p and os.path.exists(p):
+            return p
+    return None
+
+
+def load_control(path):
+    """The control arm's rows: fc_over_out as produced, NO destination lift.
+
+    load_rows applies the market-conditioned destination lift to engine-era files because
+    those files predate the fix and the page must match the live engine. The control arm
+    was produced BY the live engine with the fix inside, so applying the lift here would
+    correct the same routes twice. That asymmetry is the reason this is a separate loader
+    rather than a flag on the other one."""
+    rows = []
+    for r in csv.DictReader(open(path)):
+        try:
+            ratio = float(r.get("fc_over_out") or 0)
+            if ratio <= 0:
+                continue
+            rows.append({"route": r.get("route", ""), "dep": r.get("dep", ""),
+                         "arr": r.get("arr", ""),
+                         "year": int(r.get("year") or 0),
+                         "ratio": ratio,
+                         "forecastable": (float(r.get("natural") or 0)
+                                          >= float(r.get("p2p_outturn") or 0) > 0)})
+        except (ValueError, KeyError):
+            continue
+    return rows
+
+
 try:
     import airport_capture as _ACAP
 except Exception:
@@ -617,7 +661,38 @@ def render_html(t, source_name, engine_ctx=None):
 </div></body></html>"""
 
 
-def render_total(t, source_name):
+def _control_card(control):
+    """The shipped-configuration arm beside the claim set, both bases named.
+
+    The claim cards above it are the CALIBRATED set: the model fitted across the full
+    launch sample. This card is the other basis: the configuration the product ships,
+    re-run over a pinned set of historical launches it was not fitted to. The page
+    carries both, each under its own name, because "calibrated" and "as shipped" are
+    different claims and neither may borrow the other's number (the site-claim ruling,
+    5 August; the arm itself is the 15 August k-sweep control)."""
+    if not control or not control.get("stats"):
+        return ""
+    s = control["stats"]
+    counts, labels, half = control["hist"]
+    yrs = control.get("years") or []
+    yr_label = f"{min(yrs)}-{max(yrs)}" if yrs else "the pinned set"
+    return (f'<div class="card"><h2 style="margin-top:0">The engine as shipped</h2>'
+            f'<div class="note">A different basis from the cards above, and named as such. '
+            f'The claim set is calibrated: the model is fitted across the full launch sample. '
+            f'This is the configuration the product actually runs, re-run over a pinned set of '
+            f'{s["n"]:,} historical launches ({yr_label}) that it was not fitted to, graded '
+            f'against actual first-full-year traffic on the schedule the carrier actually flew. '
+            f'It is the harder test and it reads accordingly; it is published so the evidence '
+            f'and the product can be seen to be the same machine.</div>'
+            f'{_tiles(s)}'
+            f'<div style="margin-top:14px">{_svg_hist(counts, labels, half)}</div>'
+            f'<div class="prov"><span><b>Source</b> <span class="val">'
+            f'{_html.escape(control.get("name") or "bt_v1_control.csv")}</span></span>'
+            f'<span><b>Basis</b> <span class="val">shipped configuration, pinned launch set, '
+            f'not fitted</span></span></div></div>')
+
+
+def render_total(t, source_name, control=None):
     esc = _html.escape
     yr = t["years"]
     yr_label = f"{yr[0]}-{yr[-1]}" if yr else "the sample"
@@ -659,6 +734,7 @@ def render_total(t, source_name):
   {_section("All launches (the whole book)", "Existing and new markets combined: every route the engine forecast, graded against what it carried.", t['stats_all'], t['hist_all'])}
   {_section("Existing markets (the engine's core test)", "Demand at least the route's size was already flying before the route; the honest test of a data-driven forecast.", t['stats_fore'], t['hist_fore'])}
   {_section("New markets (created by the route)", "The route created demand that wasn't visible before; forecast from the capacity-anchored floor, not a measured market.", t['stats_indu'], t['hist_indu'])}
+  {_control_card(control)}
 
   {_brk("By carrier type (all launches)", t['bytype'])}
   {_brk("By region (all launches)", t['byreg'])}
@@ -678,7 +754,23 @@ def page(airport=None):
     if not src:
         return "<h3>No back-test evidence file found (bt_v1_baseline.csv) on the server.</h3>"
     if airport and airport.strip().upper() in ("ALL", "TOTAL", "ENGINE"):
-        return render_total(total_track(load_rows(src)), os.path.basename(src))
+        # the shipped-configuration arm renders only when its file is present; a missing
+        # control is a server-side statement, never a blank card on a client page
+        control = None
+        cp = _control_path()
+        if cp:
+            crows = load_control(cp)
+            ratios = [r["ratio"] for r in crows]
+            if ratios:
+                control = {"stats": _stats(ratios), "hist": _hist(ratios),
+                           "years": sorted({r["year"] for r in crows if r["year"]}),
+                           "name": os.path.basename(cp)}
+        else:
+            print("[trackrecord] no shipped-configuration arm found "
+                  "(AVIA_BT_CONTROL / ksweep_15Aug); the whole-engine page renders "
+                  "without that card")
+        return render_total(total_track(load_rows(src)), os.path.basename(src),
+                            control=control)
     if not airport:
         return f"""<!doctype html><html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>Track Record &middot; The Observatory</title>

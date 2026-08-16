@@ -1,0 +1,35 @@
+Track record: the shipped-configuration arm beside the claim set (item 5)
+
+The whole-engine page now carries bt_v1_control.csv, the 15 August k-sweep's
+control: the configuration the product actually ships (V1 level, V2 timing),
+re-run over the pinned set of historical launches it was not fitted to. It
+renders as its own card, "The engine as shipped", under the calibrated claim
+cards, with both bases named on the page: calibrated (fitted across the full
+launch sample) and shipped configuration (pinned set, not fitted). This is the
+page-level close of the claims-arm mismatch: the evidence and the product can
+be seen to be the same machine.
+
+- load_control is a dedicated loader and the reason is the double-correction
+  trap: load_rows applies the market-conditioned destination lift to engine-era
+  files because they predate the fix, and the control was produced BY the
+  current engine with the fix inside, so the lift would correct the same routes
+  twice. fc_over_out is used exactly as produced.
+- The control path: AVIA_BT_CONTROL, else E:\Avia\ksweep_15Aug\bt_v1_control.csv
+  with the D:\Avia spelling tried after it (E: is a per-logon mapped drive and
+  an elevated session loses it), else app/. A missing control is a server-side
+  print; the client page renders clean without the card, never blank inside it.
+- test_track_control.py: 11 fixture checks: the loader (ungraded rows skipped,
+  no lift applied), the card's two named bases, presence and clean absence,
+  the whole-engine render both ways, and the env override.
+
+FOR JOHN'S REVIEW before Routes: the card states the shipped arm's own
+within-band figures on a client-facing page. The site-claim ruling keeps
+single-route BLIND figures off client pages; this arm is not the BT2 blind set
+(it is the product configuration graded on the pinned historical set, stated as
+such), but the wording that distinguishes them is load-bearing and the final
+call on publishing it is yours. The card is one function (_control_card) and
+comes off the page by removing one line if you rule against it.
+
+Owed on the workstation: /trackrecord?airport=ALL with the real
+bt_v1_control.csv present, an eyeball of the card's figures and wording, and
+the existing suites (test_track_control.py runs anywhere; no stores needed).
