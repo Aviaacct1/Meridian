@@ -42,6 +42,7 @@
   .card h3{font-family:var(--sans);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
   table{width:100%;border-collapse:collapse;font-family:var(--sans);font-size:12px}
   th{font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-align:left;padding:4px 6px;border-bottom:1px solid var(--line)}
+  th.num{text-align:right}  /* a numeric column's heading sits over its right-aligned figures */
   td{padding:4px 6px;border-bottom:1px solid var(--line);color:var(--body)}
   td.num{font-family:var(--mono);text-align:right}
   .tag{display:inline-block;font-size:9px;letter-spacing:.08em;padding:1px 6px;border-radius:8px;border:1px solid var(--line);color:var(--muted)}
@@ -177,6 +178,14 @@ function drawSeats(s){
     "One record per flight (deduplicated), SSIM operating days; static extract, actuals as scheduled");
 }
 
+// A series' year label sits to the RIGHT of its last point, unless that point is near
+// the plot edge, where it anchors end and sits inside: a December-anchored series
+// clipped its label to "2024 a" on the first real page (John's screenshot, 16 August).
+function yrLbl(x,y,R,color,txt){
+  const flip=x+8>R-64;
+  return `<text x="${(flip?x-8:x+8).toFixed(1)}" y="${y.toFixed(1)}"${flip?' text-anchor="end"':""} font-family="'Inter',sans-serif" font-size="10" font-weight="600" fill="${color}">${txt}</text>`;
+}
+
 // MONTHLY PASSENGERS: brass is the anchor year, ink dashed the year before, month by
 // month. A month with no return is a GAP in the line, never a zero. Both bases are
 // stated under the plate: the measured one plain, the derived one marked ~ (x2 rule).
@@ -213,8 +222,8 @@ function drawMonthly(m){
     <text x="${L-6}" y="${T+3}" text-anchor="end" font-family="'IBM Plex Mono',monospace" font-size="9" fill="${PAL.muted}">${fmtK(mx)}</text>
     ${dPri?`<path d="${dPri}" fill="none" stroke="${PAL.ink}" stroke-width="1.4" stroke-dasharray="4 3"></path>`:""}
     ${dCur?`<path d="${dCur}" fill="none" stroke="${PAL.brass}" stroke-width="2"></path>`:""}
-    ${lc>=0?`<text x="${Math.min(xOf(lc)+8,R-4).toFixed(1)}" y="${(yOf(ms[lc].cur)-6).toFixed(1)}" font-family="'Inter',sans-serif" font-size="10" font-weight="600" fill="${PAL.brassDeep}">${m.year} actual</text>`:""}
-    ${lp>=0?`<text x="${Math.min(xOf(lp)+8,R-4).toFixed(1)}" y="${(yOf(ms[lp].prior)+14).toFixed(1)}" font-family="'Inter',sans-serif" font-size="10" font-weight="600" fill="${PAL.ink}">${m.prior_year} actual</text>`:""}
+    ${lc>=0?yrLbl(xOf(lc),yOf(ms[lc].cur)-8,R,PAL.brassDeep,m.year+" actual"):""}
+    ${lp>=0?yrLbl(xOf(lp),yOf(ms[lp].prior)+16,R,PAL.ink,m.prior_year+" actual"):""}
     <g font-family="'IBM Plex Mono',monospace" font-size="9" fill="${PAL.muted}">${monthLbls}</g>
   </svg>`;
   const meas=m.measured==="departing"?"departing":"two-way";
@@ -255,8 +264,8 @@ function movesTable(rows, kind){
   const chg = kind==="chg";
   // Codes stay (this audience speaks IATA); the name rides beside them, muted.
   const cell=(code,name)=>`${esc(code)}${name?` <span style="color:var(--muted)">${esc(name)}</span>`:""}`;
-  const head = chg ? "<tr><th>Carrier</th><th>Airport</th><th>Dir</th><th>Freq was → is</th><th>Weekly seats was → is</th></tr>"
-                   : "<tr><th>Carrier</th><th>Airport</th><th>Dir</th><th>Weekly freq</th><th>Weekly seats</th></tr>";
+  const head = chg ? '<tr><th>Carrier</th><th>Airport</th><th>Dir</th><th class="num">Freq was → is</th><th class="num">Weekly seats was → is</th></tr>'
+                   : '<tr><th>Carrier</th><th>Airport</th><th>Dir</th><th class="num">Weekly freq</th><th class="num">Weekly seats</th></tr>';
   const body = rows.map(r=> chg
     ? `<tr><td>${cell(r.carrier,r.carrier_name)}</td><td>${cell(r.airport,r.airport_name)}</td><td>${esc(r.direction)}</td><td class="num">${r.freq[0]} → ${r.freq[1]}</td><td class="num">${fmt(r.seats[0])} → ${fmt(r.seats[1])}</td></tr>`
     : `<tr><td>${cell(r.carrier,r.carrier_name)}</td><td>${cell(r.airport,r.airport_name)}</td><td>${esc(r.direction)}</td><td class="num">${r.weekly_freq??""}</td><td class="num">${r.weekly_seats!=null?fmt(r.weekly_seats):""}</td></tr>`).join("");
@@ -309,7 +318,7 @@ function load(){
       const meas=dem.measured||"twoway";
       const mk=(v,isMeas)=>(isMeas?"":"~ ")+fmt(v);
       $("#tDem").innerHTML="<table><tr><th>"+esc(dem.source_label||"Vintage")+" vintage</th>"+
-        "<th>Departing passengers</th><th>Two-way passengers</th></tr>"+
+        '<th class="num">Departing passengers</th><th class="num">Two-way passengers</th></tr>'+
         dem.series.map(s=>`<tr><td>${s.year}</td>`+
           `<td class="num">${mk(s.pax_departing, meas==="departing")}</td>`+
           `<td class="num">${mk(s.pax_twoway, meas==="twoway")}</td></tr>`).join("")+"</table>";
