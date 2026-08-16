@@ -226,6 +226,16 @@ API keys) so the Watch briefing works.
 10. John personally: stand booking decision with Charlotte (hold a stand), brief to the
     brand team, redistribution/PI/legal quotes in motion, the analyst footnote question
     (FOOTNOTE-TENSION-UNRESOLVED), tester email list, Cloudflare hostname.
+    ADDED 16 August, THIS WEEK because deliverability needs the lead time, not because
+    the build does: set up aviationobservatory.com correctly, end to end, per the item 7
+    spec's go-live list: domain registered and added to the M365 tenant, DNS verified,
+    the meridian@ mailbox created and licensed, SMTP AUTH enabled for that mailbox, SPF
+    (include:spf.protection.outlook.com), DKIM enabled for the domain in Defender/EAC,
+    a DMARC record (p=none to start is fine; the record existing is what matters), then
+    AVIA_SMTP_USER / AVIA_SMTP_PASS on the workstation via setx. From then until
+    October, a trickle of ordinary mail from the mailbox so the domain has a sending
+    history before it emails cold prospects at Routes. Done this week, the stand demo
+    lands in inboxes; done in October, it lands in spam.
 11. Small correction owed in Observatory_Routes2026_stand_brief.docx before it goes to
     the designers: section 3's fascia line said Avia Solutions to match the diaries;
     John ruled 15 August that the exhibitor registers as The Aviation Observatory, so
