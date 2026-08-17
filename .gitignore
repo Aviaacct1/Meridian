@@ -104,3 +104,8 @@ avia_config.json
 #   explore_segments, stage_runner): these go to app/attic/ and are COMMITTED there in
 #   a second commit. An attic folder that is committed is a record; a file ignored is a
 #   file that exists on one machine only, which is the fault this repo exists to end.
+
+# Raw Sabre MI extracts never enter the repo (audit R1, 17 Aug 2026)
+OD *.xlsx
+POS *.xlsx
+syd_per_sabre.csv
