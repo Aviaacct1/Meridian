@@ -152,6 +152,9 @@ def main():
 
     def run(level):
         os.environ["AVIA_FEED_LEVEL"] = level
+        # The QSI arm prices nonstop competitors into the choice set (the mechanism
+        # behind the analyst's near-zero competed rates); the V1 arm never reads it.
+        os.environ["AVIA_QSI_NONSTOP_COMP"] = "1" if level == "qsi" else "0"
         fc = CA.calibrated_forecast(
             a.origin, a.dest, airline=(a.airline or None), aircraft=a.aircraft,
             seats=(a.seats or None), freq=a.freq, with_econ=True,

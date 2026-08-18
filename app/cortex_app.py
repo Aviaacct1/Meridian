@@ -1083,7 +1083,13 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
             _lvl_qsi = os.environ.get("AVIA_FEED_LEVEL", "v1").strip().lower() == "qsi"
             feed_cfg.update({"qsi_feed": bool(_lvl_qsi), "dep_time_mins": int(dep_mins),
                              "flying_mins": int(bmin), "route_freq": freq,
-                             "route_origin": home, "qsi_k": float(qsi_k)})
+                             "route_origin": home, "qsi_k": float(qsi_k),
+                             # Nonstop competitors in the QSI choice set: the
+                             # competition-split instrument's switch (18 August
+                             # 2026), default off; the shipped path never sets it.
+                             "include_nonstop_competition":
+                                 os.environ.get("AVIA_QSI_NONSTOP_COMP", "0").strip()
+                                 in ("1", "true", "on")})
             # Set only when named. route_feed line 407 reads qsi_k_behind with qsi_k as the fallback,
             # and a None sitting in the dict would be returned rather than falling back, taking the
             # behind side to the bare 0.06 default by a different route.

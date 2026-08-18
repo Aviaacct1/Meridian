@@ -296,7 +296,11 @@ def _share(new_itins, comp_itins, logit_lambda=1.0):
     me = min(it["elapsed"] for it in allit)
     q_new = q_all = 0.0
     for it in allit:
-        q = itinerary_qsi(it["frequency"], it["elapsed"], me, it["cnx_type"], n_stops=1)
+        # n_stops rides on the itinerary where present (nonstop competitors carry 0,
+        # added 18 August 2026 for the competition split, cfg-gated at the call
+        # sites); the default 1 keeps every pre-existing score identical.
+        q = itinerary_qsi(it["frequency"], it["elapsed"], me, it["cnx_type"],
+                          n_stops=it.get("n_stops", 1))
         if logit_lambda != 1.0 and q > 0:
             q = q ** logit_lambda
         it["qsi"] = q
@@ -454,6 +458,19 @@ def beyond_capture(boards, week, origin_airports, hub, markets, airline,
             if not _circuity_ok(o0, h, m, circ, cfg=cfg):
                 continue
             comp_itins.extend(_collapse(leg1s, rows_hm, h, hc, mct, maxc, fcap, partners))
+        if cfg.get("include_nonstop_competition"):
+            # DIRECT COMPETITION IN THE CHOICE SET (18 August 2026, the competition
+            # split). The standing exclusion above answers the timing engine's
+            # question, how the new connect option ranks among connects; for the
+            # with/without-direct-competition split the nonstop is the strongest
+            # alternative the passenger has and must price into the denominator.
+            # Gated, so the shipped timing optimiser scores exactly as before.
+            _ns = [r for ob in origin_boards.values() for r in ob if r.get("arr") == m]
+            _nf = sum((r.get("freq") or 0) for r in _ns)
+            _nt = [int(r.get("flying") or 0) for r in _ns if (r.get("flying") or 0) > 0]
+            if _nf > 0 and _nt:
+                comp_itins.append({"frequency": _nf, "elapsed": float(min(_nt)),
+                                   "cnx_type": "online", "n_stops": 0})
         s = _share(new_itins, comp_itins, lam)
         shares[m] = s
         if detail:
@@ -529,6 +546,15 @@ def behind_capture(boards, week, origin_airports, dest_airports, feeders, airlin
             if not _circuity_ok(y, h, d0, circ, cfg=cfg):
                 continue
             comp_itins.extend(_collapse(yb_by_arr.get(h) or [], rows_hd, h, hc, mct, maxc, fcap, partners))
+        if cfg.get("include_nonstop_competition"):
+            # Mirror of the beyond side (18 August 2026): the feeder's own nonstop
+            # to the destination prices into the denominator, cfg-gated only.
+            _ns = [r for d in dest_airports for r in (yb_by_arr.get(d) or [])]
+            _nf = sum((r.get("freq") or 0) for r in _ns)
+            _nt = [int(r.get("flying") or 0) for r in _ns if (r.get("flying") or 0) > 0]
+            if _nf > 0 and _nt:
+                comp_itins.append({"frequency": _nf, "elapsed": float(min(_nt)),
+                                   "cnx_type": "online", "n_stops": 0})
         s = _share(new_itins, comp_itins, lam)
         shares[y] = s
         if detail:
