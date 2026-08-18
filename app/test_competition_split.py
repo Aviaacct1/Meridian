@@ -29,10 +29,14 @@ def check(name, cond, detail=""):
 
 
 def main():
+    # PAYLOAD key names (code/base/forecast), the shape the live rows actually
+    # carry; the contract names are checked separately below. The first cut read
+    # only the contract names, saw nothing, and printed "flat shares" as though
+    # it had measured something. Never again.
     rows = [
-        {"city_code": "MNL", "annual_demand": 80000, "annual_forecast": 800},
-        {"city_code": "SGN", "annual_demand": 79000, "annual_forecast": 4000},
-        {"city_code": "BKK", "annual_demand": 68000, "annual_forecast": 3200},
+        {"code": "MNL", "base": 80000, "forecast": 800},
+        {"code": "SGN", "base": 79000, "forecast": 4000},
+        {"code": "BKK", "base": 68000, "forecast": 3200},
     ]
     out = renormalise(rows, 4000)
     check("allocation sums to the V1 leg total",
@@ -40,13 +44,18 @@ def main():
     check("shape preserved (SGN five times MNL)",
           abs(out[1]["alloc"] / out[0]["alloc"] - 5.0) < 1e-9)
     check("no forecast to shape with returns None",
-          renormalise([{"annual_demand": 1, "annual_forecast": 0}], 100) is None)
+          renormalise([{"base": 1, "forecast": 0}], 100) is None)
     check("zero leg total returns None", renormalise(rows, 0) is None)
 
-    flat = [{"city_code": c, "annual_demand": 1000 * (i + 1),
-             "annual_forecast": 43.1 * (i + 1)} for i, c in enumerate("ABCDE")]
+    flat = [{"code": c, "base": 1000 * (i + 1),
+             "forecast": 43.1 * (i + 1)} for i, c in enumerate("ABCDE")]
     check("flat shares detected (cv near zero)", flatness(flat) < 0.001)
     check("differentiated shares detected", flatness(rows) > 0.5)
+    check("contract key names read too",
+          flatness([{"city_code": "A", "annual_demand": 100, "annual_forecast": 1},
+                    {"city_code": "B", "annual_demand": 100, "annual_forecast": 9}]) > 0.5)
+    check("unreadable rows REFUSE with None, never zero",
+          flatness([{"foo": 1}, {"bar": 2}]) is None)
 
     b = bucket(out, {"MNL"})
     check("competed bucket holds MNL only", b["competed"]["n"] == 1)

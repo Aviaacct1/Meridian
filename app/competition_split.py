@@ -35,17 +35,42 @@ if HERE not in sys.path:
 
 # --- pure arithmetic (fixture-tested offline) --------------------------------
 
+def _num(r, *names):
+    """The first named key that carries a number. THE KEY LESSON OF 18 AUGUST:
+    the first cut read the CONTRACT's names (annual_demand/annual_forecast) while
+    the payload emits base/forecast, saw an empty list, and printed 'flat shares'
+    as though it had measured something. Both shapes are read now, and an empty
+    read REFUSES rather than scoring zero."""
+    for n in names:
+        v = r.get(n)
+        if v is not None:
+            return float(v or 0)
+    return None
+
+
+def _base(r):
+    return _num(r, "base", "annual_demand")
+
+
+def _fc(r):
+    return _num(r, "forecast", "captured", "annual_forecast")
+
+
+def _code(r):
+    return r.get("code") or r.get("city_code")
+
+
 def renormalise(rows, leg_total):
-    """Scale market forecasts so they sum to the V1 leg total. rows =
-    [{"city_code", "annual_demand", "annual_forecast"}]. Returns new rows with
-    "alloc" added; None when the rows carry no forecast to shape with."""
-    ssum = sum((r.get("annual_forecast") or 0) for r in rows)
+    """Scale market forecasts so they sum to the V1 leg total. Returns new rows
+    with "alloc" added; None when the rows carry no forecast to shape with."""
+    vals = [(_fc(r) or 0) for r in rows]
+    ssum = sum(vals)
     if ssum <= 0 or leg_total <= 0:
         return None
     out = []
-    for r in rows:
+    for r, v in zip(rows, vals):
         rr = dict(r)
-        rr["alloc"] = (r.get("annual_forecast") or 0) * leg_total / ssum
+        rr["alloc"] = v * leg_total / ssum
         out.append(rr)
     return out
 
@@ -53,26 +78,30 @@ def renormalise(rows, leg_total):
 def flatness(rows):
     """Coefficient of variation of the market SHARES (forecast/base). Near zero
     means the shape arm returned flat shares and there is nothing to distribute
-    with; the caller says so and stops rather than shipping a fake split."""
-    shares = [(r.get("annual_forecast") or 0) / b
-              for r in rows for b in [(r.get("annual_demand") or 0)] if b > 0]
+    with. Returns None (refusal) when the rows carry no readable share at all,
+    which must never again be reported as a measurement of flatness."""
+    shares = []
+    for r in rows:
+        b, f = _base(r), _fc(r)
+        if b and b > 0 and f is not None:
+            shares.append(f / b)
     n = len(shares)
     if n < 2:
-        return 0.0
+        return None
     m = sum(shares) / n
     if m <= 0:
-        return 0.0
+        return None
     var = sum((s - m) ** 2 for s in shares) / n
     return (var ** 0.5) / m
 
 
 def bucket(rows, competed):
-    """Two buckets from allocated rows. competed = set of city codes. Returns
+    """Two buckets from allocated rows. competed = set of market codes. Returns
     {"competed": {...}, "uncompeted": {...}} with base, alloc, capture."""
     out = {}
     for name, member in (("competed", True), ("uncompeted", False)):
-        sel = [r for r in rows if (r.get("city_code") in competed) == member]
-        base = sum((r.get("annual_demand") or 0) for r in sel)
+        sel = [r for r in rows if (_code(r) in competed) == member]
+        base = sum((_base(r) or 0) for r in sel)
         alloc = sum((r.get("alloc") or 0) for r in sel)
         out[name] = {"n": len(sel), "base": base, "alloc": alloc,
                      "capture": (alloc / base) if base > 0 else None}
@@ -163,22 +192,33 @@ def main():
             pass
     verdicts = {}
     try:
+        _fla = (fc_q.get("feed_level") or {})
+        if _fla:
+            print("QSI arm feed level: %s" % _fla)
         for leg, (rows, total) in legs.items():
-            print("\n== Connecting %s: leg total (V1, carried) %.0f ==" % (leg, total))
+            print("\n== Connecting %s: leg total (V1, carried) %.0f, %d markets ==" % (leg, total, len(rows)))
             fl = flatness(rows)
+            if fl is None:
+                print("  NO READABLE SHARES in the rows (keys: %s): refusing rather "
+                      "than measuring nothing. This is the 18 Aug key-name lesson."
+                      % sorted((rows[0] if rows else {}).keys()))
+                verdicts[leg] = {"ok": False, "reason": "no readable shares"}
+                continue
             if fl < 0.05:
                 print("  THE QSI ARM RETURNED FLAT SHARES (cv %.3f): there is no shape "
-                      "to distribute with, and the split is NOT built from this. The "
-                      "wiring of the qsi feed path wants inspection first." % fl)
+                      "to distribute with, and the split is NOT built from this. Check "
+                      "the arm's basis_ran above: a v1_fallback means the QSI branch "
+                      "threw and reverted silently." % fl)
                 verdicts[leg] = {"ok": False, "reason": "flat shares, cv %.3f" % fl}
                 continue
+            print("  share differentiation cv %.3f" % fl)
             alloc = renormalise(rows, total)
             if not alloc:
                 verdicts[leg] = {"ok": False, "reason": "no rows to allocate"}
                 continue
             competed = set()
             for r in alloc:
-                c = (r.get("city_code") or "").upper()
+                c = (_code(r) or "").upper()
                 if not c:
                     continue
                 if leg == "beyond":
@@ -186,7 +226,7 @@ def main():
                 else:
                     hit = _served(con, week, _city_airports(c), dest_aps)
                 if hit:
-                    competed.add(r.get("city_code"))
+                    competed.add(_code(r))
             b = bucket(alloc, competed)
             for name in ("competed", "uncompeted"):
                 x = b[name]
