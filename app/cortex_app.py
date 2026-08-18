@@ -2887,6 +2887,69 @@ def api_pitch_html(job_id: str):
     return FileResponse(j["html"], filename=j.get("html_name", "pitch.html"), media_type="text/html")
 
 
+REPORT_JOBS = {}   # job_id -> {state, file, name, media, error, started}
+
+
+@app.get("/api/report/start")
+def api_report_start(request: Request, origin: str, dest: str):
+    """/api/report through the pitch-jobs pattern. 18 August 2026: Cloudflare ends any
+    single request at 100 seconds, and an optimised run plus the deck build exceeds it,
+    which is the 524 the first live download hit the night the workstation came back
+    from a power cut. Same query as /api/report; build in the background, the page
+    polls, the file fetch is instant."""
+    import threading, time, uuid
+    import inspect
+    import demo_leads as DL
+    q = dict(request.query_params)
+    defaults = {k: p.default for k, p in inspect.signature(api_report).parameters.items()
+                if p.default is not inspect.Parameter.empty}
+    kw = DL.coerce_params(q, defaults)
+    job_id = uuid.uuid4().hex[:12]
+    REPORT_JOBS[job_id] = {"state": "running", "started": time.time()}
+
+    def _run():
+        try:
+            resp = api_report(origin, dest, **kw)
+            if isinstance(resp, FileResponse):
+                REPORT_JOBS[job_id] = {"state": "done", "file": resp.path,
+                                       "name": getattr(resp, "filename", None) or "report",
+                                       "media": resp.media_type}
+            else:
+                try:
+                    _err = json.loads(bytes(resp.body)).get("error") or "report build failed"
+                except Exception:                            # noqa: BLE001
+                    _err = "report build failed"
+                REPORT_JOBS[job_id] = {"state": "error", "error": _err}
+        except Exception as e:                               # noqa: BLE001
+            REPORT_JOBS[job_id] = {"state": "error",
+                                   "error": "%s: %s" % (type(e).__name__, e)}
+
+    threading.Thread(target=_run, daemon=True).start()
+    return JSONResponse({"ok": True, "job_id": job_id})
+
+
+@app.get("/api/report/status")
+def api_report_status(job_id: str):
+    import time
+    j = REPORT_JOBS.get(job_id)
+    if not j:
+        return JSONResponse({"ok": False, "error": "unknown job"}, status_code=404)
+    out = {"ok": True, "state": j.get("state")}
+    if j.get("state") == "running" and j.get("started"):
+        out["elapsed_s"] = int(time.time() - j["started"])
+    if j.get("state") == "error":
+        out["error"] = j.get("error")
+    return JSONResponse(out)
+
+
+@app.get("/api/report/file")
+def api_report_file(job_id: str):
+    j = REPORT_JOBS.get(job_id)
+    if not j or j.get("state") != "done":
+        return JSONResponse({"ok": False, "error": "not ready"}, status_code=404)
+    return FileResponse(j["file"], filename=j["name"], media_type=j.get("media"))
+
+
 @app.get("/trackrecord")
 def trackrecord(airport: str = ""):
     """Track record (John, 4 Jul 2026): per-airport back-test evidence - forecast vs actual

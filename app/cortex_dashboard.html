@@ -1148,7 +1148,25 @@ function downloadReport(part){
     airline:$("#airline").value.trim(),carrier_type:$("#ctype").value,aircraft:$("#aircraft").value,
     freq:$("#freq").value||7, season:$("#season").value||"annual"}); }
   q.set("part", part||"both");
-  window.location="/api/report?"+q;
+  // BUILT IN THE BACKGROUND (18 August 2026): Cloudflare ends any request at 100
+  // seconds and an optimised run plus a deck build exceeds it (the live 524). The
+  // pitch-jobs pattern instead: start, poll, fetch the finished file.
+  $("#pitchNote").textContent="Building… the download starts when it is ready.";
+  fetch("/api/report/start?"+q).then(r=>r.json()).then(s=>{
+    if(!s.ok||!s.job_id){ $("#pitchNote").textContent=""; showErr(s.error||"could not start the report"); return; }
+    const t0=Date.now();
+    const t=setInterval(()=>{
+      fetch("/api/report/status?job_id="+s.job_id).then(r=>r.json()).then(st=>{
+        if(st.state==="running"){
+          $("#pitchNote").textContent="Building… "+Math.round((Date.now()-t0)/1000)+"s (it downloads when ready; you need not wait on this page)";
+          return; }
+        clearInterval(t);
+        $("#pitchNote").textContent="";
+        if(st.state==="done"){ window.location="/api/report/file?job_id="+s.job_id; }
+        else { showErr(st.error||"report build failed"); }
+      }).catch(e=>{ clearInterval(t); $("#pitchNote").textContent=""; showErr(e.message||e); });
+    }, 2500);
+  }).catch(e=>{ $("#pitchNote").textContent=""; showErr(e.message||e); });
 }
 let PITCH_POLL=null;
 function pitchGenerate(){
