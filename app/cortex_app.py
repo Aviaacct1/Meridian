@@ -1699,6 +1699,9 @@ def _attach_viability(fc):
     return fc
 
 
+_CFG_SEATS_CACHE = {}   # (airline, aircraft) -> measured carrier-config seats or None
+
+
 def _auto_gauge(origin, dest, airline, carrier_type, freq, plan_lf, econ_share_gauge,
                 bus_fare, season):
     """AUTO gauge sizing, shared by /api/forecast and /api/report. The report endpoint
@@ -1774,6 +1777,27 @@ def api_forecast(origin: str, dest: str, airline: str = "", carrier_type: str = 
         _auto_ac, _auto_fail = _auto_gauge(origin, dest, airline, carrier_type, freq,
                                            plan_lf, _es_gauge, bus_fare, season)
         aircraft = _auto_ac or "A21X"
+    # CARRIER-CONFIGURATION SEATS BY DEFAULT (19 August 2026, John's ruling). A
+    # named-airline run resolves the carrier's own measured configuration for the
+    # chosen gauge (capacity_frame.config_for: EVA's 787-9 is 278 against the type
+    # table's 320) unless the caller supplied seats. This is what makes the screen,
+    # the download, the deck and the demo agree without any query carrying seats;
+    # the night of 18 August proved they otherwise cannot. Lookup failure is a
+    # named console line and the type table stands, exactly as before.
+    if airline and not seats:
+        try:
+            _key = ((airline or "").upper(), (aircraft or "").upper())
+            if _key not in _CFG_SEATS_CACHE:
+                import capacity_frame as _CFrm
+                _km = _route_distance_km(origin, dest) or 0.0
+                _cfg = _CFrm.config_for(airline, _km) if _km else {}
+                _hit = _cfg.get(_key[1])
+                _CFG_SEATS_CACHE[_key] = float(_hit[0]) if (_hit and _hit[0]) else None
+            if _CFG_SEATS_CACHE.get(_key):
+                seats = _CFG_SEATS_CACHE[_key]
+        except Exception as _se:                             # noqa: BLE001
+            print("carrier-config seats unavailable (%s: %s); type table stands"
+                  % (type(_se).__name__, _se))
     fc = calibrated_forecast(
         origin, dest, airline=airline, carrier_type=carrier_type, aircraft=aircraft, freq=freq,
         econ_share=_es, plan_lf=plan_lf, econ_fare=(econ_fare or None), bus_fare=bus_fare,

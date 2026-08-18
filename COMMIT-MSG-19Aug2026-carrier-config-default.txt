@@ -1,0 +1,25 @@
+Named-airline runs default to carrier-configuration seats; downloads never
+fall back silently
+
+The night of 18 August proved, artefact by artefact, that screen and
+download could disagree because 278 (EVA's measured 787-9 configuration)
+only ever appeared when a query happened to carry seats, and a download
+with no stored query quietly rebuilt a minimal run (the 00:30/320
+workbook). The bare-URL payload was the decisive evidence: seats null,
+"generic type table", even with an airline named.
+
+- app/cortex_app.py   /api/forecast resolves the carrier's own measured
+  configuration for the chosen gauge by default (capacity_frame.config_for,
+  the function whose docstring records EVA's 278 v the table's 320),
+  whenever an airline is named and the caller supplied no seats; cached per
+  (airline, aircraft); lookup failure is a named console line and the type
+  table stands. Every consumer inherits through the one run definition:
+  screen, report, demo email, optimise start.
+- app/cortex_dashboard.html   a download with no stored run-query REFUSES
+  with the reason instead of rebuilding a minimal run; same rule the
+  demo-email button already followed.
+
+Live proof: restart, run SJC-TPE BR with a blank seat box, and the screen
+should now say 278 (carrier configuration, OAG) with LF circa 78%; the
+downloaded workbook must match it column for column, including the 20:59
+curfew-honouring departure.

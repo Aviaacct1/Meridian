@@ -1154,11 +1154,15 @@ function downloadReport(part){
   // not a rebuilt minimum. The rebuilt minimum produced a steady-state generic-gauge
   // workbook for a client case on 18 August 2026; never again. Falls back to the
   // minimum only when no run has completed in this session.
-  let q;
-  if(STATE.lastQ){ q=new URLSearchParams(STATE.lastQ); }
-  else { q=new URLSearchParams({origin:$("#origin").value.trim(),dest:$("#dest").value.trim(),
-    airline:$("#airline").value.trim(),carrier_type:$("#ctype").value,aircraft:$("#aircraft").value,
-    freq:$("#freq").value||7, season:$("#season").value||"annual"}); }
+  // NO SILENT FALLBACK (19 August 2026): a download with no stored run-query used
+  // to rebuild a minimal run and quietly deliver a different forecast than the
+  // screen (the 00:30/320 workbook of 18 August). Refusing with the reason is the
+  // only honest behaviour; the demo-email button already follows the same rule.
+  if(!STATE.lastQ){
+    showErr("run an assessment first, so the download reproduces the exact run on screen.");
+    return;
+  }
+  const q=new URLSearchParams(STATE.lastQ);
   q.set("part", part||"both");
   // BUILT IN THE BACKGROUND (18 August 2026): Cloudflare ends any request at 100
   // seconds and an optimised run plus a deck build exceeds it (the live 524). The
