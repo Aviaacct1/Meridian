@@ -1127,14 +1127,26 @@ function optimise(){
   // has no seats parameter yet (the 14 August kickoff records it); sending it is harmless today
   // and starts working the day the endpoint takes it.
   const _st=($("#seats").value||"").trim(); if(_st) q.set("seats",_st);
-  fetch("/api/optimise?"+q).then(r=>r.json()).then(async res=>{
-    if(res && res.ok && res.optimised){
-      const op=res.optimised;
-      // Do NOT write the optimised picks back into the form: a field left blank must stay blank so the next
-      // Optimise re-sweeps it. The chosen airline, aircraft, frequency and schedule are shown in the results basis line.
-      render(res);
-    } else { showErr((res&&res.error)||"could not optimise this pair"); }
-  }).catch(e=>showErr(e.message||e)).finally(()=>{btn.disabled=false;btn.textContent="Optimise";});
+  // BACKGROUND JOB (18 August 2026): the sweep runs for minutes and Cloudflare ends
+  // any single request at 100 seconds; start, poll, render the finished result.
+  const _t0=Date.now();
+  const _reset=()=>{btn.disabled=false;btn.textContent="Optimise";};
+  fetch("/api/optimise/start?"+q).then(r=>r.json()).then(s=>{
+    if(!s.ok||!s.job_id){ _reset(); showErr(s.error||"could not start the optimiser"); return; }
+    const t=setInterval(()=>{
+      fetch("/api/optimise/status?job_id="+s.job_id).then(r=>r.json()).then(st=>{
+        if(st.state==="running"){
+          btn.innerHTML='<span class="spinner"></span>Optimising… '+Math.round((Date.now()-_t0)/1000)+'s';
+          return; }
+        clearInterval(t); _reset();
+        if(st.state==="done"&&st.result&&st.result.ok&&st.result.optimised){
+          // Do NOT write the optimised picks back into the form: a field left blank must
+          // stay blank so the next Optimise re-sweeps it; the picks show in the basis line.
+          render(st.result);
+        } else { showErr((st.result&&st.result.error)||st.error||"could not optimise this pair"); }
+      }).catch(e=>{ clearInterval(t); _reset(); showErr(e.message||e); });
+    }, 3000);
+  }).catch(e=>{ _reset(); showErr(e.message||e); });
 }
 function downloadReport(part){
   // The download reproduces THE RUN ON SCREEN: the exact query the forecast ran with
@@ -1204,7 +1216,9 @@ function showErr(m){
   // parse error, because "Unexpected token <!DOCTYPE" reads as a broken product.
   const s=String(m||"");
   if(s.indexOf("JSON")>=0||s.indexOf("DOCTYPE")>=0){
-    m="your sign-in session has expired. Reload this page, sign in again, and re-run.";
+    m="the server's reply was interrupted: either the sign-in session expired (reload "+
+      "this page and sign in again) or the request outran the gateway's 100-second "+
+      "limit. If it recurs on the same run after a fresh sign-in, tell the team which run.";
   }
   $("#err").textContent="Could not forecast this pair: "+m; $("#err").classList.remove("hidden"); }
 

@@ -2887,6 +2887,52 @@ def api_pitch_html(job_id: str):
     return FileResponse(j["html"], filename=j.get("html_name", "pitch.html"), media_type="text/html")
 
 
+OPT_JOBS = {}      # job_id -> {state, result, error, started}
+
+
+@app.get("/api/optimise/start")
+def api_optimise_start(request: Request, origin: str, dest: str):
+    """/api/optimise through the same background pattern as the reports (18 August
+    2026, same night, same cause: an airline-and-frequency sweep runs for minutes and
+    Cloudflare ends any single request at 100 seconds)."""
+    import threading, time, uuid
+    import inspect
+    import demo_leads as DL
+    q = dict(request.query_params)
+    defaults = {k: p.default for k, p in inspect.signature(api_optimise).parameters.items()
+                if p.default is not inspect.Parameter.empty}
+    kw = DL.coerce_params(q, defaults)
+    job_id = uuid.uuid4().hex[:12]
+    OPT_JOBS[job_id] = {"state": "running", "started": time.time()}
+
+    def _run():
+        try:
+            resp = api_optimise(origin, dest, **kw)
+            OPT_JOBS[job_id] = {"state": "done", "result": json.loads(bytes(resp.body))}
+        except Exception as e:                               # noqa: BLE001
+            OPT_JOBS[job_id] = {"state": "error",
+                                "error": "%s: %s" % (type(e).__name__, e)}
+
+    threading.Thread(target=_run, daemon=True).start()
+    return JSONResponse({"ok": True, "job_id": job_id})
+
+
+@app.get("/api/optimise/status")
+def api_optimise_status(job_id: str):
+    import time
+    j = OPT_JOBS.get(job_id)
+    if not j:
+        return JSONResponse({"ok": False, "error": "unknown job"}, status_code=404)
+    if j.get("state") == "done":
+        return JSONResponse({"ok": True, "state": "done", "result": j.get("result")})
+    out = {"ok": True, "state": j.get("state")}
+    if j.get("state") == "running" and j.get("started"):
+        out["elapsed_s"] = int(time.time() - j["started"])
+    if j.get("state") == "error":
+        out["error"] = j.get("error")
+    return JSONResponse(out)
+
+
 REPORT_JOBS = {}   # job_id -> {state, file, name, media, error, started}
 
 
