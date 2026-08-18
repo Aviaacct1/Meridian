@@ -1180,7 +1180,15 @@ function pitchGenerate(){
     }, 3000);
   }).catch(e=>{ reset(); $("#pitchNote").textContent=""; showErr(e.message||e); });
 }
-function showErr(m){ $("#err").textContent="Could not forecast this pair: "+m; $("#err").classList.remove("hidden"); }
+function showErr(m){
+  // An HTML page where JSON was expected is almost always the Cloudflare Access
+  // session expiring mid-visit (18 August 2026): say so, rather than the raw
+  // parse error, because "Unexpected token <!DOCTYPE" reads as a broken product.
+  const s=String(m||"");
+  if(s.indexOf("JSON")>=0||s.indexOf("DOCTYPE")>=0){
+    m="your sign-in session has expired. Reload this page, sign in again, and re-run.";
+  }
+  $("#err").textContent="Could not forecast this pair: "+m; $("#err").classList.remove("hidden"); }
 
 // The direct-competition split beneath each connecting table (18 August 2026,
 // validated against the 2025 analyst's split). Absent block, no line, never zeros.
