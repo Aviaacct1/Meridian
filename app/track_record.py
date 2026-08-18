@@ -90,9 +90,21 @@ OBS_STYLE = f"""<style>
 
 
 def _source_path():
-    for s in SOURCES:
-        p = os.path.join(HERE, s)
-        if os.path.exists(p):
+    """The evidence CSV is DATA and lives with the stores, not in the repo (the tool
+    standard; surfaced 18 August 2026 when a fresh clone served 'no evidence file'
+    because master_backtest_scored.csv only ever existed in one working tree).
+    Resolution: AVIA_BT_EVIDENCE (a file or a folder), then the data roots, then the
+    app folder for a dev tree carrying a working copy."""
+    cands = []
+    env = os.environ.get("AVIA_BT_EVIDENCE", "").strip()
+    if env:
+        cands.append(env)
+        cands += [os.path.join(env, s) for s in SOURCES]
+    for root in (r"E:\Avia", r"D:\Avia"):
+        cands += [os.path.join(root, s) for s in SOURCES]
+    cands += [os.path.join(HERE, s) for s in SOURCES]
+    for p in cands:
+        if os.path.isfile(p):
             return p
     return None
 
@@ -785,7 +797,10 @@ def page(airport=None):
     """The portal entry point: form when no airport given, else the rendered evidence page."""
     src = _source_path()
     if not src:
-        return "<h3>No back-test evidence file found (bt_v1_baseline.csv) on the server.</h3>"
+        return ("<h3>No back-test evidence file found. Looked for %s (and fallbacks) "
+                "via AVIA_BT_EVIDENCE, then E:\\Avia and D:\\Avia, then the app "
+                "folder. The evidence CSV is data and travels with the stores, not "
+                "the repo.</h3>" % SOURCES[0])
     if airport and airport.strip().upper() in ("ALL", "TOTAL", "ENGINE"):
         # the shipped-configuration arm renders only when its file is present; a missing
         # control is a server-side statement, never a blank card on a client page

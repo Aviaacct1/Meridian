@@ -1,0 +1,15 @@
+Track record: the evidence CSV resolves like data, not like code
+
+A fresh clone served "No back-test evidence file found" because
+master_backtest_scored.csv only ever existed in one working tree; it was
+never tracked (rightly, it is data) but track_record looked only in the app
+folder. Found on the Dev PC's local portal, 18 August evening.
+
+- app/track_record.py: _source_path resolves AVIA_BT_EVIDENCE (file or
+  folder), then E:\Avia and D:\Avia, then the app folder; the error names
+  everywhere it looked and the preferred filename instead of the last
+  fallback's.
+
+Deployment note: copy master_backtest_scored.csv to E:\Avia on the
+workstation (one scp; it then wins over any stale app-folder copy), and a
+Dev PC local server sets AVIA_BT_EVIDENCE=C:\AviaDev\app.
