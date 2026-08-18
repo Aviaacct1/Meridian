@@ -1182,6 +1182,18 @@ function pitchGenerate(){
 }
 function showErr(m){ $("#err").textContent="Could not forecast this pair: "+m; $("#err").classList.remove("hidden"); }
 
+// The direct-competition split beneath each connecting table (18 August 2026,
+// validated against the 2025 analyst's split). Absent block, no line, never zeros.
+function splitNote(cs){
+  if(!cs||!cs.totals) return "";
+  const t=cs.totals, di=t.direct||{}, nd=t.no_direct||{};
+  if(di.capture==null&&nd.capture==null) return "";
+  const f=x=>x==null?"-":(x*100).toFixed(1)+"%";
+  const kk=x=>x==null?"-":Math.round(x/100)/10+"k";
+  return '<div style="margin-top:6px;font-family:var(--serif);font-size:11.5px;color:var(--muted);font-style:italic">'+
+    'Direct-competition split: with '+kk(di.forecast)+' at '+f(di.capture)+' capture · without '+kk(nd.forecast)+' at '+f(nd.capture)+'</div>';
+}
+
 // --- the demo pack flow: email me this forecast --------------------------------
 let DEMO_POLL=null;
 function demoToggle(){ const bx=$("#demoBox"); if(bx) bx.classList.toggle("hidden"); }
@@ -1456,8 +1468,8 @@ function render(d){
   if((dem.connecting_carried!=null?dem.connecting_carried:dem.feed_total)>0 && ((dem.behind_pdew||[]).length || (dem.beyond_pdew||[]).length)){
     $("#pdewTotal").textContent="total "+fmt(dem.pdew_total)+" PDEW";
     const tbl=list=>(list&&list.length)?list.map(x=>`<div class="pdewrow"><span class="k">${x.name} <span style="color:var(--muted);font-size:11px">${x.code}</span></span><span class="vv">${x.pdew.toLocaleString()}</span></div>`).join(""):'<div class="fnote">None on the way.</div>';
-    $("#behindTbl").innerHTML=tbl(dem.behind_pdew);
-    $("#beyondTbl").innerHTML=tbl(dem.beyond_pdew);
+    $("#behindTbl").innerHTML=tbl(dem.behind_pdew)+splitNote((d.competition_split||{}).behind);
+    $("#beyondTbl").innerHTML=tbl(dem.beyond_pdew)+splitNote((d.competition_split||{}).beyond);
     fr.classList.remove("hidden");
   } else { fr.classList.add("hidden"); }
 

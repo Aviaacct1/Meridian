@@ -191,8 +191,9 @@ def build_workbook(out_path, fc, meta=None):
     _c(ws, r, 6, k(natural * stim), fmt="#,##0.0", align=RGT); _c(ws, r, 7, cap_share, fmt="0.0%", align=RGT)
     _c(ws, r, 8, k(p2p), fmt="#,##0.0", align=RGT); _c(ws, r, 9, ptew(p2p), fmt="#,##0", align=RGT)
     r += 1
-    for label, val, cbase in [(f"Total connecting behind {home}", behind, n0(dem.get("feed_behind_base")) * _sshare),
-                              (f"Total connecting beyond {d['iata']}", beyond, n0(dem.get("feed_beyond_base")) * _sshare)]:
+    _cs = fc.get("competition_split") or {}
+    for label, val, cbase, _leg in [(f"Total connecting behind {home}", behind, n0(dem.get("feed_behind_base")) * _sshare, "behind"),
+                                    (f"Total connecting beyond {d['iata']}", beyond, n0(dem.get("feed_beyond_base")) * _sshare, "beyond")]:
         _c(ws, r, 1, label, font=BOLD, align=LFT)
         _c(ws, r, 2, k(_debase(cbase)) if cbase else "-", fmt="#,##0.0", align=RGT)
         _c(ws, r, 3, _cum if cbase else "-", fmt="0.0%", align=RGT)
@@ -202,6 +203,30 @@ def build_workbook(out_path, fc, meta=None):
         _c(ws, r, 7, (val / cbase) if cbase else "-", fmt="0.0%", align=RGT)
         _c(ws, r, 8, k(val), fmt="#,##0.0", align=RGT); _c(ws, r, 9, ptew(val), fmt="#,##0", align=RGT)
         r += 1
+        # THE COMPETITION SUB-ROWS (John's ruling, 18 August 2026, validated against
+        # the 2025 analyst's split): direct / without direct competition beneath each
+        # leg, scaled to the displayed carried leg so the two sum to the row above.
+        # Absent block, no sub-rows, never zeros.
+        _tt = ((_cs.get(_leg) or {}).get("totals") or {})
+        _dsum = sum(((_tt.get(_k) or {}).get("forecast") or 0)
+                    for _k in ("direct", "no_direct"))
+        if _dsum > 0 and val > 0:
+            _scl = val / _dsum
+            for _bk, _bl in (("direct", "   O&Ds with direct competition"),
+                             ("no_direct", "   O&Ds without direct competition")):
+                _t = _tt.get(_bk) or {}
+                _fb = float(_t.get("base") or 0)
+                _fv = float(_t.get("forecast") or 0) * _scl
+                _c(ws, r, 1, _bl, align=LFT)
+                _c(ws, r, 2, k(_debase(_fb)) if _fb else "-", fmt="#,##0.0", align=RGT)
+                _c(ws, r, 3, _cum if _fb else "-", fmt="0.0%", align=RGT)
+                _c(ws, r, 4, k(_fb) if _fb else "-", fmt="#,##0.0", align=RGT)
+                _c(ws, r, 5, 1.00, fmt="0.00", align=RGT)
+                _c(ws, r, 6, k(_fb) if _fb else "-", fmt="#,##0.0", align=RGT)
+                _c(ws, r, 7, (_fv / _fb) if _fb else "-", fmt="0.0%", align=RGT)
+                _c(ws, r, 8, k(_fv), fmt="#,##0.0", align=RGT)
+                _c(ws, r, 9, ptew(_fv), fmt="#,##0", align=RGT)
+                r += 1
     _c(ws, r, 1, "GRAND TOTAL", font=TOTF_FONT, fill=TOTF, align=LFT)
     _bb = n0(dem.get("feed_behind_base")) * _sshare; _yb = n0(dem.get("feed_beyond_base")) * _sshare
     _c(ws, r, 2, k(_debase(natural + _bb + _yb)), font=TOTF_FONT, fill=TOTF, fmt="#,##0.0", align=RGT)

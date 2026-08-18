@@ -1427,9 +1427,70 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
     # nonstop from that city to the destination.
     try:
         import direct_competition as DC
-        _bey_rows, _bey_tot = DC.bucket(r.get("beyond_detail"), ctx["oag_db"], ctx["week"], competing)
-        _beh_rows, _beh_tot = DC.bucket(r.get("behind_detail"), ctx["oag_db"], ctx["week"], dest_codes)
+        _bey_map, _beh_map = r.get("beyond_detail"), r.get("behind_detail")
+        _split_basis = "V1 flat shares; buckets classify but do not differentiate"
+        # THE SHAPE (John's ruling, 18 August 2026, validated on the CI case against
+        # the 2025 analyst's 0.0/1.5 and 0.2/4.7 split): per-market shares from the
+        # QSI scorer WITH nonstop competitors priced into the choice set, renormalised
+        # so each leg still sums to its own captured total. The LEVEL and every
+        # shipped number are untouched; on any failure the unshaped buckets stand and
+        # the basis line says so rather than a silent fallback.
+        try:
+            _dtm = feed_cfg.get("dep_time_mins")
+            if airline and _dtm is not None and (_bey_map or _beh_map):
+                import qsi_feed as _QF
+                import mct_bank as _MB
+                _boards = feed_cfg.get("_boards")
+                if _boards is None:
+                    import wave_cache as _WC
+                    _wcp = feed_cfg.get("wave_cache")
+                    _boards = _WC.CacheBoards(_wcp) if _wcp else _WC.OagBoards(ctx["oag_db"])
+                _mct = feed_cfg.get("_mct_master") or _MB.load_mct()
+                _scfg = {"route_origin": home, "route_freq": freq,
+                         "route_flying_mins": bmin,
+                         "partner_carriers": feed_cfg.get("partner_carriers"),
+                         "include_nonstop_competition": True}
+
+                def _reshape(dmap, qshares):
+                    w = {c: (qshares.get(c, 0.0) * (v.get("base") or 0.0))
+                         for c, v in dmap.items()}
+                    tw = sum(w.values())
+                    tc = sum((v.get("captured") or 0.0) for v in dmap.values())
+                    if tw <= 0 or tc <= 0:
+                        return None
+                    out2 = {}
+                    for c, v in dmap.items():
+                        b = v.get("base") or 0.0
+                        alloc = w[c] / tw * tc
+                        out2[c] = {"base": b, "captured": alloc,
+                                   "share": (alloc / b if b else None),
+                                   "pdew": round(alloc / 365.0 / 2.0, 1)}
+                    return out2
+
+                if _bey_map:
+                    _qs = _QF.beyond_capture(_boards, ctx["week"], competing, dest_airport,
+                                             list(_bey_map), airline, int(_dtm), int(bmin),
+                                             freq, mct=_mct, cfg=dict(_scfg))
+                    _shp = _reshape(_bey_map, _qs)
+                    if _shp:
+                        _bey_map = _shp
+                        _split_basis = ("QSI shape, nonstop competitors priced into the "
+                                        "choice set, renormalised to the leg total "
+                                        "(validated v the 2025 analyst split, 18 Aug 2026)")
+                if _beh_map:
+                    _qs = _QF.behind_capture(_boards, ctx["week"], competing, dest_codes,
+                                             list(_beh_map), airline, int(_dtm),
+                                             mct=_mct, cfg=dict(_scfg))
+                    _shp = _reshape(_beh_map, _qs)
+                    if _shp:
+                        _beh_map = _shp
+        except Exception as _se:                             # noqa: BLE001
+            _split_basis = ("shape unavailable (%s: %s); V1 flat shares"
+                            % (type(_se).__name__, _se))
+        _bey_rows, _bey_tot = DC.bucket(_bey_map, ctx["oag_db"], ctx["week"], competing)
+        _beh_rows, _beh_tot = DC.bucket(_beh_map, ctx["oag_db"], ctx["week"], dest_codes)
         out["competition_split"] = {
+            "basis": _split_basis,
             "beyond": {"rows": _bey_rows, "totals": _bey_tot,
                        "test": "nonstop from the origin service area to the market"},
             "behind": {"rows": _beh_rows, "totals": _beh_tot,

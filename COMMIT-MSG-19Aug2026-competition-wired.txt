@@ -1,0 +1,35 @@
+Competition split wired: payload, workbook sub-rows, dashboard, deck
+
+John's ruling, late 18 August, after the validation run: the with/without
+direct competition split ships on the validated basis (QSI shape with
+nonstop competitors priced into the choice set: competed 2.19%/0.93% v
+uncompeted 7.79%/7.91% on the CI case, against the analyst's 0.0/1.5 and
+0.2/4.7; pattern reproduced with nothing fitted to his numbers).
+
+- app/cortex_app.py   the payload's competition_split block now SHAPES the
+  detail before bucketing: per-market shares from qsi_feed with
+  include_nonstop_competition, renormalised so each leg sums to its own
+  captured total; computed on the FULL market maps (no top-15 artefact);
+  gated on an airline and a resolved departure; on any failure the
+  unshaped buckets stand and the block's basis line says so. The V1 level
+  and every shipped number are untouched.
+- app/qsi_feed.py   nonstop competitors enter the choice set only under
+  the cfg flag; _share reads n_stops from the itinerary (default 1 keeps
+  every pre-existing score identical; test_qsi_feed 12/12 unchanged).
+- app/cortex_workbook.py   two sub-rows beneath each connecting leg,
+  scaled to the displayed carried leg so they SUM to the row above;
+  absent block, no sub-rows, never zeros. Verified: sub-row pairs sum to
+  their legs exactly in the e2e fixture.
+- app/cortex_dashboard.html   a split line beneath each connecting table
+  (forecast and capture per bucket); absent block, no line.
+- Deck: no change needed - forecast_to_contract already maps
+  competition_split into _competition_buckets and forecast_pack already
+  renders the bucket sub-rows; they populate the moment the payload block
+  differentiates.
+
+Live proof after pull + portal restart: run the CI case, the dashboard
+shows the split lines, the Excel carries the sub-rows, and the pack's
+forecast table gains its bucket rows. NOTE: the pack's Traffic forecast
+slide still carries the separate P2P summary mapping defect (mixed bases,
+growth prints -80.6%); that slide stays out of the Sabre deck until that
+fix lands, sub-rows notwithstanding.
