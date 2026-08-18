@@ -1,0 +1,28 @@
+Competition split: the measured runnable, validated before it is wired
+
+John's ruling, 18 August: the with/without direct competition sub-rows go
+back into the client tables, worked out properly, and the replicated CI
+case validates the approach against the 2025 analyst's split rates
+(0.0/1.5% over TPE, 0.2/4.7% at SJC).
+
+The design honours the k decision rather than re-litigating it: V1 carries
+the LEVEL, untouched; the gated QSI feed provides the per-market SHAPE
+(two ordinary runs, AVIA_FEED_LEVEL v1 then qsi, read per call); the
+script renormalises the shaped market shares to the V1 carried leg totals,
+classifies each market against the OAG snapshot week (a beyond market is
+competed when any catchment airport flies nonstop to that city; a behind
+market when that city flies nonstop to the destination; city codes expand
+to same-city airports), and prints bucket capture rates beside the
+analyst's reference.
+
+Refusals built in: if the QSI arm returns flat shares (the known
+standard-path behaviour), the script says so and stops rather than
+shipping a fake split; an empty bucket prints no rate, never a zero.
+
+- app/competition_split.py    the runnable; changes no engine code and no
+  shipped number.
+- app/test_competition_split.py   11 offline checks on renormalisation,
+  the flatness refusal and the bucketing.
+
+The split reaches the workbook and the deck tables only after the CI
+validation run reads well; that wiring is the next commit, not this one.
