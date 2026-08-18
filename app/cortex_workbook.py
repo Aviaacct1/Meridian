@@ -101,7 +101,7 @@ def build_workbook(out_path, fc, meta=None):
                      ("Total forecast", round(n0(dem.get("total")))),
                      ("Planned load factor", n0(cap.get("load"))),
                      ("Passengers/day each way", dem.get("pdew_total"))]),
-        ("BASIS", [("OAG schedule week", fc.get("week","")), ("Sabre O&D year", fc.get("year","")),
+        ("BASIS", [("OAG schedule week", fc.get("week","")), ("Sabre Global Demand Data year", fc.get("year","")),
                    ("Analyst", meta.get("analyst","Avia Solutions")), ("Date", meta.get("date",""))]),
     ]
     for title, rows in blocks:
@@ -152,7 +152,7 @@ def build_workbook(out_path, fc, meta=None):
         _c(ws, r, cc, None, fill=TOTF)
     _c(ws, r, 8, k(tot), font=TOTF_FONT, fill=TOTF, fmt="#,##0.0", align=RGT)
     _c(ws, r, 9, ptew(tot), font=TOTF_FONT, fill=TOTF, fmt="#,##0", align=RGT)
-    _c(ws, r + 2, 1, "Base demand is the addressable each-way O&D market from Sabre in the origin catchment. "
+    _c(ws, r + 2, 1, "Base demand is the addressable each-way O&D market from Sabre Global Demand Data in the origin catchment. "
                      "Point-to-point forecast = stimulated demand x capture rate, capacity-bounded. Connecting "
                      "rows show the captured feed each way. PTEW = passengers per departure each way."
                      + (f"  Figures are for the {_pnoun} service (the season's share of the annual O&D)."
@@ -288,7 +288,7 @@ def build_workbook(out_path, fc, meta=None):
     _title(ws, "Assumptions and methodology", "every key parameter behind this forecast")
     _hdr(ws, 4, ["Parameter", "Value", "Basis"], [30, 20, 60]); r = 5
     A = [
-        ("Addressable market", f'{round(n0(dem.get("natural"))):,} each way/yr', "Sabre point-of-origin O&D in the origin catchment"),
+        ("Addressable market", f'{round(n0(dem.get("natural"))):,} each way/yr', "Sabre Global Demand Data (point of origin) in the origin catchment"),
         ("Origin QSI capture", f'{cap_share*100:.1f}%', meta.get("capture_basis", "modelled from drive time and competing service")),
         ("Coverage gross-up", f'x{n0(dem.get("coverage_gross_up")) or 1:.2f}', "uplift from surveyed to full O&D coverage"),
         ("Stimulation", f'x{stim:.2f}', "new nonstop demand uplift by carrier type"),
@@ -304,7 +304,7 @@ def build_workbook(out_path, fc, meta=None):
     r += 1
     _sec(ws, r, "METHODOLOGY", 3); r += 1
     method = ("1. Catchment: the resident population within drive time of the origin, from GeoNames and "
-              "least-cost road times.  2. Market: measured Sabre O&D each way in that catchment.  3. Capture: "
+              "least-cost road times.  2. Market: measured Sabre Global Demand Data O&D each way in that catchment.  3. Capture: "
               "the QSI + access share the new nonstop takes from competing airports and airlines; measured "
               "survey/mobility data overrides the model where held.  4. Stimulation: uplift for the new nonstop.  "
               "5. Connecting feed: onward O&D behind the origin and beyond the destination on the chosen "

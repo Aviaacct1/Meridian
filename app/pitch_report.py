@@ -119,7 +119,7 @@ def _pptx_config(fc, inputs):
     exec_sum = (f"Cortex forecasts {fmt(total)} passengers each way per year on a nonstop "
                 f"{o['city']} to {d['city']} service, flying at {round(load*100)}% load on a "
                 f"{cap.get('aircraft','')} at {cap.get('freq','')} times a week. Demand is measured "
-                f"from Sabre point-of-origin traffic in the {o['city']} catchment, with the airline's "
+                f"from Sabre Global Demand Data point-of-origin traffic in the {o['city']} catchment, with the airline's "
                 f"connecting feed behind {o['city']} and beyond {d['city']} added. The research that "
                 f"follows is auto-compiled from cited public sources; verify figures before use.")
     why = [

@@ -1,0 +1,46 @@
+R3/R4: the contractual Sabre attribution, everywhere a client can read
+
+The Work Order requires "Sabre Global Demand Data" clearly stated wherever it
+is a material input. Before this commit the contractual form appeared nowhere;
+five variants stood in for it (Sabre O&D, Sabre MI, Sabre MIDT, Sabre GDS
+bookings, Sabre ODPOO) and five surfaces showed Sabre-derived figures with no
+Sabre statement at all. Landed ahead of the Sabre demo of Thursday 20 August.
+
+New:
+- app/attribution.py   the single constant: contractual name, short form for
+  tight UI spots, defined gloss, and the standard source line. Client surfaces
+  take their wording from here; the deck modules carry the same wording as
+  literals with a comment naming this module, because their import path to
+  app/ is not guaranteed at render time.
+- app/test_attribution.py   28 text-level checks: the full name present on
+  every client surface, each old variant gone from it, the opportunity-slide
+  and Source-cell rails in place.
+
+The five naked surfaces (R4), each now stated:
+- economics page: source line appended to the page foot (the whole page had
+  no Sabre statement).
+- exported workbook Source cell: contract["_source"] was never set, so every
+  workbook printed an EMPTY Source cell; forecast_to_contract now sets it from
+  attribution.SOURCE_LINE.
+- catchment markets table: the subtitle now carries the full source; the page
+  foot carries the demand credit beside the GeoNames one.
+- pack opportunity slide: the catchment note used to REPLACE the source line;
+  both now render, note first, attribution always.
+- track-record legacy branch: the pre-BT2 wording now names the grading
+  source.
+
+The variant sweep (R3), client surfaces only; internal code, comments and
+store labels are unchanged by design:
+- dashboard: basis line, both provenance rails, the summary table labels and
+  the context pill (short form on the pill, full form on the same page).
+- watch: the demand source label serves the contractual name (the T-100
+  branch is untouched).
+- packs and decks: forecast_pack.SRC, the DB1B mixed-basis line, the
+  methodology measurement paragraph, forecast_spec.SOURCE.
+- methodology page, track record, pitch (HTML lead and report prose),
+  workbook basis row and prose, /api/briefing, /api/assess-era od_source
+  defaults, help page prose.
+
+Verified: all touched modules compile; all three edited pages' scripts parse;
+test_attribution 28 checks, test_demo_flow 58, forecast_pack_maps 16, all 0
+failed.

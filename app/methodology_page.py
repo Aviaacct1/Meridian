@@ -167,7 +167,7 @@ def _expert_section(fc):
     stages = [
         ("A &middot; Base demand and data sources", [
             ("Catchment O&D market, each way/yr", f(dem.get("natural")), "measured",
-             "Sabre GDS bookings, all routings, both catchments; the season/week shown on the dashboard"),
+             "Sabre Global Demand Data, all routings, both catchments; the season/week shown on the dashboard"),
             ("Competing airports in the choice set", str(n_comp), "measured",
              "drive-time catchment; water boundaries respected for island airports"),
             ("Sector distance", f"{f(float(fc.get('distance_nm') or 0) * 1.852)} km", "measured",
@@ -341,7 +341,7 @@ def _proof_section():
       number as the middle of the possibilities, and it tells you why.</div>
     <div class="note" style="margin-top:10px"><b>Graded against the source each audience trusts.</b>
       US domestic routes are graded against the US DOT's DB1B ticket survey (TranStats), the
-      public source US airports use and can verify; routes elsewhere against Sabre MIDT, the
+      public source US airports use and can verify; routes elsewhere against Sabre Global Demand Data, the
       industry booking reference. That is a deliberately harder test on US routes: on the 595
       launches where both sources can measure the same route they agree within 20% on only 68% of
       them, so part of what any forecast is scored against there is the disagreement between two

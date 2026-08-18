@@ -761,7 +761,7 @@ function renderSeason(){
     (peak>plf?'Peak months spill, so more summer frequency or a larger gauge in peak would carry them. ':'')+
     (trough<0.55?'Winter falls below 55% load, where a reduced off-peak schedule protects the economics.':'Off-peak load stays workable.'));
   const sb=document.getElementById('seasonNote');
-  if(sb) sb.innerHTML='<span>'+noteText+'</span>'+provRail('OAG schedule, Sabre O&amp;D','Monthly load factor','Steady-state','QSI methodology v2.4');
+  if(sb) sb.innerHTML='<span>'+noteText+'</span>'+provRail('OAG schedule, Sabre Global Demand Data','Monthly load factor','Steady-state','QSI methodology v2.4');
 }
 
 document.querySelectorAll("#mode button").forEach(b=>b.onclick=()=>{
@@ -1226,7 +1226,7 @@ function render(d){
     const bx=$("#demoBox"); if(bx){ bx.classList.add("hidden"); }
     const n=$("#demoNote"); if(n){ n.textContent=""; }
   })();
-  $("#ctxpill").innerHTML="OAG week <b>"+(d.week||"-")+"</b> · Sabre <b>"+(d.year||"-")+"</b>";
+  $("#ctxpill").innerHTML="OAG week <b>"+(d.week||"-")+"</b> · Sabre GDD <b>"+(d.year||"-")+"</b>";
   STATE.sabreYear=d.year||STATE.sabreYear||2025;
   // SEASON AND YEAR ON THE HEADLINE (the label batch, 15 August). Three acceptance runs
   // were read as failures because a seasonal total sat under a headline that never said
@@ -1237,11 +1237,11 @@ function render(d){
   (function(){
     const _sm=(d.season&&d.season.mode)||"annual";
     const _yr=(STATE.fy&&STATE.fy!==d.year)
-      ?`Forecast year ${STATE.fy}, grown from the Sabre ${d.year} base`
-      :`Steady state at the Sabre ${d.year} base`;
+      ?`Forecast year ${STATE.fy}, grown from the ${d.year} base`
+      :`Steady state at the ${d.year} base`;
     const _se=(_sm==="annual")?"year-round figures"
       :`${_sm} season figures (${(d.season&&d.season.weeks)||"?"} weeks): season totals, not annual`;
-    $("#basis").textContent=`Demand from Sabre ${d.year} O&D and OAG schedules week ${d.week}. ${_yr}; ${_se}.`;
+    $("#basis").textContent=`Demand from Sabre Global Demand Data (${d.year}) and OAG schedules week ${d.week}. ${_yr}; ${_se}.`;
   })();
   // Confidence band moved to the Track Record tab; the forecast summary shows only the new-market provenance flag.
   if(d.confidence && d.confidence.modelled){ $("#basis").textContent += "  New-market route: forecast is modelled from comparable launches, not a measured market."; }
@@ -1400,7 +1400,7 @@ function render(d){
   $("#bars").innerHTML = sh.slice(0,6).map(s=>`<div class="barrow"><div class="nm">${s.n}</div><div class="track"><div class="fill${s.home?' home':''}" style="width:${Math.max(2,100*s.v/mx)}%"></div></div><div class="pc">${(s.v*100).toFixed(0)}%</div></div>`).join("") || '<div class="fnote">No observed split available for this pair.</div>';
   const homeShare = (d.catchment.observed_share||{})[d.catchment.home]||0;
   const barTxt = homeShare>0 ? `${d.origin.city} carries ${(homeShare*100).toFixed(1)}% of its catchment’s demand today; the rest drives to larger airports.` : "Brass marks the origin airport; grey the competing airports its catchment uses today.";
-  $("#barNote").innerHTML = '<span>'+barTxt+'</span>'+provRail('Sabre O&amp;D','Share of catchment O&amp;D, each way','Sabre '+(d.year||'-'),'QSI methodology v2.4');
+  $("#barNote").innerHTML = '<span>'+barTxt+'</span>'+provRail('Sabre Global Demand Data','Share of catchment O&amp;D, each way','Sabre GDD '+(d.year||'-'),'QSI methodology v2.4');
 
   const local=(dem.p2p_carried!=null?dem.p2p_carried:(dem.captured||0)), feedInc=(dem.connecting_carried!=null?dem.connecting_carried:Math.max((dem.total||0)-(dem.captured||0),0)), total=dem.total||1;
   // Data palette, not brand: ink was filling this bar while the other two already used
@@ -1421,7 +1421,7 @@ function render(d){
       ? `new market: built from comparable launches, not captured from the ${fmt(_nat)} measured market · each way / year`
       : `captured from a ${fmt(_nat)} addressable market · each way / year`);
   }
-  $("#funnelNote").innerHTML = '<span>'+(cap.recommendation||"")+'</span>'+provRail('Sabre O&amp;D, OAG','Passengers each way / yr','Sabre '+(d.year||'-')+' · OAG wk '+(d.week||'-'),'QSI methodology v2.4');
+  $("#funnelNote").innerHTML = '<span>'+(cap.recommendation||"")+'</span>'+provRail('Sabre Global Demand Data, OAG','Passengers each way / yr','Sabre GDD '+(d.year||'-')+' · OAG wk '+(d.week||'-'),'QSI methodology v2.4');
 
   if(d.economics_ok && ec && ec.cost_model){
     STATE.cm=ec.cost_model; STATE.each_way=dem.total;
@@ -1433,14 +1433,14 @@ function render(d){
   }
 
   $("#workings").innerHTML=[
-    ["Measured market (Sabre)",fmt(dem.natural)],
+    ["Measured market (Sabre GDD)",fmt(dem.natural)],
     ["Coverage gross-up",(dem.coverage_gross_up||1).toFixed(2)+"×"],
     ["Origin QSI / access share",pct1(dem.qsi_share)],
     ["Destination-airport share",pct1(dem.dest_share)],
     ["Premium-cabin share",pct1(dem.premium_share)],
     ["Connecting feed, behind",fmt(dem.feed_behind)],
     ["Connecting feed, beyond",fmt(dem.feed_beyond)],
-    ["Average fare (Sabre)",money(dem.avg_fare)],
+    ["Average fare (Sabre GDD)",money(dem.avg_fare)],
     ["Sector",d.distance_nm.toLocaleString()+" nm · "+d.block_min+" min block"]
   ].map(r=>`<div class="pl"><span class="k">${r[0]}</span><span class="vv">${r[1]}</span></div>`).join("");
 

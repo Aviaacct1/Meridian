@@ -215,7 +215,7 @@ $('#kpis').innerHTML=[
   ['Connecting feed',fmt(D.demand.feed_total),'behind + beyond'],
 ].map(k=>`<div class="kpi"><div class="l">${k[0]}</div><div class="v">${k[1]}</div><div class="s">${k[2]}</div></div>`).join('');
 
-$('#lead').textContent=`Cortex forecasts ${fmt(D.demand.total)} passengers each way per year on a nonstop ${D.origin.city} to ${D.dest.city} service. Demand is measured from Sabre origin-and-destination traffic in the ${D.origin.city} catchment, where the new nonstop captures ${Math.round(D.demand.qsi_share*100)}% of a ${fmt(D.demand.natural)} addressable market, with ${D.airline}'s connecting feed added behind ${D.origin.city} and beyond ${D.dest.city}.`;
+$('#lead').textContent=`Cortex forecasts ${fmt(D.demand.total)} passengers each way per year on a nonstop ${D.origin.city} to ${D.dest.city} service. Demand is measured from Sabre Global Demand Data origin-and-destination traffic in the ${D.origin.city} catchment, where the new nonstop captures ${Math.round(D.demand.qsi_share*100)}% of a ${fmt(D.demand.natural)} addressable market, with ${D.airline}'s connecting feed added behind ${D.origin.city} and beyond ${D.dest.city}.`;
 
 // forecast bars
 (function(){

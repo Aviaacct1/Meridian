@@ -256,7 +256,8 @@ function render(d){
   $('#mini').innerHTML=mini.map(r=>`<div class="r"><span class="k">${r[0]}</span><span class="v">${r[1]}</span></div>`).join('');
 
   $('#foot').innerHTML=`Economics for <b>${(d.origin&&d.origin.city)||''} to ${(d.dest&&d.dest.city)||''}</b> on <b>${cap.aircraft||''}</b> at ${freq}x/week, `+
-    `run at the calibrated forecast of ${fmtN(dem.total)} each way. Maintenance is sector-aware from validated Airbus reserves; ownership is a blended owned and leased cost of capital by airline type and age. Indicative, directional guidance.`;
+    `run at the calibrated forecast of ${fmtN(dem.total)} each way. Maintenance is sector-aware from validated Airbus reserves; ownership is a blended owned and leased cost of capital by airline type and age. Indicative, directional guidance. `+
+    `Source: AviaSolutions analysis; demand and fares from Sabre Global Demand Data; schedules from OAG.`;
   $('#results').classList.remove('hidden');
 }
 

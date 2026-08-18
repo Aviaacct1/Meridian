@@ -130,7 +130,7 @@
       <a class="soft"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><path d="M12 4 V20 M4 12 H20"/><circle cx="12" cy="12" r="1.2" fill="#D4A249" stroke="none"/></svg></span> Global Forecasts <span class="soon">SOON</span></a>
       <a class="soft"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13.5" r="7"/><path d="M12 13.5 V9.5"/><path d="M12 13.5 L15 15"/><path d="M10 4 h4"/><circle cx="12" cy="6.5" r="1.2" fill="#D4A249" stroke="none"/></svg></span> Design Day Schedules <span class="soon">SOON</span></a>
     </nav>
-    <div class="foot">Published by The Observatory · beta<br>Population data &copy; GeoNames (CC-BY 4.0)</div>
+    <div class="foot">Published by The Observatory · beta<br>Demand: Sabre Global Demand Data<br>Population data &copy; GeoNames (CC-BY 4.0)</div>
   </aside>
 
   <div class="main">
@@ -328,7 +328,7 @@ function loadDemand(origin){
 }
 function renderDemand(res, origin){
   const ops=res.opportunities||[];
-  $('#demandSub').textContent=(res.origin_city||res.origin||origin)+" catchment · "+ops.length+" destination markets, ranked by recapture leakage (Sabre "+res.year+")";
+  $('#demandSub').textContent=(res.origin_city||res.origin||origin)+" catchment · "+ops.length+" destination markets, ranked by recapture leakage. Source: Sabre Global Demand Data ("+res.year+"), AviaSolutions analysis";
   const hdr='<div class="drow hdr"><span class="dk">Destination</span><span class="dv">Market (ew)</span><span class="dv" style="width:92px">Via home</span><span class="dv">Leakage (ew)</span></div>';
   const body=ops.map(x=>'<div class="drow" data-o="'+(res.origin||origin)+'" data-d="'+x.dest+'"><span class="dk">'+x.dest_city+' <span style="color:var(--muted);font-size:11px">'+x.dest+'</span></span><span class="dv">'+fmtN(x.pax)+'</span><span class="dv" style="width:92px">'+Math.round((x.home_share||0)*100)+'%</span><span class="dv">'+fmtN(x.leakage)+'</span></div>').join('');
   $('#demandTbl').innerHTML=hdr+(body||'<div class="fnote">No destination markets found for this airport.</div>');

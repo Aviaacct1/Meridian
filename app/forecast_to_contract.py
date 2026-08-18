@@ -354,6 +354,16 @@ def contract_from_forecast(fc, currency="USD", growth_rate=None, ancillary_per_p
     # Guessing would put the wrong symbol in front of every revenue figure on the page.
     contract["currency"] = currency
     contract["_source_engine"] = (outputs.get("forecast_engine") or {}).get("local_leg")
+    # THE WORKBOOK'S SOURCE CELL (audit R4): deck_contract.emit_workbook prints
+    # contract["_source"], which nothing set, so every exported workbook carried an
+    # EMPTY Source cell under Sabre-derived figures. The contractual wording is
+    # app/attribution.py's; imported here rather than retyped.
+    try:
+        from attribution import SOURCE_LINE as _ATTR
+    except Exception:                                        # noqa: BLE001
+        _ATTR = ("Source: AviaSolutions analysis (Avia Cortex); Sabre Global Demand "
+                 "Data; OAG schedules.")
+    contract["_source"] = _ATTR
     # THE RUN SETTINGS THE PACK ALREADY ASKS FOR. deck/forecast_pack.py reads _settings for the
     # connecting floor, the growth basis, the curfew cost and the feed level, and until now
     # NOTHING WROTE IT: all four reads took their default, including the curfew cost shipped on

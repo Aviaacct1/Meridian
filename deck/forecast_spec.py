@@ -20,7 +20,9 @@ Avia Solutions Limited. All rights reserved.
 # Attribution is a licence obligation, not a house preference: the Sabre work order
 # requires attribution where MIDT is a material input, and OAG schedules underpin the
 # capture model. Naming only the engine omits the data owners.
-SOURCE = "Source: OAG schedules, Sabre MIDT, AviaSolutions analysis (Avia Cortex)."
+# The contractual Sabre name (audit R3; single-sourced in app/attribution.py, carried
+# here as a literal because the deck's import path to app/ is not guaranteed).
+SOURCE = "Source: OAG schedules; Sabre Global Demand Data; AviaSolutions analysis (Avia Cortex)."
 
 # 7. A stat row holds five figures before the columns are too narrow for the numbers
 # to sit on one line. At ten they split mid-digit, which reads as a broken deck.

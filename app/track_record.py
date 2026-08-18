@@ -642,7 +642,7 @@ def render_html(t, source_name, engine_ctx=None):
     {route_rows}</table>
     <div class="note" style="margin-top:8px">{("Passengers, both directions, first full year after launch. "
     "US domestic routes are graded against US DOT DB1B actuals (TranStats), the source US airports use; all "
-    "other routes against Sabre MIDT. Calibrated basis: the model is fitted across the full launch sample, "
+    "other routes against Sabre Global Demand Data. Calibrated basis: the model is fitted across the full launch sample, "
     "these routes included, and graded like-for-like against the aircraft, frequency and months the carrier "
     "actually flew. Its blind accuracy - routes it was never shown - is validated separately: forecasting "
     "portfolios of twenty unseen routes, the portfolio total landed within &plusmn;20% of actual 93% of the "
@@ -724,9 +724,10 @@ def render_total(t, source_name, control=None):
   "actual first-full-year traffic and the schedule the carrier actually flew. Calibrated basis: the model is "
   "fitted across the full launch sample; blind accuracy on unseen routes is validated separately (baskets of "
   "twenty unseen routes within &plusmn;20% of actual 93% of the time, held across the COVID break). "
-  "US domestic routes are graded against US DOT DB1B actuals (TranStats), the source US airports use and can verify; all other routes against Sabre MIDT.") if _BT2_SOURCE else
+  "US domestic routes are graded against US DOT DB1B actuals (TranStats), the source US airports use and can verify; all other routes against Sabre Global Demand Data.") if _BT2_SOURCE else
   ("Every new route in the graded sample, across all airports, forecast the year before "
-  "launch with no knowledge of the outcome and graded against actual first-full-year traffic.")} Launch years
+  "launch with no knowledge of the outcome and graded against actual first-full-year traffic "
+  "measured from Sabre Global Demand Data.")} Launch years
   {yr_label}. {t['n_all']:,} routes, {t['n_origins']} origin airports, {t['n_carriers']} carriers:
   {t['n_fore']:,} into existing markets (demand pre-existed) and {t['n_indu']:,} into new markets (the route
   created the demand). <span class="badge">Evidence file <b>{esc(source_name)}</b></span></div>

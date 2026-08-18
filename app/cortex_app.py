@@ -1346,9 +1346,9 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
             # what answered, so this READS the engine rather than asking the config what it would
             # have done. The first version of this block read a feed_cfg key nothing sets, which
             # would have printed Sabre on a DOT run.
-            "point_to_point": r.get("od_source") or "Sabre ODPOO",
-            "beyond": feed_cfg.get("_beyond_source", "Sabre ODPOO"),
-            "behind": feed_cfg.get("_behind_source", "Sabre ODPOO"),
+            "point_to_point": r.get("od_source") or "Sabre Global Demand Data",
+            "beyond": feed_cfg.get("_beyond_source", "Sabre Global Demand Data"),
+            "behind": feed_cfg.get("_behind_source", "Sabre Global Demand Data"),
             "beyond_dot_share": feed_cfg.get("_beyond_dot_share", 0.0),
             "behind_dot_share": feed_cfg.get("_behind_dot_share", 0.0),
             # od_source owns the default. This line carried its own copy ("sabre") and the
@@ -1835,7 +1835,7 @@ def api_watch(airport: str, competitors: str = ""):
     # marked as derived on the page, per the data-integrity rule.
     if dem and dem.get("ok"):
         _is_dot = "T-100" in (dem.get("basis") or "")
-        dem["source_label"] = "US DOT T-100" if _is_dot else "Sabre O&D"
+        dem["source_label"] = "US DOT T-100" if _is_dot else "Sabre Global Demand Data"
         dem["measured"] = "departing" if _is_dot else "twoway"
         for _s in dem.get("series") or []:
             _p = _s.get("pax") or 0
@@ -2551,7 +2551,7 @@ def api_report(origin: str, dest: str, airline: str = "", carrier_type: str = "F
     except Exception:
         capture_basis = "modelled from drive time and competing service"
     catchment_text = (
-        f"Addressable market: {fmt(dem['natural'])} each way per year, from Sabre O&D in the {o['city']} catchment.\n\n"
+        f"Addressable market: {fmt(dem['natural'])} each way per year, from Sabre Global Demand Data in the {o['city']} catchment.\n\n"
         f"Assumed capture with own nonstop: {dem.get('qsi_share', 0) * 100:.1f}%  ({capture_basis}).\n\n"
         f"Coverage gross-up: x{dem.get('coverage_gross_up', 1):.2f}.\n\n"
         f"Stimulation: x{(dem.get('stimulation') or 1):.2f} for the new nonstop.\n\n"

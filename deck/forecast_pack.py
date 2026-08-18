@@ -58,7 +58,9 @@ DISCLAIMER = (
     "will differ. No part of this document may be reproduced or relied upon by any other party "
     "without the written consent of The Aviation Observatory.")
 
-SRC = "Source: AviaSolutions analysis (Avia Cortex), Sabre MI and OAG schedules."
+# The contractual Sabre name (audit R3; single-sourced in app/attribution.py, carried
+# here as a literal because the deck's import path to app/ is not guaranteed).
+SRC = "Source: AviaSolutions analysis (Avia Cortex); Sabre Global Demand Data; OAG schedules."
 
 
 def _src(c):
@@ -77,8 +79,8 @@ def _src(c):
     if all("DB1B" in (s or "") and "Sabre" not in (s or "") for s in legs if s):
         read = "US DOT O&D Survey (DB1B) and OAG schedules"
     else:
-        read = ("US DOT O&D Survey (DB1B) for the US domestic markets, Sabre MI for the rest, "
-                "and OAG schedules")
+        read = ("US DOT O&D Survey (DB1B) for the US domestic markets, Sabre Global "
+                "Demand Data for the rest, and OAG schedules")
     return "Source: AviaSolutions analysis (Avia Cortex), %s." % read
 
 
@@ -203,10 +205,14 @@ def _opportunity(c):
              (_n(ss.get("connecting_market_over_destination")),
               "Connecting market over %s" % (_g(c, "route_metadata", "origin_airport", default="the origin")))]
     yr = _g(c, "route_metadata", "service_year")
+    # THE SOURCE LINE IS NEVER DISPLACED (audit R4): the catchment note used to REPLACE
+    # the source, leaving Sabre-derived figures on this slide with no Sabre statement.
+    # Both now appear, note first, attribution always.
+    note = ss.get("catchment_note")
     return S.keynumbers(items, title="The opportunity",
                         subtitle=("Addressable market at %s, before stimulation and before capture" % yr)
                                  if yr else "Addressable market before stimulation and before capture",
-                        source=(ss.get("catchment_note") or _src(c)))
+                        source=(("%s  %s" % (note, _src(c))) if note else _src(c)))
 
 
 def _forecast_table(c):
@@ -328,8 +334,9 @@ def _method_pages(c):
                                       _g(c, "_settings", "growth_basis",
                                          default="Growth basis as reported in the run."))),
             ("Measurement",
-             "Passenger demand is measured from Sabre MI, which is MIDT adjusted for bookings made "
-             "outside the global distribution systems. Schedules and capacity are measured from OAG.")]
+             "Passenger demand is measured from Sabre Global Demand Data, which is MIDT adjusted "
+             "for bookings made outside the global distribution systems. Schedules and capacity "
+             "are measured from OAG.")]
     out.append(S.prose(base, title="Forecast methodology", subtitle="Base demand and growth", source=_src(c)))
 
     legs = ss.get("schedule") or []
