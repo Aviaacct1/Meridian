@@ -89,10 +89,11 @@ def _load_password():
 ACCESS_PASSWORD = _load_password()
 print("access: shared password ON (HTTP Basic Auth)." if ACCESS_PASSWORD
       else "NO PASSWORD SET - server is OPEN.")
-# DEMO ENTRY: when on (default), the branded sign-in is a look-and-feel facade - any visitor proceeds through to the
-# app, even if a shared password is configured, so testers get the entry experience. Set QSI_DEMO_ENTRY=0 to make the
-# sign-in enforce the real password instead. (Origin access control for a public deployment is Cloudflare's job.)
-DEMO_ENTRY = os.environ.get("QSI_DEMO_ENTRY", "1").strip().lower() not in ("0", "false", "off", "no")
+# DEMO ENTRY: when on, the branded sign-in is a look-and-feel facade - any visitor proceeds through to the
+# app, even if a shared password is configured, so testers get the entry experience. DEFAULT CLOSED
+# (audit R16, 17 August 2026): production must not depend on one environment variable being remembered;
+# an explicit QSI_DEMO_ENTRY=1 opens the facade on a demo box.
+DEMO_ENTRY = os.environ.get("QSI_DEMO_ENTRY", "0").strip().lower() in ("1", "true", "on", "yes")
 print(f"entry: DEMO sign-in {'ON (any details proceed)' if DEMO_ENTRY else 'OFF (password required)'}.")
 
 
@@ -177,7 +178,12 @@ def _record_run(origin, dest, season="annual", status="COMPLETE"):
 
 
 def _entry_stats():
-    return {"forecasts_run": f"{_forecast_count():,}", "recents": list(RECENT_RUNS)}
+    # R19 (client confidentiality, audit 16 August 2026): one visitor's recent routes
+    # are not shown to the next on a shared deployment. Default hidden; an explicit
+    # AVIA_SHOW_RECENTS=1 restores them on a single-user development box.
+    show = os.environ.get("AVIA_SHOW_RECENTS", "0").strip().lower() in ("1", "true", "on", "yes")
+    return {"forecasts_run": f"{_forecast_count():,}",
+            "recents": list(RECENT_RUNS) if show else []}
 
 
 @app.get("/signin", response_class=HTMLResponse)
@@ -1913,7 +1919,14 @@ def api_watch_series(airport: str):
         _sp = os.environ.get("AVIA_REFRESH_STATUS", r"E:\Avia\refresh_status.json")
         if os.path.exists(_sp):
             with open(_sp, encoding="utf-8") as _fh:
-                out["freshness"] = {"ok": True, "status": _json.load(_fh)}
+                _st = _json.load(_fh)
+            # R24 (hardening, audit 16 August 2026): the client sees label, result and
+            # date only. The detail field carries internal file names and failure
+            # text, which stays server-side; the page never rendered it anyway.
+            out["freshness"] = {"ok": True, "status": {
+                k: {"label": (v or {}).get("label"), "result": (v or {}).get("result"),
+                    "date": (v or {}).get("date")}
+                for k, v in (_st or {}).items()}}
         else:
             out["freshness"] = {"ok": False,
                                 "error": "no refresh status file has been written yet"}

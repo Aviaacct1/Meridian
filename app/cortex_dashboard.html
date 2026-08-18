@@ -1531,8 +1531,11 @@ function renderMap(d){
   if(window.L){ try{
     el.style.height="330px"; el.innerHTML="";
     if(window._catMap){ try{window._catMap.remove();}catch(e){} window._catMap=null; }
-    const map=L.map(el,{attributionControl:false,scrollWheelZoom:false}); window._catMap=map;
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{maxZoom:18,subdomains:'abcd'}).addTo(map);
+    // Attribution stays ON (audit R13, 17 August 2026): OSM's ODbL and Carto's terms
+    // require the credit, and suppressing it was a licence breach, not a style choice.
+    const map=L.map(el,{attributionControl:true,scrollWheelZoom:false}); window._catMap=map;
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+      {maxZoom:18,subdomains:'abcd',attribution:'&copy; OpenStreetMap contributors &copy; CARTO'}).addTo(map);
     const h=coords[home], pts=[];
     codes.forEach(k=>{ if(h&&k!==home&&(shares[k]||0)>0.02){ L.polyline([[h[0],h[1]],[coords[k][0],coords[k][1]]],{color:'#8793A0',weight:1.5,opacity:0.7}).addTo(map); } });
     codes.slice().sort((a,b)=>(shares[a]||0)-(shares[b]||0)).forEach(k=>{

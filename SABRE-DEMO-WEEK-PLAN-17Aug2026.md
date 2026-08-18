@@ -6,6 +6,27 @@ compliance audit - 16 August 2026.docx" (register R1-R24). John's instruction of
 so every remediable item lands this week and the version Sabre sees carries none of
 them. This plan re-orders the audit's October sequence to that deadline.
 
+## REVISED 18 August: the meeting is CONFIRMED for Thursday 20 August, noon
+
+Thirty-six hours, not seven days, so the plan compresses to what Sabre sees on the
+screen-share plus the meeting materials. The table below is superseded for this week
+and stands as the post-meeting order for the remainder.
+
+- Tue 18 evening: R1 CLOSED (done). Quick batch R12, R13, R16, R19, R24 BUILT
+  (COMMIT-MSG-18Aug2026-audit-quickbatch.txt, commit owed).
+- Wed 19: R3+R4 the attribution constant and the five naked surfaces, the day's
+  one big job. Then R5 fares to index/band on self-serve surfaces. R8 track record
+  ratios only if time; otherwise the demo shows a DB1B-graded US airport on that
+  page, which is compliant as built. Evening: the meeting brief (the three asks of
+  audit section 11) and the demo running order.
+- Thu 20, 09:00: code freeze, workstation pulls and restarts, environment checked
+  (QSI_PASSWORD set; QSI_DEMO_ENTRY now defaults closed after R16). 10:00 dry run
+  on the Teams-plus-tunnel path, acceptance route. Noon: the meeting.
+- Deferred past Thursday, said plainly in the meeting as designed-and-scheduled:
+  R6/R7 banding at depth, R9 logging, R17 terms of use (text with counsel),
+  R18 demo mode (a Routes control, not a Thursday control). OAG and ACI letters
+  run in parallel and do not gate the meeting.
+
 ## The shape of the week
 
 R1 first and alone, because history rewriting must precede every other commit.

@@ -1,0 +1,23 @@
+Audit quick batch: R12, R13, R16, R19, R24 (Sabre demo Thursday noon)
+
+Five small items from the compliance register, landed together ahead of the
+Sabre demo of Thursday 20 August:
+
+- R12  GeoNames CC-BY credit added to the catchment page foot (the deck pages
+  already carried it; this was the one missing surface).
+- R13  Map attribution re-enabled on the dashboard catchment map, with the
+  OSM contributors + CARTO credit on the tile layer. Suppressing it was a
+  licence breach, not a style choice; the comment now says so.
+- R16  The sign-in facade DEFAULTS CLOSED. QSI_DEMO_ENTRY=1 opens demo entry
+  deliberately; unset now means the real password is enforced. NOTE for the
+  workstation: testers who should get the demo entry experience now need the
+  flag set on the portal environment, one setx, deliberate.
+- R19  The welcome screen no longer shows other visitors' recent routes on a
+  shared deployment. Default hidden; AVIA_SHOW_RECENTS=1 restores them on a
+  single-user development box.
+- R24  The Watch freshness block serves label, result and date only; the
+  detail field (internal file names, failure text) stays server-side. The
+  page never rendered it, so nothing visible changes.
+
+Verified: cortex_app compiles; dashboard script parses; test_demo_flow 58
+checks 0 failed; both credits confirmed present in the served HTML.
