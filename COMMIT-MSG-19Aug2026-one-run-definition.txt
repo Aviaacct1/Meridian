@@ -1,0 +1,28 @@
+Report consumes /api/forecast: one run definition, downloads cannot differ
+from the screen
+
+The night's third and final download defect (John's catch: a workbook
+downloaded minutes after the restart showed generic 320 seats at indicative
+00:30 while the screen showed the carrier's 278 at the optimiser's 20:59).
+/api/report ran its own reduced copy of the engine call and missed the seat
+resolution and departure optimisation /api/forecast performs.
+
+- app/cortex_app.py   /api/report now calls api_forecast and reads its
+  payload, exactly as the demo-email flow does: auto gauge, carrier-config
+  seats, departure optimisation, warnings and every future engine addition
+  arrive automatically. Its private dep-time parse and auto-gauge block are
+  deleted with the private engine call.
+- app/cortex_workbook.py   the Schedule sheet always read the payload's
+  times; its WORDING claimed "indicative, not curfew- or slot-optimised"
+  even when the optimiser chose them. Title and note now state the times'
+  actual basis from the payload, both forms verified.
+
+Known same-class remainder, deliberately untouched tonight: _run_pitch_job
+still makes its own reduced engine call (the researched pitch); align it
+the same way after the Sabre demo.
+
+Verified offline: both modules compile; Schedule sheet prints payload times
+and stated basis on an optimised run and keeps the indicative wording on an
+indicative one; test_workbook_table 9 checks 0 failed. Live proof: fresh
+optimised BR run, download, and seats, times and load factor must all match
+the screen.

@@ -2600,46 +2600,24 @@ def api_report(origin: str, dest: str, airline: str = "", carrier_type: str = "F
       dep_time       "12:00" or "0030". Omitted, the optimiser picks the time for the airline
     """
     import tempfile, route_deck as RDECK
-    _dep = None
-    if dep_time.strip():
-        _raw = dep_time.strip()
-        # AT MOST ONE COLON. Stripping every colon turns "1:2:3" into "123" and answers 01:23, which
-        # is a malformed input producing a plausible time, and a departure time silently wrong by
-        # hours moves the whole connecting feed.
-        _t = _raw.replace(":", "")
-        _hh, _mm = (_t[:-2], _t[-2:]) if len(_t) in (3, 4) else ("", "")
-        if _raw.count(":") <= 1 and _t.isdigit() and _hh and 0 <= int(_hh) <= 23 and 0 <= int(_mm) <= 59:
-            _dep = int(_hh) * 60 + int(_mm)
-        else:
-            return JSONResponse({"ok": False, "error": "dep_time must be HH:MM or HHMM in 24-hour "
-                                 "local time, got %r" % dep_time}, status_code=400)
-    # AUTO GAUGE (19 August 2026): the dashboard's aircraft box is blank by default,
-    # and this endpoint passed the blank straight into the economics type table, so
-    # every Excel and forecast-summary download failed with KeyError(''). Same sizing
-    # as /api/forecast, same quiet A21X fallback when sizing cannot run.
-    if (aircraft or "").strip().upper() in ("", "AUTO", "UNSELECTED"):
-        _ac, _gauge_fail = _auto_gauge(origin, dest, airline, carrier_type, freq,
-                                       plan_lf,
-                                       (econ_share if (econ_share and econ_share > 0)
-                                        else 0.85),
-                                       bus_fare, season)
-        aircraft = _ac or "A21X"
-    fc = calibrated_forecast(origin, dest, airline=(airline or None), carrier_type=carrier_type,
-                             aircraft=aircraft, freq=freq,
-                             # 0 is the measure-it sentinel, /api/forecast's convention
-                             econ_share=(econ_share if (econ_share and econ_share > 0) else None),
-                             plan_lf=plan_lf,
-                             econ_fare=(econ_fare or None), bus_fare=bus_fare,
-                             fuel_price=(fuel_price or None), growth_years=growth_years, with_econ=True,
-                             season=season,
-                             seats=(float(seats) if seats else None),
-                             partner_carriers=(partners or None),
-                             forecast_year=(int(forecast_year) or None),
-                             growth=float(growth), split_floor=bool(split_floor),
-                             stimulation=(stimulation if stimulation > 0 else None),
-                             restricted_hours=(curfew_origin or None),
-                             restricted_hours_dest=(curfew_dest or None),
-                             dep_time_mins=_dep)
+    # ONE RUN DEFINITION (19 August 2026). This endpoint ran its own reduced copy of
+    # the engine call and drifted from the screen twice in one night: the blank-gauge
+    # KeyError('') on every default download, then generic 320 type-table seats and
+    # unoptimised times in a workbook while the screen showed the carrier's 278 at
+    # the optimiser's departure. It now consumes /api/forecast exactly as the
+    # demo-email flow does, so a download CANNOT differ from the run on screen by
+    # construction: auto gauge, seat resolution, departure optimisation, warnings
+    # and every future engine addition arrive automatically.
+    _resp = api_forecast(origin, dest, airline=airline, carrier_type=carrier_type,
+                         aircraft=aircraft, freq=freq, econ_share=econ_share,
+                         plan_lf=plan_lf, econ_fare=econ_fare, bus_fare=bus_fare,
+                         fuel_price=fuel_price, growth_years=growth_years, econ=True,
+                         stimulation=stimulation, growth=growth, season=season,
+                         dep_time=dep_time, curfew_origin=curfew_origin,
+                         curfew_dest=curfew_dest, partners=partners,
+                         forecast_year=forecast_year, split_floor=split_floor,
+                         seats=seats)
+    fc = json.loads(bytes(_resp.body))
     if not fc.get("ok"):
         return JSONResponse(fc, status_code=400)
     if not fc.get("economics_ok"):

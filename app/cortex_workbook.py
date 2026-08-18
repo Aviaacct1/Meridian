@@ -277,7 +277,14 @@ def build_workbook(out_path, fc, meta=None):
 
     # ---- 3b. Schedule and capacity ----------------------------------------
     ws = wb.create_sheet("Schedule")
-    _title(ws, "Schedule and capacity", f'{cap.get("aircraft","")} at {int(freq)}x/week (indicative times)')
+    # THE TITLE AND NOTE STATE THE TIMES' BASIS (19 August 2026): the sheet always
+    # read the payload's times, but its wording claimed "indicative" even when the
+    # optimiser chose them, which read as a mismatch against the screen.
+    _sch0 = fc.get("schedule") or {}
+    _tbasis = ("indicative times" if _sch0.get("indicative")
+               else "optimised departure" if not _sch0.get("basis")
+               else str(_sch0.get("basis"))[:40])
+    _title(ws, "Schedule and capacity", f'{cap.get("aircraft","")} at {int(freq)}x/week ({_tbasis})')
     _hdr(ws, 4, ["Sector", "Dep", "Arr", "Op days/week", "Aircraft", "Seats", f"{_padj} seats", f"{_padj} pax", "Seat factor"],
          [13, 9, 9, 13, 12, 9, 14, 13, 11])
     sched = fc.get("schedule") or {}
@@ -298,9 +305,13 @@ def build_workbook(out_path, fc, meta=None):
     _c(ws, r, 7, round(ann_seats_dir * 2), font=BOLD, fill=TOTF, fmt="#,##0", align=RGT)
     _c(ws, r, 8, round(tot * 2), font=BOLD, fill=TOTF, fmt="#,##0", align=RGT)
     _c(ws, r, 9, load, font=BOLD, fill=TOTF, fmt="0.0%", align=RGT)
-    _c(ws, r + 2, 1, "Departure and arrival are indicative local times derived from block time and timezone; "
-                     f"not curfew- or slot-optimised. {_padj} seats = seats x frequency x {int(weeks)}, each "
-                     f"direction; {_pnoun} pax is the forecast each way; seat factor is the planned load.",
+    _c(ws, r + 2, 1,
+       (("Departure and arrival are indicative local times derived from block time and "
+         "timezone; not curfew- or slot-optimised. ") if _sch0.get("indicative") else
+        ("Departure and arrival are the run's chosen schedule"
+         + (f" ({_sch0.get('basis')})" if _sch0.get("basis") else "") + ". "))
+       + f"{_padj} seats = seats x frequency x {int(weeks)}, each "
+         f"direction; {_pnoun} pax is the forecast each way; seat factor is the planned load.",
        font=NOTE, align=LFT, border=None)
 
     # ---- 4. Catchment split ------------------------------------------------
