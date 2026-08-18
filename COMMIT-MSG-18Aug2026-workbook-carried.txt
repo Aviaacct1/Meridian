@@ -1,0 +1,26 @@
+Workbook: the forecast rows print the carried allocation and sum to their
+own total
+
+Found the moment a client table was built from the sheet (the SJC three-
+airline tables, 18 August): the Forecast sheet and the Cover printed
+UNCAPPED legs beside the CAPPED total, so the rows did not sum to their own
+grand total (76.0 over a 55.7 total on SJC-TPE CI 4x). A network planner
+adds the rows in the room.
+
+- app/cortex_workbook.py: carried_split() is the one definition: prefers
+  the payload's p2p_carried / connecting_carried (feed split pro-rata
+  inside the carried connecting total), falls back to scaling uncapped
+  legs pro-rata to the total on older payloads, leaves uncapped runs
+  untouched. Cover and Forecast sheet both use it; the P2P capture cell
+  becomes the EFFECTIVE rate after the allocation so the row multiplies
+  through; the sheet note states the basis and that unconstrained demand
+  exceeds the figures where capacity binds.
+
+Same defect family as the contract summary mapping found an hour earlier
+(recorded in memory, fix owed post-freeze): surfaces printing mixed bases.
+The workbook fix lands now because the SJC airline tables are built from
+workbooks; the contract fix follows after Thursday.
+
+Verified: compiles; carried, fallback and uncapped paths all reconcile to
+the total in the unit check. Live proof: re-download the three SJC
+workbooks after the next portal restart; rows must sum.

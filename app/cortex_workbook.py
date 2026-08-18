@@ -21,6 +21,28 @@ import fare_bands   # R5: measured fares leave as bands; the grid lives there
 import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 
+
+def carried_split(dem):
+    """(p2p, behind, beyond, total) each way, on the CARRIED allocation, so any
+    surface printing the three legs beside the total shows rows that sum to it.
+    Prefers the payload's own carried split; an older payload falls back to scaling
+    the uncapped legs pro-rata to the total, the same allocation
+    forecast_to_contract renders, so the surfaces can never disagree."""
+    n = lambda v: float(v or 0)
+    p2p = n(dem.get("captured"))
+    behind, beyond = n(dem.get("feed_behind")), n(dem.get("feed_beyond"))
+    tot = n(dem.get("total"))
+    p2p_c, conn_c = n(dem.get("p2p_carried")), n(dem.get("connecting_carried"))
+    if p2p_c > 0 or conn_c > 0:
+        p2p = p2p_c if p2p_c > 0 else p2p
+        fsum = behind + beyond
+        if conn_c > 0 and fsum > 0:
+            behind, beyond = behind * conn_c / fsum, beyond * conn_c / fsum
+    elif tot > 0 and (p2p + behind + beyond) > tot:
+        sc = tot / (p2p + behind + beyond)
+        p2p, behind, beyond = p2p * sc, behind * sc, beyond * sc
+    return p2p, behind, beyond, tot
+
 AVIA = "1F3864"; MID = "2F6BF0"; LIGHT = "EAF0FE"; GREENF = "E6F6EF"
 HDR = PatternFill("solid", fgColor=AVIA)
 SEC = PatternFill("solid", fgColor="4472C4")
@@ -101,9 +123,11 @@ def build_workbook(out_path, fc, meta=None):
         ("SERVICE", [("Airline", airline), ("Carrier type", fc.get("carrier_type","")),
                      ("Aircraft", cap.get("aircraft","")), ("Seats", ec.get("seats","")),
                      ("Frequency", f'{cap.get("freq","")}x/week')]),
-        ("FORECAST (each way / year)", [("Point to point", round(n0(dem.get("captured")))),
-                     ("Connecting behind " + home, round(n0(dem.get("feed_behind")))),
-                     ("Connecting beyond " + d["iata"], round(n0(dem.get("feed_beyond")))),
+        # Carried allocation on the cover too (18 Aug 2026): the cover printed the
+        # same uncapped legs beside the capped total as the Forecast sheet did.
+        ("FORECAST (each way / year)", [("Point to point", round(carried_split(dem)[0])),
+                     ("Connecting behind " + home, round(carried_split(dem)[1])),
+                     ("Connecting beyond " + d["iata"], round(carried_split(dem)[2])),
                      ("Total forecast", round(n0(dem.get("total")))),
                      ("Planned load factor", n0(cap.get("load"))),
                      ("Passengers/day each way", dem.get("pdew_total"))]),
@@ -132,6 +156,19 @@ def build_workbook(out_path, fc, meta=None):
     cap_share = n0(dem.get("qsi_share")); stim = n0(dem.get("stimulation")) or 1.0
     natural = n0(dem.get("natural")) * _sshare; p2p = n0(dem.get("captured"))
     behind = n0(dem.get("feed_behind")); beyond = n0(dem.get("feed_beyond")); tot = n0(dem.get("total"))
+    # THE ROWS ARE THE CARRIED ALLOCATION (18 August 2026). This sheet printed
+    # UNCAPPED legs under the CAPPED total, so its rows did not sum to its own grand
+    # total (76.0 over a 55.7 total on the SJC-TPE airline tables, found the moment a
+    # client table was built from it; a network planner adds the rows in the room).
+    # The payload carries the engine's carried split; the rows print it, the capture
+    # column becomes the EFFECTIVE rate after the capacity allocation, and the legs
+    # sum to the total by construction. Older payloads without the carried split fall
+    # back to scaling the uncapped legs pro-rata to the total, the same allocation
+    # forecast_to_contract renders, so the two surfaces can never disagree.
+    p2p, behind, beyond, tot = carried_split(dem)
+    # effective P2P capture after the allocation, so the row multiplies through
+    if natural * stim > 0:
+        cap_share = p2p / (natural * stim)
     freq = n0(cap.get("freq")) or 7.0
     k = lambda x: round(x / 1000.0, 1)
     ptew = lambda x: round(x / (freq * weeks)) if freq else 0
@@ -159,8 +196,10 @@ def build_workbook(out_path, fc, meta=None):
     _c(ws, r, 8, k(tot), font=TOTF_FONT, fill=TOTF, fmt="#,##0.0", align=RGT)
     _c(ws, r, 9, ptew(tot), font=TOTF_FONT, fill=TOTF, fmt="#,##0", align=RGT)
     _c(ws, r + 2, 1, "Base demand is the addressable each-way O&D market from Sabre Global Demand Data in the origin catchment. "
-                     "Point-to-point forecast = stimulated demand x capture rate, capacity-bounded. Connecting "
-                     "rows show the captured feed each way. PTEW = passengers per departure each way."
+                     "Rows show the carried allocation after the planned load factor cap and they sum to the total; "
+                     "capture rates are the effective rates after that allocation, so each row multiplies through. "
+                     "Where capacity binds, unconstrained demand exceeds the figures shown. "
+                     "PTEW = passengers per departure each way."
                      + (f"  Figures are for the {_pnoun} service (the season's share of the annual O&D)."
                         if _seasonal else ""),
        font=NOTE, align=LFT, border=None)
