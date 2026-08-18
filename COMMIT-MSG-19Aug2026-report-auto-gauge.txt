@@ -1,0 +1,26 @@
+/api/report: AUTO gauge on downloads (KeyError('') on every blank-aircraft
+Excel and forecast-summary download)
+
+Found live on 19 August, the night before the Sabre demo: the dashboard's
+aircraft box is blank by default since the easy-view change, downloadReport
+sends aircraft= empty, and /api/report passed the blank straight into the
+economics type table. Every Excel, CSV and forecast-summary download on a
+default run failed with "economics unavailable for the deck: ''", which is
+KeyError('') with its reason thrown away. /api/forecast got the AUTO sizing
+branch on 15 August; the report endpoint never did.
+
+- app/cortex_app.py: the AUTO gauge sizing is factored into _auto_gauge(),
+  defined once and used by BOTH endpoints. /api/forecast behaviour is
+  unchanged (same quiet A21X fallback when no sizing demand is measured,
+  same warning when sizing itself fails). /api/report now sizes a blank or
+  AUTO aircraft the same way before building the deck and workbook, so a
+  download matches the run on screen.
+
+Not duplication: the two other aircraft_select imports are the range-margin
+advisory and the optimiser's own gauge search, separate features.
+
+Verified: compiles; the sizing call exists exactly once; helper precedes
+both uses; test_demo_flow 58 checks 0 failed. Live proof is the Thursday
+09:00 restart then the download smoke:
+  /api/report?origin=SJC&dest=TPE&airline=CI&carrier_type=FSC&aircraft=&freq=5&part=xlsx&season=annual
+must return the workbook, not JSON.

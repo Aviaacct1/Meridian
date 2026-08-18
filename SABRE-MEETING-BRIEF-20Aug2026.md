@@ -96,7 +96,11 @@ exists so this does not happen.
 09:00 workstation pulls and restarts (Workstation Remote block below); confirm
 QSI_PASSWORD set and sign-in rejects a wrong password; QSI_DEMO_ENTRY stays unset
 (closed) for the meeting. 10:00 dry run on Teams from the Dev PC against
-meridian.aviacortex.com, full running order, timings noted. Fix list closed by
+meridian.aviacortex.com, full running order, timings noted. Two checks inside the
+dry run: the acceptance case must print 131,812 two-way at forecast 2026 (circa
+143k at the 2027 default), the regression proof that the audit week never touched
+the engine; and the Excel download on a default blank-aircraft run must return the
+workbook, not an error (the 19 August /api/report fix, first exercised here). Fix list closed by
 11:30 or the affected page drops from the order.
 
 **Workstation Remote**

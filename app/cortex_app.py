@@ -1626,6 +1626,39 @@ def _attach_viability(fc):
     return fc
 
 
+def _auto_gauge(origin, dest, airline, carrier_type, freq, plan_lf, econ_share_gauge,
+                bus_fare, season):
+    """AUTO gauge sizing, shared by /api/forecast and /api/report. The report endpoint
+    had no AUTO branch, so the dashboard's default blank aircraft reached the type
+    table as an empty key and EVERY Excel and summary download failed with
+    KeyError('') - found live on 19 August, the night before the Sabre demo.
+
+    Returns (aircraft, fail_msg). (None, None) means no sizing demand was measured and
+    the caller falls back quietly, the behaviour /api/forecast has always had; a
+    fail_msg means the sizing itself failed and the caller warns, because AUTO that
+    failed is said (a widebody-length sector on a narrowbody cap must not present as
+    a normal sizing)."""
+    try:
+        import aircraft_select as ASsel
+        _dnm = (_route_distance_km(origin, dest) or 0.0) / 1.852
+        _sz = calibrated_forecast(origin, dest, airline=airline, carrier_type=carrier_type,
+                                  aircraft="A21X", freq=freq, with_econ=False,
+                                  induced_floor=False, season=season)
+        _dem = (_sz.get("demand", {}) or {}).get("total_demand") if _sz.get("ok") else None
+        if _dem and _dnm > 0:
+            _at = carrier_type if carrier_type in ("FSC", "LCC", "ULCC") else "FSC"
+            _wk = 28.0 if season == "summer" else 24.0 if season == "winter" else 52.0
+            ac, _ = ASsel.select_aircraft(_dnm, _dem, freq, plan_lf=plan_lf,
+                                          econ_share=econ_share_gauge,
+                                          econ_fare_ow=max(180, round(_dnm * 0.11)),
+                                          bus_fare_ow=bus_fare, airline_type=_at,
+                                          airline_iata=(airline or None), weeks=_wk)
+            return ac, None
+        return None, None
+    except Exception as _e:                                  # noqa: BLE001
+        return None, "%s: %s" % (type(_e).__name__, _e)
+
+
 @app.get("/api/forecast")
 def api_forecast(origin: str, dest: str, airline: str = "", carrier_type: str = "FSC",
                  aircraft: str = "A21X", freq: int = 7, econ_share: float = 0.0,
@@ -1665,26 +1698,9 @@ def api_forecast(origin: str, dest: str, airline: str = "", carrier_type: str = 
     _auto_ac = None
     _auto_fail = None
     if (aircraft or "").strip().upper() in ("", "AUTO", "UNSELECTED"):
-        try:
-            import aircraft_select as ASsel
-            _dnm = (_route_distance_km(origin, dest) or 0.0) / 1.852
-            _sz = calibrated_forecast(origin, dest, airline=airline, carrier_type=carrier_type,
-                                      aircraft="A21X", freq=freq, with_econ=False, induced_floor=False, season=season)
-            _dem = (_sz.get("demand", {}) or {}).get("total_demand") if _sz.get("ok") else None
-            if _dem and _dnm > 0:
-                _at = carrier_type if carrier_type in ("FSC", "LCC", "ULCC") else "FSC"
-                _wk = 28.0 if season == "summer" else 24.0 if season == "winter" else 52.0
-                aircraft, _ = ASsel.select_aircraft(_dnm, _dem, freq, plan_lf=plan_lf, econ_share=_es_gauge,
-                                econ_fare_ow=max(180, round(_dnm * 0.11)), bus_fare_ow=bus_fare,
-                                airline_type=_at, airline_iata=(airline or None), weeks=_wk)
-                _auto_ac = aircraft
-        except Exception as _e:
-            # AUTO THAT FAILED IS SAID. The silent pass fell through to A21X and a user who
-            # asked AUTO on a widebody-length sector got a narrowbody cap presented as a
-            # normal sizing. The fallback stays; the payload now names it and warns.
-            _auto_fail = "%s: %s" % (type(_e).__name__, _e)
-        if not _auto_ac:
-            aircraft = "A21X"
+        _auto_ac, _auto_fail = _auto_gauge(origin, dest, airline, carrier_type, freq,
+                                           plan_lf, _es_gauge, bus_fare, season)
+        aircraft = _auto_ac or "A21X"
     fc = calibrated_forecast(
         origin, dest, airline=airline, carrier_type=carrier_type, aircraft=aircraft, freq=freq,
         econ_share=_es, plan_lf=plan_lf, econ_fare=(econ_fare or None), bus_fare=bus_fare,
@@ -2518,6 +2534,17 @@ def api_report(origin: str, dest: str, airline: str = "", carrier_type: str = "F
         else:
             return JSONResponse({"ok": False, "error": "dep_time must be HH:MM or HHMM in 24-hour "
                                  "local time, got %r" % dep_time}, status_code=400)
+    # AUTO GAUGE (19 August 2026): the dashboard's aircraft box is blank by default,
+    # and this endpoint passed the blank straight into the economics type table, so
+    # every Excel and forecast-summary download failed with KeyError(''). Same sizing
+    # as /api/forecast, same quiet A21X fallback when sizing cannot run.
+    if (aircraft or "").strip().upper() in ("", "AUTO", "UNSELECTED"):
+        _ac, _gauge_fail = _auto_gauge(origin, dest, airline, carrier_type, freq,
+                                       plan_lf,
+                                       (econ_share if (econ_share and econ_share > 0)
+                                        else 0.85),
+                                       bus_fare, season)
+        aircraft = _ac or "A21X"
     fc = calibrated_forecast(origin, dest, airline=(airline or None), carrier_type=carrier_type,
                              aircraft=aircraft, freq=freq,
                              # 0 is the measure-it sentinel, /api/forecast's convention
