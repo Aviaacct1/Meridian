@@ -1224,7 +1224,11 @@ function showErr(m){
       "this page and sign in again) or the request outran the gateway's 100-second "+
       "limit. If it recurs on the same run after a fresh sign-in, tell the team which run.";
   }
-  $("#err").textContent="Could not forecast this pair: "+m; $("#err").classList.remove("hidden"); }
+  $("#err").textContent="Could not forecast this pair: "+m; $("#err").classList.remove("hidden");
+  // A message nobody can see is silence (00:20, 19 August: a download refusal fired
+  // 2,000px above the button and read as "nothing happens"). Bring it to the eye.
+  try{ $("#err").scrollIntoView({behavior:"smooth", block:"center"}); }catch(_e){}
+}
 
 // The direct-competition split beneath each connecting table (18 August 2026,
 // validated against the 2025 analyst's split). Absent block, no line, never zeros.
