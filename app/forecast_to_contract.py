@@ -364,6 +364,23 @@ def contract_from_forecast(fc, currency="USD", growth_rate=None, ancillary_per_p
         _ATTR = ("Source: AviaSolutions analysis (Avia Cortex); Sabre Global Demand "
                  "Data; OAG schedules.")
     contract["_source"] = _ATTR
+    # THE AIRLINE'S NAME, not "Generic (airline-agnostic)" (the 18 August cosmetic):
+    # deck_contract defaults the name when the case carries none, but the run KNOWS
+    # its airline. Resolved from the payload's code, best effort; the code itself is
+    # the honest fallback, and "Generic" never prints on a named-airline run.
+    _rm = contract.get("route_metadata") or {}
+    _al = ((fc.get("airline") or _rm.get("airline_iata") or "") or "").strip()
+    if _al and (_rm.get("airline_name") in (None, "", "Generic (airline-agnostic)")):
+        _nm = None
+        try:
+            import airline_names as _AN
+            _hits = _AN.search(_al, 1) or []
+            if _hits and str(_hits[0].get("code") or "").upper() == _al.upper():
+                _nm = _hits[0].get("name") or _hits[0].get("label")
+        except Exception:                                    # noqa: BLE001
+            _nm = None
+        _rm["airline_name"] = _nm or _al
+        _rm.setdefault("airline_iata", _al)
     # THE RUN SETTINGS THE PACK ALREADY ASKS FOR. deck/forecast_pack.py reads _settings for the
     # connecting floor, the growth basis, the curfew cost and the feed level, and until now
     # NOTHING WROTE IT: all four reads took their default, including the curfew cost shipped on
