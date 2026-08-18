@@ -1,0 +1,18 @@
+Dashboard footnote: written for the person forecasting their own airport
+
+The footnote still said "Genoa to New York is the validated benchmark; other
+pairs are first-cut estimates", which predates the whole BT2 programme and
+told an SJC-TPE user their forecast was a first cut on the same page whose
+track record carries the calibrated evidence. John's point, 18 August: the
+footnote must make sense to someone preparing route forecasts for their
+airport.
+
+New wording: calibrated central estimate, calibrated on thousands of
+launched routes and graded against carried traffic; per-route precision
+varies; the Track Record page linked as the evidence; new-market routes
+flagged on the run and leaning more on judgement. No blind single-route
+figures, per the claim-language ruling; the evidence is pointed at, not
+asserted.
+
+Applied to cortex_dashboard.html and the PREVIEW copy. The legacy /api/route
+docstring keeps its historical wording; it is internal.
