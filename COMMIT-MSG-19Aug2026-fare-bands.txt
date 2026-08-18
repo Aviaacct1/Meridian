@@ -1,0 +1,35 @@
+R5: measured fares leave self-serve surfaces as bands, never exact
+
+The Work Order permits repackaged analysis and forbids extracts; a measured
+market fare printed in currency to the cent is a Sabre statistic travelling
+whole, and the tool's own written rule was index-only for fares. Landed ahead
+of the Sabre demo of Thursday 20 August.
+
+New:
+- app/fare_bands.py   the one banding rule: fixed grid ($25 under 500, $50 to
+  1,500, $100 above), stated rather than proportional so the exact figure is
+  not recoverable from the band edges. Labels carry no currency symbol; each
+  surface adds its own.
+- app/test_fare_bands.py   22 checks: the grid, the deck helper agreeing with
+  it at the grid boundaries, and every surface asserted banded with its exact
+  form gone.
+
+Changed:
+- app/cortex_app.py   the forecast payload carries avg_fare_band and no exact
+  avg_fare; the opportunities endpoint bands its per-market fare too (that
+  endpoint is iterable across airports, and exact fares per market would be a
+  fares table by another name).
+- app/cortex_dashboard.html   the summary row renders the band.
+- app/cortex_workbook.py   the assumptions fare line states the band, marked
+  as one; the P&L inside the workbook still runs on the exact assumption
+  server-side.
+- deck/forecast_spec.py   _fare_band_label prefers the payload's band and
+  bands a raw figure itself on older payloads; both deck assumption surfaces
+  read it. Same grid as fare_bands.py as a literal (deck import path), with
+  the change-both-or-neither warning in both files.
+
+Unchanged, deliberately: exact fares inside Avia-delivered engagement work
+(the deck_from_cases contract path), and every server-side computation.
+
+Verified: test_fare_bands 22, test_attribution 28, test_visual_layer 32,
+test_forecast_pack_maps 16, all 0 failed; dashboard script parses.

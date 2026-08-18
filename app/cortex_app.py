@@ -27,6 +27,7 @@ if HERE not in sys.path:
     sys.path.insert(0, HERE)
 import geonames as G, routing as R, catchment as C, route_demand as RD
 import od_source as ODS   # owns the AVIA_OD_SOURCE default; reporters must not carry a copy
+import fare_bands as FB   # R5: measured fares leave as bands; the grid lives there
 
 DUMP = os.path.join(HERE, "cities5000.txt")
 CACHE = os.path.join(HERE, "genoa_drive.json")
@@ -1280,7 +1281,10 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
                    "feed_behind": r["feed_behind"], "feed_beyond_base": beyond_base, "feed_behind_base": behind_base,
                    "p2p_carried": r.get("p2p_carried"), "connecting_carried": r.get("connecting_carried"),
                    "p2p_share": r.get("p2p_share"),
-                   "total": carried_ew, "total_demand": each_way, "avg_fare": r["avg_fare"],
+                   # R5: the measured market fare leaves as a BAND; the exact figure
+                   # stays server-side (fare_bands.py carries the rule and the grid).
+                   "total": carried_ew, "total_demand": each_way,
+                   "avg_fare_band": FB.band(r["avg_fare"]),
                    "att": r.get("att_exponent"), "stimulation": r.get("stimulation"),
                    "induced": r.get("induced", False), "induced_lf": r.get("induced_lf"),
                    "induced_fare": r.get("induced_fare"),
@@ -2170,7 +2174,9 @@ def _group_metros(rows, ap, radius_km=80.0):
                     "dest_country": a.get("country") or "", "airports": [x["dest"] for x in rs],
                     "pax": pax, "via_home": vh, "leakage": pax - vh,
                     "home_share": round(vh / pax, 3) if pax else 0.0,
-                    "avg_fare": round(fw / pax, 2) if pax else 0.0})
+                    # R5: banded here too; this endpoint is iterable across airports
+                    # and exact fares per market would be a fares table by another name.
+                    "avg_fare_band": FB.band(fw / pax) if pax else None})
     out.sort(key=lambda x: -x["leakage"])
     return out
 

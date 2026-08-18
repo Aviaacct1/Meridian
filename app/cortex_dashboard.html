@@ -1440,7 +1440,7 @@ function render(d){
     ["Premium-cabin share",pct1(dem.premium_share)],
     ["Connecting feed, behind",fmt(dem.feed_behind)],
     ["Connecting feed, beyond",fmt(dem.feed_beyond)],
-    ["Average fare (Sabre GDD)",money(dem.avg_fare)],
+    ["Average market fare (Sabre GDD)",(dem.avg_fare_band&&dem.avg_fare_band.label)?("$"+dem.avg_fare_band.label):"-"],
     ["Sector",d.distance_nm.toLocaleString()+" nm · "+d.block_min+" min block"]
   ].map(r=>`<div class="pl"><span class="k">${r[0]}</span><span class="vv">${r[1]}</span></div>`).join("");
 

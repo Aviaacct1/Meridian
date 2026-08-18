@@ -24,6 +24,26 @@ Avia Solutions Limited. All rights reserved.
 # here as a literal because the deck's import path to app/ is not guaranteed).
 SOURCE = "Source: OAG schedules; Sabre Global Demand Data; AviaSolutions analysis (Avia Cortex)."
 
+
+def _fare_band_label(dem):
+    """R5: a measured market fare renders as a band, never the exact figure. Prefers
+    the payload's own band; bands a raw figure itself where an older payload carries
+    one. The grid is app/fare_bands.py's, carried here as a literal (the deck's import
+    path to app/ is not guaranteed): $25 under 500, $50 to 1,500, $100 above. Change
+    the grid in BOTH places or in neither."""
+    fb = (dem or {}).get("avg_fare_band")
+    if isinstance(fb, dict) and fb.get("label"):
+        return fb["label"]
+    try:
+        v = float((dem or {}).get("avg_fare") or 0)
+    except (TypeError, ValueError):
+        return None
+    if v <= 0:
+        return None
+    w = 25 if v < 500 else 50 if v < 1500 else 100
+    lo = int(v // w) * w
+    return "%d-%d" % (lo, lo + w)
+
 # 7. A stat row holds five figures before the columns are too narrow for the numbers
 # to sit on one line. At ten they split mid-digit, which reads as a broken deck.
 MAX_STATS = 5
@@ -236,9 +256,9 @@ def _fc_stats(fc, currency):
     add("Aircraft and frequency",
         "%s, %s a week" % (cap.get("aircraft"), cap.get("freq"))
         if cap.get("aircraft") else None)
-    if dem.get("avg_fare"):
-        add("Measured one-way market fare, %s" % currency,
-            "%s" % _int(dem.get("avg_fare")))
+    fl = _fare_band_label(dem)
+    if fl:
+        add("Measured one-way market fare, %s" % currency, fl)
     return out[:MAX_STATS]
 
 
@@ -513,7 +533,7 @@ def assumptions_from_forecast(fc):
         ("Stimulation applied to the market", _one_dp(dem.get("stimulation"))),
         ("Share of the catchment market captured", _pct(dem.get("qsi_share"), 1)),
         ("Attractiveness exponent", _one_dp(dem.get("att"))),
-        ("Measured one-way market fare", _int(dem.get("avg_fare"))),
+        ("Measured one-way market fare (band)", _fare_band_label(dem)),
         ("Induced market treatment", "applied" if dem.get("induced") else "not applied"),
         ("Season", ((fc or {}).get("season") or {}).get("mode")),
         ("Base year for the market data", str((fc or {}).get("year") or "") or None),

@@ -12,6 +12,12 @@ from the old pipeline. Author is set to Avia Solutions.
          economics{raw}, distance_nm, block_min, week, year)
   meta = dict(airline_name, analyst, date, plan_lf, capture_basis, econ_fare)
 """
+import os
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import fare_bands   # R5: measured fares leave as bands; the grid lives there
+
 import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 
@@ -294,7 +300,12 @@ def build_workbook(out_path, fc, meta=None):
         ("Stimulation", f'x{stim:.2f}', "new nonstop demand uplift by carrier type"),
         ("Connecting feed", f'behind {round(behind):,}, beyond {round(beyond):,}', "alliance-weighted, circuity-screened onward O&D"),
         ("Planned load factor", f'{n0(cap.get("load"))*100:.0f}%', f'cap {n0(meta.get("plan_lf") or cap.get("load"))*100:.0f}%'),
-        ("Economy fare (one way)", f'${round(n0(ec.get("econ_fare"))):,}', "Sabre-implied / distance floor"),
+        # R5: the fare line is a BAND on this self-serve surface. The P&L inside the
+        # workbook still runs on the exact assumption server-side; what is stated
+        # here is the band it falls in, which is what the licence permits to travel.
+        ("Economy fare (one way)",
+         (lambda _b: f'${_b["label"]} (band)' if _b else "-")(fare_bands.band(ec.get("econ_fare"))),
+         "Sabre Global Demand Data implied / distance floor; stated as a band"),
         ("Aircraft", cap.get("aircraft",""), "seats and burn from validated type economics"),
         ("Maintenance basis", raw.get("maint_basis",""), "sector-aware Airbus reserves"),
         ("Ownership basis", raw.get("own_basis",""), "blended owned/leased cost of capital by type and age"),
