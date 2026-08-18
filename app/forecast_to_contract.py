@@ -457,23 +457,63 @@ def _fill_forecast_table(contract, fc):
     dem = fc.get("demand") or {}
     stim = dem.get("stimulation")
 
-    def fill(block, factor):
-        if not isinstance(block, dict):
-            return
-        after, base = block.get("demand_after_stimulation"), block.get("base_annual_demand")
-        if block.get("demand_at_service_year") is None and after and factor:
-            block["demand_at_service_year"] = round(after / factor)
-            block.pop("_demand_at_service_year_need", None)
-        block.setdefault("stimulation_factor", factor)
-        pre = block.get("demand_at_service_year")
-        if block.get("annual_growth_rate") is None and pre and base:
-            block["annual_growth_rate"] = round(pre / base - 1.0, 4)
+    # ONE BASIS, EACH WAY, EVERY COLUMN FROM ITS OWN PAYLOAD KEY (the 18 August 2026
+    # defect, found the night the three-airline tables were built: the old patching
+    # divided CAPTURED-after-stimulation by the stimulation factor and compared it
+    # against the TWO-WAY pair market, so growth printed -80.6% and the row did not
+    # multiply through. Same decomposition as the workbook: the payload's schedule
+    # block carries growth_rate/growth_years, natural is the GROWN each-way market
+    # before stimulation and capture, p2p_carried is the carried forecast, and the
+    # capture printed is the EFFECTIVE rate after the capacity allocation so
+    # grown x stim x capture = forecast in the reader's own arithmetic.
+    sch = fc.get("schedule") or {}
+    try:
+        _gy = float(sch.get("growth_years") or 0)
+        _gr = float(sch.get("growth_rate") or 0)
+    except (TypeError, ValueError):
+        _gy = _gr = 0.0
+    _cum = ((1.0 + _gr) ** _gy - 1.0) if _gy else 0.0
 
-    fill(ss.get("point_to_point_total"), (float(stim) if stim else None))
-    # The engine applies stimulation to the local leg only, so the connecting legs carry 1.0.
-    # Stating it is the point: a reader seeing a blank assumes the leg was stimulated too.
+    def _n(v):
+        try:
+            return float(v) if v is not None else None
+        except (TypeError, ValueError):
+            return None
+
+    natural = _n(dem.get("natural"))
+    p2p_c = _n(dem.get("p2p_carried")) or _n(dem.get("captured"))
+    blk = ss.get("point_to_point_total")
+    if isinstance(blk, dict) and natural and natural > 0:
+        _stim = float(stim) if stim else 1.0
+        blk["base_annual_demand"] = round(natural / (1.0 + _cum)) if _cum else round(natural)
+        blk["annual_growth_rate"] = round(_cum, 4)
+        blk["demand_at_service_year"] = round(natural)
+        blk.pop("_demand_at_service_year_need", None)
+        blk["stimulation_factor"] = _stim
+        blk["demand_after_stimulation"] = round(natural * _stim)
+        if p2p_c and p2p_c > 0:
+            blk["capture_rate"] = round(p2p_c / (natural * _stim), 4)
+            blk["forecast"] = round(p2p_c)
+        blk["_basis"] = ("each way; base decomposed from the grown market at the "
+                         "payload's growth rate; capture is the effective rate after "
+                         "the capacity allocation, so the row multiplies through")
+
+    # The connecting legs' base_annual_demand arrives GROWN (the engine grows feed
+    # bases with the market), so the same decomposition applies: state the grown
+    # figure as the service-year column and derive the base-year column from it.
+    # The engine does not stimulate connecting demand, and stating the 1.0 is the
+    # point: a reader seeing a blank assumes the leg was stimulated too.
     for key in ("connecting_at_hub_total", "connecting_at_destination_total"):
-        fill(ss.get(key), 1.0)
+        cb = ss.get(key)
+        if not isinstance(cb, dict):
+            continue
+        base = _n(cb.get("base_annual_demand"))
+        cb["stimulation_factor"] = cb.get("stimulation_factor") or 1.0
+        if base and base > 0:
+            cb["demand_at_service_year"] = round(base)
+            cb["base_annual_demand"] = round(base / (1.0 + _cum)) if _cum else round(base)
+            cb["annual_growth_rate"] = round(_cum, 4)
+            cb.pop("_demand_at_service_year_need", None)
 
 
 def _fill_competition(contract, fc):

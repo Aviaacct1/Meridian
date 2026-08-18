@@ -1,0 +1,27 @@
+Contract forecast table: one basis, every column from its own payload key
+
+The 18 August defect, fixed at its home: forecast_to_contract's
+_fill_forecast_table patched gaps by dividing CAPTURED-after-stimulation by
+the stimulation factor and comparing it against the TWO-WAY pair market, so
+the pack's Traffic forecast slide printed -80.6% growth and a row that did
+not multiply through. Found the night the three-airline tables were built
+from the contracts.
+
+The row is now SET, not patched, on one stated each-way basis, the same
+decomposition the workbook uses: base decomposed from the grown market at
+the payload's own growth rate (schedule.growth_rate/growth_years, added
+18 Aug); the service-year column is the grown market; stimulation stated;
+capture is the EFFECTIVE rate after the capacity allocation so
+grown x stim x capture = forecast in the reader's own arithmetic; forecast
+is the carried figure. Connecting legs decompose the same way (their bases
+arrive grown), state their 1.0 stimulation, and a leg with no base keeps
+its named gap, never a zero. A _basis line on the block states all of it.
+
+- app/forecast_to_contract.py   the rewritten _fill_forecast_table.
+- app/test_contract_p2p_row.py  11 checks, relationships not hand-rounded
+  constants, including the multiplies-through invariant.
+
+Still owed on this path: the "Generic (airline-agnostic)" airline name in
+route_metadata, cosmetic, recorded; and a workstation deck_from_cases
+rebuild to verify on a live contract, after which the pack's Traffic
+forecast slide can return to circulation.
