@@ -149,10 +149,22 @@ def build_workbook(out_path, fc, meta=None):
 
     # ---- 2. Traffic forecast (Avia gold-standard layout) -------------------
     ws = wb.create_sheet("Forecast")
+    # BASE / GROWTH / GROWN decomposed (18 August 2026): with a forecast year set,
+    # this sheet printed the GROWN market in the base column with growth showing 0,
+    # so a client table could not state its own growth. The payload now carries the
+    # numbers behind the growth-basis prose; a steady-state run decomposes to
+    # growth 0 and prints as before.
+    _sch = fc.get("schedule") or {}
+    _gy = n0(_sch.get("growth_years")); _gr = n0(_sch.get("growth_rate"))
+    _cum = ((1.0 + _gr) ** _gy - 1.0) if _gy else 0.0
+    _byr = _sch.get("base_year") or fc.get("year") or ""
+    _fyr = _sch.get("forecast_year") or _byr
+    _debase = lambda grown: (grown / (1.0 + _cum)) if _cum else grown
     _title(ws, "Traffic forecast", f"each way per {_pnoun}; connecting rows show the captured feed")
-    _hdr(ws, 4, ["Market", "Base demand (000s)", "Growth", "Grown demand (000s)", "Stimulation",
+    _hdr(ws, 4, ["Market", f"Base demand {_byr} (000s)", f"Growth {_fyr} v {_byr}",
+                 f"Grown demand {_fyr} (000s)", "Stimulation",
                  "Stimulated demand (000s)", "Capture rate", "Forecast (000s)", "PTEW"],
-         [30, 13, 9, 13, 11, 15, 11, 12, 9])
+         [30, 15, 12, 15, 11, 15, 11, 12, 9])
     cap_share = n0(dem.get("qsi_share")); stim = n0(dem.get("stimulation")) or 1.0
     natural = n0(dem.get("natural")) * _sshare; p2p = n0(dem.get("captured"))
     behind = n0(dem.get("feed_behind")); beyond = n0(dem.get("feed_beyond")); tot = n0(dem.get("total"))
@@ -174,7 +186,7 @@ def build_workbook(out_path, fc, meta=None):
     ptew = lambda x: round(x / (freq * weeks)) if freq else 0
     r = 5
     _c(ws, r, 1, "Total point to point", font=BOLD, align=LFT)
-    _c(ws, r, 2, k(natural), fmt="#,##0.0", align=RGT); _c(ws, r, 3, 0, fmt="0%", align=RGT)
+    _c(ws, r, 2, k(_debase(natural)), fmt="#,##0.0", align=RGT); _c(ws, r, 3, _cum, fmt="0.0%", align=RGT)
     _c(ws, r, 4, k(natural), fmt="#,##0.0", align=RGT); _c(ws, r, 5, round(stim, 2), fmt="0.00", align=RGT)
     _c(ws, r, 6, k(natural * stim), fmt="#,##0.0", align=RGT); _c(ws, r, 7, cap_share, fmt="0.0%", align=RGT)
     _c(ws, r, 8, k(p2p), fmt="#,##0.0", align=RGT); _c(ws, r, 9, ptew(p2p), fmt="#,##0", align=RGT)
@@ -182,8 +194,8 @@ def build_workbook(out_path, fc, meta=None):
     for label, val, cbase in [(f"Total connecting behind {home}", behind, n0(dem.get("feed_behind_base")) * _sshare),
                               (f"Total connecting beyond {d['iata']}", beyond, n0(dem.get("feed_beyond_base")) * _sshare)]:
         _c(ws, r, 1, label, font=BOLD, align=LFT)
-        _c(ws, r, 2, k(cbase) if cbase else "-", fmt="#,##0.0", align=RGT)
-        _c(ws, r, 3, 0, fmt="0%", align=RGT)
+        _c(ws, r, 2, k(_debase(cbase)) if cbase else "-", fmt="#,##0.0", align=RGT)
+        _c(ws, r, 3, _cum if cbase else "-", fmt="0.0%", align=RGT)
         _c(ws, r, 4, k(cbase) if cbase else "-", fmt="#,##0.0", align=RGT)
         _c(ws, r, 5, 1.00, fmt="0.00", align=RGT)
         _c(ws, r, 6, k(cbase) if cbase else "-", fmt="#,##0.0", align=RGT)
@@ -191,8 +203,14 @@ def build_workbook(out_path, fc, meta=None):
         _c(ws, r, 8, k(val), fmt="#,##0.0", align=RGT); _c(ws, r, 9, ptew(val), fmt="#,##0", align=RGT)
         r += 1
     _c(ws, r, 1, "GRAND TOTAL", font=TOTF_FONT, fill=TOTF, align=LFT)
-    for cc in range(2, 8):
-        _c(ws, r, cc, None, fill=TOTF)
+    _bb = n0(dem.get("feed_behind_base")) * _sshare; _yb = n0(dem.get("feed_beyond_base")) * _sshare
+    _c(ws, r, 2, k(_debase(natural + _bb + _yb)), font=TOTF_FONT, fill=TOTF, fmt="#,##0.0", align=RGT)
+    _c(ws, r, 3, None, fill=TOTF)
+    _c(ws, r, 4, k(natural + _bb + _yb), font=TOTF_FONT, fill=TOTF, fmt="#,##0.0", align=RGT)
+    _c(ws, r, 5, None, fill=TOTF)
+    _c(ws, r, 6, k(natural * stim + _bb + _yb), font=TOTF_FONT, fill=TOTF, fmt="#,##0.0", align=RGT)
+    _c(ws, r, 7, (tot / (natural * stim + _bb + _yb)) if (natural * stim + _bb + _yb) > 0 else None,
+       font=TOTF_FONT, fill=TOTF, fmt="0.0%", align=RGT)
     _c(ws, r, 8, k(tot), font=TOTF_FONT, fill=TOTF, fmt="#,##0.0", align=RGT)
     _c(ws, r, 9, ptew(tot), font=TOTF_FONT, fill=TOTF, fmt="#,##0", align=RGT)
     _c(ws, r + 2, 1, "Base demand is the addressable each-way O&D market from Sabre Global Demand Data in the origin catchment. "

@@ -1,0 +1,22 @@
+Workbook: base / growth / grown decomposed with year-labelled headers
+
+With a forecast year set, the Traffic forecast sheet printed the GROWN
+market in the base column with growth showing zero, so a client table built
+from it could not state its own growth (John's requirement, 18 August: one
+download populates the client deck's forecast slides).
+
+- app/cortex_app.py: the payload's schedule block carries the numbers
+  behind the growth-basis prose (growth_rate, growth_years, base_year),
+  additive keys only.
+- app/cortex_workbook.py: the sheet decomposes base year / cumulative
+  growth / grown market for the P2P and connecting rows, headers carry the
+  years ("Base demand 2025", "Growth 2028 v 2025", "Grown demand 2028"),
+  and the grand total row sums the base, grown and stimulated columns with
+  a blended effective capture. A steady-state run decomposes to growth
+  zero and prints as before.
+- app/test_workbook_table.py: NEW, the end-to-end fixture: builds a real
+  workbook from a synthetic payload and asserts the three in-the-room
+  invariants (rows sum to the total, each row multiplies through,
+  decomposition with year labels) plus the steady-state form. 9 checks.
+
+Verified: compiles; test_workbook_table 9 checks 0 failed.

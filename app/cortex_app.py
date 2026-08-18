@@ -1312,6 +1312,12 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
                                          restricted=_rh_disp, restricted_dest=_rd_disp),
                          basis=dep_basis, partners=(_partners or None),
                          forecast_year=fy, growth_basis=growth_basis,
+                         # The NUMBERS behind the basis string (18 August 2026), so a
+                         # surface can decompose base year / growth / grown without
+                         # parsing prose: the workbook's client table needs the three
+                         # columns and could only print the grown figure with growth 0.
+                         growth_rate=round(growth or 0.0, 5), growth_years=growth_years,
+                         base_year=base_year,
                          optimised=(feed_opt or {}) if feed_opt else None,
                          indicative=(dep_mins is None)),
         # THE FEED LEVEL, REPORTED RATHER THAN ASSUMED. A connecting figure built at k=1.0 and one
