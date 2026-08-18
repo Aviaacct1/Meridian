@@ -1,0 +1,46 @@
+Downloads reproduce the run on screen, and the workbook carries the
+competition table (John's ruling, 18 August)
+
+The EVA deck review found the downloaded workbook was the wrong run on four
+counts: the dashboard's download button rebuilt a minimal query (origin,
+dest, airline, type, aircraft, freq, season) instead of sending the one the
+forecast ran with, so seats, forecast year, partners, departure time,
+curfews, floor and stimulation were all silently dropped. A client case
+downloaded as a steady-state generic-gauge workbook. It also found the
+alliance seat-share table was the one deck figure no Meridian output
+carried.
+
+- app/cortex_dashboard.html   downloadReport sends STATE.lastQ, the exact
+  query of the run on screen, plus the part; the rebuilt minimum survives
+  only as the fallback when no run has completed in the session.
+- app/cortex_app.py   /api/report gains stimulation and the two curfews so
+  the posture and restrictions carry; remaining Expert overrides arriving in
+  the query are accepted and ignored, stated in the signature comment rather
+  than silently half-applied. The workbook build now computes alliance seat
+  share at both ends (config OAG store, AVIA_OAG override) and passes it in
+  meta; failure is a named console line and no sheet, never a broken
+  download.
+- app/alliance_share.py   NEW: departing-seats alliance share for the
+  airport's snapshot week. The dedupe is route_watch.daily_seats' proven
+  CTE, copied not re-derived (the region-duplicate trap); the alliance map
+  is route_feed.ALLIANCE, the same one that prices the connecting feed, so
+  the competition table and the engine can never name different alliances.
+  No-mask records are excluded and never spread. The aggregation is a pure
+  function.
+- app/cortex_workbook.py   Competition sheet renders when meta carries the
+  alliance block: share of departing seats by alliance at each end, week
+  named, OAG source line. Absent data means no sheet, never an empty one.
+- app/test_alliance_share.py   10 offline checks on the aggregation.
+
+Prior-forecast comparison: deliberately NOT added. Meridian holds no prior
+engagement forecasts; where none exists the deck's comparison slide comes
+out, per John's ruling.
+
+The store-side query is exercised on the workstation (no duckdb in the
+sandbox); first live proof is the next workbook download after a pull and
+restart, which should show the Competition sheet and a Star Alliance-led
+SJC... to be read, not assumed.
+
+Verified offline: all touched modules compile; test_alliance_share 10,
+test_fare_bands 22, test_attribution 28, all 0 failed; dashboard script
+parses and the download provably sends the run's own query.

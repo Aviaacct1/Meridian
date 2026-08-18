@@ -2493,7 +2493,13 @@ def api_report(origin: str, dest: str, airline: str = "", carrier_type: str = "F
                econ_fare: float = 0.0, bus_fare: float = 1400.0, fuel_price: float = 0.0, growth_years: int = 0,
                part: str = "both", season: str = "annual",
                seats: float = 0.0, partners: str = "", forecast_year: int = 0,
-               growth: float = 0.0, split_floor: int = 1, dep_time: str = ""):
+               growth: float = 0.0, split_floor: int = 1, dep_time: str = "",
+               # 18 August 2026: the dashboard's download now sends the EXACT query of
+               # the run on screen, so the deliverable reproduces it. These two carry
+               # the stimulation posture and the curfews; remaining Expert overrides
+               # are accepted in the query and ignored here, stated rather than
+               # silently half-applied.
+               stimulation: float = 0.0, curfew_origin: str = "", curfew_dest: str = ""):
     """Forecast deliverables from the live forecast: part='deck' returns the Forecast Summary PPTX,
     part='xlsx' the Forecast Excel workbook, part='csv' the workbook's sheets as a zipped CSV
     bundle, part='both' a zip of deck + workbook.
@@ -2557,6 +2563,9 @@ def api_report(origin: str, dest: str, airline: str = "", carrier_type: str = "F
                              partner_carriers=(partners or None),
                              forecast_year=(int(forecast_year) or None),
                              growth=float(growth), split_floor=bool(split_floor),
+                             stimulation=(stimulation if stimulation > 0 else None),
+                             restricted_hours=(curfew_origin or None),
+                             restricted_hours_dest=(curfew_dest or None),
                              dep_time_mins=_dep)
     if not fc.get("ok"):
         return JSONResponse(fc, status_code=400)
@@ -2638,9 +2647,23 @@ def api_report(origin: str, dest: str, airline: str = "", carrier_type: str = "F
     if want_xlsx:
         try:
             import cortex_workbook as CWB
+            # Alliance seat share at both ends rides into the workbook (18 August 2026):
+            # one download must be enough to populate a client deck's competition slide.
+            # A failure is a named console line and no sheet, never a broken download.
+            _alli = None
+            try:
+                import alliance_share as ALS
+                import config as _WCFG
+                _adb = os.environ.get("AVIA_OAG", str(_WCFG.OAG_DUCKDB))
+                _alli = {"origin": ALS.seat_share(_adb, o["iata"]),
+                         "dest": ALS.seat_share(_adb, (d.get("iata") or ""))}
+            except Exception as _ae:                         # noqa: BLE001
+                print("alliance share unavailable for the workbook: %s: %s"
+                      % (type(_ae).__name__, _ae))
             CWB.build_workbook(xlsx_path, fc, {"airline_name": (airline or fc.get("airline")),
                 "analyst": "Avia Solutions", "date": _dt.date.today().strftime("%d %b %Y"),
-                "plan_lf": plan_lf, "capture_basis": capture_basis, "econ_fare": ec.get("econ_fare")})
+                "plan_lf": plan_lf, "capture_basis": capture_basis, "econ_fare": ec.get("econ_fare"),
+                "alliance": _alli})
         except Exception as e:
             if part in ("xlsx", "csv"):
                 return JSONResponse({"ok": False, "error": f"workbook build failed: {e}"}, status_code=500)

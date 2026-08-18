@@ -289,6 +289,30 @@ def build_workbook(out_path, fc, meta=None):
                  "public form and which Avia does not publish. Set both to your own figures. The "
                  "contribution line is unaffected by the ownership plug.", align=LFT); r += 2
 
+    # ---- 5b. Competition: alliance seat share (18 Aug 2026) ----------------
+    # One download must be enough to populate a client deck's competition slide
+    # (the EVA review found this was the one figure no Meridian output carried).
+    # Passed in via meta by the caller that has store access; absent, no sheet,
+    # never an empty one.
+    _alli = (meta or {}).get("alliance") or {}
+    _ends = [e for e in (_alli.get("origin"), _alli.get("dest"))
+             if isinstance(e, dict) and e.get("ok")]
+    if _ends:
+        ws = wb.create_sheet("Competition")
+        _title(ws, "Alliance seat share", "departing seats by alliance at each end, OAG snapshot week")
+        r = 4
+        for e in _ends:
+            _c(ws, r, 1, "%s  -  week %s, %s weekly departing seats"
+               % (e.get("airport"), e.get("week"), f"{e.get('weekly_seats', 0):,}"),
+               font=BOLD); r += 1
+            _hdr(ws, r, ["Alliance", "Share of seats"], [30, 20]); r += 1
+            for name, share in (e.get("rows") or []):
+                _c(ws, r, 1, name)
+                _c(ws, r, 2, f"{share * 100:.1f}%")
+                r += 1
+            r += 1
+        _c(ws, r, 1, "Source: OAG schedules, AviaSolutions analysis.")
+
     # ---- 6. Assumptions & methodology --------------------------------------
     ws = wb.create_sheet("Assumptions")
     _title(ws, "Assumptions and methodology", "every key parameter behind this forecast")
