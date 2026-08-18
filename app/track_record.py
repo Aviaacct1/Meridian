@@ -175,6 +175,7 @@ def load_rows(path):
             corr = float(r.get("corrected_fc_over_out") or 0)
             if corr > 0:
                 _HAS_CORRECTED = True
+            _osrc = (r.get("outturn_source") or "").strip()
             rows.append({
                 "route": r["route"], "dep": r["dep"], "arr": r["arr"],
                 "year": int(r["year"]), "region": r.get("region", ""),
@@ -183,6 +184,12 @@ def load_rows(path):
                 "ratio_corr": corr if corr > 0 else ratio * dfac,
                 "forecast": float(r.get("forecast_pax") or 0) * dfac,
                 "outturn": float(r.get("outturn_pax") or 0),
+                # R8 (audit, 16 August 2026): the grading source decides what the
+                # per-route table may print. DB1B/DOT outturns are public domain and
+                # show as volumes; Sabre-graded outturns show as ratio and verdict
+                # only, because the volume itself is Sabre Global Demand Data.
+                "outturn_source": _osrc,
+                "dot_graded": ("DB1B" in _osrc.upper() or "DOT" in _osrc.upper()),
                 "forecastable": float(r.get("natural") or 0) >= float(r.get("p2p_outturn") or 0) > 0,
             })
         except (ValueError, KeyError):
@@ -544,12 +551,36 @@ def render_html(t, source_name, engine_ctx=None):
             return f"forecast {r:.1f}x too high"
         return f"route did {1/r:.1f}x better"
 
+    # R8: a Sabre-graded row prints NO absolute volume, its own forecast included,
+    # because on a calibrated evidence file the fitted forecast reproduces the outturn
+    # to a part in a thousand on nearly half the routes, so the forecast column IS the
+    # Sabre figure by another name (measured on BUD, 19 August: five identical
+    # renderings in one table). Sabre rows show a size band, the ratio to one decimal
+    # place and the verdict; DB1B-graded US rows are public domain and keep volumes.
+    def _size_band(v):
+        edges = [1000, 2500, 5000, 10000, 25000, 50000, 100000, 250000, 500000, 1000000]
+        lo = 0
+        for e in edges:
+            if v < e:
+                return "%s-%s" % (_kfmt(lo), _kfmt(e))
+            lo = e
+        return "%s+" % _kfmt(edges[-1])
+
+    def _kfmt(v):
+        if v >= 1000000:
+            return "%gm" % (v / 1000000.0)
+        if v >= 1000:
+            return "%gk" % (v / 1000.0)
+        return "%d" % v
+
     route_rows = "".join(
         f"<tr><td>{esc(r['route'])}</td><td>{esc(r['carrier'])}</td><td>{r['year']}</td>"
         f"<td>{'existing market' if r['forecastable'] else 'new market'}</td>"
-        f"<td style='text-align:right'>{r['forecast']:,.0f}</td>"
-        f"<td style='text-align:right'>{r['outturn']:,.0f}</td>"
-        f"<td>{_verdict(r['ratio'])}</td></tr>"
+        + (f"<td style='text-align:right'>{r['forecast']:,.0f}</td>"
+           f"<td style='text-align:right'>{r['outturn']:,.0f}</td>" if r.get("dot_graded")
+           else f"<td style='text-align:right'>{_size_band(r['forecast'])}</td>"
+                f"<td style='text-align:right'>&times;{r['ratio']:.1f}</td>")
+        + f"<td>{_verdict(r['ratio'])}</td></tr>"
         for r in t["routes"])
 
     # Whole-engine context panel: only when the airport shows its OWN histogram (>= FLOOR routes). Below the
@@ -638,11 +669,12 @@ def render_html(t, source_name, engine_ctx=None):
   <div class="card">
     <h2 style="margin-top:0">Routes at {esc(a)} in the sample ({t['n_here']}: {t['n_fore_here']} existing-market + {t['n_here']-t['n_fore_here']} new-market, newest first)</h2>
     <table><tr><th>route</th><th>carrier</th><th>launched</th><th>class</th>
-    <th style="text-align:right">forecast, year 1</th><th style="text-align:right">actually carried</th><th>how it landed</th></tr>
+    <th style="text-align:right">forecast (US DB1B) / size band</th><th style="text-align:right">carried (US DB1B) / ratio</th><th>how it landed</th></tr>
     {route_rows}</table>
     <div class="note" style="margin-top:8px">{("Passengers, both directions, first full year after launch. "
-    "US domestic routes are graded against US DOT DB1B actuals (TranStats), the source US airports use; all "
-    "other routes against Sabre Global Demand Data. Calibrated basis: the model is fitted across the full launch sample, "
+    "US domestic routes are graded against US DOT DB1B actuals (TranStats), public domain, and show forecast "
+    "and carried volumes; all other routes are graded against Sabre Global Demand Data and show a size band, "
+    "the graded ratio and the verdict, because the carried volume itself is licensed data. Calibrated basis: the model is fitted across the full launch sample, "
     "these routes included, and graded like-for-like against the aircraft, frequency and months the carrier "
     "actually flew. Its blind accuracy - routes it was never shown - is validated separately: forecasting "
     "portfolios of twenty unseen routes, the portfolio total landed within &plusmn;20% of actual 93% of the "

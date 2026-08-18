@@ -66,9 +66,10 @@ being asked.
 4. Catchment page: the markets table's source line; GeoNames and map credits.
 5. Watch page: a US airport, so the demand chart is T-100 and labelled as such;
    the point that every surface names the source that answered.
-6. Track record: the whole-engine claims, then ONE airport, US and DB1B-graded.
-   Do not open a Sabre-graded airport's per-route table (that presentation moves
-   to ratio-and-verdict form under the register; say so if asked).
+6. Track record: the whole-engine claims, then any airport. R8 landed on the
+   19th: Sabre-graded per-route rows show a size band, the graded ratio and the
+   verdict, never the volumes; US DB1B rows keep volumes and say why the bases
+   differ. Opening a Sabre-graded airport now DEMONSTRATES the control.
 7. Close on controls: the demo-pack flow's held-pending queue and one-tap release
    as the shape of the extraction controls, then the three asks.
 

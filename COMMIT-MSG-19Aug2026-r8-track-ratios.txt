@@ -1,0 +1,26 @@
+R8: Sabre-graded track record rows show band, ratio and verdict, no volumes
+
+The per-route tables printed forecast and carried volumes for every launch.
+DB1B-graded US rows are public domain and keep both. Sabre-graded rows now
+show a size band (fixed edges, 1k to 1m), the graded ratio to one decimal
+place, and the verdict; neither volume prints.
+
+The finding that shaped it, caught by the render check rather than reasoned
+in advance: on the calibrated evidence file the fitted forecast reproduces
+the outturn to a part in a thousand on nearly half the routes, so printing
+the model's own forecast volume IS printing the Sabre outturn by another
+name (five identical renderings in one BUD table, measured). The first cut
+of this fix kept the forecast column and was wrong; both absolutes come off
+for Sabre-graded rows.
+
+- app/track_record.py: load_rows carries outturn_source and a dot_graded
+  flag per row; the route table renders per grading source; headers and the
+  table note state the rule and the reason.
+
+Verified: render check on a Sabre-graded airport (BUD): zero volume strings
+from either column; DB1B airport (BNA) keeps 24 carried volumes; bands and
+40 ratio cells render; test_track_control 11 and test_attribution 28 checks
+still 0 failed.
+
+With this, the Thursday demo no longer needs to steer around any airport on
+the track record page.
