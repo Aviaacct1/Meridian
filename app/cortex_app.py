@@ -1275,11 +1275,23 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
                   "modelled": _induced, "coverage": "about 2 in 3 comparable launches",
                   "basis": "new-market: modelled from comparable launches" if _induced
                            else "measured-market forecast, calibrated on 6 years"}
+    # NAME BESIDE THE CODE (John, 19 August 2026, the NOC-MUC test demo): the page said
+    # "DE flying it" and nothing told the reader DE is Condor. Resolved once server-side
+    # from airline_names, the same table the deck contract uses, so every surface can
+    # print "Condor (DE)". Presentation only, so failure is quiet per the 6 July rule.
+    _airline_display_name = ""
+    if airline:
+        try:
+            import airline_names as _AN
+            _airline_display_name = _AN.AIRLINES.get(airline.upper(), "") or ""
+        except Exception:                                    # noqa: BLE001
+            _airline_display_name = ""
     out = {
         "ok": True, "title": f'{o["city"]} → {d["city"]}', "engine": "route_forecast (calibrated)",
         "origin": {"iata": home, "city": o["city"], "country": o["country"], "metro": om["airports"]},
         "dest": {"iata": dest_airport, "city": d["city"], "country": d["country"], "metro": dest_codes},
         "airline": airline, "carrier_type": ct,
+        "airline_name": _airline_display_name,
         "catchment": {"home": home, "observed_share": shares, "names": names,
                       "coords": {c: [ap[c]["lat"], ap[c]["lon"]] for c in competing
                                  if c in ap and ap[c].get("lat") is not None},
@@ -2556,7 +2568,18 @@ def api_optimise(origin: str, dest: str, airline: str = "", carrier_type: str = 
                         "the forecast as returned; the difference is the induced floor, which sets "
                         "demand from the capacity deployed"
                         % (float(_sel_lf) * 100, float(_rep_lf) * 100))
+        # NAME BESIDE THE CODE (John, 19 August 2026, the NOC-MUC test demo): the page
+        # said "DE flying it" and nothing told the reader DE is Condor. An auto-chosen
+        # airline is precisely the case where the viewer did NOT type the code, so the
+        # code alone is not an answer. Resolved server-side from airline_names, the
+        # same table the deck contract uses; presentation only, so failure is quiet.
+        try:
+            import airline_names as _AN
+            _al_name = _AN.AIRLINES.get((best.get("airline") or "").upper()) or ""
+        except Exception:                                    # noqa: BLE001
+            _al_name = ""
         final["optimised"] = {"airline": best["airline"], "airline_auto": (not al) and bool(best["airline"]),
+                              "airline_name": _al_name,
                               "aircraft": best["aircraft"], "freq": best["freq"],
                               "carrier_type": best.get("ctype"), "carrier_type_auto": carrier_type not in ("FSC", "LCC", "ULCC"),
                               "season": best.get("season"), "season_auto": season not in ("annual", "summer", "winter"),

@@ -1,0 +1,20 @@
+Name beside the code: auto-chosen airlines say who they are
+
+John's NOC-MUC test demo, 19 August 2026: the optimiser auto-chose an airline and
+the page said "DE flying it" and "DE (auto-chosen)", telling nobody DE is Condor.
+An auto-chosen airline is precisely the case where the viewer never typed the code,
+so the code alone is not an answer.
+
+- api_forecast payload and the optimised block now carry airline_name, resolved
+  server-side from airline_names (the same table the deck contract uses);
+  presentation only, quiet on failure per the 6 July rule.
+- Dashboard prints "Condor (DE) · auto-chosen" on the basis line and "Condor (DE)
+  flying it" on the run line, falling back to the bare code for a carrier the
+  table does not know.
+- airline_names gains JX (STARLUX Airlines), the gap that left a bare "JX" on the
+  Starlux pack cover; the next contract build resolves it.
+- The airline now leads the SCHEDULE ASSUMED sentence ("Condor (DE), auto-chosen ·
+  NOC-MUC dep 07:00 ..."), because who flies it is the single most important
+  assumption on that line, and the Total forecast card's caption opens with the
+  carrier's name, because the headline number is that carrier's forecast, not the
+  market's. Both fall back to the bare code, and to nothing on an airline-less run.

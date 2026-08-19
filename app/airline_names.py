@@ -40,6 +40,7 @@ AIRLINES = {
     "SQ": "Singapore Airlines", "CX": "Cathay Pacific", "JL": "Japan Airlines", "NH": "ANA",
     "KE": "Korean Air", "OZ": "Asiana Airlines", "TG": "Thai Airways", "MH": "Malaysia Airlines",
     "GA": "Garuda Indonesia", "PR": "Philippine Airlines", "BR": "EVA Air", "CI": "China Airlines",
+    "JX": "STARLUX Airlines",
     "CA": "Air China", "MU": "China Eastern", "CZ": "China Southern", "HU": "Hainan Airlines",
     "AI": "Air India", "UK": "Vistara", "VN": "Vietnam Airlines", "CX": "Cathay Pacific",
     "AK": "AirAsia", "D7": "AirAsia X", "FD": "Thai AirAsia", "QZ": "Indonesia AirAsia",

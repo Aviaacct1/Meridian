@@ -1354,7 +1354,10 @@ function render(d){
     const _obj = op.objective ? ("Optimised for "+op.objective
                    +(op.target_lf?" (target "+Math.round(op.target_lf*100)+"%, floor "+Math.round(op.viable_lf*100)+"%)":""))
                 : "Optimised";
-    $("#basis").textContent=_obj+": "+(op.airline?op.airline+(op.airline_auto?" (auto-chosen)":""):"selected airline")+" · "+op.aircraft+" · "+op.freq+"x/week.  "+$("#basis").textContent;
+    // Name beside the code (19 Aug 2026): "DE (auto-chosen)" told nobody DE is Condor.
+    const _aldisp = op.airline ? ((op.airline_name?op.airline_name+" ("+op.airline+")":op.airline)
+                                 +(op.airline_auto?" · auto-chosen":"")) : "selected airline";
+    $("#basis").textContent=_obj+": "+_aldisp+" · "+op.aircraft+" · "+op.freq+"x/week.  "+$("#basis").textContent;
     // Both notes are things the run knows and a reader would otherwise have to infer.
     if(op.lf_basis_note) $("#basis").textContent += "  Load factor "+op.lf_basis_note+".";
     if(op.not_viable) $("#basis").textContent += "  "+op.not_viable;
@@ -1366,10 +1369,12 @@ function render(d){
   // read as a discrepancy.
   (function(){
     const op=d.optimised, al=(op&&op.airline)||d.airline||"";
+    const alName=(op&&op.airline_name)||d.airline_name||"";
+    const alDisp=al?(alName?alName+" ("+al+")":al):"";
     const feed=(d.demand&&(d.demand.feed_total||d.demand.connecting_carried))||0;
     let line="";
     if(al){
-      line="<b>"+al+" flying it.</b> Their connections at both ends, on the aircraft and "
+      line="<b>"+alDisp+" flying it.</b> Their connections at both ends, on the aircraft and "
           +"frequency that earn them the most. A different airline will return a different "
           +"number, because their network is different.";
     } else {
@@ -1396,7 +1401,11 @@ function render(d){
   const _cf=Math.max(_tot-_ptp,0);                                              // total-preserving: PtP + Connecting = Total, on the carried basis
   const kpis=[
     ["Addressable market", fmt(dem.natural*2), `Two way; each way ${fmt(dem.natural)} · ${d.dest.city} catchment`],
-    ["Total forecast", fmt(_tot*2), `Two way; each way ${fmt(_tot)}, incl. feed · `+
+    // The airline leads the card's own caption (John, 19 Aug 2026): the headline
+    // number is that carrier's forecast, not the market's, so the card says whose.
+    ["Total forecast", fmt(_tot*2),
+      (d.airline?((d.airline_name||d.airline)+" · "):"")+
+      `Two way; each way ${fmt(_tot)}, incl. feed · `+
       ((STATE.fy&&STATE.fy!==d.year)?`forecast ${STATE.fy}`:`${d.year} steady state`)+
       (((d.season&&d.season.mode)||"annual")!=="annual"?` · ${d.season.mode} season totals`:"")],
     ["Point-to-point", fmt(_ptp*2), `Two way; each way ${fmt(_ptp)} · captured from the ${fmt(dem.natural)} local market`],
@@ -1431,7 +1440,13 @@ function render(d){
   const _sc=d.schedule;
   if(_sc && _sc.outbound){
     const _bh=Math.floor((_sc.block_min||0)/60), _bm=(_sc.block_min||0)%60;
+    // THE AIRLINE BELONGS IN THE SCHEDULE SENTENCE (John, 19 Aug 2026, NOC-MUC test
+    // demo): the line stated times, gauge and seats and never said WHO flies it,
+    // which on an auto-chosen airline is the single most important assumption.
+    const _who=(d.airline?((d.airline_name?d.airline_name+" ("+d.airline+")":d.airline)
+                +((d.optimised&&d.optimised.airline_auto)?", auto-chosen":"")+"  ·  "):"");
     setTxt("schedLine",
+      _who+
       `${_sc.outbound.sector} dep ${_sc.outbound.dep} arr ${_sc.outbound.arr}  ·  `+
       `${_sc.inbound.sector} dep ${_sc.inbound.dep} arr ${_sc.inbound.arr}  ·  `+
       `${cap.aircraft}, ${cap.freq}x/week, block ${_bh}h ${String(_bm).padStart(2,"0")}m each way`+
