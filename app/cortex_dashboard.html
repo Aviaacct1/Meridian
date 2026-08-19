@@ -1079,14 +1079,19 @@ function drawCurve(op, sc, d){
   const chosen=(sc&&sc.outbound&&sc.outbound.dep)||"";
   const toM=s=>{const a=(s||"").split(":");return a.length<2?null:(+a[0])*60+(+a[1]);};
   const cm=toM(chosen);
+  // The chosen/unrestricted annotations live at the BOTTOM of the plot (19 August,
+  // John: the top was a pile-up of these, the ceiling label and the evening peak).
+  // The curves peak at night and rarely reach the floor, so the bottom rows are
+  // clear; near the right edge the text anchors left of its own line.
+  const _anc=v=>x(v)>W-150?"end":"start", _off=v=>x(v)>W-150?-5:5;
   if(cm!==null){
     parts.push(`<line x1="${x(cm)}" y1="${T}" x2="${x(cm)}" y2="${T+ih}" stroke="var(--accent, #b8860b)" stroke-width="1" stroke-dasharray="3 3"/>`);
-    parts.push(`<text x="${x(cm)+4}" y="${T+11}" font-size="10" fill="var(--body)" font-family="var(--sans)">chosen ${chosen}</text>`);
+    parts.push(`<text x="${x(cm)+_off(cm)}" y="${T+ih-18}" font-size="10.5" fill="var(--body)" text-anchor="${_anc(cm)}" font-family="var(--sans)">chosen ${chosen}</text>`);
   }
   const um=toM(op&&op.unrestricted_dep);
   if(um!==null && um!==cm){
     parts.push(`<line x1="${x(um)}" y1="${T}" x2="${x(um)}" y2="${T+ih}" stroke="var(--muted)" stroke-width="1" stroke-dasharray="2 4"/>`);
-    parts.push(`<text x="${x(um)+4}" y="${T+24}" font-size="10" fill="var(--muted)" font-family="var(--sans)">unrestricted ${op.unrestricted_dep}</text>`);
+    parts.push(`<text x="${x(um)+_off(um)}" y="${T+ih-6}" font-size="10.5" fill="var(--muted)" text-anchor="${_anc(um)}" font-family="var(--sans)">unrestricted ${op.unrestricted_dep}</text>`);
   }
   $("#curveSvg").innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" role="img">${parts.join("")}</svg>`;
   wireSlider(pts, cm);
@@ -1148,6 +1153,19 @@ function optimise(){
         if(st.state==="done"&&st.result&&st.result.ok&&st.result.optimised){
           // Do NOT write the optimised picks back into the form: a field left blank must
           // stay blank so the next Optimise re-sweeps it; the picks show in the basis line.
+          // BUT THE DOWNLOAD QUERY IS SEEDED FROM THE PICKS (19 August, John's morning
+          // find: an optimise stored no query, so every download after one refused).
+          // The sweep query plus the result's own airline, gauge, frequency and chosen
+          // departure IS the run on screen, re-runnable as a plain forecast.
+          try{
+            const _op=st.result.optimised, _dq=new URLSearchParams(q);
+            if(_op.airline) _dq.set("airline",_op.airline);
+            if(_op.aircraft) _dq.set("aircraft",_op.aircraft);
+            if(_op.freq) _dq.set("freq",_op.freq);
+            const _sd=st.result.schedule&&st.result.schedule.outbound&&st.result.schedule.outbound.dep;
+            if(_sd) _dq.set("dep_time",_sd);
+            STATE.lastQ=_dq.toString();
+          }catch(_e){ STATE.lastQ=null; }
           render(st.result);
         } else { showErr((st.result&&st.result.error)||st.error||"could not optimise this pair"); }
       }).catch(e=>{ clearInterval(t); _reset(); showErr(e.message||e); });
