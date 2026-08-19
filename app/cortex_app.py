@@ -1592,13 +1592,25 @@ def api_basis():
 
 @app.get("/api/fleet")
 def api_fleet(airline: str = "", distance_nm: float = 0.0):
-    """The aircraft an airline actually flies (families), optionally range-filtered, for the picker."""
+    """The aircraft an airline actually flies, for the picker: OBSERVED from the OAG store
+    first, the curated table only as fallback (19 August 2026: with no distance the old
+    path always fell to the hand table, which missed AF's A220s and SAS's CRJ900s in one
+    evening; the store knew both all along). The response says which source answered."""
     try:
         import airline_fleets as AF
         from aircraft_economics import AIRCRAFT
         dist_km = (distance_nm * 1.852) if distance_nm and distance_nm > 0 else None
-        codes, known = AF.fleet_for(airline, list(AIRCRAFT.keys()), dist_km)
-        return JSONResponse({"fleet": sorted(codes), "known": known, "airline": (airline or "").upper()})
+        obs = AF.fleet_observed(airline, dist_km)
+        if obs:
+            codes = [c for c in obs if c in AIRCRAFT]
+            if dist_km:
+                codes = [c for c in codes if AIRCRAFT[c]["range_km"] >= dist_km * 1.03]
+            known, basis = True, "observed"
+        else:
+            codes, known = AF.fleet_for(airline, list(AIRCRAFT.keys()), dist_km, observed=False)
+            basis = "table"
+        return JSONResponse({"fleet": sorted(codes), "known": known,
+                             "airline": (airline or "").upper(), "basis": basis})
     except Exception as e:
         return JSONResponse({"fleet": [], "known": False, "error": str(e)})
 

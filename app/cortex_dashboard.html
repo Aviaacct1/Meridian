@@ -528,7 +528,7 @@ function filterAircraftByAirline(){
   const al=$("#airline").value.trim(); const note=$("#fleetNote");
   if(!al){ populateAircraft(ALL_AIRCRAFT); if(note)note.textContent=""; return Promise.resolve(); }
   return fetch(`/api/fleet?airline=${encodeURIComponent(al)}`).then(r=>r.json()).then(d=>{
-    if(d.known && d.fleet && d.fleet.length){ populateAircraft(d.fleet); if(note)note.textContent="· "+al.toUpperCase()+" fleet"; }
+    if(d.known && d.fleet && d.fleet.length){ populateAircraft(d.fleet); if(note)note.textContent="· "+al.toUpperCase()+" fleet"+(d.basis==="observed"?" (OAG observed)":""); }
     else { populateAircraft(ALL_AIRCRAFT); if(note)note.textContent=""; }
   }).catch(()=>{});
 }

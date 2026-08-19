@@ -1,0 +1,21 @@
+Fleet picker reads the OAG store: observed first, hand table as fallback only
+
+Two picker gaps in one evening (John's NOC-CPH and NOC-CPH SK tests, 19 August
+2026): Air France offered no A220-300 and SAS no CRJ900, both because the picker
+calls /api/fleet with no distance, and without a distance the old path never asked
+the store and always fell to the hand-typed FLEETS table. The store knew both
+fleets all along; capacity_frame's own docstring says the table is not needed.
+
+- capacity_frame.types_for accepts gcd_km=None, meaning ALL sector lengths: the
+  picker runs before a route is resolved, so the whole observed fleet is the right
+  answer, and the engine re-checks range at run time.
+- airline_fleets.fleet_observed passes the optional distance through.
+- /api/fleet asks observed-first, keeps the range filter when a distance IS given,
+  falls back to the table when the store has nothing, and reports which source
+  answered ("observed"/"table"); the dashboard's fleet note shows "(OAG observed)".
+- Fail-open verified with no store present: identical behaviour to today.
+- Belt-and-braces table entries while in here: SK gains its CRJ900 (SAS Link);
+  rides with the earlier A220 additions.
+
+The fleet-delivery layer (forward filings, future types) remains the backlog item;
+this closes the current-fleet half from the store we already refresh.

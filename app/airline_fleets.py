@@ -34,7 +34,8 @@ FLEETS = {
     "AZ": ["A319", "A320", "A21N", "A339", "A333"],
     "LX": ["A221", "A223", "A320", "A21N", "A333", "A359"],
     "OS": ["A320", "A321", "B763", "B789"], "SN": ["A319", "A320", "A333"],
-    "TP": ["A320", "A21N", "A339", "A333"], "SK": ["A320", "A21N", "A359", "A333"],
+    "TP": ["A320", "A21N", "A339", "A333"],
+    "SK": ["A320", "A21N", "A359", "A333", "CRJ900"],   # SAS Link's CRJ900s, 19 Aug 2026
     "AY": ["A320", "A321", "A359", "A333"], "EI": ["A320", "A321", "A21N", "A333"],
     "VS": ["A339", "A359", "B789"], "UX": ["B38M", "B789"], "A3": ["A320", "A21N"],
     "LO": ["B738", "E195", "B789"], "TK": ["A321", "A21N", "A333", "A359", "B789", "B77W"],
@@ -96,7 +97,10 @@ def fleet_observed(airline_iata, distance_km, period="2025-%"):
     range-feasible type. A schedule store answers this question directly, and a measured answer that
     moves with the fleet beats a table someone has to remember to update.
     """
-    if not airline_iata or not distance_km:
+    # distance_km=None asks for the whole observed fleet, all sector lengths (19 Aug
+    # 2026): the picker has no route yet, and the hand table it fell back to missed
+    # AF's A220s and SAS's CRJ900s in one evening.
+    if not airline_iata:
         return []
     try:
         import capacity_frame as CF

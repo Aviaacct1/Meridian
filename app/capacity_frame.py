@@ -92,21 +92,35 @@ def types_for(carrier, gcd_km, period="2025-%", band=0.25, min_ops=6):
     for this carrier, and the caller should fall back rather than conclude the carrier flies nothing.
     """
     db = _oag()
-    if not db or not carrier or not gcd_km:
+    if not db or not carrier:
         return [], [], 0
-    lo, hi = gcd_km * (1 - band), gcd_km * (1 + band)
     con = duckdb.connect(db, read_only=True)
     # The progress bar writes to stdout, which inside the app lands in the server log and in any
     # captured output. Off here; frame() keeps it because it is run from the command line.
     con.execute("SET memory_limit='3GB'; SET threads=3; SET enable_progress_bar=false")
     try:
-        rows = con.execute("""
-          SELECT aircraft_code, any_value(aircraft_name) nm, count(*) ops
-          FROM oag
-          WHERE service_type='J' AND week LIKE ? AND try_cast(stops AS INT)=0
-            AND carrier = ? AND try_cast(gcd_km AS DOUBLE) BETWEEN ? AND ?
-          GROUP BY 1 HAVING count(*) >= ? ORDER BY ops DESC
-        """, [period, carrier.strip().upper(), lo, hi, min_ops]).fetchall()
+        # gcd_km=None means ALL sector lengths (19 August 2026): the dashboard's fleet
+        # picker runs before a route is resolved, so it has no distance, and until now
+        # that sent it to the hand table, which missed AF's A220s and SAS's CRJ900s in
+        # one evening. The whole observed fleet is the right picker answer; the engine
+        # re-checks range against the actual sector when the run is made.
+        if gcd_km:
+            lo, hi = gcd_km * (1 - band), gcd_km * (1 + band)
+            rows = con.execute("""
+              SELECT aircraft_code, any_value(aircraft_name) nm, count(*) ops
+              FROM oag
+              WHERE service_type='J' AND week LIKE ? AND try_cast(stops AS INT)=0
+                AND carrier = ? AND try_cast(gcd_km AS DOUBLE) BETWEEN ? AND ?
+              GROUP BY 1 HAVING count(*) >= ? ORDER BY ops DESC
+            """, [period, carrier.strip().upper(), lo, hi, min_ops]).fetchall()
+        else:
+            rows = con.execute("""
+              SELECT aircraft_code, any_value(aircraft_name) nm, count(*) ops
+              FROM oag
+              WHERE service_type='J' AND week LIKE ? AND try_cast(stops AS INT)=0
+                AND carrier = ?
+              GROUP BY 1 HAVING count(*) >= ? ORDER BY ops DESC
+            """, [period, carrier.strip().upper(), min_ops]).fetchall()
     finally:
         con.close()
     keys, unmapped, sectors = [], [], 0
