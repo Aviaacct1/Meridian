@@ -144,7 +144,14 @@ async def _gate(request: Request, call_next):
                              "the data stores are being refreshed; the portal is "
                              "paused for a few minutes. Try again shortly."},
                             status_code=503)
-    return await call_next(request)
+    resp = await call_next(request)
+    # HTML IS NEVER CACHED (19 August 2026). A stale dashboard served from browser or
+    # edge cache cost two rounds of "the fix didn't work" the night before the Sabre
+    # demo: the server was current and the page was not. A deploy must reach the
+    # browser on the next load, every time; the heavy assets keep their own caching.
+    if "text/html" in (resp.headers.get("content-type") or ""):
+        resp.headers["Cache-Control"] = "no-cache"
+    return resp
 
 
 # The refresh bracket's one piece of state. A dict, not a bool, so the middleware and
