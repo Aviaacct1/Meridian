@@ -67,8 +67,23 @@ def main():
         for g in gones:
             check("%s: %r gone" % (fname, g[:28]), g not in txt)
 
+    # THE NAMING SWEEP (John, 18 August: Avia Cortex was the development name; the
+    # product speaks as Meridian, by The Aviation Observatory). The old names must
+    # not reach a client surface again.
+    import attribution as _A2
+    check("source line speaks as Meridian", "Meridian analysis" in _A2.SOURCE_LINE)
+    check("Avia Cortex gone from the source line", "Cortex" not in _A2.SOURCE_LINE)
+    ca2 = rd(HERE, "cortex_app.py")
+    check("download filenames are Meridian_", "f'Meridian_{o[" in ca2
+          and "AviaCortex_{o[" not in ca2)
+    wb2 = rd(HERE, "cortex_workbook.py")
+    check("workbook cover speaks as Meridian",
+          "Meridian route forecast - detailed workbook" in wb2)
+
     fp = rd(DECK, "forecast_pack.py")
     check("forecast_pack SRC contractual", FULL in fp and "Sabre MI and OAG" not in fp)
+    check("forecast_pack SRC speaks as Meridian", "Meridian analysis" in fp
+          and "(Avia Cortex)" not in fp)
     check("opportunity slide never drops the source",
           'source=(("%s  %s" % (note, _src(c))) if note else _src(c))' in fp)
     fs = rd(DECK, "forecast_spec.py")

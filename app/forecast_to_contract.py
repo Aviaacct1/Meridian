@@ -361,8 +361,8 @@ def contract_from_forecast(fc, currency="USD", growth_rate=None, ancillary_per_p
     try:
         from attribution import SOURCE_LINE as _ATTR
     except Exception:                                        # noqa: BLE001
-        _ATTR = ("Source: AviaSolutions analysis (Avia Cortex); Sabre Global Demand "
-                 "Data; OAG schedules.")
+        _ATTR = ("Source: Meridian analysis, The Aviation Observatory; Sabre Global "
+                 "Demand Data; OAG schedules.")
     contract["_source"] = _ATTR
     # THE AIRLINE'S NAME, not "Generic (airline-agnostic)" (the 18 August cosmetic):
     # deck_contract defaults the name when the case carries none, but the run KNOWS

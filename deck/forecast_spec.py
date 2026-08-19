@@ -22,7 +22,7 @@ Avia Solutions Limited. All rights reserved.
 # capture model. Naming only the engine omits the data owners.
 # The contractual Sabre name (audit R3; single-sourced in app/attribution.py, carried
 # here as a literal because the deck's import path to app/ is not guaranteed).
-SOURCE = "Source: OAG schedules; Sabre Global Demand Data; AviaSolutions analysis (Avia Cortex)."
+SOURCE = "Source: OAG schedules; Sabre Global Demand Data; Meridian analysis, The Aviation Observatory."
 
 
 def _fare_band_label(dem):

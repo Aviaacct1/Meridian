@@ -328,7 +328,7 @@ function loadDemand(origin){
 }
 function renderDemand(res, origin){
   const ops=res.opportunities||[];
-  $('#demandSub').textContent=(res.origin_city||res.origin||origin)+" catchment · "+ops.length+" destination markets, ranked by recapture leakage. Source: Sabre Global Demand Data ("+res.year+"), AviaSolutions analysis";
+  $('#demandSub').textContent=(res.origin_city||res.origin||origin)+" catchment · "+ops.length+" destination markets, ranked by recapture leakage. Source: Sabre Global Demand Data ("+res.year+"), Meridian analysis";
   const hdr='<div class="drow hdr"><span class="dk">Destination</span><span class="dv">Market (ew)</span><span class="dv" style="width:92px">Via home</span><span class="dv">Leakage (ew)</span></div>';
   const body=ops.map(x=>'<div class="drow" data-o="'+(res.origin||origin)+'" data-d="'+x.dest+'"><span class="dk">'+x.dest_city+' <span style="color:var(--muted);font-size:11px">'+x.dest+'</span></span><span class="dv">'+fmtN(x.pax)+'</span><span class="dv" style="width:92px">'+Math.round((x.home_share||0)*100)+'%</span><span class="dv">'+fmtN(x.leakage)+'</span></div>').join('');
   $('#demandTbl').innerHTML=hdr+(body||'<div class="fnote">No destination markets found for this airport.</div>');

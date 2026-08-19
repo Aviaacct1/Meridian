@@ -28,5 +28,8 @@ SABRE_GDD_GLOSS = ("Sabre Global Demand Data (MIDT bookings adjusted for booking
                    "made outside the global distribution systems)")
 
 # The standard source line for figures produced by the forecast run.
-SOURCE_LINE = ("Source: AviaSolutions analysis (Avia Cortex); Sabre Global Demand "
-               "Data; OAG schedules.")
+# "Avia Cortex" was the development name and "AviaSolutions analysis" the consultancy
+# habit; John's ruling, 18 August 2026: the PRODUCT speaks as Meridian, by The
+# Aviation Observatory, everywhere a client reads.
+SOURCE_LINE = ("Source: Meridian analysis, The Aviation Observatory; Sabre Global "
+               "Demand Data; OAG schedules.")

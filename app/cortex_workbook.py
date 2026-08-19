@@ -114,7 +114,7 @@ def build_workbook(out_path, fc, meta=None):
     # ---- 1. Cover -----------------------------------------------------------
     ws = wb.active; ws.title = "Cover"
     ws.column_dimensions["A"].width = 34; ws.column_dimensions["B"].width = 40
-    _title(ws, f'{o["city"]} to {d["city"]}  ({home}-{d["iata"]})', "Avia Cortex route forecast - detailed workbook")
+    _title(ws, f'{o["city"]} to {d["city"]}  ({home}-{d["iata"]})', "Meridian route forecast - detailed workbook")
     r = 4
     blocks = [
         ("ROUTE", [("Origin", f'{o["city"]} ({home})'), ("Destination", f'{d["city"]} ({d["iata"]})'),
@@ -404,7 +404,7 @@ def build_workbook(out_path, fc, meta=None):
                 _c(ws, r, 2, f"{share * 100:.1f}%")
                 r += 1
             r += 1
-        _c(ws, r, 1, "Source: OAG schedules, AviaSolutions analysis.")
+        _c(ws, r, 1, "Source: OAG schedules, Meridian analysis.")
 
     # ---- 6. Assumptions & methodology --------------------------------------
     ws = wb.create_sheet("Assumptions")

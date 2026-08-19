@@ -96,6 +96,11 @@ def test_contract_ends():
 
 
 def test_fill_forecast_table():
+    """REWRITTEN 19 August 2026 with the mapping fix: the old expectations asserted
+    the mixed-bases patching (captured-after-stim divided by the factor against the
+    two-way market) that printed -80.6% growth on a real contract. The row is now SET
+    from the payload on one each-way basis; app/test_contract_p2p_row.py carries the
+    full 11-check suite, and this checks the deck-side essentials."""
     contract = {"segment_forecast": {"summary": {
         "point_to_point_total": {"base_annual_demand": 100000,
                                  "demand_after_stimulation": 138000,
@@ -104,18 +109,26 @@ def test_fill_forecast_table():
                                  "forecast": 50000},
         "connecting_at_hub_total": {"base_annual_demand": 900000, "forecast": 15000},
         "grand_total": {"forecast": 65000}}}}
-    fc = {"demand": {"stimulation": 1.15}}
+    fc = {"demand": {"stimulation": 1.15, "natural": 120000, "p2p_carried": 50000},
+          "schedule": {"growth_rate": 0.0954, "growth_years": 2}}
     _fill_forecast_table(contract, fc)
     blk = contract["segment_forecast"]["summary"]["point_to_point_total"]
-    check("pre-stimulation demand derived (after / factor)",
+    check("service-year column is the payload's grown market",
           blk["demand_at_service_year"] == 120000, blk["demand_at_service_year"])
-    check("derivation clears the need note",
+    check("the fill clears the need note",
           "_demand_at_service_year_need" not in blk, "")
-    check("growth is total base to service year",
-          blk["annual_growth_rate"] == 0.2, blk["annual_growth_rate"])
+    check("growth is the payload's cumulative rate, one basis",
+          abs(blk["annual_growth_rate"] - 0.2) < 0.001, blk["annual_growth_rate"])
+    check("base decomposed from the grown market",
+          abs(blk["base_annual_demand"] - 100000) < 100, blk["base_annual_demand"])
+    check("the row multiplies through (effective capture)",
+          abs(blk["demand_at_service_year"] * blk["stimulation_factor"]
+              * blk["capture_rate"] - blk["forecast"]) < 300, blk["capture_rate"])
     cnx = contract["segment_forecast"]["summary"]["connecting_at_hub_total"]
     check("connecting leg carries x1.00, not the p2p factor",
           cnx["stimulation_factor"] == 1.0, cnx["stimulation_factor"])
+    check("connecting base decomposed on the same basis",
+          abs(cnx["base_annual_demand"] - 750000) < 500, cnx["base_annual_demand"])
 
 
 def test_build_pack(tmp):

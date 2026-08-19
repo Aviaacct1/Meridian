@@ -990,7 +990,10 @@ function drawCurve(op, sc, d){
                    cap: capacity*(cap.plan_cap||0)};
     }
   }
-  const W=760, H=200, L=62, R=14, T=10, B=28;   // room for the y labels and the legend
+  // TOP BAND FOR LEGEND AND BASIS (John, 19 August: the legend sat on the curve and
+  // made the chart unreadable). The band is part of the SVG, so a screenshot still
+  // carries everything (house rule: the chart stands alone); the plot starts below it.
+  const W=760, H=238, L=62, R=14, T=48, B=28;
   const iw=W-L-R, ih=H-T-B;
   // TWO SERIES, because one of them was misleading on its own. Connecting demand moves across the
   // day and the ROUTE TOTAL often does not, since route_forecast line 823 carries
@@ -1030,23 +1033,26 @@ function drawCurve(op, sc, d){
     if(f>0) parts.push(`<line x1="${L}" y1="${y(v)}" x2="${W-R}" y2="${y(v)}" stroke="var(--line)" opacity="0.35"/>`);
     parts.push(`<text x="${L-7}" y="${y(v)+3}" font-size="9.5" fill="var(--muted)" text-anchor="end" font-family="var(--sans)">${fmt(Math.round(v))}</text>`);
   });
-  parts.push(`<text x="${L-7}" y="${T-2}" font-size="9" fill="var(--muted)" text-anchor="end" font-family="var(--sans)">pax/yr</text>`);
-  // LEGEND, inside the plot so it travels with the picture if it is screenshotted into a deck.
-  // THE CHART STANDS ALONE (house rule): year, forecast basis and unit on the SVG itself, so a
-  // screenshot pasted into an email cannot mislead. The year is the one the run was asked for.
+  parts.push(`<text x="${L-7}" y="${T-8}" font-size="9" fill="var(--muted)" text-anchor="end" font-family="var(--sans)">pax/yr</text>`);
+  // LEGEND AND BASIS IN THE TOP BAND, one row each, clear of the data. Still on the
+  // SVG (house rule: the chart stands alone in a screenshot); the year is the one
+  // the run was asked for.
   const _fyv=(($("#fyear")||{}).value)||"";
-  parts.push(`<text x="${W-R}" y="${T+11}" font-size="10" fill="var(--muted)" text-anchor="end" font-family="var(--sans)">${_fyv?("Forecast "+_fyv+" · "):""}two-way annual passengers by outbound departure, origin local</text>`);
-  const lx=L+10, ly=T+12;
-  parts.push(`<line x1="${lx}" y1="${ly}" x2="${lx+18}" y2="${ly}" stroke="var(--accent, #b8860b)" stroke-width="2"/>`);
-  parts.push(`<text x="${lx+23}" y="${ly+3.5}" font-size="10" fill="var(--body)" font-family="var(--sans)">Route total carried, two-way</text>`);
-  parts.push(`<line x1="${lx}" y1="${ly+14}" x2="${lx+18}" y2="${ly+14}" stroke="var(--body)" stroke-width="1.4" stroke-dasharray="4 3" opacity="0.75"/>`);
-  parts.push(`<text x="${lx+23}" y="${ly+17.5}" font-size="10" fill="var(--body)" font-family="var(--sans)">Connecting, two-way</text>`);
-  if(st) parts.push(`<rect x="${lx}" y="${ly+24}" width="18" height="7" fill="var(--accent, #b8860b)" opacity="0.10"/>`,
-    `<text x="${lx+23}" y="${ly+31}" font-size="10" fill="var(--body)" font-family="var(--sans)">Point to point (shaded gap)</text>`);
+  parts.push(`<text x="${W-R}" y="34" font-size="10" fill="var(--muted)" text-anchor="end" font-family="var(--sans)">${_fyv?("Forecast "+_fyv+" · "):""}two-way annual passengers by outbound departure, origin local</text>`);
+  const ly=14;
+  parts.push(`<line x1="${L}" y1="${ly}" x2="${L+18}" y2="${ly}" stroke="var(--accent, #b8860b)" stroke-width="2"/>`);
+  parts.push(`<text x="${L+23}" y="${ly+3.5}" font-size="10" fill="var(--body)" font-family="var(--sans)">Route total carried, two-way</text>`);
+  parts.push(`<line x1="${L+205}" y1="${ly}" x2="${L+223}" y2="${ly}" stroke="var(--body)" stroke-width="1.4" stroke-dasharray="4 3" opacity="0.75"/>`);
+  parts.push(`<text x="${L+228}" y="${ly+3.5}" font-size="10" fill="var(--body)" font-family="var(--sans)">Connecting, two-way</text>`);
+  if(st) parts.push(`<rect x="${L+375}" y="${ly-4}" width="18" height="7" fill="var(--accent, #b8860b)" opacity="0.10"/>`,
+    `<text x="${L+398}" y="${ly+3.5}" font-size="10" fill="var(--body)" font-family="var(--sans)">Point to point (shaded gap)</text>`);
   // The plan cap, drawn where it binds. A flat total is not a flat market, it is the aeroplane.
   if(capLine!==null && capLine<=max){
     parts.push(`<line x1="${L}" y1="${y(capLine)}" x2="${W-R}" y2="${y(capLine)}" stroke="var(--muted)" stroke-width="1" stroke-dasharray="5 4"/>`);
-    parts.push(`<text x="${W-R}" y="${y(capLine)-4}" font-size="10" fill="var(--muted)" text-anchor="end" font-family="var(--sans)">aircraft ceiling ${fmt(Math.round(capLine))}</text>`);
+    // The label drops BELOW the line when the ceiling touches the top of the plot,
+    // instead of being clipped by the band (John, 19 August: the label was cut off).
+    const _cly=(y(capLine)<T+16)?(y(capLine)+13):(y(capLine)-4);
+    parts.push(`<text x="${W-R}" y="${_cly}" font-size="10" fill="var(--muted)" text-anchor="end" font-family="var(--sans)">aircraft ceiling ${fmt(Math.round(capLine))}</text>`);
   }
   // Route total, two-way, the series a reader expects to see first.
   if(st){
@@ -1238,8 +1244,10 @@ function splitNote(cs){
   if(di.capture==null&&nd.capture==null) return "";
   const f=x=>x==null?"-":(x*100).toFixed(1)+"%";
   const kk=x=>x==null?"-":Math.round(x/100)/10+"k";
+  // PLAIN WORDS (John, 19 August: a ten-year-old could not read the old line).
   return '<div style="margin-top:6px;font-family:var(--serif);font-size:11.5px;color:var(--muted);font-style:italic">'+
-    'Direct-competition split: with '+kk(di.forecast)+' at '+f(di.capture)+' capture · without '+kk(nd.forecast)+' at '+f(nd.capture)+'</div>';
+    'Where a nonstop already flies, this route wins '+f(di.capture)+' of the demand, about '+kk(di.forecast)+' passengers a year. '+
+    'Where no nonstop exists, it wins '+f(nd.capture)+', about '+kk(nd.forecast)+' a year.</div>';
 }
 
 // --- the demo pack flow: email me this forecast --------------------------------

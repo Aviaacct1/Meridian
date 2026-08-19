@@ -77,7 +77,7 @@ OD_UNIT = "Passengers, origin and destination, each way"
 DOT_T100 = "US DOT T-100 segment"
 DOT_DB1B = "US DOT O&D Survey (DB1B)"
 # The contractual name (audit R3): this label renders on the Watch page.
-SABRE = "Sabre Global Demand Data, AviaSolutions analysis"
+SABRE = "Sabre Global Demand Data, Meridian analysis"
 
 
 ACI = "ACI airport traffic"

@@ -20,8 +20,8 @@ confirm the three points below in writing, or names exactly what they need first
    row of the data.
 2. **That the attribution form satisfies the source-statement condition.** The form,
    now on every surface where the data is a material input: "Sabre Global Demand
-   Data", with the standard source line "Source: AviaSolutions analysis (Avia
-   Cortex); Sabre Global Demand Data; OAG schedules."
+   Data", with the standard source line "Source: Meridian analysis, The Aviation
+   Observatory; Sabre Global Demand Data; OAG schedules."
 3. **That conference demonstration is within the licensed consultancy use**:
    pre-loaded sample markets, exports disabled, a demonstration watermark
    throughout, and no output about an airline visitor's own network.

@@ -1,0 +1,49 @@
+The overnight batch: chart readability, plain-words split, the Meridian
+naming sweep (John's list, built while he slept, 19 August 2026)
+
+Departure-time chart, three defects John named at midnight:
+- the legend moves into a dedicated top band, clear of the data; still on
+  the SVG so a screenshot carries it (house rule: the chart stands alone)
+- the pax/yr unit label sits above the axis numbers, no longer colliding
+- the aircraft-ceiling label drops BELOW its line when the ceiling touches
+  the top of the plot, instead of being clipped
+
+The direct-competition split lines under the connecting tables now read in
+plain words: "Where a nonstop already flies, this route wins 0.9% of the
+demand, about 0.9k passengers a year. Where no nonstop exists, it wins
+10.2%, about 9.2k a year."
+
+THE NAMING SWEEP (John's ruling, 18 August: Avia Cortex was the
+development name; nothing in the product says AviaSolutions analysis
+either; the product speaks as Meridian, by The Aviation Observatory):
+- attribution.SOURCE_LINE and every product source line: "Source: Meridian
+  analysis, The Aviation Observatory; Sabre Global Demand Data; OAG
+  schedules." (wording per John's 18 Aug instruction; his final nod owed)
+- download and pitch filenames: Meridian_*, Meridian_Pitch_*
+- workbook cover: "Meridian route forecast - detailed workbook"; alliance
+  sheet and pack source lines: "OAG schedules, Meridian analysis";
+  "Meridian drive-time model"; Watch label "Sabre Global Demand Data,
+  Meridian analysis"; economics and catchment pages match
+- FastAPI title; SABRE-MEETING-BRIEF's quoted source line updated to match
+- guarded by five new checks in test_attribution (33 total): the old names
+  cannot reach a client surface again
+- NOT touched: internal module names and docstrings, the legacy June-chain
+  reporters (narrative_generator, output_workbook, revenue_forecast), and
+  deck fixture strings; they are not client surfaces of this product
+
+Also: deck/test_forecast_pack_maps' fill-table test rewritten to the fixed
+one-basis mapping (its old expectations asserted the retired mixed-bases
+arithmetic); it now also asserts multiplies-through and both
+decompositions.
+
+Verified: all suites green - test_attribution 33, test_fare_bands 22,
+test_workbook_table 9, test_contract_p2p_row 11, test_demo_flow 58,
+test_forecast_pack_maps 19, test_visual_layer 32; every touched page's
+scripts parse; all touched modules compile.
+
+Morning sequence: DevPC commit+push this file's batch; donatello pull;
+KILL the Meridian window then Meridian-run.bat (re-running over a live
+server only re-warms the old process); hard-refresh the dashboard; run
+SJC-TPE BR blank-seats and confirm 278/20:59/78.1 on screen, chart legend
+in its band, plain-words split lines, and a downloaded workbook named
+Meridian_SJC_TPE.xlsx matching column for column.

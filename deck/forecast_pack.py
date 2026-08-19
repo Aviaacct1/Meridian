@@ -60,7 +60,7 @@ DISCLAIMER = (
 
 # The contractual Sabre name (audit R3; single-sourced in app/attribution.py, carried
 # here as a literal because the deck's import path to app/ is not guaranteed).
-SRC = "Source: AviaSolutions analysis (Avia Cortex); Sabre Global Demand Data; OAG schedules."
+SRC = "Source: Meridian analysis, The Aviation Observatory; Sabre Global Demand Data; OAG schedules."
 
 
 def _src(c):
@@ -81,7 +81,7 @@ def _src(c):
     else:
         read = ("US DOT O&D Survey (DB1B) for the US domestic markets, Sabre Global "
                 "Demand Data for the rest, and OAG schedules")
-    return "Source: AviaSolutions analysis (Avia Cortex), %s." % read
+    return "Source: Meridian analysis, The Aviation Observatory; %s." % read
 
 
 # --- reading the contract ---------------------------------------------------
@@ -188,7 +188,7 @@ def _competition(alliance):
     return S.table({"head": ["Airport", "Alliance", "Share of seats"], "rows": rows},
                    title="Alliance seat share at both airports",
                    subtitle=" and ".join(heads) or None,
-                   source="Source: OAG schedules, AviaSolutions analysis.")
+                   source="Source: OAG schedules, Meridian analysis.")
 
 
 def _opportunity(c):
@@ -421,7 +421,7 @@ def _route_page(c, maps):
                             "rows": rows} if rows else None),
                     title="The route",
                     subtitle=("Great circle, %s nm" % _n(dist)) if dist else "Great circle",
-                    source="Source: OAG schedules, AviaSolutions analysis.")
+                    source="Source: OAG schedules, Meridian analysis.")
 
 
 BAND_LABELS = [("30", "Within 30 minutes' drive"), ("60", "30 to 60 minutes"),
@@ -466,11 +466,11 @@ def _catchment_end_pages(c, maps):
         table = {"head": ["Drive-time band", "Population"], "rows": rows}
         if img:
             pages.append(S.figure(img, table=table, bullets=bullets, title=title, subtitle=sub,
-                                  source="Source: GeoNames population, AviaSolutions drive-time "
+                                  source="Source: GeoNames population, Meridian drive-time "
                                          "model."))
         else:
             pages.append(S.table(table, bullets=bullets, title=title, subtitle=sub,
-                                 source="Source: GeoNames population, AviaSolutions drive-time "
+                                 source="Source: GeoNames population, Meridian drive-time "
                                         "model."))
     return pages
 

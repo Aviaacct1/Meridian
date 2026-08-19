@@ -257,7 +257,7 @@ function render(d){
 
   $('#foot').innerHTML=`Economics for <b>${(d.origin&&d.origin.city)||''} to ${(d.dest&&d.dest.city)||''}</b> on <b>${cap.aircraft||''}</b> at ${freq}x/week, `+
     `run at the calibrated forecast of ${fmtN(dem.total)} each way. Maintenance is sector-aware from validated Airbus reserves; ownership is a blended owned and leased cost of capital by airline type and age. Indicative, directional guidance. `+
-    `Source: AviaSolutions analysis; demand and fares from Sabre Global Demand Data; schedules from OAG.`;
+    `Source: Meridian analysis, The Aviation Observatory; demand and fares from Sabre Global Demand Data; schedules from OAG.`;
   $('#results').classList.remove('hidden');
 }
 

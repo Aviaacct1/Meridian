@@ -58,7 +58,7 @@ FALLBACK = {"propensity": 0.0283, "natural": 92542, "current": 7036,
                                "TRN": 12476, "GOA": 7036, "BGY": 939}}
 DIST_NM, BLOCK_MIN = 3500, 540
 
-app = FastAPI(title="Avia Cortex - Route Forecasting")
+app = FastAPI(title="Meridian - Route Forecasting")   # Avia Cortex was the development name (retired 18 Aug 2026)
 S = {}
 
 # ---------------------------------------------------------------- password gate (Avia Solutions)
@@ -2705,7 +2705,7 @@ def api_report(origin: str, dest: str, airline: str = "", carrier_type: str = "F
         "full_report": True, "catchment_text": catchment_text,
         "season": fc.get("season", {"mode": "annual", "share": 1.0, "weeks": 52}),
     }
-    base = f'AviaCortex_{o["iata"]}_{d.get("iata", d["city"])}'
+    base = f'Meridian_{o["iata"]}_{d.get("iata", d["city"])}'
     tmpd = tempfile.gettempdir()
     deck_path = os.path.join(tmpd, base + ".pptx")
     xlsx_path = os.path.join(tmpd, base + ".xlsx")
@@ -2790,7 +2790,7 @@ def _run_pitch_job(job_id, p):
         _stage(job_id, "researching and verifying sources (the long step)")
         deck_path, html_path, audit = PR.build_pitch(fc, inputs)
         _stage(job_id, "building the deck, workbook and pack")
-        base = f'AviaCortex_Pitch_{o["iata"]}_{d["iata"]}'
+        base = f'Meridian_Pitch_{o["iata"]}_{d["iata"]}'
         tmpd = tempfile.gettempdir()
         files = [(deck_path, base + ".pptx")]
         if html_path:
