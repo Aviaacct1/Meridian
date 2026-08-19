@@ -90,6 +90,45 @@ def main():
         p2p = rows["Total point to point"]
         check("steady state: base equals grown", p2p[1] == p2p[3])
         check("steady state: growth prints zero", (p2p[2] or 0) == 0)
+
+        # the Departure curve sheet (19 August 2026): raw curve + the dashboard's own
+        # carried transform + a native chart; must reconcile with the headline at the
+        # chosen departure and never exist without an optimiser curve
+        fc = _fc(grown=True)
+        fc["capacity"]["plan_cap"] = 0.875
+        fc["schedule"].update({
+            "outbound": {"sector": "SJC-TPE", "dep": "20:59", "arr": "02:44+2"},
+            "inbound": {"sector": "TPE-SJC", "dep": "20:14", "arr": "17:59"},
+            "indicative": False, "basis": "optimised",
+            "optimised": {"unrestricted_dep": "00:30", "restricted": ["21:00-06:00"],
+                          "curve": [
+                              {"dep": 0, "hhmm": "00:00", "total": 30000, "beyond": 26000,
+                               "behind": 4000, "permitted": False},
+                              {"dep": 720, "hhmm": "12:00", "total": 12000, "beyond": 9000,
+                               "behind": 3000, "permitted": True},
+                              {"dep": 1259, "hhmm": "20:59", "total": 15000, "beyond": 11500,
+                               "behind": 3500, "permitted": True},
+                              {"dep": 1410, "hhmm": "23:30", "total": 26000, "beyond": 22500,
+                               "behind": 3500, "permitted": False}]}})
+        out = os.path.join(tmp, "curve.xlsx")
+        CWB.build_workbook(out, fc, {"airline_name": "BR", "analyst": "A", "date": "d",
+                                     "plan_lf": 0.875, "capture_basis": "m",
+                                     "econ_fare": 975})
+        wb = openpyxl.load_workbook(out)
+        check("departure curve sheet exists", "Departure curve" in wb.sheetnames)
+        ws = wb["Departure curve"]
+        cr = {str(r[0].value): [c.value for c in r] for r in ws.iter_rows(min_row=5, max_row=8)}
+        check("curve reconciles with the headline at the chosen departure",
+              abs(cr["20:59"][3] - fc["demand"]["connecting_carried"] * 2) < 3
+              and abs(cr["20:59"][6] - fc["demand"]["total"] * 2) < 3)
+        check("permitted flags carried", cr["00:00"][1] == "no" and cr["12:00"][1] == "yes")
+        check("native chart embedded", len(ws._charts) == 1)
+        nt = " ".join(str(c.value) for row in ws.iter_rows(min_row=9) for c in row if c.value)
+        check("curve note states ceiling and source",
+              "aircraft ceiling" in nt and "Meridian analysis" in nt)
+        wb2 = openpyxl.load_workbook(os.path.join(tmp, "grown.xlsx"))
+        check("no curve, no sheet, never fabricated",
+              "Departure curve" not in wb2.sheetnames)
     print("\n%d checks, %d failed%s" % (CHECKS, len(FAIL),
           ": " + ", ".join(FAIL) if FAIL else ""))
     sys.exit(1 if FAIL else 0)

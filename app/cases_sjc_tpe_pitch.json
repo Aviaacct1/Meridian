@@ -1,0 +1,35 @@
+{
+  "note": "The three recommended pitch cases (19 August 2026), mirroring the runs John downloaded that day: departure fixed at 20:59 because the cases runner has no curfew field and 20:59 is what the optimiser chose under the 21:00-06:00 scenario, the curfew-honouring evening wave that lands TPE in a different bank from each carrier's own SFO night service. Growth is left to the engine's default (the measured pre-COVID trend, +18.3% to 2027 on this pair); split_floor as shipped; no partner carriers; seats are the carriers' own measured configurations. These must reproduce the downloaded runs: CI 69,615 each way at the 87.5% cap, BR 71,511 at 82.6% on the B77W, JX 65,593 at 82.4%.",
+  "defaults": {
+    "origin": "SJC",
+    "dest": "TPE",
+    "carrier_type": "FSC",
+    "split_floor": true,
+    "dep_time": "20:59",
+    "forecast_year": 2027,
+    "season": "annual"
+  },
+  "cases": [
+    {
+      "name": "PITCH SJC-TPE CI A359 306 5x 2027",
+      "airline": "CI",
+      "aircraft": "A359",
+      "seats": 306,
+      "freq": 5
+    },
+    {
+      "name": "PITCH SJC-TPE BR B77W 333 5x 2027",
+      "airline": "BR",
+      "aircraft": "B77W",
+      "seats": 333,
+      "freq": 5
+    },
+    {
+      "name": "PITCH SJC-TPE JX A359 306 5x 2027 Starlux",
+      "airline": "JX",
+      "aircraft": "A359",
+      "seats": 306,
+      "freq": 5
+    }
+  ]
+}

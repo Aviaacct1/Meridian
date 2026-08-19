@@ -17,6 +17,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import fare_bands   # R5: measured fares leave as bands; the grid lives there
+import attribution  # the one source line (R3); the Departure curve sheet prints it
 
 import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
@@ -313,6 +314,72 @@ def build_workbook(out_path, fc, meta=None):
        + f"{_padj} seats = seats x frequency x {int(weeks)}, each "
          f"direction; {_pnoun} pax is the forecast each way; seat factor is the planned load.",
        font=NOTE, align=LFT, border=None)
+
+    # ---- 3c. Departure curve (John, 19 August 2026) ------------------------
+    # The day curve with its raw data and a native Excel chart, so the analysis
+    # travels in the workbook and can later become a presentation slide. The
+    # transform MIRRORS the dashboard slider's, which is the spec: anchor on the
+    # curve point nearest the chosen departure, scale the raw connecting scores by
+    # connecting_carried at that anchor, hold point-to-point constant across the
+    # day, cap the route total at annual capacity x the plan cap. Absent an
+    # optimiser curve (no airline named), no sheet, never a fabricated one.
+    _op0 = (_sch0.get("optimised") or {})
+    _curve = _op0.get("curve") or []
+    _p2pc2 = n0(dem.get("p2p_carried")); _connc2 = n0(dem.get("connecting_carried"))
+    _capew2 = n0(cap.get("annual_capacity")) * n0(cap.get("plan_cap"))
+    _chosen = ((_sch0.get("outbound") or {}).get("dep") or "")
+    _cparts = str(_chosen).split(":")
+    _cmins = (int(_cparts[0]) * 60 + int(_cparts[1])) if len(_cparts) == 2 and _cparts[0].isdigit() else None
+    if len(_curve) >= 4 and _connc2 > 0 and _p2pc2 > 0 and _cmins is not None:
+        _anchor = min(_curve, key=lambda q: abs(float(q.get("dep") or 0) - _cmins))
+        _at = float(_anchor.get("total") or 0)
+        if _at > 0:
+            _scl2 = _connc2 / _at
+            ws = wb.create_sheet("Departure curve")
+            _title(ws, "Connecting traffic by departure time",
+                   f"forecast {_sch0.get('forecast_year') or fc.get('year', '')}; two-way annual passengers; "
+                   "derived from this run's own carried figures")
+            _hdr(ws, 4, ["Departure (origin local)", "Permitted", "Connecting score (raw)",
+                         "Connecting, two-way", "of which beyond", "of which behind",
+                         "Route total carried, two-way"], [18, 10, 15, 15, 13, 13, 18])
+            r = 5
+            for p in _curve:
+                _fe = float(p.get("total") or 0) * _scl2
+                _tot2 = (min(_p2pc2 + _fe, _capew2) if _capew2 > 0 else (_p2pc2 + _fe)) * 2
+                _c(ws, r, 1, p.get("hhmm") or "", align=CTR)
+                _c(ws, r, 2, "yes" if p.get("permitted") else "no", align=CTR)
+                _c(ws, r, 3, round(float(p.get("total") or 0)), fmt="#,##0", align=RGT)
+                _c(ws, r, 4, round(_fe * 2), fmt="#,##0", align=RGT)
+                _c(ws, r, 5, round(float(p.get("beyond") or 0) * _scl2 * 2), fmt="#,##0", align=RGT)
+                _c(ws, r, 6, round(float(p.get("behind") or 0) * _scl2 * 2), fmt="#,##0", align=RGT)
+                _c(ws, r, 7, round(_tot2), fmt="#,##0", align=RGT)
+                r += 1
+            _rw = ", ".join(_op0.get("restricted") or []) or "none"
+            _c(ws, r + 1, 1,
+               f"Chosen departure {_chosen}"
+               + (f"; unrestricted optimum {_op0.get('unrestricted_dep')}" if _op0.get("unrestricted_dep") else "")
+               + f"; restricted hours {_rw}. Point to point is constant across the day "
+               f"({round(_p2pc2 * 2):,} two-way); every movement in the total comes from the "
+               f"connecting side, scored on the outbound departure. The route total is capped "
+               f"at the aircraft ceiling ({round(_capew2 * 2):,} two-way at the plan load factor). "
+               "Connecting is shown uncapped, as on the dashboard chart. "
+               + attribution.SOURCE_LINE,
+               font=NOTE, align=LFT, border=None)
+            try:
+                from openpyxl.chart import LineChart, Reference
+                _ch = LineChart()
+                _ch.title = (f"Two-way annual passengers by outbound departure "
+                             f"(forecast {_sch0.get('forecast_year') or fc.get('year', '')})")
+                _ch.y_axis.title = "passengers / yr, two-way"
+                _ch.x_axis.title = "outbound departure, origin local"
+                _n = len(_curve)
+                _ch.add_data(Reference(ws, min_col=7, min_row=4, max_row=4 + _n), titles_from_data=True)
+                _ch.add_data(Reference(ws, min_col=4, min_row=4, max_row=4 + _n), titles_from_data=True)
+                _ch.set_categories(Reference(ws, min_col=1, min_row=5, max_row=4 + _n))
+                _ch.height, _ch.width = 9, 24
+                ws.add_chart(_ch, "I4")
+            except Exception as _ce:                         # noqa: BLE001
+                _c(ws, r + 3, 1, "chart not rendered: %s" % _ce, font=NOTE, align=LFT, border=None)
 
     # ---- 4. Catchment split ------------------------------------------------
     ws = wb.create_sheet("Catchment")
