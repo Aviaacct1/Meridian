@@ -1,0 +1,3135 @@
+{
+  "_contract": "Avia deck data contract v1",
+  "_author": "Avia Solutions",
+  "_source": "Source: Meridian analysis, The Aviation Observatory; Sabre Global Demand Data; OAG schedules.",
+  "route_metadata": {
+    "airline_name": "China Airlines (CI)",
+    "airline_iata": "CI",
+    "origin_airport": "SJC",
+    "origin_city_code": "SJC",
+    "_origin_city_need": "airport code standing in; no IATA metro code in the payload",
+    "destination_airport": "TPE",
+    "destination_city_code": "TPE",
+    "_dest_city_need": "airport code standing in; no IATA metro code in the payload",
+    "hub_airport": "TPE",
+    "aircraft_type": "A359",
+    "seats": 306,
+    "frequency_per_week": 5,
+    "service_year": 2027,
+    "distance_km": 10439.7,
+    "distance_nm": 5637,
+    "catchment_headline": {
+      "point_to_point_market": 380790,
+      "connecting_market_over_hub": 719486,
+      "connecting_market_over_destination": 185485,
+      "_connecting_need": null
+    }
+  },
+  "summary_and_schedule": {
+    "point_to_point_market": 380790,
+    "connecting_market_over_hub": 719486,
+    "connecting_market_over_destination": 185485,
+    "catchment_note": "Based on AviaSolutions' SJC Service Area catchment analysis",
+    "schedule": [
+      {
+        "sector": "SJC-TPE",
+        "dep_time": "20:59",
+        "arr_time": "02:44+2",
+        "operating_days": "5/wk",
+        "aircraft": "A359",
+        "seats": 306,
+        "annual_seats": 79560,
+        "annual_pax": 69615,
+        "seat_factor": 0.875
+      },
+      {
+        "sector": "TPE-SJC",
+        "dep_time": "20:14",
+        "arr_time": "17:59",
+        "operating_days": "5/wk",
+        "aircraft": "A359",
+        "seats": 306,
+        "annual_seats": 79560,
+        "annual_pax": 69615,
+        "seat_factor": 0.875
+      },
+      {
+        "sector": "TOTAL",
+        "dep_time": "",
+        "arr_time": "",
+        "operating_days": "5/wk each way",
+        "aircraft": "A359",
+        "seats": 306,
+        "annual_seats": 159120,
+        "annual_pax": 139230,
+        "seat_factor": 0.875
+      }
+    ],
+    "_schedule_times_need": "departure time set by the caller"
+  },
+  "segment_forecast": {
+    "rows": [],
+    "_rows_need": "the eight-segment table needs: catchment tiers are available (catchment.tier_split over 260 locales and 11 airports within 220km, contested band 20 min, primary within 60 min) but no segment judgement inputs were given",
+    "_rows_source": null,
+    "summary": {
+      "point_to_point_total": {
+        "base_annual_demand": 160915,
+        "demand_at_service_year": 190395,
+        "demand_after_stimulation": 218954,
+        "capture_rate": 0.1429,
+        "forecast": 31293,
+        "_forecast_need": null,
+        "pdew": 86.0,
+        "annual_growth_rate": 0.1832,
+        "stimulation_factor": 1.15,
+        "_basis": "each way; base decomposed from the grown market at the payload's growth rate; capture is the effective rate after the capacity allocation, so the row multiplies through"
+      },
+      "connecting_at_hub_total": {
+        "base_annual_demand": 608085,
+        "demand_at_service_year": 719486,
+        "demand_after_stimulation": 719486,
+        "capture_rate": 0.0808,
+        "forecast": 58126,
+        "_forecast_need": null,
+        "top_cities_forecast": 24325,
+        "_top_cities_need": "the fifteen largest cities only, from cortex_app._feed_list(top=15); their sum is a subtotal and the leg total is stated separately",
+        "pdew": 79.8,
+        "stimulation_factor": 1.0,
+        "annual_growth_rate": 0.1832
+      },
+      "connecting_at_destination_total": {
+        "forecast": 18518,
+        "_forecast_need": null,
+        "top_cities_forecast": 8841,
+        "_top_cities_need": "the fifteen largest cities only, from cortex_app._feed_list(top=15); their sum is a subtotal and the leg total is stated separately",
+        "pdew": 25.4,
+        "stimulation_factor": 1.0
+      },
+      "grand_total": {
+        "forecast": 139230,
+        "pdew": 191.2,
+        "_basis": "carried, after the plan load factor cap; the legs below sum to it"
+      }
+    },
+    "_competition_buckets": {
+      "connecting_at_hub": [
+        {
+          "bucket": "Direct competition",
+          "markets": 10,
+          "base": 312394,
+          "capture": 0.0594,
+          "forecast": 18566
+        },
+        {
+          "bucket": "No direct competition",
+          "markets": 45,
+          "base": 295691,
+          "capture": 0.1338,
+          "forecast": 39560
+        }
+      ],
+      "connecting_at_destination": [
+        {
+          "bucket": "Direct competition",
+          "markets": 7,
+          "base": 95068,
+          "capture": 0.0116,
+          "forecast": 1104
+        },
+        {
+          "bucket": "No direct competition",
+          "markets": 22,
+          "base": 90417,
+          "capture": 0.1926,
+          "forecast": 17414
+        }
+      ]
+    },
+    "_competition_scale": {
+      "connecting_at_hub": {
+        "forecast_scale": 2.0,
+        "base_scale": 0.8452
+      },
+      "connecting_at_destination": {
+        "forecast_scale": 1.9998,
+        "base_scale": 1.0
+      }
+    },
+    "_competition_basis": "A market has direct competition where a nonstop already operates in the scheduled week (2026-05-25). The capture rates shown are MEASURED from the run, one rate per market applied by the engine and reported by bucket, not two rates assumed in advance."
+  },
+  "connecting_at_hub": {
+    "hub": "TPE",
+    "cities": [
+      {
+        "nr": 1,
+        "city_code": "MNL",
+        "city_name": "Manila",
+        "country": "PH",
+        "annual_demand": 80392,
+        "airline_share": 0.0295,
+        "annual_forecast": 3635,
+        "pdew": 5.0
+      },
+      {
+        "nr": 2,
+        "city_code": "SGN",
+        "city_name": "Ho Chi Minh City",
+        "country": "VN",
+        "annual_demand": 78970,
+        "airline_share": 0.0295,
+        "annual_forecast": 3571,
+        "pdew": 4.9
+      },
+      {
+        "nr": 3,
+        "city_code": "BKK",
+        "city_name": "Bangkok",
+        "country": "TH",
+        "annual_demand": 68195,
+        "airline_share": 0.0295,
+        "annual_forecast": 3084,
+        "pdew": 4.2
+      },
+      {
+        "nr": 4,
+        "city_code": "PVG",
+        "city_name": "Shanghai",
+        "country": "CN",
+        "annual_demand": 47551,
+        "airline_share": 0.0295,
+        "annual_forecast": 2150,
+        "pdew": 3.0
+      },
+      {
+        "nr": 5,
+        "city_code": "HKG",
+        "city_name": "Hong Kong",
+        "country": "HK",
+        "annual_demand": 32480,
+        "airline_share": 0.0295,
+        "annual_forecast": 1469,
+        "pdew": 2.0
+      },
+      {
+        "nr": 6,
+        "city_code": "ICN",
+        "city_name": "Seoul",
+        "country": "KR",
+        "annual_demand": 29452,
+        "airline_share": 0.0295,
+        "annual_forecast": 1332,
+        "pdew": 1.8
+      },
+      {
+        "nr": 7,
+        "city_code": "PEK",
+        "city_name": "Beijing",
+        "country": "CN",
+        "annual_demand": 28706,
+        "airline_share": 0.0295,
+        "annual_forecast": 1298,
+        "pdew": 1.8
+      },
+      {
+        "nr": 8,
+        "city_code": "CAN",
+        "city_name": "Guangzhou",
+        "country": "CN",
+        "annual_demand": 27208,
+        "airline_share": 0.0295,
+        "annual_forecast": 1230,
+        "pdew": 1.7
+      },
+      {
+        "nr": 9,
+        "city_code": "HAN",
+        "city_name": "Hanoi",
+        "country": "VN",
+        "annual_demand": 26426,
+        "airline_share": 0.0295,
+        "annual_forecast": 1195,
+        "pdew": 1.6
+      },
+      {
+        "nr": 10,
+        "city_code": "SIN",
+        "city_name": "Singapore",
+        "country": "SG",
+        "annual_demand": 26282,
+        "airline_share": 0.0295,
+        "annual_forecast": 1188,
+        "pdew": 1.6
+      },
+      {
+        "nr": 11,
+        "city_code": "DAD",
+        "city_name": "Da Nang",
+        "country": "VN",
+        "annual_demand": 25247,
+        "airline_share": 0.0295,
+        "annual_forecast": 1142,
+        "pdew": 1.6
+      },
+      {
+        "nr": 12,
+        "city_code": "DPS",
+        "city_name": "Denpasar-Bali Island",
+        "country": "ID",
+        "annual_demand": 18746,
+        "airline_share": 0.0295,
+        "annual_forecast": 848,
+        "pdew": 1.2
+      },
+      {
+        "nr": 13,
+        "city_code": "CEB",
+        "city_name": "Lapu-Lapu City",
+        "country": "PH",
+        "annual_demand": 18524,
+        "airline_share": 0.0295,
+        "annual_forecast": 838,
+        "pdew": 1.2
+      },
+      {
+        "nr": 14,
+        "city_code": "KUL",
+        "city_name": "Kuala Lumpur",
+        "country": "MY",
+        "annual_demand": 15574,
+        "airline_share": 0.0295,
+        "annual_forecast": 704,
+        "pdew": 1.0
+      },
+      {
+        "nr": 15,
+        "city_code": "CGK",
+        "city_name": "Jakarta",
+        "country": "ID",
+        "annual_demand": 14182,
+        "airline_share": 0.0295,
+        "annual_forecast": 641,
+        "pdew": 0.9
+      }
+    ],
+    "total": {
+      "annual_forecast": 24325,
+      "pdew": 33.4
+    },
+    "_need": null
+  },
+  "connecting_at_destination": {
+    "destination": "TPE",
+    "cities": [
+      {
+        "nr": 1,
+        "city_code": "LAX",
+        "city_name": "Los Angeles",
+        "country": "US",
+        "annual_demand": 15582,
+        "airline_share": 0.0615,
+        "annual_forecast": 1468,
+        "pdew": 2.0
+      },
+      {
+        "nr": 2,
+        "city_code": "PHX",
+        "city_name": "Phoenix",
+        "country": "US",
+        "annual_demand": 36576,
+        "airline_share": 0.025,
+        "annual_forecast": 1401,
+        "pdew": 1.9
+      },
+      {
+        "nr": 3,
+        "city_code": "ATL",
+        "city_name": "Atlanta",
+        "country": "US",
+        "annual_demand": 8439,
+        "airline_share": 0.0615,
+        "annual_forecast": 795,
+        "pdew": 1.1
+      },
+      {
+        "nr": 4,
+        "city_code": "DFW",
+        "city_name": "Dallas-Fort Worth",
+        "country": "US",
+        "annual_demand": 19123,
+        "airline_share": 0.025,
+        "annual_forecast": 732,
+        "pdew": 1.0
+      },
+      {
+        "nr": 5,
+        "city_code": "SLC",
+        "city_name": "Salt Lake City",
+        "country": "US",
+        "annual_demand": 6308,
+        "airline_share": 0.0615,
+        "annual_forecast": 594,
+        "pdew": 0.8
+      },
+      {
+        "nr": 6,
+        "city_code": "MSP",
+        "city_name": "Minneapolis",
+        "country": "US",
+        "annual_demand": 5160,
+        "airline_share": 0.0615,
+        "annual_forecast": 486,
+        "pdew": 0.7
+      },
+      {
+        "nr": 7,
+        "city_code": "LAS",
+        "city_name": "Las Vegas",
+        "country": "US",
+        "annual_demand": 12271,
+        "airline_share": 0.025,
+        "annual_forecast": 470,
+        "pdew": 0.6
+      },
+      {
+        "nr": 8,
+        "city_code": "AUS",
+        "city_name": "Austin",
+        "country": "US",
+        "annual_demand": 12123,
+        "airline_share": 0.025,
+        "annual_forecast": 464,
+        "pdew": 0.6
+      },
+      {
+        "nr": 9,
+        "city_code": "DEN",
+        "city_name": "Denver",
+        "country": "US",
+        "annual_demand": 11296,
+        "airline_share": 0.025,
+        "annual_forecast": 433,
+        "pdew": 0.6
+      },
+      {
+        "nr": 10,
+        "city_code": "ORD",
+        "city_name": "Chicago",
+        "country": "US",
+        "annual_demand": 11126,
+        "airline_share": 0.025,
+        "annual_forecast": 426,
+        "pdew": 0.6
+      },
+      {
+        "nr": 11,
+        "city_code": "SAN",
+        "city_name": "San Diego",
+        "country": "US",
+        "annual_demand": 10863,
+        "airline_share": 0.025,
+        "annual_forecast": 416,
+        "pdew": 0.6
+      },
+      {
+        "nr": 12,
+        "city_code": "PDX",
+        "city_name": "Portland",
+        "country": "US",
+        "annual_demand": 10285,
+        "airline_share": 0.025,
+        "annual_forecast": 394,
+        "pdew": 0.5
+      },
+      {
+        "nr": 13,
+        "city_code": "IAH",
+        "city_name": "Houston",
+        "country": "US",
+        "annual_demand": 8162,
+        "airline_share": 0.025,
+        "annual_forecast": 313,
+        "pdew": 0.4
+      },
+      {
+        "nr": 14,
+        "city_code": "SEA",
+        "city_name": "Seattle",
+        "country": "US",
+        "annual_demand": 3082,
+        "airline_share": 0.0615,
+        "annual_forecast": 290,
+        "pdew": 0.4
+      },
+      {
+        "nr": 15,
+        "city_code": "BOI",
+        "city_name": "Boise",
+        "country": "US",
+        "annual_demand": 4155,
+        "airline_share": 0.025,
+        "annual_forecast": 159,
+        "pdew": 0.2
+      }
+    ],
+    "total": {
+      "annual_forecast": 8841,
+      "pdew": 12.1
+    },
+    "_need": null
+  },
+  "revenue_forecast": {
+    "years": [
+      2027,
+      2028,
+      2029
+    ],
+    "passengers": {
+      "point_to_point": [
+        139230,
+        151454,
+        164752
+      ],
+      "connecting_at_hub": [
+        24325,
+        26461,
+        28784
+      ],
+      "connecting_at_destination": [
+        8841,
+        9617,
+        10462
+      ],
+      "total": [
+        172396,
+        187532,
+        203998
+      ]
+    },
+    "annual_capacity": [
+      159120,
+      159120,
+      159120
+    ],
+    "revenue": {
+      "point_to_point": [
+        251735182,
+        273837531,
+        297880466
+      ],
+      "cargo": [
+        48640762,
+        52911421,
+        57557044
+      ],
+      "ancillary": [
+        null,
+        null,
+        null
+      ],
+      "total": [
+        300375944,
+        326748952,
+        355437510
+      ],
+      "_connecting_revenue_need": null
+    },
+    "_projection_need": null,
+    "_ancillary_need": "ancillary needs a per-pax benchmark"
+  },
+  "economics_year1": {
+    "equipment": "A359",
+    "weekly_departures": 5,
+    "total_departures_annual_two_way": 520,
+    "block_hours_per_departure": 13.75,
+    "cabin_seats": {
+      "business": 33,
+      "premium_coach": 0,
+      "coach": 273,
+      "_need": null
+    },
+    "total_seats": 306,
+    "seats_per_departure": 306,
+    "cabin_load_factor": {
+      "business": 0.875,
+      "premium_coach": null,
+      "coach": 0.804,
+      "_need": "per-cabin LF needs a chosen LOPA + cabin demand (pass cabin=)"
+    },
+    "total_load_factor": 0.875,
+    "avg_ow_fare_point_to_point": 1808.05,
+    "avg_ow_fare_connecting": null,
+    "avg_ow_fare_blended": 1808.05,
+    "yield_rev_per_rpk": 0.1732,
+    "prask": 0.1515,
+    "passenger_revenue": 251735182,
+    "cargo_revenue": 48640762,
+    "ancillary_revenue": null,
+    "total_revenue": 300375944,
+    "trask": 0.1808,
+    "cask": null,
+    "breakeven_load_factor": 0.4970564094647833
+  },
+  "revenue_build": {
+    "by_flow": {
+      "years": [
+        2027
+      ],
+      "point_to_point": [
+        251735182
+      ],
+      "connecting_at_hub": [
+        null
+      ],
+      "connecting_at_destination": [
+        null
+      ],
+      "cargo": [
+        48640762
+      ],
+      "ancillary": [
+        null
+      ]
+    },
+    "by_cabin": {
+      "years": [
+        2027
+      ],
+      "business": [
+        null
+      ],
+      "premium_coach": [
+        null
+      ],
+      "coach": [
+        null
+      ],
+      "_need": "cabin revenue split needs a chosen LOPA + cabin demand (pass cabin=)"
+    }
+  },
+  "catchment": {
+    "zones": {
+      "primary": {
+        "definition": "Core SJC service area."
+      },
+      "secondary": {
+        "definition": "Wider area where SJC competes on access time."
+      },
+      "contested": {
+        "definition": "Outer overlap split by generalised cost."
+      },
+      "_observed_split": {
+        "APC": 0.0,
+        "CCR": 0.0,
+        "FAT": 0.0013,
+        "MCE": 0.0,
+        "MRY": 0.0002,
+        "OAK": 0.0,
+        "SCK": 0.0,
+        "SFO": 0.9934,
+        "SJC": 0.0017,
+        "SMF": 0.0033,
+        "STS": 0.0
+      },
+      "_note": "Zone geometry/population from the catchment module; the observed split is the apportionment."
+    },
+    "top_markets_beyond_hub": [
+      {
+        "city": "Manila",
+        "city_code": "MNL",
+        "annual_demand": 80392
+      },
+      {
+        "city": "Ho Chi Minh City",
+        "city_code": "SGN",
+        "annual_demand": 78970
+      },
+      {
+        "city": "Bangkok",
+        "city_code": "BKK",
+        "annual_demand": 68195
+      },
+      {
+        "city": "Shanghai",
+        "city_code": "PVG",
+        "annual_demand": 47551
+      },
+      {
+        "city": "Hong Kong",
+        "city_code": "HKG",
+        "annual_demand": 32480
+      },
+      {
+        "city": "Seoul",
+        "city_code": "ICN",
+        "annual_demand": 29452
+      },
+      {
+        "city": "Beijing",
+        "city_code": "PEK",
+        "annual_demand": 28706
+      },
+      {
+        "city": "Guangzhou",
+        "city_code": "CAN",
+        "annual_demand": 27208
+      },
+      {
+        "city": "Hanoi",
+        "city_code": "HAN",
+        "annual_demand": 26426
+      },
+      {
+        "city": "Singapore",
+        "city_code": "SIN",
+        "annual_demand": 26282
+      },
+      {
+        "city": "Da Nang",
+        "city_code": "DAD",
+        "annual_demand": 25247
+      },
+      {
+        "city": "Denpasar-Bali Island",
+        "city_code": "DPS",
+        "annual_demand": 18746
+      },
+      {
+        "city": "Lapu-Lapu City",
+        "city_code": "CEB",
+        "annual_demand": 18524
+      },
+      {
+        "city": "Kuala Lumpur",
+        "city_code": "KUL",
+        "annual_demand": 15574
+      },
+      {
+        "city": "Jakarta",
+        "city_code": "CGK",
+        "annual_demand": 14182
+      }
+    ],
+    "ends": {
+      "origin": {
+        "ok": true,
+        "airport": {
+          "code": "SJC",
+          "city": "San Jose",
+          "country": "US",
+          "name": "Norman Y Mineta San Jose International Airport",
+          "lat": 37.362995,
+          "lon": -121.928621
+        },
+        "radius_km": 220.0,
+        "total_pop": 12448895,
+        "reach_120_pop": 0,
+        "bands": {
+          "30": 0,
+          "60": 0,
+          "90": 0,
+          "120": 0,
+          "999": 12448895
+        },
+        "capture": 0.32,
+        "drive_available": false,
+        "locales": [
+          {
+            "lat": 37.3394,
+            "lon": -121.895,
+            "pop": 997368,
+            "drive": null,
+            "name": "San Jose"
+          },
+          {
+            "lat": 37.7749,
+            "lon": -122.4194,
+            "pop": 827526,
+            "drive": null,
+            "name": "San Francisco"
+          },
+          {
+            "lat": 36.7477,
+            "lon": -119.7724,
+            "pop": 542107,
+            "drive": null,
+            "name": "Fresno"
+          },
+          {
+            "lat": 38.5816,
+            "lon": -121.4944,
+            "pop": 524943,
+            "drive": null,
+            "name": "Sacramento"
+          },
+          {
+            "lat": 37.8044,
+            "lon": -122.2708,
+            "pop": 419267,
+            "drive": null,
+            "name": "Oakland"
+          },
+          {
+            "lat": 37.9577,
+            "lon": -121.2908,
+            "pop": 305658,
+            "drive": null,
+            "name": "Stockton"
+          },
+          {
+            "lat": 37.5483,
+            "lon": -121.9886,
+            "pop": 232206,
+            "drive": null,
+            "name": "Fremont"
+          },
+          {
+            "lat": 37.6391,
+            "lon": -120.9969,
+            "pop": 211266,
+            "drive": null,
+            "name": "Modesto"
+          },
+          {
+            "lat": 38.4405,
+            "lon": -122.7144,
+            "pop": 178127,
+            "drive": null,
+            "name": "Santa Rosa"
+          },
+          {
+            "lat": 38.4088,
+            "lon": -121.3716,
+            "pop": 166913,
+            "drive": null,
+            "name": "Elk Grove"
+          },
+          {
+            "lat": 37.6688,
+            "lon": -122.0808,
+            "pop": 158289,
+            "drive": null,
+            "name": "Hayward"
+          },
+          {
+            "lat": 36.6777,
+            "lon": -121.6555,
+            "pop": 157380,
+            "drive": null,
+            "name": "Salinas"
+          },
+          {
+            "lat": 37.3688,
+            "lon": -122.0363,
+            "pop": 155805,
+            "drive": null,
+            "name": "Sunnyvale"
+          },
+          {
+            "lat": 38.7521,
+            "lon": -121.288,
+            "pop": 130269,
+            "drive": null,
+            "name": "Roseville"
+          },
+          {
+            "lat": 37.978,
+            "lon": -122.0311,
+            "pop": 128667,
+            "drive": null,
+            "name": "Concord"
+          },
+          {
+            "lat": 37.3541,
+            "lon": -121.9552,
+            "pop": 126215,
+            "drive": null,
+            "name": "Santa Clara"
+          },
+          {
+            "lat": 38.1041,
+            "lon": -122.2566,
+            "pop": 121692,
+            "drive": null,
+            "name": "Vallejo"
+          },
+          {
+            "lat": 37.8716,
+            "lon": -122.2728,
+            "pop": 120972,
+            "drive": null,
+            "name": "Berkeley"
+          },
+          {
+            "lat": 38.2494,
+            "lon": -122.04,
+            "pop": 112970,
+            "drive": null,
+            "name": "Fairfield"
+          },
+          {
+            "lat": 38.0049,
+            "lon": -121.8058,
+            "pop": 110542,
+            "drive": null,
+            "name": "Antioch"
+          },
+          {
+            "lat": 37.9358,
+            "lon": -122.3478,
+            "pop": 109708,
+            "drive": null,
+            "name": "Richmond"
+          },
+          {
+            "lat": 37.7058,
+            "lon": -122.4619,
+            "pop": 106562,
+            "drive": null,
+            "name": "Daly City"
+          },
+          {
+            "lat": 36.8252,
+            "lon": -119.7029,
+            "pop": 104180,
+            "drive": null,
+            "name": "Clovis"
+          },
+          {
+            "lat": 37.563,
+            "lon": -122.3255,
+            "pop": 103536,
+            "drive": null,
+            "name": "San Mateo"
+          },
+          {
+            "lat": 37.7966,
+            "lon": -122.4086,
+            "pop": 100574,
+            "drive": null,
+            "name": "Chinatown"
+          },
+          {
+            "lat": 38.3566,
+            "lon": -121.9877,
+            "pop": 96803,
+            "drive": null,
+            "name": "Vacaville"
+          },
+          {
+            "lat": 38.6025,
+            "lon": -121.3785,
+            "pop": 92186,
+            "drive": null,
+            "name": "Arden-Arcade"
+          },
+          {
+            "lat": 37.7249,
+            "lon": -122.1561,
+            "pop": 90712,
+            "drive": null,
+            "name": "San Leandro"
+          },
+          {
+            "lat": 37.6819,
+            "lon": -121.768,
+            "pop": 88126,
+            "drive": null,
+            "name": "Livermore"
+          },
+          {
+            "lat": 37.7399,
+            "lon": -121.4262,
+            "pop": 87075,
+            "drive": null,
+            "name": "Tracy"
+          },
+          {
+            "lat": 38.7071,
+            "lon": -121.2811,
+            "pop": 87056,
+            "drive": null,
+            "name": "Citrus Heights"
+          },
+          {
+            "lat": 37.4852,
+            "lon": -122.2364,
+            "pop": 85288,
+            "drive": null,
+            "name": "Redwood City"
+          },
+          {
+            "lat": 37.3022,
+            "lon": -120.483,
+            "pop": 82436,
+            "drive": null,
+            "name": "Merced"
+          },
+          {
+            "lat": 37.386,
+            "lon": -122.0838,
+            "pop": 80435,
+            "drive": null,
+            "name": "Mountain View"
+          },
+          {
+            "lat": 38.2971,
+            "lon": -122.2855,
+            "pop": 80434,
+            "drive": null,
+            "name": "Napa"
+          },
+          {
+            "lat": 37.6624,
+            "lon": -121.8747,
+            "pop": 79510,
+            "drive": null,
+            "name": "Pleasanton"
+          },
+          {
+            "lat": 37.771,
+            "lon": -122.2609,
+            "pop": 78630,
+            "drive": null,
+            "name": "Alameda"
+          },
+          {
+            "lat": 37.4283,
+            "lon": -121.9066,
+            "pop": 77604,
+            "drive": null,
+            "name": "Milpitas"
+          },
+          {
+            "lat": 38.678,
+            "lon": -121.1761,
+            "pop": 76375,
+            "drive": null,
+            "name": "Folsom"
+          },
+          {
+            "lat": 37.7799,
+            "lon": -121.978,
+            "pop": 76134,
+            "drive": null,
+            "name": "San Ramon"
+          },
+          {
+            "lat": 37.7974,
+            "lon": -121.216,
+            "pop": 75448,
+            "drive": null,
+            "name": "Manteca"
+          },
+          {
+            "lat": 37.5958,
+            "lon": -122.0191,
+            "pop": 74494,
+            "drive": null,
+            "name": "Union City"
+          },
+          {
+            "lat": 37.4947,
+            "lon": -120.8466,
+            "pop": 72292,
+            "drive": null,
+            "name": "Turlock"
+          },
+          {
+            "lat": 38.5891,
+            "lon": -121.3027,
+            "pop": 71017,
+            "drive": null,
+            "name": "Rancho Cordova"
+          },
+          {
+            "lat": 38.028,
+            "lon": -121.8847,
+            "pop": 69424,
+            "drive": null,
+            "name": "Pittsburg"
+          },
+          {
+            "lat": 37.9063,
+            "lon": -122.065,
+            "pop": 68910,
+            "drive": null,
+            "name": "Walnut Creek"
+          },
+          {
+            "lat": 38.5449,
+            "lon": -121.7405,
+            "pop": 67666,
+            "drive": null,
+            "name": "Davis"
+          },
+          {
+            "lat": 37.6547,
+            "lon": -122.4077,
+            "pop": 67271,
+            "drive": null,
+            "name": "South San Francisco"
+          },
+          {
+            "lat": 39.1405,
+            "lon": -121.6169,
+            "pop": 66941,
+            "drive": null,
+            "name": "Yuba City"
+          },
+          {
+            "lat": 37.4419,
+            "lon": -122.143,
+            "pop": 66853,
+            "drive": null,
+            "name": "Palo Alto"
+          },
+          {
+            "lat": 38.1302,
+            "lon": -121.2725,
+            "pop": 64596,
+            "drive": null,
+            "name": "Lodi"
+          },
+          {
+            "lat": 36.9741,
+            "lon": -122.0308,
+            "pop": 64220,
+            "drive": null,
+            "name": "Santa Cruz"
+          },
+          {
+            "lat": 36.9613,
+            "lon": -120.0607,
+            "pop": 64208,
+            "drive": null,
+            "name": "Madera"
+          },
+          {
+            "lat": 38.6171,
+            "lon": -121.3283,
+            "pop": 61762,
+            "drive": null,
+            "name": "Carmichael"
+          },
+          {
+            "lat": 37.6941,
+            "lon": -122.0863,
+            "pop": 61388,
+            "drive": null,
+            "name": "Castro Valley"
+          },
+          {
+            "lat": 38.7907,
+            "lon": -121.2358,
+            "pop": 61213,
+            "drive": null,
+            "name": "Rocklin"
+          },
+          {
+            "lat": 37.323,
+            "lon": -122.0322,
+            "pop": 60572,
+            "drive": null,
+            "name": "Cupertino"
+          },
+          {
+            "lat": 38.2324,
+            "lon": -122.6367,
+            "pop": 60438,
+            "drive": null,
+            "name": "Petaluma"
+          },
+          {
+            "lat": 37.9735,
+            "lon": -122.5311,
+            "pop": 59162,
+            "drive": null,
+            "name": "San Rafael"
+          },
+          {
+            "lat": 37.9319,
+            "lon": -121.6958,
+            "pop": 58968,
+            "drive": null,
+            "name": "Brentwood"
+          },
+          {
+            "lat": 38.6785,
+            "lon": -121.7733,
+            "pop": 58567,
+            "drive": null,
+            "name": "Woodland"
+          },
+          {
+            "lat": 37.7022,
+            "lon": -121.9358,
+            "pop": 57721,
+            "drive": null,
+            "name": "Dublin"
+          },
+          {
+            "lat": 38.1074,
+            "lon": -122.5697,
+            "pop": 55530,
+            "drive": null,
+            "name": "Novato"
+          },
+          {
+            "lat": 36.9102,
+            "lon": -121.7569,
+            "pop": 53628,
+            "drive": null,
+            "name": "Watsonville"
+          },
+          {
+            "lat": 37.0058,
+            "lon": -121.5683,
+            "pop": 53231,
+            "drive": null,
+            "name": "Gilroy"
+          },
+          {
+            "lat": 38.5805,
+            "lon": -121.5302,
+            "pop": 52721,
+            "drive": null,
+            "name": "West Sacramento"
+          },
+          {
+            "lat": 38.8916,
+            "lon": -121.293,
+            "pop": 49757,
+            "drive": null,
+            "name": "Lincoln"
+          },
+          {
+            "lat": 37.5949,
+            "lon": -120.9577,
+            "pop": 47963,
+            "drive": null,
+            "name": "Ceres"
+          },
+          {
+            "lat": 38.496,
+            "lon": -121.4088,
+            "pop": 47513,
+            "drive": null,
+            "name": "Florin"
+          },
+          {
+            "lat": 37.7599,
+            "lon": -122.4191,
+            "pop": 47234,
+            "drive": null,
+            "name": "Mission District"
+          },
+          {
+            "lat": 38.421,
+            "lon": -121.4238,
+            "pop": 46621,
+            "drive": null,
+            "name": "Laguna"
+          },
+          {
+            "lat": 38.7082,
+            "lon": -121.3299,
+            "pop": 45770,
+            "drive": null,
+            "name": "Antelope"
+          },
+          {
+            "lat": 37.5297,
+            "lon": -122.0402,
+            "pop": 45336,
+            "drive": null,
+            "name": "Newark"
+          },
+          {
+            "lat": 37.8216,
+            "lon": -122.0,
+            "pop": 44400,
+            "drive": null,
+            "name": "Danville"
+          },
+          {
+            "lat": 37.6305,
+            "lon": -122.4111,
+            "pop": 43185,
+            "drive": null,
+            "name": "San Bruno"
+          },
+          {
+            "lat": 37.1305,
+            "lon": -121.6544,
+            "pop": 42948,
+            "drive": null,
+            "name": "Morgan Hill"
+          },
+          {
+            "lat": 38.6857,
+            "lon": -121.3722,
+            "pop": 42694,
+            "drive": null,
+            "name": "North Highlands"
+          },
+          {
+            "lat": 38.3396,
+            "lon": -122.7011,
+            "pop": 42407,
+            "drive": null,
+            "name": "Rohnert Park"
+          },
+          {
+            "lat": 38.6857,
+            "lon": -121.0822,
+            "pop": 42108,
+            "drive": null,
+            "name": "El Dorado Hills"
+          },
+          {
+            "lat": 37.2872,
+            "lon": -121.95,
+            "pop": 41117,
+            "drive": null,
+            "name": "Campbell"
+          },
+          {
+            "lat": 37.9974,
+            "lon": -121.7125,
+            "pop": 39813,
+            "drive": null,
+            "name": "Oakley"
+          },
+          {
+            "lat": 37.6138,
+            "lon": -122.4869,
+            "pop": 39260,
+            "drive": null,
+            "name": "Pacifica"
+          },
+          {
+            "lat": 38.0194,
+            "lon": -122.1341,
+            "pop": 38137,
+            "drive": null,
+            "name": "Martinez"
+          },
+          {
+            "lat": 36.8524,
+            "lon": -121.4016,
+            "pop": 37462,
+            "drive": null,
+            "name": "Hollister"
+          },
+          {
+            "lat": 37.0583,
+            "lon": -120.8499,
+            "pop": 37457,
+            "drive": null,
+            "name": "Los Banos"
+          },
+          {
+            "lat": 37.7285,
+            "lon": -122.3811,
+            "pop": 34835,
+            "drive": null,
+            "name": "Bayview-Hunters Point"
+          },
+          {
+            "lat": 37.948,
+            "lon": -122.0608,
+            "pop": 34810,
+            "drive": null,
+            "name": "Pleasant Hill"
+          },
+          {
+            "lat": 38.6785,
+            "lon": -121.2258,
+            "pop": 33960,
+            "drive": null,
+            "name": "Orangevale"
+          },
+          {
+            "lat": 37.5585,
+            "lon": -122.2711,
+            "pop": 33477,
+            "drive": null,
+            "name": "Foster City"
+          },
+          {
+            "lat": 37.4538,
+            "lon": -122.1822,
+            "pop": 33449,
+            "drive": null,
+            "name": "Menlo Park"
+          },
+          {
+            "lat": 38.6788,
+            "lon": -121.3511,
+            "pop": 33121,
+            "drive": null,
+            "name": "Foothill Farms"
+          },
+          {
+            "lat": 36.6111,
+            "lon": -121.8516,
+            "pop": 33025,
+            "drive": null,
+            "name": "Seaside"
+          },
+          {
+            "lat": 37.2638,
+            "lon": -122.023,
+            "pop": 30968,
+            "drive": null,
+            "name": "Saratoga"
+          },
+          {
+            "lat": 38.6446,
+            "lon": -121.2722,
+            "pop": 30912,
+            "drive": null,
+            "name": "Fair Oaks"
+          },
+          {
+            "lat": 37.2266,
+            "lon": -121.9747,
+            "pop": 30705,
+            "drive": null,
+            "name": "Los Gatos"
+          },
+          {
+            "lat": 37.3852,
+            "lon": -122.1141,
+            "pop": 30671,
+            "drive": null,
+            "name": "Los Altos"
+          },
+          {
+            "lat": 37.5841,
+            "lon": -122.3661,
+            "pop": 30459,
+            "drive": null,
+            "name": "Burlingame"
+          },
+          {
+            "lat": 37.9622,
+            "lon": -122.3455,
+            "pop": 30407,
+            "drive": null,
+            "name": "San Pablo"
+          },
+          {
+            "lat": 37.5072,
+            "lon": -122.2605,
+            "pop": 29931,
+            "drive": null,
+            "name": "San Carlos"
+          },
+          {
+            "lat": 37.4688,
+            "lon": -122.1411,
+            "pop": 29662,
+            "drive": null,
+            "name": "East Palo Alto"
+          },
+          {
+            "lat": 37.3477,
+            "lon": -120.6091,
+            "pop": 29237,
+            "drive": null,
+            "name": "Atwater"
+          },
+          {
+            "lat": 36.6002,
+            "lon": -121.8947,
+            "pop": 28338,
+            "drive": null,
+            "name": "Monterey"
+          },
+          {
+            "lat": 38.0494,
+            "lon": -122.1586,
+            "pop": 28167,
+            "drive": null,
+            "name": "Benicia"
+          },
+          {
+            "lat": 38.2383,
+            "lon": -122.0402,
+            "pop": 28111,
+            "drive": null,
+            "name": "Suisun"
+          },
+          {
+            "lat": 38.5471,
+            "lon": -122.8164,
+            "pop": 27464,
+            "drive": null,
+            "name": "Windsor"
+          },
+          {
+            "lat": 37.5202,
+            "lon": -122.2758,
+            "pop": 27218,
+            "drive": null,
+            "name": "Belmont"
+          },
+          {
+            "lat": 38.3241,
+            "lon": -122.488,
+            "pop": 27090,
+            "drive": null,
+            "name": "Agua Caliente"
+          },
+          {
+            "lat": 37.8858,
+            "lon": -122.118,
+            "pop": 25843,
+            "drive": null,
+            "name": "Lafayette"
+          },
+          {
+            "lat": 38.0171,
+            "lon": -122.2886,
+            "pop": 25314,
+            "drive": null,
+            "name": "Hercules"
+          },
+          {
+            "lat": 38.2546,
+            "lon": -121.2999,
+            "pop": 25303,
+            "drive": null,
+            "name": "Galt"
+          },
+          {
+            "lat": 36.4247,
+            "lon": -121.3263,
+            "pop": 25003,
+            "drive": null,
+            "name": "Soledad"
+          },
+          {
+            "lat": 38.4645,
+            "lon": -121.3469,
+            "pop": 24836,
+            "drive": null,
+            "name": "Vineyard"
+          },
+          {
+            "lat": 37.736,
+            "lon": -120.9355,
+            "pop": 24122,
+            "drive": null,
+            "name": "Riverbank"
+          },
+          {
+            "lat": 37.9158,
+            "lon": -122.3116,
+            "pop": 23549,
+            "drive": null,
+            "name": "El Cerrito"
+          },
+          {
+            "lat": 37.6741,
+            "lon": -122.1332,
+            "pop": 23452,
+            "drive": null,
+            "name": "San Lorenzo"
+          },
+          {
+            "lat": 37.7502,
+            "lon": -122.4337,
+            "pop": 22893,
+            "drive": null,
+            "name": "Noe Valley"
+          },
+          {
+            "lat": 37.5986,
+            "lon": -122.3872,
+            "pop": 22795,
+            "drive": null,
+            "name": "Millbrae"
+          },
+          {
+            "lat": 38.5519,
+            "lon": -121.3647,
+            "pop": 22681,
+            "drive": null,
+            "name": "Rosemont"
+          },
+          {
+            "lat": 37.7171,
+            "lon": -122.4043,
+            "pop": 22534,
+            "drive": null,
+            "name": "Visitacion Valley"
+          },
+          {
+            "lat": 37.7666,
+            "lon": -120.8471,
+            "pop": 22259,
+            "drive": null,
+            "name": "Oakdale"
+          },
+          {
+            "lat": 37.6947,
+            "lon": -122.1138,
+            "pop": 21925,
+            "drive": null,
+            "name": "Ashland"
+          },
+          {
+            "lat": 38.0291,
+            "lon": -121.9616,
+            "pop": 21534,
+            "drive": null,
+            "name": "Bay Point"
+          },
+          {
+            "lat": 37.4716,
+            "lon": -121.1297,
+            "pop": 21498,
+            "drive": null,
+            "name": "Patterson"
+          },
+          {
+            "lat": 36.6844,
+            "lon": -121.8022,
+            "pop": 21229,
+            "drive": null,
+            "name": "Marina"
+          },
+          {
+            "lat": 37.8227,
+            "lon": -121.2766,
+            "pop": 20866,
+            "drive": null,
+            "name": "Lathrop"
+          },
+          {
+            "lat": 38.1749,
+            "lon": -122.2608,
+            "pop": 20554,
+            "drive": null,
+            "name": "American Canyon"
+          },
+          {
+            "lat": 38.7632,
+            "lon": -121.1638,
+            "pop": 20402,
+            "drive": null,
+            "name": "Granite Bay"
+          },
+          {
+            "lat": 37.8869,
+            "lon": -122.2977,
+            "pop": 19735,
+            "drive": null,
+            "name": "Albany"
+          },
+          {
+            "lat": 38.4455,
+            "lon": -121.8233,
+            "pop": 19390,
+            "drive": null,
+            "name": "Dixon"
+          },
+          {
+            "lat": 37.8772,
+            "lon": -122.1797,
+            "pop": 19279,
+            "drive": null,
+            "name": "Orinda"
+          },
+          {
+            "lat": 38.0044,
+            "lon": -122.2989,
+            "pop": 19269,
+            "drive": null,
+            "name": "Pinole"
+          },
+          {
+            "lat": 37.123,
+            "lon": -120.2602,
+            "pop": 18510,
+            "drive": null,
+            "name": "Chowchilla"
+          },
+          {
+            "lat": 38.6688,
+            "lon": -120.9872,
+            "pop": 18228,
+            "drive": null,
+            "name": "Cameron Park"
+          },
+          {
+            "lat": 39.1277,
+            "lon": -121.5508,
+            "pop": 17773,
+            "drive": null,
+            "name": "Linda"
+          },
+          {
+            "lat": 36.7758,
+            "lon": -121.6697,
+            "pop": 17560,
+            "drive": null,
+            "name": "Prunedale"
+          },
+          {
+            "lat": 37.8349,
+            "lon": -122.1297,
+            "pop": 17256,
+            "drive": null,
+            "name": "Moraga"
+          },
+          {
+            "lat": 36.3208,
+            "lon": -121.2438,
+            "pop": 17184,
+            "drive": null,
+            "name": "Greenfield"
+          },
+          {
+            "lat": 36.9836,
+            "lon": -121.9805,
+            "pop": 17158,
+            "drive": null,
+            "name": "Live Oak"
+          },
+          {
+            "lat": 37.742,
+            "lon": -122.4863,
+            "pop": 16874,
+            "drive": null,
+            "name": "Parkside"
+          },
+          {
+            "lat": 36.1397,
+            "lon": -120.3602,
+            "pop": 16564,
+            "drive": null,
+            "name": "Coalinga"
+          },
+          {
+            "lat": 36.6177,
+            "lon": -121.9166,
+            "pop": 15674,
+            "drive": null,
+            "name": "Pacific Grove"
+          },
+          {
+            "lat": 37.3661,
+            "lon": -121.8272,
+            "pop": 15536,
+            "drive": null,
+            "name": "Alum Rock"
+          },
+          {
+            "lat": 39.1166,
+            "lon": -121.6391,
+            "pop": 15217,
+            "drive": null,
+            "name": "South Yuba City"
+          },
+          {
+            "lat": 38.9582,
+            "lon": -122.6264,
+            "pop": 15182,
+            "drive": null,
+            "name": "Clearlake"
+          },
+          {
+            "lat": 37.7416,
+            "lon": -121.1244,
+            "pop": 15151,
+            "drive": null,
+            "name": "Ripon"
+          },
+          {
+            "lat": 38.691,
+            "lon": -121.4486,
+            "pop": 15106,
+            "drive": null,
+            "name": "Rio Linda"
+          },
+          {
+            "lat": 37.6794,
+            "lon": -122.1033,
+            "pop": 14728,
+            "drive": null,
+            "name": "Cherryland"
+          },
+          {
+            "lat": 37.4744,
+            "lon": -122.1966,
+            "pop": 14687,
+            "drive": null,
+            "name": "North Fair Oaks"
+          },
+          {
+            "lat": 38.496,
+            "lon": -121.4588,
+            "pop": 14670,
+            "drive": null,
+            "name": "Parkway"
+          },
+          {
+            "lat": 37.8502,
+            "lon": -122.0322,
+            "pop": 14570,
+            "drive": null,
+            "name": "Alamo"
+          },
+          {
+            "lat": 36.7236,
+            "lon": -120.0599,
+            "pop": 14475,
+            "drive": null,
+            "name": "Kerman"
+          },
+          {
+            "lat": 37.906,
+            "lon": -122.545,
+            "pop": 14394,
+            "drive": null,
+            "name": "Mill Valley"
+          },
+          {
+            "lat": 36.2127,
+            "lon": -121.126,
+            "pop": 13902,
+            "drive": null,
+            "name": "King City"
+          },
+          {
+            "lat": 37.3869,
+            "lon": -120.7235,
+            "pop": 13902,
+            "drive": null,
+            "name": "Livingston"
+          },
+          {
+            "lat": 37.4241,
+            "lon": -122.1661,
+            "pop": 13809,
+            "drive": null,
+            "name": "Stanford"
+          },
+          {
+            "lat": 38.8966,
+            "lon": -121.0769,
+            "pop": 13776,
+            "drive": null,
+            "name": "Auburn"
+          },
+          {
+            "lat": 37.7058,
+            "lon": -121.0849,
+            "pop": 13722,
+            "drive": null,
+            "name": "Salida"
+          },
+          {
+            "lat": 39.0954,
+            "lon": -121.5522,
+            "pop": 13656,
+            "drive": null,
+            "name": "Olivehurst"
+          },
+          {
+            "lat": 37.9085,
+            "lon": -121.6002,
+            "pop": 13352,
+            "drive": null,
+            "name": "Discovery Bay"
+          },
+          {
+            "lat": 38.9313,
+            "lon": -121.0819,
+            "pop": 13022,
+            "drive": null,
+            "name": "North Auburn"
+          },
+          {
+            "lat": 39.2191,
+            "lon": -121.0611,
+            "pop": 12944,
+            "drive": null,
+            "name": "Grass Valley"
+          },
+          {
+            "lat": 37.9772,
+            "lon": -122.2952,
+            "pop": 12669,
+            "drive": null,
+            "name": "El Sobrante"
+          },
+          {
+            "lat": 37.4635,
+            "lon": -122.4286,
+            "pop": 12657,
+            "drive": null,
+            "name": "Half Moon Bay"
+          },
+          {
+            "lat": 37.9746,
+            "lon": -122.5616,
+            "pop": 12653,
+            "drive": null,
+            "name": "San Anselmo"
+          },
+          {
+            "lat": 37.9341,
+            "lon": -122.5353,
+            "pop": 12417,
+            "drive": null,
+            "name": "Larkspur"
+          },
+          {
+            "lat": 39.1457,
+            "lon": -121.5914,
+            "pop": 12216,
+            "drive": null,
+            "name": "Marysville"
+          },
+          {
+            "lat": 37.0511,
+            "lon": -122.0147,
+            "pop": 11945,
+            "drive": null,
+            "name": "Scotts Valley"
+          },
+          {
+            "lat": 37.941,
+            "lon": -121.9358,
+            "pop": 11867,
+            "drive": null,
+            "name": "Clayton"
+          },
+          {
+            "lat": 38.6105,
+            "lon": -122.8692,
+            "pop": 11742,
+            "drive": null,
+            "name": "Healdsburg"
+          },
+          {
+            "lat": 37.8313,
+            "lon": -122.2853,
+            "pop": 11694,
+            "drive": null,
+            "name": "Emeryville"
+          },
+          {
+            "lat": 37.5741,
+            "lon": -122.3794,
+            "pop": 11451,
+            "drive": null,
+            "name": "Hillsborough"
+          },
+          {
+            "lat": 36.7536,
+            "lon": -120.3816,
+            "pop": 11430,
+            "drive": null,
+            "name": "Mendota"
+          },
+          {
+            "lat": 37.8244,
+            "lon": -122.2316,
+            "pop": 11376,
+            "drive": null,
+            "name": "Piedmont"
+          },
+          {
+            "lat": 37.289,
+            "lon": -121.8551,
+            "pop": 11267,
+            "drive": null,
+            "name": "Communications Hill"
+          },
+          {
+            "lat": 38.6946,
+            "lon": -120.8149,
+            "pop": 11037,
+            "drive": null,
+            "name": "Diamond Springs"
+          },
+          {
+            "lat": 38.2919,
+            "lon": -122.458,
+            "pop": 11037,
+            "drive": null,
+            "name": "Sonoma"
+          },
+          {
+            "lat": 37.3138,
+            "lon": -121.0208,
+            "pop": 10899,
+            "drive": null,
+            "name": "Newman"
+          },
+          {
+            "lat": 38.5669,
+            "lon": -121.3569,
+            "pop": 10802,
+            "drive": null,
+            "name": "La Riviera"
+          },
+          {
+            "lat": 37.4322,
+            "lon": -120.7785,
+            "pop": 10755,
+            "drive": null,
+            "name": "Delhi"
+          },
+          {
+            "lat": 37.8783,
+            "lon": -122.5362,
+            "pop": 10735,
+            "drive": null,
+            "name": "Tamalpais-Homestead Valley"
+          },
+          {
+            "lat": 38.7296,
+            "lon": -120.7986,
+            "pop": 10650,
+            "drive": null,
+            "name": "Placerville"
+          },
+          {
+            "lat": 37.9638,
+            "lon": -121.2294,
+            "pop": 10648,
+            "drive": null,
+            "name": "Garden Acres"
+          },
+          {
+            "lat": 37.3894,
+            "lon": -120.6132,
+            "pop": 10613,
+            "drive": null,
+            "name": "Winton"
+          },
+          {
+            "lat": 37.5319,
+            "lon": -122.248,
+            "pop": 10500,
+            "drive": null,
+            "name": "Redwood Shores"
+          },
+          {
+            "lat": 36.9752,
+            "lon": -121.9533,
+            "pop": 10189,
+            "drive": null,
+            "name": "Capitola"
+          },
+          {
+            "lat": 37.6785,
+            "lon": -122.0458,
+            "pop": 10003,
+            "drive": null,
+            "name": "Fairview"
+          },
+          {
+            "lat": 37.9255,
+            "lon": -122.5275,
+            "pop": 9901,
+            "drive": null,
+            "name": "Corte Madera"
+          },
+          {
+            "lat": 37.7833,
+            "lon": -121.5427,
+            "pop": 9675,
+            "drive": null,
+            "name": "Mountain House"
+          },
+          {
+            "lat": 36.988,
+            "lon": -121.9566,
+            "pop": 9644,
+            "drive": null,
+            "name": "Soquel"
+          },
+          {
+            "lat": 37.9688,
+            "lon": -121.3408,
+            "pop": 9379,
+            "drive": null,
+            "name": "Country Club"
+          },
+          {
+            "lat": 37.8208,
+            "lon": -121.9077,
+            "pop": 9354,
+            "drive": null,
+            "name": "Blackhawk"
+          },
+          {
+            "lat": 36.9683,
+            "lon": -121.9002,
+            "pop": 9216,
+            "drive": null,
+            "name": "Rio Del Mar"
+          },
+          {
+            "lat": 37.8735,
+            "lon": -122.4566,
+            "pop": 9214,
+            "drive": null,
+            "name": "Tiburon"
+          },
+          {
+            "lat": 37.0191,
+            "lon": -120.0668,
+            "pop": 9163,
+            "drive": null,
+            "name": "Madera Acres"
+          },
+          {
+            "lat": 38.5134,
+            "lon": -122.7509,
+            "pop": 8884,
+            "drive": null,
+            "name": "Larkfield-Wikiup"
+          },
+          {
+            "lat": 37.6413,
+            "lon": -120.7605,
+            "pop": 8824,
+            "drive": null,
+            "name": "Waterford"
+          },
+          {
+            "lat": 38.8055,
+            "lon": -123.0172,
+            "pop": 8811,
+            "drive": null,
+            "name": "Cloverdale"
+          },
+          {
+            "lat": 38.033,
+            "lon": -122.2669,
+            "pop": 8679,
+            "drive": null,
+            "name": "Rodeo"
+          },
+          {
+            "lat": 36.9847,
+            "lon": -119.8746,
+            "pop": 8569,
+            "drive": null,
+            "name": "Bonadelle Ranchos-Madera Ranchos"
+          },
+          {
+            "lat": 39.2757,
+            "lon": -121.66,
+            "pop": 8531,
+            "drive": null,
+            "name": "Live Oak"
+          },
+          {
+            "lat": 36.5066,
+            "lon": -121.4444,
+            "pop": 8473,
+            "drive": null,
+            "name": "Gonzales"
+          },
+          {
+            "lat": 37.3797,
+            "lon": -122.1375,
+            "pop": 8419,
+            "drive": null,
+            "name": "Los Altos Hills"
+          },
+          {
+            "lat": 37.9788,
+            "lon": -121.2622,
+            "pop": 8390,
+            "drive": null,
+            "name": "August"
+          },
+          {
+            "lat": 38.1639,
+            "lon": -121.6958,
+            "pop": 8348,
+            "drive": null,
+            "name": "Rio Vista"
+          },
+          {
+            "lat": 36.8588,
+            "lon": -120.456,
+            "pop": 8330,
+            "drive": null,
+            "name": "Firebaugh"
+          },
+          {
+            "lat": 37.3811,
+            "lon": -121.8174,
+            "pop": 8269,
+            "drive": null,
+            "name": "East Foothills"
+          },
+          {
+            "lat": 38.6263,
+            "lon": -121.2466,
+            "pop": 7912,
+            "drive": null,
+            "name": "Gold River"
+          },
+          {
+            "lat": 38.4021,
+            "lon": -122.8239,
+            "pop": 7678,
+            "drive": null,
+            "name": "Sebastopol"
+          },
+          {
+            "lat": 37.9871,
+            "lon": -122.5889,
+            "pop": 7626,
+            "drive": null,
+            "name": "Fairfax"
+          },
+          {
+            "lat": 37.7978,
+            "lon": -120.9979,
+            "pop": 7523,
+            "drive": null,
+            "name": "Escalon"
+          },
+          {
+            "lat": 38.3269,
+            "lon": -122.7072,
+            "pop": 7445,
+            "drive": null,
+            "name": "Cotati"
+          },
+          {
+            "lat": 36.2633,
+            "lon": -119.9048,
+            "pop": 7438,
+            "drive": null,
+            "name": "Lemoore Station"
+          },
+          {
+            "lat": 37.5969,
+            "lon": -120.866,
+            "pop": 7384,
+            "drive": null,
+            "name": "Hughson"
+          },
+          {
+            "lat": 36.9513,
+            "lon": -121.7338,
+            "pop": 7321,
+            "drive": null,
+            "name": "Interlaken"
+          },
+          {
+            "lat": 37.4613,
+            "lon": -122.1977,
+            "pop": 7167,
+            "drive": null,
+            "name": "Atherton"
+          },
+          {
+            "lat": 37.8591,
+            "lon": -122.4852,
+            "pop": 7156,
+            "drive": null,
+            "name": "Sausalito"
+          },
+          {
+            "lat": 38.5249,
+            "lon": -121.9708,
+            "pop": 7034,
+            "drive": null,
+            "name": "Winters"
+          },
+          {
+            "lat": 37.0849,
+            "lon": -121.6102,
+            "pop": 7027,
+            "drive": null,
+            "name": "San Martin"
+          },
+          {
+            "lat": 38.3527,
+            "lon": -120.9327,
+            "pop": 7000,
+            "drive": null,
+            "name": "Ione"
+          },
+          {
+            "lat": 37.8796,
+            "lon": -122.5458,
+            "pop": 7000,
+            "drive": null,
+            "name": "Tamalpais Valley"
+          },
+          {
+            "lat": 39.1416,
+            "lon": -121.0538,
+            "pop": 6911,
+            "drive": null,
+            "name": "Alta Sierra"
+          },
+          {
+            "lat": 38.7616,
+            "lon": -120.5861,
+            "pop": 6871,
+            "drive": null,
+            "name": "Pollock Pines"
+          },
+          {
+            "lat": 36.2027,
+            "lon": -120.1029,
+            "pop": 6836,
+            "drive": null,
+            "name": "Huron"
+          },
+          {
+            "lat": 38.8213,
+            "lon": -121.193,
+            "pop": 6836,
+            "drive": null,
+            "name": "Loomis"
+          },
+          {
+            "lat": 37.6593,
+            "lon": -122.1093,
+            "pop": 6700,
+            "drive": null,
+            "name": "Longwood - Winton Grove"
+          },
+          {
+            "lat": 38.3138,
+            "lon": -122.4819,
+            "pop": 6656,
+            "drive": null,
+            "name": "Boyes Hot Springs"
+          },
+          {
+            "lat": 37.9522,
+            "lon": -122.5572,
+            "pop": 6485,
+            "drive": null,
+            "name": "Kentfield"
+          },
+          {
+            "lat": 36.7658,
+            "lon": -121.758,
+            "pop": 6481,
+            "drive": null,
+            "name": "Castroville"
+          },
+          {
+            "lat": 38.4221,
+            "lon": -122.728,
+            "pop": 6325,
+            "drive": null,
+            "name": "Roseland"
+          },
+          {
+            "lat": 36.6305,
+            "lon": -119.6785,
+            "pop": 6266,
+            "drive": null,
+            "name": "Fowler"
+          },
+          {
+            "lat": 37.0891,
+            "lon": -122.0863,
+            "pop": 6234,
+            "drive": null,
+            "name": "Ben Lomond"
+          },
+          {
+            "lat": 36.9772,
+            "lon": -121.8994,
+            "pop": 6220,
+            "drive": null,
+            "name": "Aptos"
+          },
+          {
+            "lat": 38.0401,
+            "lon": -122.5755,
+            "pop": 6094,
+            "drive": null,
+            "name": "Lucas Valley-Marinwood"
+          },
+          {
+            "lat": 35.5641,
+            "lon": -121.0807,
+            "pop": 6032,
+            "drive": null,
+            "name": "Cambria"
+          },
+          {
+            "lat": 39.2143,
+            "lon": -122.0094,
+            "pop": 5935,
+            "drive": null,
+            "name": "Colusa"
+          },
+          {
+            "lat": 39.0207,
+            "lon": -121.558,
+            "pop": 5853,
+            "drive": null,
+            "name": "Plumas Lake"
+          },
+          {
+            "lat": 38.5052,
+            "lon": -122.4703,
+            "pop": 5814,
+            "drive": null,
+            "name": "Saint Helena"
+          },
+          {
+            "lat": 38.5326,
+            "lon": -121.4558,
+            "pop": 5800,
+            "drive": null,
+            "name": "Fruitridge Pocket"
+          },
+          {
+            "lat": 39.1488,
+            "lon": -121.6669,
+            "pop": 5797,
+            "drive": null,
+            "name": "Tierra Buena"
+          },
+          {
+            "lat": 37.2577,
+            "lon": -120.9988,
+            "pop": 5756,
+            "drive": null,
+            "name": "Gustine"
+          },
+          {
+            "lat": 37.6175,
+            "lon": -121.0391,
+            "pop": 5682,
+            "drive": null,
+            "name": "West Modesto"
+          },
+          {
+            "lat": 37.5566,
+            "lon": -120.9155,
+            "pop": 5601,
+            "drive": null,
+            "name": "Keyes"
+          },
+          {
+            "lat": 38.808,
+            "lon": -122.5583,
+            "pop": 5579,
+            "drive": null,
+            "name": "Hidden Valley Lake"
+          },
+          {
+            "lat": 37.4299,
+            "lon": -122.2539,
+            "pop": 5561,
+            "drive": null,
+            "name": "Woodside"
+          },
+          {
+            "lat": 38.7138,
+            "lon": -121.4627,
+            "pop": 5492,
+            "drive": null,
+            "name": "Elverta"
+          },
+          {
+            "lat": 38.5018,
+            "lon": -121.0947,
+            "pop": 5488,
+            "drive": null,
+            "name": "Rancho Murieta"
+          },
+          {
+            "lat": 37.5027,
+            "lon": -122.4694,
+            "pop": 5467,
+            "drive": null,
+            "name": "El Granada"
+          },
+          {
+            "lat": 37.8969,
+            "lon": -122.5089,
+            "pop": 5393,
+            "drive": null,
+            "name": "Strawberry"
+          },
+          {
+            "lat": 36.7989,
+            "lon": -119.8051,
+            "pop": 5365,
+            "drive": null,
+            "name": "Old Fig Garden"
+          },
+          {
+            "lat": 37.9263,
+            "lon": -122.0555,
+            "pop": 5364,
+            "drive": null,
+            "name": "Waldon"
+          },
+          {
+            "lat": 37.9275,
+            "lon": -122.0579,
+            "pop": 5364,
+            "drive": null,
+            "name": "Contra Costa Centre"
+          },
+          {
+            "lat": 38.4119,
+            "lon": -121.2722,
+            "pop": 5363,
+            "drive": null,
+            "name": "Wilton"
+          },
+          {
+            "lat": 38.5788,
+            "lon": -122.5797,
+            "pop": 5330,
+            "drive": null,
+            "name": "Calistoga"
+          },
+          {
+            "lat": 37.8849,
+            "lon": -122.0761,
+            "pop": 5202,
+            "drive": null,
+            "name": "Saranap"
+          },
+          {
+            "lat": 37.4045,
+            "lon": -120.8504,
+            "pop": 5197,
+            "drive": null,
+            "name": "Hilmar-Irwin"
+          },
+          {
+            "lat": 39.1546,
+            "lon": -122.1494,
+            "pop": 5196,
+            "drive": null,
+            "name": "Williams"
+          },
+          {
+            "lat": 37.6021,
+            "lon": -121.0052,
+            "pop": 5152,
+            "drive": null,
+            "name": "Bret Harte"
+          },
+          {
+            "lat": 37.9935,
+            "lon": -122.3164,
+            "pop": 5126,
+            "drive": null,
+            "name": "Tara Hills"
+          },
+          {
+            "lat": 36.9861,
+            "lon": -120.6266,
+            "pop": 5125,
+            "drive": null,
+            "name": "Dos Palos"
+          },
+          {
+            "lat": 37.9105,
+            "lon": -122.2802,
+            "pop": 5077,
+            "drive": null,
+            "name": "Kensington"
+          }
+        ]
+      },
+      "destination": {
+        "ok": true,
+        "airport": {
+          "code": "TPE",
+          "city": "Taipei",
+          "country": "TW",
+          "name": "Taiwan Taoyuan International Airport",
+          "lat": 25.0777,
+          "lon": 121.233
+        },
+        "radius_km": 220.0,
+        "total_pop": 21137435,
+        "reach_120_pop": 0,
+        "bands": {
+          "30": 0,
+          "60": 0,
+          "90": 0,
+          "120": 0,
+          "999": 21137435
+        },
+        "capture": null,
+        "drive_available": false,
+        "locales": [
+          {
+            "lat": 25.0531,
+            "lon": 121.5264,
+            "pop": 7871900,
+            "drive": null,
+            "name": "Taipei"
+          },
+          {
+            "lat": 25.062,
+            "lon": 121.457,
+            "pop": 4004367,
+            "drive": null,
+            "name": "New Taipei City"
+          },
+          {
+            "lat": 24.1469,
+            "lon": 120.6839,
+            "pop": 2850285,
+            "drive": null,
+            "name": "Taichung"
+          },
+          {
+            "lat": 25.0143,
+            "lon": 121.4672,
+            "pop": 551221,
+            "drive": null,
+            "name": "Banqiao"
+          },
+          {
+            "lat": 24.9937,
+            "lon": 121.297,
+            "pop": 475798,
+            "drive": null,
+            "name": "Taoyuan"
+          },
+          {
+            "lat": 24.8036,
+            "lon": 120.9686,
+            "pop": 453536,
+            "drive": null,
+            "name": "Hsinchu"
+          },
+          {
+            "lat": 25.1309,
+            "lon": 121.7409,
+            "pop": 362487,
+            "drive": null,
+            "name": "Keelung"
+          },
+          {
+            "lat": 25.0815,
+            "lon": 121.5881,
+            "pop": 274538,
+            "drive": null,
+            "name": "Neihu"
+          },
+          {
+            "lat": 23.4792,
+            "lon": 120.4489,
+            "pop": 263188,
+            "drive": null,
+            "name": "Chiayi City"
+          },
+          {
+            "lat": 24.0733,
+            "lon": 120.5628,
+            "pop": 226564,
+            "drive": null,
+            "name": "Chang-hua"
+          },
+          {
+            "lat": 24.0692,
+            "lon": 120.5512,
+            "pop": 226564,
+            "drive": null,
+            "name": "Changhua"
+          },
+          {
+            "lat": 24.8383,
+            "lon": 121.0078,
+            "pop": 212695,
+            "drive": null,
+            "name": "Zhubei"
+          },
+          {
+            "lat": 24.9298,
+            "lon": 121.2837,
+            "pop": 209148,
+            "drive": null,
+            "name": "Bade"
+          },
+          {
+            "lat": 25.0662,
+            "lon": 121.6599,
+            "pop": 204619,
+            "drive": null,
+            "name": "Xizhi"
+          },
+          {
+            "lat": 25.172,
+            "lon": 121.4429,
+            "pop": 189271,
+            "drive": null,
+            "name": "Danshui"
+          },
+          {
+            "lat": 24.9908,
+            "lon": 121.422,
+            "pop": 180044,
+            "drive": null,
+            "name": "Shulin"
+          },
+          {
+            "lat": 23.9567,
+            "lon": 120.5761,
+            "pop": 124725,
+            "drive": null,
+            "name": "Yuanlin"
+          },
+          {
+            "lat": 24.9345,
+            "lon": 121.3714,
+            "pop": 115185,
+            "drive": null,
+            "name": "Sanxia"
+          },
+          {
+            "lat": 24.9725,
+            "lon": 121.2614,
+            "pop": 112845,
+            "drive": null,
+            "name": "Neili"
+          },
+          {
+            "lat": 23.7094,
+            "lon": 120.5433,
+            "pop": 107924,
+            "drive": null,
+            "name": "Douliu"
+          },
+          {
+            "lat": 24.6875,
+            "lon": 120.9094,
+            "pop": 106310,
+            "drive": null,
+            "name": "Toufen"
+          },
+          {
+            "lat": 23.9157,
+            "lon": 120.6639,
+            "pop": 105682,
+            "drive": null,
+            "name": "Nantou"
+          },
+          {
+            "lat": 23.9769,
+            "lon": 121.6044,
+            "pop": 99458,
+            "drive": null,
+            "name": "Hualien City"
+          },
+          {
+            "lat": 23.977,
+            "lon": 120.6877,
+            "pop": 96838,
+            "drive": null,
+            "name": "Caotun"
+          },
+          {
+            "lat": 24.7317,
+            "lon": 121.0908,
+            "pop": 96518,
+            "drive": null,
+            "name": "Zhudong"
+          },
+          {
+            "lat": 24.8837,
+            "lon": 121.2904,
+            "pop": 94222,
+            "drive": null,
+            "name": "Daxi"
+          },
+          {
+            "lat": 24.757,
+            "lon": 121.753,
+            "pop": 94188,
+            "drive": null,
+            "name": "Yilan"
+          },
+          {
+            "lat": 24.9561,
+            "lon": 121.3507,
+            "pop": 87920,
+            "drive": null,
+            "name": "Yingge"
+          },
+          {
+            "lat": 23.9664,
+            "lon": 120.9695,
+            "pop": 86406,
+            "drive": null,
+            "name": "Puli"
+          },
+          {
+            "lat": 24.5643,
+            "lon": 120.8237,
+            "pop": 86327,
+            "drive": null,
+            "name": "Miaoli"
+          },
+          {
+            "lat": 23.3069,
+            "lon": 120.3106,
+            "pop": 74972,
+            "drive": null,
+            "name": "Xinying"
+          },
+          {
+            "lat": 26.0303,
+            "lon": 119.5974,
+            "pop": 69050,
+            "drive": null,
+            "name": "Tantou"
+          },
+          {
+            "lat": 25.7294,
+            "lon": 119.3747,
+            "pop": 67397,
+            "drive": null,
+            "name": "Fuqing"
+          },
+          {
+            "lat": 24.0637,
+            "lon": 120.698,
+            "pop": 65567,
+            "drive": null,
+            "name": "Wufeng"
+          },
+          {
+            "lat": 25.4869,
+            "lon": 119.1983,
+            "pop": 59902,
+            "drive": null,
+            "name": "Jiangkou"
+          },
+          {
+            "lat": 23.9568,
+            "lon": 120.4792,
+            "pop": 54033,
+            "drive": null,
+            "name": "Xihu"
+          },
+          {
+            "lat": 23.7555,
+            "lon": 120.682,
+            "pop": 44083,
+            "drive": null,
+            "name": "Zhushan"
+          },
+          {
+            "lat": 23.9005,
+            "lon": 120.3689,
+            "pop": 43652,
+            "drive": null,
+            "name": "Erlin"
+          },
+          {
+            "lat": 24.2101,
+            "lon": 120.5725,
+            "pop": 40467,
+            "drive": null,
+            "name": "Buzi"
+          },
+          {
+            "lat": 23.4594,
+            "lon": 120.3322,
+            "pop": 38696,
+            "drive": null,
+            "name": "Taibao"
+          },
+          {
+            "lat": 23.7989,
+            "lon": 120.4634,
+            "pop": 37181,
+            "drive": null,
+            "name": "Xiluo"
+          },
+          {
+            "lat": 23.898,
+            "lon": 120.5883,
+            "pop": 36565,
+            "drive": null,
+            "name": "Shetou"
+          },
+          {
+            "lat": 23.9215,
+            "lon": 120.5459,
+            "pop": 35365,
+            "drive": null,
+            "name": "Yongjing"
+          },
+          {
+            "lat": 23.8581,
+            "lon": 120.5857,
+            "pop": 34903,
+            "drive": null,
+            "name": "Tianzhong"
+          },
+          {
+            "lat": 23.5701,
+            "lon": 120.3016,
+            "pop": 33300,
+            "drive": null,
+            "name": "Beigang"
+          },
+          {
+            "lat": 23.8729,
+            "lon": 120.5243,
+            "pop": 33289,
+            "drive": null,
+            "name": "Beidou"
+          },
+          {
+            "lat": 23.5574,
+            "lon": 120.346,
+            "pop": 30543,
+            "drive": null,
+            "name": "Xingang"
+          },
+          {
+            "lat": 23.895,
+            "lon": 120.4786,
+            "pop": 29314,
+            "drive": null,
+            "name": "Pitou"
+          },
+          {
+            "lat": 24.2767,
+            "lon": 120.6892,
+            "pop": 28597,
+            "drive": null,
+            "name": "Xizhou"
+          },
+          {
+            "lat": 23.8927,
+            "lon": 120.524,
+            "pop": 26063,
+            "drive": null,
+            "name": "Tianwei"
+          },
+          {
+            "lat": 23.9591,
+            "lon": 120.6852,
+            "pop": 25549,
+            "drive": null,
+            "name": "Zhongxing New Village"
+          },
+          {
+            "lat": 23.7575,
+            "lon": 120.4997,
+            "pop": 24998,
+            "drive": null,
+            "name": "Citong"
+          },
+          {
+            "lat": 25.2578,
+            "lon": 121.5018,
+            "pop": 23452,
+            "drive": null,
+            "name": "Sanzhi"
+          },
+          {
+            "lat": 23.3779,
+            "lon": 120.1615,
+            "pop": 19268,
+            "drive": null,
+            "name": "Budai"
+          },
+          {
+            "lat": 23.7464,
+            "lon": 120.7525,
+            "pop": 17746,
+            "drive": null,
+            "name": "Lugu"
+          },
+          {
+            "lat": 24.1202,
+            "lon": 121.6263,
+            "pop": 17068,
+            "drive": null,
+            "name": "Xiulin"
+          },
+          {
+            "lat": 23.7615,
+            "lon": 120.6188,
+            "pop": 16856,
+            "drive": null,
+            "name": "Linnei"
+          },
+          {
+            "lat": 23.4569,
+            "lon": 120.15,
+            "pop": 14968,
+            "drive": null,
+            "name": "Dongshi"
+          },
+          {
+            "lat": 23.8099,
+            "lon": 120.6169,
+            "pop": 14080,
+            "drive": null,
+            "name": "Ershui"
+          },
+          {
+            "lat": 25.2904,
+            "lon": 121.5662,
+            "pop": 12645,
+            "drive": null,
+            "name": "Shimen"
+          },
+          {
+            "lat": 24.1139,
+            "lon": 120.5394,
+            "pop": 9668,
+            "drive": null,
+            "name": "Zhongliao"
+          },
+          {
+            "lat": 26.2437,
+            "lon": 119.6157,
+            "pop": 8240,
+            "drive": null,
+            "name": "Dongdai"
+          },
+          {
+            "lat": 23.125,
+            "lon": 121.2167,
+            "pop": 7978,
+            "drive": null,
+            "name": "Chishang"
+          },
+          {
+            "lat": 26.1504,
+            "lon": 119.9328,
+            "pop": 7815,
+            "drive": null,
+            "name": "Nangan"
+          },
+          {
+            "lat": 26.1548,
+            "lon": 119.9516,
+            "pop": 7657,
+            "drive": null,
+            "name": "Jieshoucun"
+          },
+          {
+            "lat": 26.2802,
+            "lon": 119.7896,
+            "pop": 7620,
+            "drive": null,
+            "name": "Dinghaicun"
+          },
+          {
+            "lat": 24.993,
+            "lon": 121.6555,
+            "pop": 7370,
+            "drive": null,
+            "name": "Shiding"
+          },
+          {
+            "lat": 24.9569,
+            "lon": 121.0122,
+            "pop": 6700,
+            "drive": null,
+            "name": "Shenzhen"
+          },
+          {
+            "lat": 24.9352,
+            "lon": 121.7103,
+            "pop": 6503,
+            "drive": null,
+            "name": "Pinglin"
+          },
+          {
+            "lat": 24.864,
+            "lon": 121.5513,
+            "pop": 6182,
+            "drive": null,
+            "name": "Wulai"
+          },
+          {
+            "lat": 26.1359,
+            "lon": 119.5616,
+            "pop": 5790,
+            "drive": null,
+            "name": "Guantou"
+          },
+          {
+            "lat": 26.074,
+            "lon": 119.5057,
+            "pop": 5320,
+            "drive": null,
+            "name": "Tingjiang"
+          },
+          {
+            "lat": 26.0596,
+            "lon": 119.535,
+            "pop": 5180,
+            "drive": null,
+            "name": "Houyu"
+          },
+          {
+            "lat": 26.6106,
+            "lon": 119.9483,
+            "pop": 5070,
+            "drive": null,
+            "name": "Xiahu"
+          }
+        ]
+      }
+    }
+  },
+  "currency": "USD",
+  "_source_engine": "qsi engine",
+  "_settings": {
+    "split_floor": true,
+    "warnings": [],
+    "growth_basis": "pre-COVID trend 2015-2019, 8.8%/yr on the two-way pair, tapered to a 3% long run: +18.3% over 2 yr from 2025",
+    "base_year": 2025,
+    "curfew_cost": null,
+    "curfew_cost_detail": null,
+    "feed_level": "Connecting level k = 1.0 (default); the back-tested level is 0.06.",
+    "feed_level_detail": {
+      "qsi_k": 1.0,
+      "qsi_k_behind": 1.0,
+      "basis": "default",
+      "back_test_k": 0.06,
+      "level_engine": "v1",
+      "timing_engine": "qsi schedule quality",
+      "basis_ran": "v1",
+      "fallbacks": 0,
+      "fallback_error": null,
+      "board_read_fails": 0,
+      "circuity_screen_off": false
+    },
+    "od_source": {
+      "point_to_point": "Sabre ODPOO",
+      "beyond": "Sabre ODPOO",
+      "behind": "Sabre ODPOO",
+      "beyond_dot_share": 0.0,
+      "behind_dot_share": 0.0,
+      "mode": "auto"
+    }
+  }
+}

@@ -403,9 +403,16 @@ def contract_from_forecast(fc, currency="USD", growth_rate=None, ancillary_per_p
                    % ("{:,.0f}".format(_opt["cost_pax"]), _opt.get("unrestricted_dep") or "-"))
     _feed = None
     if _fl:
-        _feed = ("Connecting level k = %s (%s); the back-tested level is %s."
-                 % (_fl.get("qsi_k"), _fl.get("basis") or "basis not stated",
-                    _fl.get("back_test_k")))
+        # CLIENT-SAFE PROSE (John's ruling, 19 August 2026). The first wording printed
+        # "Connecting level k = 1.0 (default); the back-tested level is 0.06" straight
+        # onto the pack's methodology page, which without the level/shape distinction
+        # reads as a seventeen-fold overclaim to an airline network planner. The level
+        # is carried by the calibrated engine and the index only distributes it, so the
+        # page now says that and nothing more; the raw figures stay in the contract
+        # under feed_level_detail for anyone reading the JSON itself.
+        _feed = ("The level of connecting traffic is set by the calibrated engine; the "
+                 "quality of service index distributes that level across the individual "
+                 "markets.")
     contract["_settings"] = {
         # The payload's own record of the floor the run USED (cortex_app writes it from the
         # feed_cfg the engine read). The old chain read fc["settings"], which no module has
@@ -502,18 +509,28 @@ def _fill_forecast_table(contract, fc):
     blk = ss.get("point_to_point_total")
     if isinstance(blk, dict) and natural and natural > 0:
         _stim = float(stim) if stim else 1.0
-        blk["base_annual_demand"] = round(natural / (1.0 + _cum)) if _cum else round(natural)
+        # BOTH DIRECTIONS, LIKE THE LEGS AROUND IT (the 19 August 2026 defect, caught in
+        # the pack review): the payload's natural and p2p_carried are EACH WAY, while the
+        # connecting legs and the grand total arrive TWO-WAY, and printing them in one
+        # table failed the sum a network planner does in the room: 29.5 + 54.5 + 17.7
+        # against a grand total of 131.2 on the Starlux pack. Every annual figure in this
+        # row is therefore doubled to the two-way basis. The capture rate is a ratio of
+        # two figures on the same basis and does not move, so the row still multiplies
+        # through, and the legs now sum to the grand total exactly.
+        _nat2 = natural * 2.0
+        blk["base_annual_demand"] = round(_nat2 / (1.0 + _cum)) if _cum else round(_nat2)
         blk["annual_growth_rate"] = round(_cum, 4)
-        blk["demand_at_service_year"] = round(natural)
+        blk["demand_at_service_year"] = round(_nat2)
         blk.pop("_demand_at_service_year_need", None)
         blk["stimulation_factor"] = _stim
-        blk["demand_after_stimulation"] = round(natural * _stim)
+        blk["demand_after_stimulation"] = round(_nat2 * _stim)
         if p2p_c and p2p_c > 0:
             blk["capture_rate"] = round(p2p_c / (natural * _stim), 4)
-            blk["forecast"] = round(p2p_c)
-        blk["_basis"] = ("each way; base decomposed from the grown market at the "
-                         "payload's growth rate; capture is the effective rate after "
-                         "the capacity allocation, so the row multiplies through")
+            blk["forecast"] = round(p2p_c * 2.0)
+        blk["_basis"] = ("both directions, matching the connecting legs and the grand "
+                         "total; base decomposed from the grown market at the payload's "
+                         "growth rate; capture is the effective rate after the capacity "
+                         "allocation, so the row multiplies through")
 
     # The connecting legs' base_annual_demand arrives GROWN (the engine grows feed
     # bases with the market), so the same decomposition applies: state the grown

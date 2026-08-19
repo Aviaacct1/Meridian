@@ -96,11 +96,13 @@ def test_contract_ends():
 
 
 def test_fill_forecast_table():
-    """REWRITTEN 19 August 2026 with the mapping fix: the old expectations asserted
-    the mixed-bases patching (captured-after-stim divided by the factor against the
-    two-way market) that printed -80.6% growth on a real contract. The row is now SET
-    from the payload on one each-way basis; app/test_contract_p2p_row.py carries the
-    full 11-check suite, and this checks the deck-side essentials."""
+    """REWRITTEN 19 August 2026, twice. First for the mapping fix (the old expectations
+    asserted the mixed-bases patching that printed -80.6% growth), then for the basis
+    fix: the p2p row now prints BOTH DIRECTIONS like the connecting legs and the grand
+    total around it, because the each-way row failed the sum a network planner does in
+    the room (29.5 + 54.5 + 17.7 against 131.2 on the Starlux pack). natural and
+    p2p_carried are each-way payload keys, so the row prints at twice each of them.
+    app/test_contract_p2p_row.py carries the full suite; this checks the deck side."""
     contract = {"segment_forecast": {"summary": {
         "point_to_point_total": {"base_annual_demand": 100000,
                                  "demand_after_stimulation": 138000,
@@ -113,22 +115,56 @@ def test_fill_forecast_table():
           "schedule": {"growth_rate": 0.0954, "growth_years": 2}}
     _fill_forecast_table(contract, fc)
     blk = contract["segment_forecast"]["summary"]["point_to_point_total"]
-    check("service-year column is the payload's grown market",
-          blk["demand_at_service_year"] == 120000, blk["demand_at_service_year"])
+    check("service-year column is the grown market, both directions",
+          blk["demand_at_service_year"] == 240000, blk["demand_at_service_year"])
     check("the fill clears the need note",
           "_demand_at_service_year_need" not in blk, "")
     check("growth is the payload's cumulative rate, one basis",
           abs(blk["annual_growth_rate"] - 0.2) < 0.001, blk["annual_growth_rate"])
-    check("base decomposed from the grown market",
-          abs(blk["base_annual_demand"] - 100000) < 100, blk["base_annual_demand"])
+    check("base decomposed from the grown market, both directions",
+          abs(blk["base_annual_demand"] - 200000) < 100, blk["base_annual_demand"])
     check("the row multiplies through (effective capture)",
           abs(blk["demand_at_service_year"] * blk["stimulation_factor"]
-              * blk["capture_rate"] - blk["forecast"]) < 300, blk["capture_rate"])
+              * blk["capture_rate"] - blk["forecast"]) < 600, blk["capture_rate"])
+    check("forecast is twice the each-way carried figure",
+          blk["forecast"] == 100000, blk["forecast"])
     cnx = contract["segment_forecast"]["summary"]["connecting_at_hub_total"]
     check("connecting leg carries x1.00, not the p2p factor",
           cnx["stimulation_factor"] == 1.0, cnx["stimulation_factor"])
     check("connecting base decomposed on the same basis",
           abs(cnx["base_annual_demand"] - 750000) < 500, cnx["base_annual_demand"])
+
+
+def test_process_figure(tmp):
+    """The 19 August process page: drawn from the contract's own figures, both
+    directions, and dropped rather than drawn when a leg is missing."""
+    c = {"segment_forecast": {"summary": {
+            "point_to_point_total": {"base_annual_demand": 321833,
+                                     "annual_growth_rate": 0.1832,
+                                     "demand_at_service_year": 380790,
+                                     "stimulation_factor": 1.15,
+                                     "demand_after_stimulation": 437909,
+                                     "capture_rate": 0.1347, "forecast": 58970},
+            "connecting_at_hub_total": {"demand_at_service_year": 719486,
+                                        "capture_rate": 0.0758, "forecast": 54518},
+            "connecting_at_destination_total": {"forecast": 17698},
+            "grand_total": {"forecast": 131186}}},
+         "summary_and_schedule": {"connecting_market_over_hub": 719486,
+                                  "connecting_market_over_destination": 185485,
+                                  "schedule": [{"sector": "TOTAL", "annual_seats": 159120}]},
+         "route_metadata": {"base_year": 2025, "service_year": 2027,
+                            "origin_airport": "SJC"},
+         "connecting_at_hub": {"hub": "TPE"},
+         "economics_year1": {"total_load_factor": 0.824}}
+    img = FP.render_process(c, os.path.join(tmp, "maps"), codename="proc")
+    check("process figure drawn", bool(img) and os.path.exists(img), img)
+    pages = FP._method_pages(c, {"process": img})
+    subs = [p.get("subtitle") or "" for p in pages]
+    check("process page in the methodology set",
+          any("How the forecast is built" in s for s in subs), subs[:2])
+    c2 = {"segment_forecast": {"summary": {"point_to_point_total": {"forecast": 1}}}}
+    check("missing figures drop the page, never invented",
+          FP.render_process(c2, os.path.join(tmp, "maps")) is None, "")
 
 
 def test_build_pack(tmp):
@@ -203,6 +239,7 @@ def main():
     with tempfile.TemporaryDirectory() as tmp:
         test_contract_ends()
         test_fill_forecast_table()
+        test_process_figure(tmp)
         spec, _maps = test_build_pack(tmp)
         test_render(spec, tmp)
     print("\n%d checks, %d failed%s" % (CHECKS, len(FAIL),

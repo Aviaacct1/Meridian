@@ -1,0 +1,23 @@
+Pack review fixes: traffic table on one two-way basis, k values off the client page, the process figure
+
+The 19 August pack review found the traffic forecast slide failing the sum a network
+planner does in the room: the point to point row printed each way while the connecting
+legs and the grand total printed both directions (Starlux: 29.5 + 54.5 + 17.7 against
+131.2). The summary slide inherited the same defect.
+
+- app/forecast_to_contract.py: _fill_forecast_table now prints the point to point row
+  BOTH DIRECTIONS, matching the legs around it. Capture is a ratio and does not move,
+  the row still multiplies through, and the three legs now sum to the grand total to
+  the passenger (contract_legs_check's own invariant).
+- app/forecast_to_contract.py: _settings.feed_level is now a client-safe sentence; the
+  raw k values (k = 1.0 v back-tested 0.06) never travel to a pack page, where they
+  read as an overclaim without the level/shape distinction. The figures stay in the
+  contract under feed_level_detail. John's ruling, 19 August.
+- deck/forecast_pack.py: render_process() draws the full forecasting process as one
+  figure from the contract's own numbers (three lanes, captured legs converge on the
+  year 1 forecast, capacity check beneath). New methodology page in front of the prose
+  pages; fail-open like the maps, so a missing leg drops the page rather than papering
+  over it.
+- Tests: app/test_contract_p2p_row.py rewritten to the two-way basis (11 checks);
+  deck/test_forecast_pack_maps.py updated fill checks plus new process-figure checks
+  (23 checks). Both green.

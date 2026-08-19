@@ -47,20 +47,26 @@ def main():
     p, h, d = (ss[k] for k in ("point_to_point_total", "connecting_at_hub_total",
                                "connecting_at_destination_total"))
     cum = 1 + p["annual_growth_rate"]
-    check("two-way base replaced by the each-way decomposition",
-          p["base_annual_demand"] < 210000)
+    # THE ROW IS BOTH DIRECTIONS (19 August 2026): the connecting legs and the grand
+    # total arrive two-way, and an each-way p2p row under them failed the sum a network
+    # planner does in the room. natural and p2p_carried are each-way in the payload,
+    # so every annual figure prints at twice the payload key.
+    check("poison base replaced by the decomposition",
+          abs(p["base_annual_demand"] - 394256) > 5000)
     check("base grows to the service-year column",
           abs(p["base_annual_demand"] * cum - p["demand_at_service_year"]) < 60)
     check("growth is the payload's, not -80.6%",
           0.05 < p["annual_growth_rate"] < 0.09)
-    check("service-year column is the grown market",
-          p["demand_at_service_year"] == 203400)
+    check("service-year column is the grown market, both directions",
+          p["demand_at_service_year"] == 406800)
     prod = (p["demand_at_service_year"] * p["stimulation_factor"] * p["capture_rate"])
     check("the row multiplies through",
           abs(prod - p["forecast"]) / p["forecast"] < 0.005,
           "%.0f v %d" % (prod, p["forecast"]))
-    check("forecast is the carried figure", p["forecast"] == 33300)
-    check("basis line states itself", "multiplies through" in p.get("_basis", ""))
+    check("forecast is the carried figure, both directions", p["forecast"] == 66600)
+    check("basis line states the two-way basis",
+          "both directions" in p.get("_basis", "")
+          and "multiplies through" in p.get("_basis", ""))
     check("hub base decomposed from its grown figure",
           abs(h["base_annual_demand"] * cum - 744930) < 60)
     check("hub growth stated, same rate", h["annual_growth_rate"] == p["annual_growth_rate"])

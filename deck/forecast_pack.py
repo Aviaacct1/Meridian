@@ -315,8 +315,9 @@ def _connecting(c, key, title):
                    title=title, subtitle=sub, source=_src(c))
 
 
-def _method_pages(c):
-    """Sep 25 slides 36 to 39. Prose, and every claim in it is read from the contract.
+def _method_pages(c, maps=None):
+    """Sep 25 slides 36 to 39, and the process figure in front of them. Prose, and every
+    claim in it is read from the contract.
 
     The schedule page carries what the restriction costs, which the 2025 deck could only describe
     in words: its slide 37 says the schedule "seeks to mitigate night curfew restrictions at SJC"
@@ -325,6 +326,16 @@ def _method_pages(c):
     rm = c.get("route_metadata") or {}
     ss = c.get("summary_and_schedule") or {}
     out = [S.divider(number=1, title="The forecast", strap="Methodology", family="operations")]
+
+    # THE PROCESS ON ONE PAGE (John's ask, 19 August 2026, in the same ruling that took the
+    # raw k values off the connecting page): the whole engine as a flow, drawn from this
+    # run's own contract figures so the boxes sum to the forecast the summary page states.
+    # Fail-open like the maps: no figure, no page, never a diagram with invented numbers.
+    img = (maps or {}).get("process")
+    if img:
+        out.append(S.figure(img, title="Forecast methodology",
+                            subtitle="How the forecast is built, on this run's own figures",
+                            source=_src(c)))
 
     base = [(None, "The forecast takes a base year of measured origin and destination demand and "
                    "grows it to the service year, at which the route is assumed to have reached "
@@ -567,6 +578,135 @@ def render_maps(c, out_dir, codename="pack"):
     return maps
 
 
+def render_process(c, out_dir, codename="pack"):
+    """The full forecasting process as one figure, every number from this run's contract.
+
+    THE FIGURE IS A SUM THE READER CAN CHECK. Three lanes: the point to point market
+    measured, grown and stimulated then captured; the two connecting markets captured
+    through the quality of service index. The three captured legs converge on the year 1
+    forecast, and the capacity line beneath it shows the seats the schedule offers and
+    the load factor the forecast produces. All annual figures are BOTH DIRECTIONS, the
+    same basis as the traffic table, so lane ends sum to the total to the passenger.
+
+    Returns the PNG path, or None when a required figure is missing: a process diagram
+    with a gap papered over would be worse than no page, so it fails open like the maps.
+    """
+    ss = _g(c, "segment_forecast", "summary", default={}) or {}
+    p2p = ss.get("point_to_point_total") or {}
+    hub = ss.get("connecting_at_hub_total") or {}
+    dst = ss.get("connecting_at_destination_total") or {}
+    gt = ss.get("grand_total") or {}
+    sas = c.get("summary_and_schedule") or {}
+    rm = c.get("route_metadata") or {}
+    need = (p2p.get("base_annual_demand"), p2p.get("demand_after_stimulation"),
+            p2p.get("forecast"), hub.get("forecast"), dst.get("forecast"),
+            gt.get("forecast"))
+    if any(v is None for v in need):
+        return None
+    try:
+        import matplotlib
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
+        from matplotlib.patches import FancyBboxPatch
+
+        NAVY, GREY, LIGHT, RULE = "#1F3864", "#595959", "#F2F4F8", "#C8CDD6"
+        base_yr = rm.get("base_year") or _g(c, "_settings", "base_year") or "base year"
+        svc_yr = rm.get("service_year") or "service year"
+        hub_ap = _g(c, "connecting_at_hub", "hub", default="the hub")
+        org_ap = rm.get("origin_airport") or "the origin"
+        hub_mkt = sas.get("connecting_market_over_hub") or hub.get("demand_at_service_year")
+        dst_mkt = sas.get("connecting_market_over_destination")
+        hub_cap = hub.get("capture_rate") or ((hub["forecast"] / hub_mkt) if hub_mkt else None)
+        dst_cap = dst.get("capture_rate") or ((dst["forecast"] / dst_mkt) if dst_mkt else None)
+        seats = next((l.get("annual_seats") for l in (sas.get("schedule") or [])
+                      if l.get("sector") == "TOTAL"), None)
+        lf = _g(c, "economics_year1", "total_load_factor")
+
+        def _f(v):
+            return "{:,.0f}".format(float(v))
+
+        fig, ax = plt.subplots(figsize=(12.8, 6.0), dpi=170)
+        ax.set_xlim(0, 100), ax.set_ylim(0, 60)
+        ax.axis("off")
+        fig.patch.set_facecolor("white")
+
+        def box(x, y, w, h, label, value, sub=None, accent=False):
+            ax.add_patch(FancyBboxPatch((x, y), w, h, boxstyle="round,pad=0.4,rounding_size=0.8",
+                                        facecolor=(NAVY if accent else LIGHT),
+                                        edgecolor=(NAVY if accent else RULE), linewidth=1.0))
+            ink = "white" if accent else NAVY
+            ax.text(x + w / 2, y + h - 2.4, label.upper(), ha="center", va="center",
+                    fontsize=7.4, color=("white" if accent else GREY))
+            ax.text(x + w / 2, y + h / 2 - 0.6, value, ha="center", va="center",
+                    fontsize=(15 if accent else 13.5), fontweight="bold", color=ink)
+            if sub:
+                ax.text(x + w / 2, y + 2.2, sub, ha="center", va="center",
+                        fontsize=7.2, color=("white" if accent else GREY))
+
+        def arrow(x0, y, x1, label=None, below=False):
+            ax.annotate("", xy=(x1, y), xytext=(x0, y),
+                        arrowprops={"arrowstyle": "-|>", "color": GREY, "lw": 1.1})
+            if label:
+                # Lane 1's arrows are short, so a label above them lands on the box
+                # titles either side; those labels go beneath the arrow instead.
+                ax.text((x0 + x1) / 2, (y - 2.0) if below else (y + 1.6), label,
+                        ha="center", va=("top" if below else "bottom"),
+                        fontsize=7.4, color=GREY)
+
+        W, H = 17.5, 11.5
+        y1, y2, y3 = 45, 27.5, 10          # lane centres-ish (box bottoms)
+        # lane 1: point to point
+        box(2, y1, W, H, "Point to point market %s" % base_yr, _f(p2p["base_annual_demand"]),
+            "measured, both directions")
+        _g1 = p2p.get("annual_growth_rate")
+        _st = p2p.get("stimulation_factor")
+        arrow(2 + W + 0.8, y1 + H / 2, 27.2,
+              "grown %s,\nstimulated x%.2f" % (("%+.1f%%" % (100 * _g1)) if _g1 is not None
+                                               else "to %s" % svc_yr, float(_st or 1.0)),
+              below=True)
+        box(28, y1, W, H, "Demand at %s after stimulation" % svc_yr,
+            _f(p2p["demand_after_stimulation"]))
+        arrow(28 + W + 0.8, y1 + H / 2, 53.2,
+              "captured %s" % _pct(p2p.get("capture_rate"), 1), below=True)
+        box(54, y1, W, H, "Point to point forecast", _f(p2p["forecast"]))
+        # lane 2: over the hub
+        box(2, y2, W, H, "Connecting market over %s" % hub_ap, _f(hub_mkt) if hub_mkt else "-",
+            "at %s, both directions" % svc_yr)
+        arrow(2 + W + 0.8, y2 + H / 2, 53.2,
+              "captured %s through the quality of service index" % _pct(hub_cap, 1))
+        box(54, y2, W, H, "Connecting at %s" % hub_ap, _f(hub["forecast"]))
+        # lane 3: over the origin
+        box(2, y3, W, H, "Connecting market over %s" % org_ap, _f(dst_mkt) if dst_mkt else "-",
+            "at %s, both directions" % svc_yr)
+        arrow(2 + W + 0.8, y3 + H / 2, 53.2,
+              "captured %s through the quality of service index" % _pct(dst_cap, 1))
+        box(54, y3, W, H, "Connecting at %s" % org_ap, _f(dst["forecast"]))
+        # convergence to the total
+        for yy in (y1, y2, y3):
+            ax.annotate("", xy=(78.2, 33.5), xytext=(54 + W + 0.6, yy + H / 2),
+                        arrowprops={"arrowstyle": "-|>", "color": GREY, "lw": 1.1,
+                                    "connectionstyle": "arc3,rad=0.12"})
+        box(79, 28, 19, 16.5, "Year 1 forecast, %s" % svc_yr, _f(gt["forecast"]),
+            "passengers, both directions", accent=True)
+        if seats and lf is not None:
+            ax.text(88.5, 24.5, "Capacity check: %s seats offered,\n%s load factor"
+                    % (_f(seats), _pct(lf, 1)), ha="center", va="top",
+                    fontsize=8.0, color=GREY)
+        ax.text(2, 2.2, "Passengers a year, both directions, year 1 at %s. Markets are before "
+                        "capture; the three captured legs sum to the forecast." % svc_yr,
+                ha="left", va="center", fontsize=7.6, color=GREY)
+        os.makedirs(out_dir, exist_ok=True)
+        path = os.path.join(out_dir, "%s_process.png"
+                            % "".join(ch for ch in str(codename) if ch.isalnum() or ch in "-_"))
+        fig.savefig(path, bbox_inches="tight", facecolor="white")
+        plt.close(fig)
+        return path
+    except Exception as e:                                   # noqa: BLE001
+        print("   PROCESS  figure failed (%s: %s); the page is dropped"
+              % (type(e).__name__, e))
+        return None
+
+
 # --- assembly ---------------------------------------------------------------
 
 def build_pack(contract, *, codename, title=None, prepared_for="", date="",
@@ -598,7 +738,7 @@ def build_pack(contract, *, codename, title=None, prepared_for="", date="",
              ("connecting at the origin",
               _connecting(c, "connecting_at_destination",
                           "Passengers connecting at %s" % (rm.get("origin_airport") or "the origin")))]
-    named += [("methodology", p) for p in _method_pages(c)]
+    named += [("methodology", p) for p in _method_pages(c, maps)]
     named += [("this forecast against the last", _against_prior(c, prior))]
     named += [("catchment", _catchment(c, maps))]
     dropped, slides = [], []
@@ -639,6 +779,12 @@ def main():
     _maps_dir = os.path.join(os.path.dirname(os.path.abspath(a.out)) or ".", "pack_maps")
     maps = render_maps(c, _maps_dir, codename=a.codename
                        or _g(c, "route_metadata", "origin_airport", default="pack"))
+    # The process figure travels with the maps: same folder, same fail-open rule.
+    _proc = render_process(c, _maps_dir, codename=(a.codename or _g(c, "route_metadata",
+                                                                    "origin_airport",
+                                                                    default="pack")))
+    if _proc:
+        maps["process"] = _proc
     spec, dropped = build_pack(c, codename=a.codename or _g(c, "route_metadata", "origin_airport", default="Pack"),
                                title=a.title or None, prepared_for=a.prepared_for, date=a.date,
                                alliance=alliance, prior=prior, maps=maps)
