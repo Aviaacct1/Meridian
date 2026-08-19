@@ -533,6 +533,14 @@ function filterAircraftByAirline(){
   }).catch(()=>{});
 }
 $("#airline").addEventListener("change",filterAircraftByAirline);
+// THE SEAT HINT FOLLOWS THE FORM, NOT THE LAST RUN (19 August, John's find: after an
+// EVA run the hint stayed at 278 while CI was being set up, so the next click looked
+// like a 278 run). The engine resolves the real configuration server-side either
+// way; the hint resets to neutral the moment the airline or gauge changes, and the
+// run's own payload restates it afterwards.
+function resetSeatHint(){ const s=$("#seats"); if(s && !s.value) s.placeholder="carrier config / type table"; }
+$("#airline").addEventListener("change",resetSeatHint);
+$("#aircraft").addEventListener("change",resetSeatHint);
 
 // ---- Expert mode: reveal the overrides panel and apply the set values on Run ----
 let EXPERT=false;
