@@ -4,6 +4,9 @@ enough to constrain the type sensibly. Unknown airlines fall back to all range-f
 Extend from Egnyte fleet data as it lands.
 """
 # narrowbody families available as AIRCRAFT keys: A319 A320 A20N A321 A21N A21X B738 B38M B752 C919
+#   plus the A220 family, A221 and A223, costed in aircraft_economics since 10 Aug 2026 -
+#   the picker only offers what THIS table lists, so a costed type an operator flies must
+#   also appear here (found 19 Aug 2026: AF ran without its A220-300s)
 # widebody: B763 A333 A339 B788 B789 A359 B77W ; regional: ATR72 DH8D CRJ900 E170 E190 E195 SF34 C909
 FLEETS = {
     # ---- ultra-low-cost / low-cost (the ones that must NOT get a widebody) ----
@@ -25,23 +28,28 @@ FLEETS = {
     # ---- full-service: short-haul narrowbody + long-haul widebody ----
     "BA": ["A319", "A320", "A20N", "A321", "A21N", "B788", "B789", "A359", "B77W"],
     "LH": ["A319", "A320", "A20N", "A21N", "A333", "A339", "A359", "B789"],
-    "AF": ["A319", "A320", "A21N", "A359", "B789", "B77W"],
+    "AF": ["A223", "A319", "A320", "A21N", "A359", "B789", "B77W"],
     "KL": ["B738", "B38M", "A21N", "B789", "B77W", "A333"],
     "IB": ["A319", "A320", "A21N", "A333", "A359"], "I2": ["A320", "A321"],
-    "AZ": ["A319", "A320", "A21N", "A339", "A333"], "LX": ["A320", "A21N", "A333", "A359"],
+    "AZ": ["A319", "A320", "A21N", "A339", "A333"],
+    "LX": ["A221", "A223", "A320", "A21N", "A333", "A359"],
     "OS": ["A320", "A321", "B763", "B789"], "SN": ["A319", "A320", "A333"],
     "TP": ["A320", "A21N", "A339", "A333"], "SK": ["A320", "A21N", "A359", "A333"],
     "AY": ["A320", "A321", "A359", "A333"], "EI": ["A320", "A321", "A21N", "A333"],
     "VS": ["A339", "A359", "B789"], "UX": ["B38M", "B789"], "A3": ["A320", "A21N"],
     "LO": ["B738", "E195", "B789"], "TK": ["A321", "A21N", "A333", "A359", "B789", "B77W"],
     "SU": ["A320", "A321", "B738", "A333"], "PS": ["B738", "E195"], "JU": ["A319", "A320", "A21N"],
-    "OU": ["A319", "A320", "DH8D"], "RO": ["B738", "A21N"], "BT": ["A220" if False else "A319", "A320"],
+    "OU": ["A319", "A320", "DH8D"], "RO": ["B738", "A21N"],
+    # airBaltic flies the A220-300 and nothing else; the old "A220 if False" dodge
+    # dated from before the type had an economics entry.
+    "BT": ["A223"],
     # ---- North America ----
     "AA": ["A319", "A320", "A321", "A21N", "B738", "B38M", "B788", "B789", "B77W"],
-    "DL": ["A319", "A320", "A321", "B738", "A333", "A339", "A359", "B763"],
+    "DL": ["A221", "A223", "A319", "A320", "A321", "B738", "A333", "A339", "A359", "B763"],
     "UA": ["A319", "A320", "B738", "B38M", "B789", "B788", "B77W"],
-    "WN": ["B738", "B38M"], "B6": ["A320", "A321", "A21N"],
-    "AS": ["B738", "B38M", "A320", "A321"], "AC": ["A319", "A320", "A321", "B38M", "B789", "B77W", "A333"],
+    "WN": ["B738", "B38M"], "B6": ["A223", "A320", "A321", "A21N"],
+    "AS": ["B738", "B38M", "A320", "A321"],
+    "AC": ["A223", "A319", "A320", "A321", "B38M", "B789", "B77W", "A333"],
     "WS": ["B738", "B38M", "B789"], "HA": ["A21N", "A333", "B789"],
     "AM": ["B738", "B38M", "B789"], "CM": ["B738", "B38M"],
     # ---- Middle East / Africa ----
@@ -53,7 +61,8 @@ FLEETS = {
     "KQ": ["B738", "B788"], "SA": ["A320", "A333", "A339"],
     # ---- Asia / Pacific ----
     "SQ": ["A359", "B789", "B77W"], "CX": ["A333", "A359", "B77W"], "JL": ["B738", "A359", "B789", "B77W"],
-    "NH": ["B738", "A320", "B788", "B789", "B77W"], "KE": ["B738", "A321", "B789", "A359", "B77W"],
+    "NH": ["B738", "A320", "B788", "B789", "B77W"],
+    "KE": ["A223", "B738", "A321", "B789", "A359", "B77W"],
     "OZ": ["A320", "A321", "A359", "B77W"], "TG": ["A320", "A333", "A359", "B789", "B77W"],
     "MH": ["B738", "A333", "A359"], "GA": ["B738", "A333", "B77W"], "PR": ["A320", "A321", "A333", "A359"],
     "BR": ["A321", "B789", "B77W", "A359"], "CI": ["A321", "A359", "B789"],

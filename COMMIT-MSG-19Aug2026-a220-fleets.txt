@@ -1,0 +1,17 @@
+A220 family into the fleet picker for its established operators
+
+John's NOC-CPH test, 19 August 2026: Air France could not be run on an A220-300
+because the hand-typed FLEETS table predates the type's economics entry. A221 and
+A223 have been costed in aircraft_economics since 10 August; the picker only offers
+what FLEETS lists, so the costed type never appeared.
+
+- A223 added for AF, AC, B6, KE; A221 + A223 for LX and DL; airBaltic (BT) becomes
+  the all-A220-300 fleet it actually is, retiring the "A220 if False" dodge.
+- Header comment now warns that a costed type must also be listed here to be
+  offered, so the next type addition does not repeat this.
+- Verified: fleet_for returns A223 for all seven carriers and it survives the
+  range filter at short-haul distances.
+
+The durable fix stays on the backlog: derive FLEETS from the OAG store's own
+carrier-equipment observations (the fleet-delivery layer direction) instead of a
+hand-typed table.
