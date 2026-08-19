@@ -22,10 +22,34 @@ STATUS: v1 - the MARKET side reuses the validated construction; the per-city CAP
 OAG here and is the piece to CALIBRATE against 48,115 (the global connecting-capture constant, like
 the POC's qsi_adjustment). Behind-feed wired same as beyond with O/D swapped.
 """
-import argparse, math, os, sys
+import argparse, contextvars, math, os, sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 if HERE not in sys.path:
     sys.path.insert(0, HERE)
+
+# STOP BUTTON (19 August 2026). A background /api/optimise sweep on a cold route
+# runs 600-700s; a missed variable used to cost the whole wait before the corrected
+# run could start. CANCEL_CHECK is a contextvar rather than a threaded parameter
+# because optimise_departure sits several calls deep under calibrated_forecast and
+# is called once per candidate airline/gauge/frequency inside a sweep; a contextvar
+# set once at the top of the job's own thread (cortex_app.api_optimise_start) is
+# read fresh on every entry without touching that call chain's signatures. A direct
+# caller that never sets it (the plain /api/forecast path, the backtest, any script)
+# gets None back and behaves exactly as before: this is additive, not a new default.
+CANCEL_CHECK = contextvars.ContextVar("cancel_check", default=None)
+
+
+class OptimiseCancelled(Exception):
+    """Raised out of optimise_departure's candidate sweep when CANCEL_CHECK reports
+    the run should stop. Caught in cortex_app.api_optimise_start's job runner and
+    turned into OPT_JOBS state "cancelled", distinct from a genuine engine error."""
+    pass
+
+
+def _check_cancelled():
+    _cc = CANCEL_CHECK.get()
+    if _cc is not None and _cc():
+        raise OptimiseCancelled("optimisation stopped by user")
 
 WORK_DAYS = 365.0                     # PDEW = annual O&D / 365 / 2 (each way)
 DEFAULT_CONN_CAPTURE = 0.025          # global connecting-capture, calibrated to BA LHR-SJC = 48,115 with
@@ -782,6 +806,7 @@ def optimise_departure(sabre_db, oag_db, week, origin_airports, origin, hub, des
 
     tried = {}
     for dep in range(0, 1440, step):
+        _check_cancelled()
         tried[dep] = score(dep)
     # An optimum against a constraint lies ON the constraint: an airline schedules right up against a
     # curfew, not near it. Test the boundaries explicitly rather than hope the grid lands on them.
@@ -806,6 +831,7 @@ def optimise_departure(sabre_db, oag_db, week, origin_airports, origin, hub, des
     for cand in _bound:
         c = int(cand) % 1440
         if c not in tried:
+            _check_cancelled()
             tried[c] = score(c)
 
     def pick(only_permitted):
@@ -818,6 +844,7 @@ def optimise_departure(sabre_db, oag_db, week, origin_airports, origin, hub, des
             for dep in range(anchor - step + refine, anchor + step, refine):
                 d = dep % 1440
                 if d not in tried:
+                    _check_cancelled()
                     tried[d] = score(d)
         best, free_best = pick(True), pick(False)
     _fmt = lambda ws: [f"{a // 60:02d}:{a % 60:02d}-{b // 60:02d}:{b % 60:02d}" for a, b in ws]

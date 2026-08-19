@@ -199,6 +199,11 @@
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<!-- Background job watcher (19 August 2026): shows a status chip and a way back to the
+     Dashboard if an Optimise sweep is running there, so a presenter can walk this page
+     while a cold-route sweep runs elsewhere rather than standing over a spinner. Same file
+     every page includes, see app/static/job_watch.js. -->
+<script defer src="/static/job_watch.js"></script>
 <script>
 const $=s=>document.querySelector(s);
 // drive-time bands mapped to the brass intensity ramp (nearest darkest), plus grey beyond the practical catchment

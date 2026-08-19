@@ -635,7 +635,7 @@ def render_html(t, source_name, engine_ctx=None):
     return f"""<!doctype html><html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Track Record &middot; {esc(a)} &middot; The Observatory</title>
-{FONT_LINK}{OBS_STYLE}</head><body><div class="wrap">
+{FONT_LINK}{OBS_STYLE}<script defer src="/static/job_watch.js"></script></head><body><div class="wrap">
   <div class="topnav"><a href="/">&larr; Route Forecasting</a>
     <a href="/trackrecord">Check another airport</a></div>
   <div class="kicker">The Observatory &middot; Meridian &middot; Forecast Track Record</div>
@@ -759,7 +759,7 @@ def render_total(t, source_name, control=None):
     return f"""<!doctype html><html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Track Record &middot; Whole engine &middot; The Observatory</title>
-{FONT_LINK}{OBS_STYLE}</head><body><div class="wrap">
+{FONT_LINK}{OBS_STYLE}<script defer src="/static/job_watch.js"></script></head><body><div class="wrap">
   <div class="topnav"><a href="/">&larr; Route Forecasting</a>
     <a href="/trackrecord">Check one airport</a></div>
   <div class="kicker">The Observatory &middot; Meridian &middot; Forecast Track Record</div>
@@ -839,7 +839,7 @@ def page(airport=None):
   a.back{{display:inline-block;margin-bottom:10px;font-family:{SANS};font-size:10px;letter-spacing:.1em;text-transform:uppercase}}
   :focus-visible{{outline:2px solid {BRASS};outline-offset:2px}}
 </style>
-</head><body><div class="card"><a class="back" href="/">&larr; Route Forecasting</a>
+<script defer src="/static/job_watch.js"></script></head><body><div class="card"><a class="back" href="/">&larr; Route Forecasting</a>
 <div class="kicker">The Observatory &middot; Meridian</div>
 <h2>Track Record</h2><p>How the forecast engine has performed against every new route launched
 at an airport, graded on actual outturn.</p>

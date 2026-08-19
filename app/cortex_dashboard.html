@@ -19,6 +19,10 @@
      state on the figure that it is drawing positions without a basemap. -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<!-- Background job watcher (19 August 2026): shows the chip if a run is still live when
+     this page loads (e.g. after a reload), same file every page includes, see job_watch.js.
+     defer: it touches document.body, which does not exist yet this early in <head>. -->
+<script defer src="/static/job_watch.js"></script>
 <style>
   /* ---- Observatory tokens (see observatory_tokens.css) ---- */
   :root{
@@ -313,15 +317,28 @@
               </div>
             </div>
             <div class="fld" style="grid-column:span 4;justify-content:flex-end">
-              <div style="display:flex;gap:8px">
+              <div style="display:flex;gap:8px;align-items:center">
                 <button class="btn ghost" id="optimise" style="flex:1" title="Leave airline, aircraft or frequency blank and let Meridian choose the best">Optimise</button>
                 <button class="btn accent" id="run" style="flex:1.4">Run assessment</button>
+                <!-- ONE STOP BUTTON, WHICHEVER IS RUNNING (19 August 2026, John's ruling). An
+                     optimise sweep on a cold route can run 600-700s; missing a variable meant
+                     waiting the whole thing out before starting the correct run. Covers both
+                     Optimise (a real server-side cancel, the candidate sweep checks between
+                     scores) and Run assessment (a client-side abort; /api/forecast has no job
+                     to cancel, so this stops the wait, not the workstation, a known limit
+                     stated plainly rather than pretended away). Hidden until a run is active. -->
+                <button class="btn ghost" id="stopRun" style="display:none;border-color:var(--signal);color:var(--signal)" title="Stop the run in progress">Stop</button>
+                <!-- NEW FORECAST (19 August 2026). Resets every field to the page's own default
+                     state, cancels any run in progress first, and clears the stored run query
+                     so a download taken right after cannot silently reuse the old one. -->
+                <button class="btn ghost" id="newForecast" title="Clear every field and start a fresh assessment">New forecast</button>
               </div>
             </div>
           </div>
           <div class="chips">
             <span style="font-family:var(--sans);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600;align-self:center">Recent</span>
             <span id="recentChips" style="display:contents"></span>
+            <span id="runStatus" style="font-family:var(--sans);font-size:10.5px;color:var(--muted);align-self:center"></span>
           </div>
         </div>
       </div>
@@ -604,6 +621,53 @@ attachTypeahead($("#airline"),"airline");
 
 // ---- live economics slider panel (recomputes in-browser from the cost model) ----
 let STATE={};
+// THE ONE ACTIVE RUN, if any (19 August 2026). Either {type:'optimise', job_id, timer} for
+// the background /api/optimise sweep, or {type:'assessment', controller} for the plain
+// /api/forecast fetch (an AbortController, since that path has no server-side job to
+// cancel). Null when nothing is running. stopRun() reads this to know what to stop and
+// newForecast() reads it to make sure a reset never leaves an old run computing behind it.
+let ACTIVE_RUN=null;
+function setRunStatus(msg){ const e=$("#runStatus"); if(e) e.textContent=msg||""; }
+// BACKGROUND NAVIGATION (19 August 2026). The optimise job already survives on the server
+// regardless of what page is open; this pair of helpers is the only client-side gap that
+// mattered, telling job_watch.js (loaded on every other page via one <script src> line,
+// never pasted in five times) which job is live. Written on start, cleared on every
+// terminal path (done/cancelled/error) and on a user-pressed Stop, so a stale entry never
+// outlives its job.
+function storeJob(job){ try{ localStorage.setItem("avia_active_job", JSON.stringify(job)); }catch(_e){} }
+function clearStoredJob(){ try{ localStorage.removeItem("avia_active_job"); }catch(_e){} }
+function stopRun(){
+  if(!ACTIVE_RUN) return;
+  const r=ACTIVE_RUN; ACTIVE_RUN=null;
+  $("#stopRun").style.display="none";
+  if(r.type==="optimise"){
+    clearInterval(r.timer);
+    fetch("/api/optimise/cancel?job_id="+encodeURIComponent(r.job_id)).catch(()=>{});
+    clearStoredJob();
+    const btn=$("#optimise"); btn.disabled=false; btn.textContent="Optimise";
+    setRunStatus("Stopped.");
+  } else if(r.type==="assessment"){
+    r.controller.abort();
+    const btn=$("#run"); btn.disabled=false; btn.textContent="Run assessment";
+    setRunStatus("Stopped.");
+  }
+}
+$("#stopRun").onclick=stopRun;
+function newForecast(){
+  stopRun();                                    // never leave an old run computing behind a cleared form
+  ["origin","dest","airline","freq","deptime","curfewO1","curfewO2","curfewD1","curfewD2",
+   "partners","seats"].forEach(id=>{ const e=$("#"+id); if(e) e.value=""; });
+  $("#ctype").value="FSC"; $("#season").value=""; $("#stimPosture").value=""; $("#sfloor").value="1";
+  const _fy=$("#fyear"), _def=_fy&&_fy.querySelector("option[selected]"); if(_def) _fy.value=_def.value;
+  filterAircraftByAirline().catch(()=>{});
+  resetSeatHint();
+  document.querySelectorAll("#expertPanel input").forEach(i=>i.value="");
+  $("#routeFlag").classList.add("hidden"); $("#err").classList.add("hidden"); $("#results").classList.add("hidden");
+  STATE.lastQ=null;
+  setRunStatus("");
+  $("#origin").focus();
+}
+$("#newForecast").onclick=newForecast;
 const setTxt=(id,v)=>{const e=document.getElementById(id); if(e)e.textContent=v;};
 // chg and own are multipliers on the charges plug and the ownership plug, both 1.0 by default.
 // Airport and handling charges here are a generic placeholder, not this airport pair, and on a short
@@ -787,8 +851,13 @@ const DEFAULT_RECENT=[
   {o:'Frankfurt',d:'New York',a:'LH',t:'FSC',ac:'B789'}];
 function loadRecent(){ try{const r=JSON.parse(localStorage.getItem('avia_recent')||'null'); return (Array.isArray(r)&&r.length)?r:DEFAULT_RECENT;}catch(e){return DEFAULT_RECENT;} }
 function saveRecent(q){ let r=loadRecent().filter(x=>!(x.o===q.o&&x.d===q.d&&(x.a||'')===(q.a||'')&&x.ac===q.ac)); r.unshift(q); r=r.slice(0,5); try{localStorage.setItem('avia_recent',JSON.stringify(r));}catch(e){} renderRecent(); }
+// POPULATE ONLY, DO NOT RUN (19 August 2026, John's find): a recent chip used to auto-run
+// the forecast the moment it was clicked, so building a VARIANT of a past query cost two
+// waits, the auto-run nobody asked for, then the real run after editing. A chip click now
+// behaves exactly like typing the same values in by hand: the field state changes, Run
+// assessment or Optimise stays the one explicit trigger.
 async function applyRecent(x){ $("#origin").value=x.o; $("#dest").value=x.d; $("#airline").value=x.a||""; $("#ctype").value=x.t||"FSC";
-  await filterAircraftByAirline(); if(x.ac && [...$("#aircraft").options].some(o=>o.value===x.ac)) $("#aircraft").value=x.ac; doForecast(); }
+  await filterAircraftByAirline(); if(x.ac && [...$("#aircraft").options].some(o=>o.value===x.ac)) $("#aircraft").value=x.ac; }
 function renderRecent(){ const el=$("#recentChips"); if(!el)return; const r=loadRecent();
   el.innerHTML=r.map((x,i)=>`<span class="exchip" data-i="${i}">${x.o} → ${x.d}${x.a?' · '+x.a.toUpperCase():''}</span>`).join("");
   el.querySelectorAll(".exchip").forEach(c=>c.onclick=()=>applyRecent(loadRecent()[+c.dataset.i])); }
@@ -857,13 +926,25 @@ function doForecast(){
   else if(_sp==="aggr"){ const _d={FSC:1.15,LCC:1.35,ULCC:1.80}[$("#ctype").value]||1.15;
     q.set("stimulation",(Math.round((_d+0.20)*100)/100).toString()); }
   expertParams(q);
-  fetch("/api/forecast?"+q).then(r=>r.json()).then(d=>{
+  // STOP BUTTON (19 August 2026): /api/forecast is a plain synchronous call with no
+  // server-side job to cancel, so Stop here aborts the browser's own wait via
+  // AbortController. The workstation still finishes the request it already started;
+  // that is a real limit, stated here rather than pretended away, which is why Optimise
+  // below gets a proper server-side cancel instead. The controller===check in finally
+  // stops a stale abort/finish from clobbering a run started after Stop was pressed.
+  const _ctrl=new AbortController();
+  ACTIVE_RUN={type:"assessment", controller:_ctrl};
+  $("#stopRun").style.display=""; setRunStatus("");
+  fetch("/api/forecast?"+q, {signal:_ctrl.signal}).then(r=>r.json()).then(d=>{
     // The demo email flow re-runs THIS query server-side, so the query is kept only
     // when the run it produced is the one on screen. An optimise sweep clears it.
     STATE.lastQ = (d && d.ok) ? q.toString() : null;
     render(d);
-  }).catch(e=>showErr(e.message||e))
-    .finally(()=>{btn.disabled=false;btn.textContent="Run assessment";});
+  }).catch(e=>{ if(!(e&&e.name==="AbortError")) showErr(e.message||e); })
+    .finally(()=>{
+      btn.disabled=false; btn.textContent="Run assessment";
+      if(ACTIVE_RUN && ACTIVE_RUN.controller===_ctrl){ ACTIVE_RUN=null; $("#stopRun").style.display="none"; }
+    });
 }
 // The forecast years come from the store, never from a literal in the page: the base is whichever
 // Sabre year is loaded, so the default moves on its own when the data is refreshed.
@@ -1153,11 +1234,17 @@ function optimise(){
   fetch("/api/optimise/start?"+q).then(r=>r.json()).then(s=>{
     if(!s.ok||!s.job_id){ _reset(); showErr(s.error||"could not start the optimiser"); return; }
     const t=setInterval(()=>{
+      // A LATE POLL MUST NEVER LAND A RESULT AFTER STOP ALREADY CLEARED THIS JOB, the same
+      // discipline as the download-fidelity fix (19 August 2026): if ACTIVE_RUN no longer
+      // names this job, the user has moved on (Stop, or a fresh run), so this tick does
+      // nothing more than let itself die.
+      if(!ACTIVE_RUN||ACTIVE_RUN.job_id!==s.job_id){ clearInterval(t); return; }
       fetch("/api/optimise/status?job_id="+s.job_id).then(r=>r.json()).then(st=>{
+        if(!ACTIVE_RUN||ACTIVE_RUN.job_id!==s.job_id){ clearInterval(t); return; }
         if(st.state==="running"){
           btn.innerHTML='<span class="spinner"></span>Optimising… '+Math.round((Date.now()-_t0)/1000)+'s';
           return; }
-        clearInterval(t); _reset();
+        clearInterval(t); _reset(); ACTIVE_RUN=null; $("#stopRun").style.display="none"; clearStoredJob();
         if(st.state==="done"&&st.result&&st.result.ok&&st.result.optimised){
           // Do NOT write the optimised picks back into the form: a field left blank must
           // stay blank so the next Optimise re-sweeps it; the picks show in the basis line.
@@ -1175,9 +1262,24 @@ function optimise(){
             STATE.lastQ=_dq.toString();
           }catch(_e){ STATE.lastQ=null; }
           render(st.result);
+        } else if(st.state==="cancelled"){
+          // A user-stopped sweep is not a failure: say so plainly rather than through showErr,
+          // which is worded for forecast failures ("Could not forecast this pair: ...").
+          setRunStatus("Stopped.");
         } else { showErr((st.result&&st.result.error)||st.error||"could not optimise this pair"); }
-      }).catch(e=>{ clearInterval(t); _reset(); showErr(e.message||e); });
+      }).catch(e=>{ clearInterval(t); _reset(); ACTIVE_RUN=null; $("#stopRun").style.display="none"; clearStoredJob(); showErr(e.message||e); });
     }, 3000);
+    // STOP BUTTON (19 August 2026): the sweep now runs 600-700s on a cold route; a missed
+    // variable used to cost the whole wait. /api/optimise/cancel sets a flag that
+    // route_feed.optimise_departure checks between candidate scores, so Stop actually halts
+    // the workstation computation, not just the browser's poll.
+    ACTIVE_RUN={type:"optimise", job_id:s.job_id, timer:t};
+    $("#stopRun").style.display=""; setRunStatus("");
+    // BACKGROUND NAVIGATION (19 August 2026): job_watch.js on every other page reads this
+    // to show a status chip and a way back, so a presenter can walk a prospect through
+    // Catchment & demand or Economics while a cold-route sweep runs, rather than standing
+    // over a spinner. Cleared on every terminal path above and in stopRun().
+    storeJob({job_id:s.job_id, origin:o, dest:d, started:_t0});
   }).catch(e=>{ _reset(); showErr(e.message||e); });
 }
 function downloadReport(part){

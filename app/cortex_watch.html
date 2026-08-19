@@ -63,6 +63,10 @@
   .fresh b{font-family:var(--sans);font-weight:600;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-right:6px}
   .fresh .bad{color:var(--signal)}
 </style>
+<!-- Background job watcher (19 August 2026): shows a status chip and a way back to the
+     Dashboard if an Optimise sweep is running there. Same file every page includes,
+     see app/static/job_watch.js. -->
+<script defer src="/static/job_watch.js"></script>
 </head>
 <body>
   <a class="back" href="/">&#8592; Dashboard</a>

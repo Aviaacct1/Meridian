@@ -95,6 +95,10 @@
   @media(max-width:960px){.grid{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,1fr)}.form{grid-template-columns:repeat(6,1fr)}}
   @media (prefers-reduced-motion: reduce){*{animation-duration:.001ms!important}}
 </style>
+<!-- Background job watcher (19 August 2026): shows a status chip and a way back to the
+     Dashboard if an Optimise sweep is running there. Same file every page includes,
+     see app/static/job_watch.js. -->
+<script defer src="/static/job_watch.js"></script>
 </head>
 <body>
 <div class="app">

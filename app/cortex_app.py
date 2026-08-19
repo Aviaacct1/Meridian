@@ -1052,8 +1052,8 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
             _dk = ("dep", home, dest_airport, airline, ctx["week"], ctx["year"], str(_rh), str(_rd),
                    ",".join(_partners))
             if _dk not in S:
+                import route_feed as _RFD
                 try:
-                    import route_feed as _RFD
                     _b, _i = _RFD.optimise_departure(
                         ctx["sabre_db"], ctx["oag_db"], ctx["week"], competing, home, dest_airport,
                         dest_codes, ctx["year"], airline, bmin, freq, feed_cfg,
@@ -1061,6 +1061,14 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
                         refine=int(os.environ.get("AVIA_DEP_REFINE", 30)),
                         restricted=_rh, restricted_dest=_rd, turn_mins=_turn_min)
                     S[_dk] = (_b, _i)
+                except _RFD.OptimiseCancelled:
+                    # STOP BUTTON (19 August 2026): a user-stopped job must actually stop, not
+                    # fall back to the placeholder 11:00 departure and quietly keep computing a
+                    # full forecast nobody asked to see. Re-raise past this cache/fallback point;
+                    # api_optimise has no other try around the calibrated_forecast call, so this
+                    # reaches cortex_app.api_optimise_start's job runner and lands OPT_JOBS on
+                    # "cancelled".
+                    raise
                 except Exception as _e:
                     S[_dk] = (None, {"error": str(_e)})
             dep_mins, feed_opt = S[_dk]
@@ -2940,7 +2948,7 @@ def api_pitch_html(job_id: str):
     return FileResponse(j["html"], filename=j.get("html_name", "pitch.html"), media_type="text/html")
 
 
-OPT_JOBS = {}      # job_id -> {state, result, error, started}
+OPT_JOBS = {}      # job_id -> {state, result, error, started, cancel}
 
 
 @app.get("/api/optimise/start")
@@ -2951,20 +2959,31 @@ def api_optimise_start(request: Request, origin: str, dest: str):
     import threading, time, uuid
     import inspect
     import demo_leads as DL
+    import route_feed as _RF
     q = dict(request.query_params)
     defaults = {k: p.default for k, p in inspect.signature(api_optimise).parameters.items()
                 if p.default is not inspect.Parameter.empty}
     kw = DL.coerce_params(q, defaults)
     job_id = uuid.uuid4().hex[:12]
-    OPT_JOBS[job_id] = {"state": "running", "started": time.time()}
+    OPT_JOBS[job_id] = {"state": "running", "started": time.time(), "cancel": False}
 
     def _run():
+        # STOP BUTTON (19 August 2026): a cold-route sweep runs 600-700s, and a missed
+        # variable used to cost the whole wait. CANCEL_CHECK is a contextvar set for the
+        # lifetime of THIS thread only, read by route_feed.optimise_departure between
+        # candidate scores wherever it is called from inside api_optimise; a plain direct
+        # call to api_optimise (outside a job) never sets it and behaves exactly as before.
+        token = _RF.CANCEL_CHECK.set(lambda: OPT_JOBS.get(job_id, {}).get("cancel", False))
         try:
             resp = api_optimise(origin, dest, **kw)
             OPT_JOBS[job_id] = {"state": "done", "result": json.loads(bytes(resp.body))}
+        except _RF.OptimiseCancelled:
+            OPT_JOBS[job_id] = {"state": "cancelled"}
         except Exception as e:                               # noqa: BLE001
             OPT_JOBS[job_id] = {"state": "error",
                                 "error": "%s: %s" % (type(e).__name__, e)}
+        finally:
+            _RF.CANCEL_CHECK.reset(token)
 
     threading.Thread(target=_run, daemon=True).start()
     return JSONResponse({"ok": True, "job_id": job_id})
@@ -2984,6 +3003,21 @@ def api_optimise_status(job_id: str):
     if j.get("state") == "error":
         out["error"] = j.get("error")
     return JSONResponse(out)
+
+
+@app.get("/api/optimise/cancel")
+def api_optimise_cancel(job_id: str):
+    """Stops a running optimise job (19 August 2026): sets the flag CANCEL_CHECK reads
+    inside route_feed.optimise_departure's candidate loop, so a Stop press actually
+    halts the workstation computation between scores rather than just abandoning the
+    client's poll, which would leave the sweep burning CPU alongside whatever the user
+    runs next. A job already finished, errored or cancelled is left as it is."""
+    j = OPT_JOBS.get(job_id)
+    if not j:
+        return JSONResponse({"ok": False, "error": "unknown job"}, status_code=404)
+    if j.get("state") == "running":
+        j["cancel"] = True
+    return JSONResponse({"ok": True, "state": j.get("state")})
 
 
 REPORT_JOBS = {}   # job_id -> {state, file, name, media, error, started}
