@@ -249,13 +249,31 @@ def build_workbook(out_path, fc, meta=None):
        font=NOTE, align=LFT, border=None)
 
     # ---- 3. Connecting feed detail (base demand, share, forecast, PDEW) -----
+    # JOL'S REVIEW, 19 August 2026, two findings both fixed here.
+    # (1) The Total row summed only the PRINTED top-15 rows, a subtotal wearing a
+    #     total's label: on CI the beyond column showed 24,325 against a carried leg
+    #     of 29,063 each way, and the missing 4,738 is the tail of small markets. An
+    #     "All other" row now completes each leg to the SAME figure the Cover and the
+    #     Forecast sheet print (carried_split), so the surfaces agree by construction.
+    #     The market-demand column takes NO other-row figure: each row's demand is
+    #     that market's own O&D size, a different quantity from the leg's connecting
+    #     base, and a filler there would paper over a definition, so it stays "-".
+    # (2) Year labels (John's rule: every column names its year): route_forecast
+    #     line ~642 grows the city detail's base AND captured to the forecast year,
+    #     so both figure columns are AT the service year, not the base year, and the
+    #     headers now say so.
     ws = wb.create_sheet("Connecting feed")
-    _title(ws, "Connecting feed detail", "connecting markets each way: base O&D demand, captured share, forecast, PDEW")
+    _svc_yr = (fc.get("schedule") or {}).get("forecast_year") or ""
+    _yrtag = f" {_svc_yr}" if _svc_yr else ""
+    _title(ws, "Connecting feed detail",
+           f"connecting markets each way at{_yrtag or ' the service year'}: market O&D demand, captured share, forecast, PDEW")
+    _csp, _csb, _csy, _cst = carried_split(dem)
     r = 4
-    for label, key in [(f"Connecting at {home} (behind the origin)", "behind_pdew"),
-                       (f"Connecting at {d['iata']} (beyond the destination)", "beyond_pdew")]:
+    for label, key, _leg_ew in [(f"Connecting at {home} (behind the origin)", "behind_pdew", _csb),
+                                (f"Connecting at {d['iata']} (beyond the destination)", "beyond_pdew", _csy)]:
         _sec(ws, r, label, 8); r += 1
-        _hdr(ws, r, ["Nr", "Code", "City", "Country", "Market demand", "Share", f"{_padj} forecast", "PDEW"],
+        _hdr(ws, r, ["Nr", "Code", "City", "Country", f"Market demand{_yrtag}", "Share",
+                     f"{_padj} forecast{_yrtag}", "PDEW"],
              [6, 10, 24, 20, 15, 10, 15, 9]); r += 1
         lst = dem.get(key) or []; sub_base = 0.0; sub_fc = 0.0
         for i, row in enumerate(lst, 1):
@@ -270,11 +288,28 @@ def build_workbook(out_path, fc, meta=None):
             _c(ws, r, 6, shr if base else "-", fmt="0.0%", align=RGT)
             _c(ws, r, 7, round(fcv), fmt="#,##0", align=RGT); _c(ws, r, 8, round(pdv, 1), fmt="#,##0.0", align=RGT)
             r += 1
+        # The tail: every connecting market smaller than the listed ones. Only drawn
+        # when the carried leg genuinely exceeds the listed sum; a seasonal or older
+        # payload where the two bases differ keeps the honest subtotal instead.
+        _other = (_leg_ew - sub_fc) if (_leg_ew and _leg_ew > sub_fc + 0.5) else 0.0
+        if _other:
+            _c(ws, r, 1, "", align=CTR)
+            _c(ws, r, 3, "All other connecting markets", align=LFT)
+            _c(ws, r, 5, "-", align=RGT); _c(ws, r, 6, "-", align=RGT)
+            _c(ws, r, 7, round(_other), fmt="#,##0", align=RGT)
+            _c(ws, r, 8, round(_other / (weeks * 7.0), 1), fmt="#,##0.0", align=RGT)
+            r += 1
         _c(ws, r, 1, "Total", font=BOLD, fill=TOTF, align=LFT)
         for cc in (2, 3, 4, 6, 8):
             _c(ws, r, cc, None, fill=TOTF)
         _c(ws, r, 5, round(sub_base) if sub_base else "-", font=BOLD, fill=TOTF, fmt="#,##0", align=RGT)
-        _c(ws, r, 7, round(sub_fc), font=BOLD, fill=TOTF, fmt="#,##0", align=RGT); r += 2
+        _c(ws, r, 7, round(sub_fc + _other), font=BOLD, fill=TOTF, fmt="#,##0", align=RGT); r += 1
+        _c(ws, r, 1, "Market demand is each market's own total O&D (all routings), so the column "
+                     "does not sum to the connecting base in the forecast table; the forecast "
+                     "column, with the All-other row, totals to the carried leg.",
+           font=NOTE, align=LFT, border=None)
+        ws.merge_cells(start_row=r, start_column=1, end_row=r, end_column=8)
+        r += 2
 
     # ---- 3b. Schedule and capacity ----------------------------------------
     ws = wb.create_sheet("Schedule")

@@ -300,15 +300,22 @@ def _connecting(c, key, title):
     leg = _g(c, "segment_forecast", "summary",
              "connecting_at_hub_total" if key == "connecting_at_hub" else "connecting_at_destination_total",
              "forecast")
+    # BASIS AND YEAR, Jol's review 19 August 2026. The city rows are EACH WAY (the
+    # engine's feed detail) while the contract leg is two-way, and the old subtitle
+    # compared one against the other ("23,761 of a leg of 54,518" read as 44% shown
+    # when the true each-way coverage is 84%). The subtitle now compares each way
+    # against each way and says so. The demand-column year was also mislabelled: the
+    # engine GROWS the city detail's base and captured to the forecast year
+    # (route_forecast ~line 642), so both figure columns are at the SERVICE year,
+    # never the base year.
     sub = None
     if leg:
         shown = sum((x.get("annual_forecast") or 0) for x in cities)
-        sub = ("The fifteen largest cities, %s passengers of a leg of %s"
-               % (_n(shown), _n(leg)))
-    base_yr = _g(c, "route_metadata", "base_year") or _g(c, "_settings", "base_year")
+        sub = ("The fifteen largest cities, each way: %s passengers of a carried leg of %s"
+               % (_n(shown), _n(leg / 2.0)))
     svc_yr = _g(c, "route_metadata", "service_year")
     return S.table({"head": ["", "Code", "City", "Country",
-                             "Annual demand %s" % base_yr if base_yr else "Annual demand",
+                             "Annual demand %s" % svc_yr if svc_yr else "Annual demand",
                              "Share captured",
                              "Forecast %s" % svc_yr if svc_yr else "Forecast",
                              "Per day each way"], "rows": rows},

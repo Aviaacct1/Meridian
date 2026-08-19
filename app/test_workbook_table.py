@@ -91,6 +91,40 @@ def main():
         check("steady state: base equals grown", p2p[1] == p2p[3])
         check("steady state: growth prints zero", (p2p[2] or 0) == 0)
 
+        # the Connecting feed sheet (19 August 2026, Jol's review): the top-N city
+        # rows plus an All-other row must TOTAL to the same carried leg the Cover
+        # prints, and every figure column names the service year
+        fc = _fc(grown=True)
+        fc["demand"]["behind_pdew"] = [
+            {"code": "SEA", "name": "Seattle", "country": "US", "base": 40000,
+             "share": 0.06, "forecast": 5000, "pdew": 13.7}]
+        fc["demand"]["beyond_pdew"] = [
+            {"code": "MNL", "name": "Manila", "country": "PH", "base": 80000,
+             "share": 0.03, "forecast": 9000, "pdew": 24.7},
+            {"code": "BKK", "name": "Bangkok", "country": "TH", "base": 60000,
+             "share": 0.03, "forecast": 6000, "pdew": 16.4}]
+        out = os.path.join(tmp, "feed.xlsx")
+        CWB.build_workbook(out, fc, {"airline_name": "CI", "analyst": "A", "date": "d",
+                                     "plan_lf": 0.875, "capture_basis": "m",
+                                     "econ_fare": 975})
+        wb = openpyxl.load_workbook(out, data_only=True)
+        ws = wb["Connecting feed"]
+        txt = [[c.value for c in row] for row in ws.iter_rows(min_row=1, max_row=30)]
+        flat = ["|".join(str(v) for v in row if v is not None) for row in txt]
+        check("feed headers carry the service year",
+              any("Market demand 2028" in s for s in flat)
+              and any("forecast 2028" in s.lower() for s in flat))
+        check("All-other rows drawn on both legs",
+              sum(1 for s in flat if "All other connecting markets" in s) == 2)
+        # carried_split legs from the fixture: behind 7400, beyond 23200 scaled to
+        # connecting_carried 22392 -> behind 5414, beyond 16978
+        totals = [row for row in txt if row[0] == "Total"]
+        t_beh, t_bey = totals[0][6], totals[1][6]
+        check("behind total equals the carried leg", abs(t_beh - 5414) <= 1, t_beh)
+        check("beyond total equals the carried leg", abs(t_bey - 16978) <= 1, t_bey)
+        check("demand column keeps the honest subtotal, no filler",
+              any("does not sum to the connecting base" in s for s in flat))
+
         # the Departure curve sheet (19 August 2026): raw curve + the dashboard's own
         # carried transform + a native chart; must reconcile with the headline at the
         # chosen departure and never exist without an optimiser curve

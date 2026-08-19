@@ -1,0 +1,20 @@
+Connecting feed sheet: All-other row completes the leg, year labels on every figure column
+
+Jol's review of the workbook, 19 August 2026, two findings.
+
+- The Connecting feed sheet's Total row summed only the printed top-15 rows: CI's
+  beyond column showed 24,325 against a carried leg of 29,063 each way. An "All
+  other connecting markets" row now completes each leg to the same carried_split
+  figure the Cover and Forecast sheet print, so the surfaces agree by construction.
+  The market-demand column deliberately takes no other-row figure: each row's demand
+  is that market's own total O&D, a different quantity from the leg's connecting
+  base, and the sheet now says so in a note instead of papering over it.
+- Year labels (John's rule: every table column names its year): route_forecast grows
+  the city detail's base and captured to the forecast year, so both figure columns
+  are AT the service year and the headers now carry it. Same fix on the pack's city
+  tables (deck/forecast_pack), whose demand header wrongly claimed the base year;
+  the pack subtitle also compared the each-way city sum against the two-way leg and
+  now compares each way against each way.
+- Tests: test_workbook_table.py 20 checks (5 new: year headers, All-other on both
+  legs, totals equal the carried legs, honest demand note);
+  deck/test_forecast_pack_maps.py 23 checks, all green.
