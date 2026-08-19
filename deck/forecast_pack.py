@@ -275,7 +275,7 @@ def _forecast_table(c):
                     "rows": rows, "total": True},
                    title="Traffic forecast",
                    subtitle="%s weekly, year 1 at %s" % (_n(rm.get("frequency_per_week")),
-                                                         svc_yr or "maturity"),
+                                                         svc_yr or "the service year"),
                    bullets=notes,
                    source=_src(c))
 
@@ -344,9 +344,18 @@ def _method_pages(c, maps=None):
                             subtitle="How the forecast is built, on this run's own figures",
                             source=_src(c)))
 
+    # "Reached maturity" was 2025-deck language and wrong for Meridian (Jol's challenge,
+    # 19 August 2026): the calibration predicts a route's FIRST year, and route_forecast
+    # applies no separate ramp because measured maturation on comparable launches (circa
+    # +1% to year two, +10% to year three) is the same size as market growth over the
+    # period; applying both would double count. Year 1 is the honest, more conservative
+    # claim, so the page now makes it.
     base = [(None, "The forecast takes a base year of measured origin and destination demand and "
-                   "grows it to the service year, at which the route is assumed to have reached "
-                   "maturity."),
+                   "grows it to the service year. It is a year 1 forecast: the capture calibration "
+                   "is built on the first year of observed route launches, and no separate ramp-up "
+                   "is applied, because measured maturation on comparable launches (circa +10% by "
+                   "year three) is of the same size as market growth over the period, and applying "
+                   "both would double count."),
             ("Base and growth",
              "Service year %s. %s" % (rm.get("service_year") or "not stated",
                                       _g(c, "_settings", "growth_basis",

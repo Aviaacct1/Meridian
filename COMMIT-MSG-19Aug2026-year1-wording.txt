@@ -1,0 +1,15 @@
+Methodology wording: the forecast is year 1, not "maturity"
+
+Jol's challenge, 19 August 2026: "how can the route be mature in Year 1?" It cannot,
+and the sentence was inherited 2025-deck language that does not describe Meridian.
+The calibration predicts a route's FIRST year (BT2), and route_forecast applies no
+separate ramp because measured maturation on comparable launches (x1.013 to year
+two, x1.104 to year three) is the same size as market growth over the period;
+applying both would double count. Year 1 is the honest and more conservative claim.
+
+- deck/forecast_pack.py: methodology base paragraph now states the year 1 basis and
+  why no ramp-up is applied; the traffic-table subtitle fallback loses the word
+  "maturity".
+- The three delivered SJC-TPE airline decks were corrected in place in the project
+  folder. Legacy chains (build_ba_sjc, spec_goa_nyc, the June assumptions log) are
+  untouched by design.
