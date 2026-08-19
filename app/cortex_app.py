@@ -1207,8 +1207,17 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
         return [{"code": c, "name": (ap[c]["city"] if (c in ap and ap[c].get("city")) else c),
                  "country": (ap[c].get("country") if c in ap else ""), "pdew": v}
                 for c, v in rows[:top] if v and v > 0]
-    beyond_list = _feed_list(r.get("beyond_detail"), r.get("beyond_pdew"))
-    behind_list = _feed_list(r.get("behind_detail"), r.get("behind_pdew"))
+    # AVIA_FEED_TOP (19 August 2026, internal): an ENV switch, deliberately not a query
+    # parameter, so a client cannot deepen the city lists the portal serves (the R6/R7
+    # depth posture holds). Set in a shell session before deck_from_cases when a piece
+    # of work needs the full beyond/behind market list, e.g. the SJC research deck's
+    # top-15-to-China chart. Default is the shipped 15.
+    try:
+        _ftop = int(os.environ.get("AVIA_FEED_TOP", "15") or 15)
+    except ValueError:
+        _ftop = 15
+    beyond_list = _feed_list(r.get("beyond_detail"), r.get("beyond_pdew"), top=_ftop)
+    behind_list = _feed_list(r.get("behind_detail"), r.get("behind_pdew"), top=_ftop)
     _feed_base = lambda dm: round(sum((v.get("base") or 0) for v in (dm or {}).values()))
     beyond_base = _feed_base(r.get("beyond_detail")); behind_base = _feed_base(r.get("behind_detail"))
     # CABIN SPLIT. Measured front-cabin share, or the caller's figure, or the old assumption if the

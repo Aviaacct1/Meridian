@@ -1,0 +1,7 @@
+AVIA_FEED_TOP: env-gated depth on the beyond/behind city lists, internal only
+
+The SJC research deck's top-15-to-China chart needs the full beyond-TPE market list,
+and only the top 15 leave the engine. AVIA_FEED_TOP deepens _feed_list for a shell
+session (deck_from_cases); it is an environment switch and deliberately NOT a query
+parameter, so the portal's client-facing depth is unchanged and the R6/R7 audit
+posture holds. Default remains 15.
