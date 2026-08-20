@@ -135,6 +135,33 @@ def test_fill_forecast_table():
           abs(cnx["base_annual_demand"] - 750000) < 500, cnx["base_annual_demand"])
 
 
+def test_connecting_demand_column_completes():
+    """20 August 2026 (John, checking the EVA pack): the demand column's All-other row
+    was left blank on the belief that a city's own O&D size does not sum to anything
+    meaningful. Checked against the pipeline and it does: catchment_headline's
+    connecting_market_over_hub is dem["feed_beyond_base"], the same source the printed
+    cities' own annual_demand figures come from, additive with them, each way like the
+    city rows (unlike the forecast leg, which is two-way)."""
+    contract = {"route_metadata": {"service_year": 2027,
+                                    "catchment_headline": {"connecting_market_over_hub": 719486}},
+                "segment_forecast": {"summary": {
+                    "connecting_at_hub_total": {"forecast": 58126}}},
+                "connecting_at_hub": {"hub": "TPE", "cities": [
+                    {"nr": 1, "city_code": "MNL", "city_name": "Manila", "country": "PH",
+                     "annual_demand": 80392, "airline_share": 0.0295, "annual_forecast": 3635, "pdew": 5.0},
+                    {"nr": 2, "city_code": "SGN", "city_name": "Ho Chi Minh City", "country": "VN",
+                     "annual_demand": 78970, "airline_share": 0.0295, "annual_forecast": 3571, "pdew": 4.9},
+                ]}}
+    tbl = FP._connecting(contract, "connecting_at_hub", "Connecting at TPE (beyond the destination)")
+    rows = tbl["table"]["rows"]
+    check("all-other demand completes to the market total, each way",
+          rows[-2][4] == "560,124", rows[-2][4])   # 719486 - (80392+78970)
+    check("total row's demand equals the full market, each way",
+          rows[-1][4] == "719,486", rows[-1][4])
+    check("forecast column unaffected, still completes to the two-way leg / 2",
+          rows[-1][6] == "29,063", rows[-1][6])
+
+
 def test_connecting_all_other_row():
     """20 August 2026 (Mark Kiehl/SJC): the fifteen printed rows summed to about a third
     of the summary page's carried leg (his own check, page 43 v page 45), because the
@@ -271,6 +298,7 @@ def main():
         test_contract_ends()
         test_fill_forecast_table()
         test_connecting_all_other_row()
+        test_connecting_demand_column_completes()
         test_process_figure(tmp)
         spec, _maps = test_build_pack(tmp)
         test_render(spec, tmp)

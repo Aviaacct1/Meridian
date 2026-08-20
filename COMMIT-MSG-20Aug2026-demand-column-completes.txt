@@ -1,0 +1,39 @@
+Demand column completes on the All-other row, everywhere the connecting-city table renders
+
+John's finding, checking the EVA pack: the forecast column completes to the carried
+leg on the All-other row, but demand stayed blank. 19 August's note said market demand
+was "a different quantity" from the leg and would be papered over by a filler. Checked
+against the pipeline and that was wrong: catchment_headline.connecting_market_over_hub
+/_destination (or, in the raw payload, dem["feed_beyond_base"]/["feed_behind_base"]) is
+the full uncapped market before capture, the SAME source the shown cities' own
+annual_demand figures are drawn from, additive with them, each way like the city rows
+(the forecast leg is two-way in the PPTX/Excel surfaces; this file's own HTML report
+stays each-way throughout, so no doubling there). Reconciles exactly to the numbers
+Jol first queried on 19 August (181,565 old vs 181,551 now, the difference being the
+already-logged small run-to-run drift, not a new defect).
+
+Fixed on every surface that renders this table:
+- deck/forecast_pack.py: _connecting() completes annual_demand the same way as
+  annual_forecast, using route_metadata.catchment_headline.
+- app/cortex_workbook.py: Connecting feed sheet, same completion using
+  dem["feed_beyond_base"]/["feed_behind_base"]; note text rewritten since it no longer
+  needs to explain why demand DOESN'T reconcile.
+- app/pitch_html.py: cxtbl() had no All-other row at all (a plainer version of the same
+  defect than the PPTX ever had) - fixed properly with both completions, each way,
+  verified by actually running the generated JS in node, not just read.
+
+NOT touched, on purpose:
+- app/route_deck.py's _feedtbl(): only reached from assess.py and genoa_nyc.py, both
+  named legacy chains (Genoa-NYC, build_ba_sjc) left untouched by standing rule.
+- app/app_avia_style/cortex_app.py: has the same _feed_list/beyond_pdew pattern as
+  app/cortex_app.py. This looks like a second copy of the live app in a different
+  folder, which is exactly the split the Avia Tool Standard exists to prevent. Not
+  touched without confirming which one is canonical - flagged to John separately,
+  needs a decision, not a silent patch in one copy or the other.
+
+Tests: app/test_workbook_table.py fixture extended with feed_behind_base/
+feed_beyond_base and two new checks (22 checks, was 20, all passing). deck/
+test_forecast_pack_maps.py gained test_connecting_demand_column_completes() (32
+checks, was 29, all passing). pitch_html.py has no test suite; verified by generating
+a real pitch HTML from a CI-shaped fixture and running the embedded cxtbl() in node
+against it directly, output reconciles to 174,551/9,259 and 719,486/29,063 exactly.

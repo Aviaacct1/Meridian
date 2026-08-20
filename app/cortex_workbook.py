@@ -269,8 +269,14 @@ def build_workbook(out_path, fc, meta=None):
            f"connecting markets each way at{_yrtag or ' the service year'}: market O&D demand, captured share, forecast, PDEW")
     _csp, _csb, _csy, _cst = carried_split(dem)
     r = 4
-    for label, key, _leg_ew in [(f"Connecting at {home} (behind the origin)", "behind_pdew", _csb),
-                                (f"Connecting at {d['iata']} (beyond the destination)", "beyond_pdew", _csy)]:
+    # DEMAND-COLUMN TOTAL, 20 August 2026 (John, checking the EVA pack against the deck's
+    # completed forecast column): feed_beyond_base/feed_behind_base are the FULL uncapped
+    # market before capture, the same quantity each city's own "base"/demand figure is
+    # drawn from, additive with them. The 19 August note calling this "a different
+    # quantity, leave it blank" was wrong; mirrored in deck/forecast_pack.py the same day.
+    for label, key, _leg_ew, _mkt_ew in [
+            (f"Connecting at {home} (behind the origin)", "behind_pdew", _csb, n0(dem.get("feed_behind_base"))),
+            (f"Connecting at {d['iata']} (beyond the destination)", "beyond_pdew", _csy, n0(dem.get("feed_beyond_base")))]:
         _sec(ws, r, label, 8); r += 1
         _hdr(ws, r, ["Nr", "Code", "City", "Country", f"Market demand{_yrtag}", "Share",
                      f"{_padj} forecast{_yrtag}", "PDEW"],
@@ -290,23 +296,28 @@ def build_workbook(out_path, fc, meta=None):
             r += 1
         # The tail: every connecting market smaller than the listed ones. Only drawn
         # when the carried leg genuinely exceeds the listed sum; a seasonal or older
-        # payload where the two bases differ keeps the honest subtotal instead.
+        # payload where the two bases differ keeps the honest subtotal instead. Demand
+        # completes to _mkt_ew the same way; a run without feed_beyond_base/behind_base
+        # (an older payload) keeps the honest "-" rather than a fabricated figure.
         _other = (_leg_ew - sub_fc) if (_leg_ew and _leg_ew > sub_fc + 0.5) else 0.0
-        if _other:
+        _other_dem = (_mkt_ew - sub_base) if (_mkt_ew and _mkt_ew > sub_base + 0.5) else 0.0
+        if _other or _other_dem:
             _c(ws, r, 1, "", align=CTR)
             _c(ws, r, 3, "All other connecting markets", align=LFT)
-            _c(ws, r, 5, "-", align=RGT); _c(ws, r, 6, "-", align=RGT)
+            _c(ws, r, 5, round(_other_dem) if _other_dem else "-", fmt="#,##0", align=RGT)
+            _c(ws, r, 6, "-", align=RGT)
             _c(ws, r, 7, round(_other), fmt="#,##0", align=RGT)
             _c(ws, r, 8, round(_other / (weeks * 7.0), 1), fmt="#,##0.0", align=RGT)
             r += 1
         _c(ws, r, 1, "Total", font=BOLD, fill=TOTF, align=LFT)
         for cc in (2, 3, 4, 6, 8):
             _c(ws, r, cc, None, fill=TOTF)
-        _c(ws, r, 5, round(sub_base) if sub_base else "-", font=BOLD, fill=TOTF, fmt="#,##0", align=RGT)
+        _c(ws, r, 5, round(sub_base + _other_dem) if (sub_base or _other_dem) else "-",
+           font=BOLD, fill=TOTF, fmt="#,##0", align=RGT)
         _c(ws, r, 7, round(sub_fc + _other), font=BOLD, fill=TOTF, fmt="#,##0", align=RGT); r += 1
-        _c(ws, r, 1, "Market demand is each market's own total O&D (all routings), so the column "
-                     "does not sum to the connecting base in the forecast table; the forecast "
-                     "column, with the All-other row, totals to the carried leg.",
+        _c(ws, r, 1, "Market demand and forecast both complete to their carried-leg and "
+                     "market totals via the All-other row, so both columns now agree with "
+                     "the forecast table and each other.",
            font=NOTE, align=LFT, border=None)
         ws.merge_cells(start_row=r, start_column=1, end_row=r, end_column=8)
         r += 2

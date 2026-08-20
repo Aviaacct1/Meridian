@@ -103,6 +103,12 @@ def main():
              "share": 0.03, "forecast": 9000, "pdew": 24.7},
             {"code": "BKK", "name": "Bangkok", "country": "TH", "base": 60000,
              "share": 0.03, "forecast": 6000, "pdew": 16.4}]
+        # 20 August 2026 (John, checking the EVA pack): the demand column completes to
+        # the full uncapped market the same way the forecast column completes to the
+        # carried leg, using feed_behind_base/feed_beyond_base - the same source the
+        # shown cities' own "base" figures are drawn from, so additive with them.
+        fc["demand"]["feed_behind_base"] = 55000
+        fc["demand"]["feed_beyond_base"] = 200000
         out = os.path.join(tmp, "feed.xlsx")
         CWB.build_workbook(out, fc, {"airline_name": "CI", "analyst": "A", "date": "d",
                                      "plan_lf": 0.875, "capture_basis": "m",
@@ -122,8 +128,11 @@ def main():
         t_beh, t_bey = totals[0][6], totals[1][6]
         check("behind total equals the carried leg", abs(t_beh - 5414) <= 1, t_beh)
         check("beyond total equals the carried leg", abs(t_bey - 16978) <= 1, t_bey)
-        check("demand column keeps the honest subtotal, no filler",
-              any("does not sum to the connecting base" in s for s in flat))
+        t_beh_dem, t_bey_dem = totals[0][4], totals[1][4]
+        check("behind demand completes to the full market", t_beh_dem == 55000, t_beh_dem)
+        check("beyond demand completes to the full market", t_bey_dem == 200000, t_bey_dem)
+        check("note states both columns now reconcile",
+              any("both columns now agree" in s for s in flat))
 
         # the Departure curve sheet (19 August 2026): raw curve + the dashboard's own
         # carried transform + a native chart; must reconcile with the headline at the

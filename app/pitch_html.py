@@ -249,18 +249,30 @@ $('#lead').textContent=`Cortex forecasts ${fmt(D.demand.total)} passengers each 
 })();
 
 // connecting-city tables (base demand, share, forecast, PDEW)
-function cxtbl(list,elid,hid,label){
+// 20 August 2026 (John, checking the EVA pack; same defect Mark Kiehl/SJC found on the
+// PPTX): the fifteen printed rows were summed and the sum mislabelled "Total", when the
+// list is a top-15 cut (cortex_app._feed_list) and the true leg/market run wider. Mirrors
+// the deck (forecast_pack.py._connecting) and the Excel workbook (cortex_workbook.py):
+// an All-other row completes both the demand column (to mktTot, feed_beyond_base /
+// feed_behind_base, the full uncapped market) and the forecast column (to fcTot,
+// feed_beyond / feed_behind, the carried leg), both already each way in this report,
+// no doubling needed here unlike the two-way PPTX table.
+function cxtbl(list,elid,hid,label,mktTot,fcTot){
   const el=$('#'+elid), hh=$('#'+hid);
   if(!list||!list.length){ if(hh)hh.style.display='none'; if(el)el.style.display='none'; return; }
   hh.textContent=label;
   let h='<tr><th>Nr</th><th>Code</th><th>City</th><th>Country</th><th>Annual demand</th><th>Share</th><th>Annual forecast</th><th>PDEW</th></tr>',tb=0,tf=0;
   list.forEach((r,i)=>{ tb+=r.base; tf+=r.pax;
     h+=`<tr><td>${i+1}</td><td>${r.code||''}</td><td class="b" style="text-align:left">${r.city}</td><td style="text-align:left">${r.country||''}</td><td>${r.base?fmt(r.base):'-'}</td><td>${r.base?(r.share*100).toFixed(1)+'%':'-'}</td><td>${fmt(r.pax)}</td><td>${r.pdew.toFixed(1)}</td></tr>`; });
-  h+=`<tr class="tot"><td></td><td></td><td>Total</td><td></td><td>${tb?fmt(tb):'-'}</td><td></td><td>${fmt(tf)}</td><td></td></tr>`;
+  const otherDem=(mktTot&&mktTot>tb+0.5)?(mktTot-tb):0, otherFc=(fcTot&&fcTot>tf+0.5)?(fcTot-tf):0;
+  if(otherDem||otherFc){
+    h+=`<tr><td></td><td></td><td style="text-align:left">All other connecting markets</td><td></td><td>${otherDem?fmt(otherDem):'-'}</td><td></td><td>${fmt(otherFc)}</td><td></td></tr>`;
+  }
+  h+=`<tr class="tot"><td></td><td></td><td>Total</td><td></td><td>${(tb||otherDem)?fmt(tb+otherDem):'-'}</td><td></td><td>${fmt(tf+otherFc)}</td><td></td></tr>`;
   el.innerHTML=h;
 }
-cxtbl(D.behind,'cxBehind','cxBehindH','Connecting at '+D.origin.iata+' (behind the origin)');
-cxtbl(D.beyond,'cxBeyond','cxBeyondH','Connecting at '+D.dest.iata+' (beyond the destination)');
+cxtbl(D.behind,'cxBehind','cxBehindH','Connecting at '+D.origin.iata+' (behind the origin)',D.demand.feed_behind_base,D.demand.feed_behind);
+cxtbl(D.beyond,'cxBeyond','cxBeyondH','Connecting at '+D.dest.iata+' (beyond the destination)',D.demand.feed_beyond_base,D.demand.feed_beyond);
 
 // schedule and capacity
 (function(){

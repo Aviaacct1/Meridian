@@ -312,6 +312,21 @@ def _connecting(c, key, title):
     leg = _g(c, "segment_forecast", "summary",
              "connecting_at_hub_total" if key == "connecting_at_hub" else "connecting_at_destination_total",
              "forecast")
+    # THE DEMAND-COLUMN TOTAL, 20 August 2026 (John, checking the EVA pack against the
+    # completed forecast column): connecting_market_over_hub/_destination is
+    # dem["feed_beyond_base"]/["feed_behind_base"] (Deck Generator/deck_contract.py
+    # build_contract, fed by forecast_to_contract.connecting_from_forecast), the FULL
+    # uncapped beyond/behind market before capture, the same quantity the fifteen
+    # printed cities' own "annual_demand" figures are drawn from. It is additive with
+    # them, unlike the forecast leg's basis, which is two-way where these are each way,
+    # so no /2.0 here. 19 August's note calling this "a different quantity, leave it
+    # blank" was wrong: checked against route_metadata.catchment_headline, it is the
+    # right total to complete to, and it reconciles to the pre-fix numbers Jol first
+    # queried (the old code silently did this; the 19 August fix dropped it along with
+    # the genuine bug it was fixing elsewhere on the same page).
+    mkt_leg = _g(c, "route_metadata", "catchment_headline",
+                 "connecting_market_over_hub" if key == "connecting_at_hub"
+                 else "connecting_market_over_destination")
     # BASIS AND YEAR, Jol's review 19 August 2026. The city rows are EACH WAY (the
     # engine's feed detail) while the contract leg is two-way, and the old subtitle
     # compared one against the other ("23,761 of a leg of 54,518" read as 44% shown
@@ -326,16 +341,19 @@ def _connecting(c, key, title):
     # summed the fifteen shown rows, so a reader working from the numbers alone (as
     # Mark did: page 43's 112 PTEW against page 45's ~32) reasonably read the detail
     # page as the whole picture. Mirrors the Excel Connecting-feed fix of 19 August:
-    # complete the FORECAST and PDEW columns to the carried leg with a named tail row;
-    # leave demand as "-" because a market's own O&D size is a different quantity from
-    # the leg's connecting base and a filler there would paper over that definition.
+    # completes the FORECAST and PDEW columns to the carried leg, and now the DEMAND
+    # column to the market total above, both with a named tail row.
     shown = sum((x.get("annual_forecast") or 0) for x in cities)
+    shown_dem = sum((x.get("annual_demand") or 0) for x in cities)
     leg_ew = (leg / 2.0) if leg else 0.0
     other = (leg_ew - shown) if (leg_ew and leg_ew > shown + 0.5) else 0.0
-    if other:
-        rows.append(["", "", "All other connecting markets", "-", "-", "-",
+    other_dem = (mkt_leg - shown_dem) if (mkt_leg and mkt_leg > shown_dem + 0.5) else 0.0
+    if other or other_dem:
+        rows.append(["", "", "All other connecting markets", "-",
+                     (_n(round(other_dem)) if other_dem else "-"), "-",
                      _n(round(other)), _n(round(other / 365.0 / 2.0, 1), 1)])
-    rows.append(["", "", "Total", "-", "-", "-",
+    rows.append(["", "", "Total", "-",
+                 (_n(round(shown_dem + other_dem)) if (shown_dem or other_dem) else "-"), "-",
                  _n(round(shown + other)), _n(round((shown + other) / 365.0 / 2.0, 1), 1)])
     sub = None
     if leg:
