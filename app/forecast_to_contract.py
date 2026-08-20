@@ -472,8 +472,12 @@ def _fill_forecast_table(contract, fc):
     Filled per leg:
         demand_at_service_year   grown to the service year, BEFORE stimulation
         stimulation_factor       1.0 on the connecting legs, which the engine does not stimulate
-        annual_growth_rate       total growth from the base year to the service year, not a CAGR,
-                                 because that is the column the 2025 deck carries
+        annual_growth_rate       total growth from the base year to the service year, kept for the
+                                 record and the note text
+        cagr                     the same growth as a compound annual rate; the deck displays this
+                                 one (added 20 August 2026, Mark Kiehl/SJC: the cumulative two-year
+                                 figure reads as a big number where the per-annum rate is roughly
+                                 half of it and stays in single digits)
 
     Nothing is invented. Where stimulation is absent or zero the field keeps its _need note.
     """
@@ -520,6 +524,14 @@ def _fill_forecast_table(contract, fc):
         _nat2 = natural * 2.0
         blk["base_annual_demand"] = round(_nat2 / (1.0 + _cum)) if _cum else round(_nat2)
         blk["annual_growth_rate"] = round(_cum, 4)
+        # CAGR, 20 August 2026 (Mark Kiehl/SJC, reviewing the three airline packs): the
+        # cumulative figure above reads as a big, alarming number - 18.3% over two years -
+        # when the per-annum rate behind it is roughly half that and stays in single
+        # digits. _gr IS that per-annum rate already; the cumulative was built FROM it two
+        # lines above ((1+_gr)**_gy - 1), so this is not a new estimate, just the other
+        # figure already in hand. Both are kept: the deck displays CAGR, the note states
+        # the cumulative, so nothing is hidden, only re-led.
+        blk["cagr"] = round(_gr, 4)
         blk["demand_at_service_year"] = round(_nat2)
         blk.pop("_demand_at_service_year_need", None)
         blk["stimulation_factor"] = _stim
@@ -547,6 +559,7 @@ def _fill_forecast_table(contract, fc):
             cb["demand_at_service_year"] = round(base)
             cb["base_annual_demand"] = round(base / (1.0 + _cum)) if _cum else round(base)
             cb["annual_growth_rate"] = round(_cum, 4)
+            cb["cagr"] = round(_gr, 4)
             cb.pop("_demand_at_service_year_need", None)
 
 

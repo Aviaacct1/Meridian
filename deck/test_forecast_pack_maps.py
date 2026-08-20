@@ -135,6 +135,37 @@ def test_fill_forecast_table():
           abs(cnx["base_annual_demand"] - 750000) < 500, cnx["base_annual_demand"])
 
 
+def test_connecting_all_other_row():
+    """20 August 2026 (Mark Kiehl/SJC): the fifteen printed rows summed to about a third
+    of the summary page's carried leg (his own check, page 43 v page 45), because the
+    subtitle disclosed the gap in prose but the table itself did not. Mirrors the Excel
+    Connecting-feed fix: an All-other row completes the forecast/PDEW columns to the
+    carried leg; the demand column stays honestly blank on that row, a market's own
+    O&D size not being additive with the leg."""
+    contract = {"route_metadata": {"service_year": 2027},
+                "segment_forecast": {"summary": {
+                    "connecting_at_hub_total": {"forecast": 58126}}},  # two-way, per the contract
+                "connecting_at_hub": {"hub": "TPE", "cities": [
+                    {"nr": 1, "city_code": "MNL", "city_name": "Manila", "country": "PH",
+                     "annual_demand": 80392, "airline_share": 0.0295, "annual_forecast": 3635, "pdew": 5.0},
+                    {"nr": 2, "city_code": "SGN", "city_name": "Ho Chi Minh City", "country": "VN",
+                     "annual_demand": 78970, "airline_share": 0.0295, "annual_forecast": 3571, "pdew": 4.9},
+                ]}}
+    tbl = FP._connecting(contract, "connecting_at_hub", "Connecting at TPE (beyond the destination)")
+    rows = tbl["table"]["rows"]
+    check("all-other row present", rows[-2][2] == "All other connecting markets", rows[-2])
+    check("all-other forecast completes the gap",
+          rows[-2][6] == "21,857", rows[-2][6])   # 29063 each-way leg - (3635+3571) shown
+    check("total row present and bolded", tbl["table"].get("total") is True)
+    check("total row's forecast equals the carried leg, each way",
+          rows[-1][6] == "29,063", rows[-1][6])
+    check("demand column stays honest on the all-other row (never a fabricated sum)",
+          rows[-2][4] == "-", rows[-2][4])
+    check("subtitle states both the shown figure and the reconciled leg",
+          "3,206" not in tbl.get("subtitle", "") and "29,063" in tbl.get("subtitle", ""),
+          tbl.get("subtitle"))
+
+
 def test_process_figure(tmp):
     """The 19 August process page: drawn from the contract's own figures, both
     directions, and dropped rather than drawn when a leg is missing."""
@@ -239,6 +270,7 @@ def main():
     with tempfile.TemporaryDirectory() as tmp:
         test_contract_ends()
         test_fill_forecast_table()
+        test_connecting_all_other_row()
         test_process_figure(tmp)
         spec, _maps = test_build_pack(tmp)
         test_render(spec, tmp)

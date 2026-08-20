@@ -73,6 +73,14 @@ def main():
     check("connecting stimulation stated as 1.0", h["stimulation_factor"] == 1.0)
     check("a leg with no base keeps its gap, never a zero",
           d.get("base_annual_demand") is None)
+    # CAGR, 20 August 2026 (Mark Kiehl/SJC): the deck now displays the per-annum rate,
+    # not the cumulative. The fixture's growth_rate (0.0223) IS that rate; cagr must
+    # equal it exactly, and must be materially smaller than the cumulative it sits
+    # beside, or the two are showing the same number twice under different labels.
+    check("cagr is the payload's per-annum rate, not the cumulative",
+          abs(p["cagr"] - 0.0223) < 0.0001 and p["cagr"] < p["annual_growth_rate"],
+          "cagr=%.4f cumulative=%.4f" % (p["cagr"], p["annual_growth_rate"]))
+    check("hub leg carries the same cagr as p2p", h["cagr"] == p["cagr"])
     print("\n%d checks, %d failed%s" % (CHECKS, len(FAIL),
           ": " + ", ".join(FAIL) if FAIL else ""))
     sys.exit(1 if FAIL else 0)

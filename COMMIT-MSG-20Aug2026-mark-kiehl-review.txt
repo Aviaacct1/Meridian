@@ -1,0 +1,47 @@
+Mark Kiehl (SJC) review, 20 August: CAGR display and the deck's own All-other row
+
+Two real findings from Mark's read of the three airline packs, both fixed here.
+
+(1) The connecting-city detail pages summed to roughly a third of the summary page's
+carried PDEW (his own check: CI page 43's 112 PTEW against page 45's ~32). The 19
+August fix corrected the SUBTITLE to disclose the gap in prose, but the printed
+TABLE still only summed its fifteen rows, so a reader working the numbers alone
+reasonably read the detail page as the whole picture. Same shape as the Excel
+Connecting-feed fix of 19 August, now mirrored in the deck: forecast_pack.py's
+_connecting() appends an "All other connecting markets" row completing the
+forecast/PDEW columns to the carried leg, and a bolded Total row. The demand column
+stays "-" on both, since a market's own O&D size is not additive with the leg.
+
+(2) The traffic-growth column showed the full two-year cumulative (18.3%), which
+reads as a big, alarming number. forecast_to_contract.py already computes the
+per-annum rate to build that cumulative (_gr, before it is compounded into _cum) and
+was discarding it; now stored as a new "cagr" field on every growth block alongside
+the existing "annual_growth_rate", and forecast_pack.py's _forecast_table() displays
+cagr with a fallback to the cumulative for any older contract that predates this
+field. The note beneath the table still states the cumulative for the record.
+
+- app/forecast_to_contract.py: cagr field added in _fill_forecast_table(), both the
+  point-to-point block and the two connecting legs.
+- deck/forecast_pack.py: _forecast_table() reads cagr (falls back to
+  annual_growth_rate); column header now "Traffic growth (CAGR)"; note states the
+  cumulative separately. _connecting() adds the All-other and Total rows.
+- app/test_contract_p2p_row.py: two new checks, cagr equals the fixture's per-annum
+  rate and is smaller than the cumulative.
+- deck/test_forecast_pack_maps.py: new test_connecting_all_other_row(), five checks.
+  Full suite 29 checks, all passing (was 23).
+
+Third finding, NOT a code change: Mark also asked whether all three packs sharing
+one flight/turn schedule is coincidental. It is not - app/cases_sjc_tpe_pitch.json
+pins dep_time to 20:59 in its defaults block, deliberately, because the cases runner
+has no curfew field; the note in that file records it as CI's own optimised slot
+under the 21:00-06:00 curfew scenario, reused across all three so the connection-bank
+environment is held constant for the comparison. EVA's B77W and Starlux's A359 were
+not independently re-optimised against their own turn economics. Worth a disclosure
+line on the comparison page; worth an independent per-carrier optimise run before
+this goes further, given the known ~10-minute cold-optimise cost per candidate.
+
+The three PITCH_SJC-TPE_*_contract.json files and their PPTX packs were built before
+these fixes and need regenerating:
+  python deck_from_cases.py cases_sjc_tpe_pitch.json --out <folder>
+  python ../deck/forecast_pack.py <folder>/PITCH_SJC-TPE_CI_A359_306_5x_2027_contract.json --out <folder>/China_Airlines_pack.pptx --codename SJC-TPE --prepared-for "San Jose International Airport"
+  (repeat for the BR and JX contracts)

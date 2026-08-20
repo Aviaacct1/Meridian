@@ -233,9 +233,18 @@ def _forecast_table(c):
         fc = blk.get("forecast")
         ptew = (fc / dep) if (fc and dep) else None
         stim = blk.get("stimulation_factor")
+        # CAGR, not the cumulative (Mark Kiehl/SJC, 20 August 2026, reviewing the three
+        # airline packs): "It's just a big number" - 18.3% over two years reads as
+        # alarming where the per-annum rate behind it is roughly half that and stays in
+        # single digits. cagr is the SAME figure the cumulative was built from
+        # (forecast_to_contract._fill_forecast_table), not a re-derivation; fall back to
+        # the cumulative only if an older contract has no cagr field.
+        _g_rate = blk.get("cagr")
+        if _g_rate is None:
+            _g_rate = blk.get("annual_growth_rate")
         return [("   " + label) if indent else label,
                 _k(blk.get("base_annual_demand")),
-                _pct(blk.get("annual_growth_rate"), 1),
+                _pct(_g_rate, 1),
                 _k(blk.get("demand_at_service_year")),
                 ("-" if stim is None else "x%.2f" % float(stim)),
                 _pct(blk.get("capture_rate"), 1),
@@ -261,14 +270,17 @@ def _forecast_table(c):
     def yr(label, y):
         return "%s %s" % (label, y) if y else label
 
+    _cum_note = _g(ss, "point_to_point_total", "annual_growth_rate")
     notes = ["Passengers per trip each way. Demand requiring a connection at both ends is excluded.",
              _g(ss, "grand_total", "_basis", default="carried, after the plan load factor cap"),
              "Base annual demand is measured origin and destination demand, both directions.",
-             "Growth is total growth from the base year to the service year, not a compound rate.",
+             ("Growth is shown as a compound annual rate." +
+              (" The cumulative growth from the base year to the service year is %s." % _pct(_cum_note, 1)
+               if _cum_note is not None else "")),
              "Stimulation is applied to the point to point leg only; the connecting legs carry x1.00.",
              _g(c, "segment_forecast", "_competition_basis",
                 default="Competed and uncompeted rows appear where the run classified the markets.")]
-    return S.table({"head": ["Market", yr("Base annual demand (000s)", base_yr), "Traffic growth",
+    return S.table({"head": ["Market", yr("Base annual demand (000s)", base_yr), "Traffic growth (CAGR)",
                              yr("Demand before stimulation (000s)", svc_yr), "Stimulation",
                              "Capture rate", yr("Forecast traffic (000s)", svc_yr),
                              "Per trip each way"],
@@ -308,17 +320,34 @@ def _connecting(c, key, title):
     # engine GROWS the city detail's base and captured to the forecast year
     # (route_forecast ~line 642), so both figure columns are at the SERVICE year,
     # never the base year.
+    #
+    # ALL-OTHER ROW, 20 August 2026 (Mark Kiehl/SJC, reviewing the three airline packs):
+    # the subtitle above disclosed the gap in prose, but the printed TABLE still only
+    # summed the fifteen shown rows, so a reader working from the numbers alone (as
+    # Mark did: page 43's 112 PTEW against page 45's ~32) reasonably read the detail
+    # page as the whole picture. Mirrors the Excel Connecting-feed fix of 19 August:
+    # complete the FORECAST and PDEW columns to the carried leg with a named tail row;
+    # leave demand as "-" because a market's own O&D size is a different quantity from
+    # the leg's connecting base and a filler there would paper over that definition.
+    shown = sum((x.get("annual_forecast") or 0) for x in cities)
+    leg_ew = (leg / 2.0) if leg else 0.0
+    other = (leg_ew - shown) if (leg_ew and leg_ew > shown + 0.5) else 0.0
+    if other:
+        rows.append(["", "", "All other connecting markets", "-", "-", "-",
+                     _n(round(other)), _n(round(other / 365.0 / 2.0, 1), 1)])
+    rows.append(["", "", "Total", "-", "-", "-",
+                 _n(round(shown + other)), _n(round((shown + other) / 365.0 / 2.0, 1), 1)])
     sub = None
     if leg:
-        shown = sum((x.get("annual_forecast") or 0) for x in cities)
-        sub = ("The fifteen largest cities, each way: %s passengers of a carried leg of %s"
-               % (_n(shown), _n(leg / 2.0)))
+        sub = ("The fifteen largest cities, each way: %s passengers; with the tail of smaller "
+               "markets, %s passengers, the same carried leg the summary page states"
+               % (_n(shown), _n(leg_ew)))
     svc_yr = _g(c, "route_metadata", "service_year")
     return S.table({"head": ["", "Code", "City", "Country",
                              "Annual demand %s" % svc_yr if svc_yr else "Annual demand",
                              "Share captured",
                              "Forecast %s" % svc_yr if svc_yr else "Forecast",
-                             "Per day each way"], "rows": rows},
+                             "Per day each way"], "rows": rows, "total": True},
                    title=title, subtitle=sub, source=_src(c))
 
 
