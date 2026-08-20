@@ -1,0 +1,88 @@
+Dashboard run controls: Stop, New forecast, recent-chip fix, background
+navigation while Optimise runs
+
+Four items from John, 19 August 2026, agreed to build ahead of the post-Sabre
+queue. All four verified offline (py_compile on the three Python files, node
+--check on every inline script and on job_watch.js); no live proof yet, that
+needs a workstation pull and restart.
+
+- app/cortex_dashboard.html
+  Recent chip (applyRecent) now populates the fields only; it no longer
+  auto-runs the forecast. Building a variant of a past query used to cost
+  two waits, the unwanted auto-run then the real one; a chip click now
+  behaves exactly like typing the same values in by hand.
+  One Stop button covers whichever of Optimise or Run assessment is active
+  (John's ruling: one control, not two). Run assessment's /api/forecast has
+  no server-side job, so Stop there aborts the browser's wait via
+  AbortController; the workstation finishes the request it already started,
+  a real limit stated in the code rather than hidden. Optimise gets a
+  genuine server-side cancel, see cortex_app.py/route_feed.py below.
+  New forecast clears every field to its page-default state (including the
+  seat-hint placeholder and any Expert overrides), cancels any run in
+  progress first, and clears STATE.lastQ so a download taken right after
+  cannot silently reuse the old query.
+  Optimise now writes the active job (job_id, origin, dest, started) to
+  localStorage on start and clears it on every terminal path and on Stop;
+  the dashboard also loads job_watch.js so a mid-run reload still shows the
+  status chip, though the page's own Optimise button does not resume its
+  running state on reload, a stated gap, not silently patched over.
+
+- app/route_feed.py
+  New CANCEL_CHECK contextvar and OptimiseCancelled exception.
+  optimise_departure checks CANCEL_CHECK between every candidate score (the
+  initial grid, the curfew-boundary candidates, and the refine pass), so a
+  Stop press halts the workstation computation within a second or two of
+  the current candidate, not just the browser's poll. A direct caller that
+  never sets CANCEL_CHECK (the plain /api/forecast path, the backtest, any
+  script) gets None back and behaves exactly as before.
+
+- app/cortex_app.py
+  New /api/optimise/cancel sets the job's cancel flag.
+  api_optimise_start's job thread sets CANCEL_CHECK for its own thread's
+  lifetime only (contextvars are per-thread; no cross-thread propagation
+  needed since the whole sweep runs in one daemon thread) and catches
+  OptimiseCancelled into OPT_JOBS state "cancelled", distinct from a real
+  engine error.
+  Fixed a trap that would have made the cancel silently useless: the
+  existing try/except Exception around the optimise_departure call inside
+  calibrated_forecast caught everything, including the new
+  OptimiseCancelled, and fell back to the placeholder 11:00 departure,
+  meaning a "stopped" job would have kept computing a full forecast on a
+  schedule nobody asked to see and returned it as a normal result. Now
+  re-raises OptimiseCancelled past that fallback point. This is the one
+  change in the batch that touches existing forecast logic; everything
+  else is additive.
+
+- app/static/job_watch.js (new)
+  One shared file, included with a single <script defer src> line rather
+  than pasted inline into five pages: Meridian's pages have no shared
+  template, and five copies of the same logic is the divergent-copy shape
+  the tool standard exists to prevent. Reads the stored job on page load;
+  if one is live, polls /api/optimise/status and shows a fixed status chip
+  with the elapsed time, a Stop control, and a link back to the Dashboard;
+  on a terminal state it says so and clears the stored job. Does nothing at
+  all when no job is stored, so a page that never sees one pays no visible
+  cost. Does not render results itself, only the Dashboard's own code knows
+  how to draw a payload.
+
+- app/cortex_catchment.html, cortex_economics.html, cortex_watch.html,
+  cortex_help.html, app/track_record.py (three templates)
+  One <script defer src="/static/job_watch.js"> line added to each, before
+  </head>. No other change. Lets a presenter leave the Dashboard for
+  Catchment & demand, Economics, Route Watch, Help or Track Record while a
+  cold-route Optimise sweep runs (measured 600-700s on 19 August) and see
+  it finish from wherever they are, rather than standing over a spinner.
+
+Verified offline: python3 -m py_compile on cortex_app.py, route_feed.py,
+track_record.py all clean; node --check on job_watch.js and on every
+page's inline script block all clean. NOT yet proven live: needs the
+workstation pull + Meridian-run.bat restart (the portal is already being
+restarted tonight for the curve-sheet fix, so fold this into the same
+restart) and then, in order: (1) start an Optimise sweep, confirm the Stop
+button actually halts it within a couple of seconds rather than the button
+just going quiet while the workstation keeps computing; (2) click a recent
+chip, confirm it populates without running; (3) click New forecast mid
+form-fill, confirm every field clears including a fixed seat count and any
+Expert override; (4) start an Optimise sweep, navigate to Catchment & demand,
+confirm the chip appears and finishes there, click through to the
+Dashboard and confirm the finished run is visible.

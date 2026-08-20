@@ -1,0 +1,14 @@
+Forecast sheet shows CAGR, not the cumulative, matching the deck fix
+
+Same fix as the PPTX pack (Mark Kiehl/SJC feedback): the "Growth" column read as a
+per-annum rate but was printing the cumulative growth over the full forecast
+period. app/cortex_workbook.py Forecast sheet now prints growth_rate direct (the
+schedule's own per-annum figure) under a "CAGR <service year> v <base year>"
+header, for the point-to-point row, both connecting legs, and the direct/no_direct
+competition sub-rows. The cumulative figure is retained in the sheet's closing
+note in prose, so nothing is lost, just no longer mislabelled.
+
+Tests: app/test_workbook_table.py's "cumulative growth printed" check renamed to
+"CAGR printed, not the cumulative" and its expected value corrected from 0.0684
+(the old cumulative) to 0.0223 (the fixture's growth_rate, matching the same
+fixture pattern used in app/test_contract_p2p_row.py). 22 checks, all passing.
