@@ -162,7 +162,12 @@ def build_workbook(out_path, fc, meta=None):
     _fyr = _sch.get("forecast_year") or _byr
     _debase = lambda grown: (grown / (1.0 + _cum)) if _cum else grown
     _title(ws, "Traffic forecast", f"each way per {_pnoun}; connecting rows show the captured feed")
-    _hdr(ws, 4, ["Market", f"Base demand {_byr} (000s)", f"Growth {_fyr} v {_byr}",
+    # CAGR, not the cumulative (20 August 2026, Mark Kiehl/SJC, reviewing the PPTX packs,
+    # then applied here for the same reason John raised about the identical growth-rate
+    # display in the deck: one basis everywhere this table appears). 18.3% over two years
+    # reads as a big, alarming number; _gr is the per-annum rate the cumulative was built
+    # from, roughly half of it and in single digits. The cumulative is stated in the note.
+    _hdr(ws, 4, ["Market", f"Base demand {_byr} (000s)", f"CAGR {_fyr} v {_byr}",
                  f"Grown demand {_fyr} (000s)", "Stimulation",
                  "Stimulated demand (000s)", "Capture rate", "Forecast (000s)", "PTEW"],
          [30, 15, 12, 15, 11, 15, 11, 12, 9])
@@ -187,7 +192,7 @@ def build_workbook(out_path, fc, meta=None):
     ptew = lambda x: round(x / (freq * weeks)) if freq else 0
     r = 5
     _c(ws, r, 1, "Total point to point", font=BOLD, align=LFT)
-    _c(ws, r, 2, k(_debase(natural)), fmt="#,##0.0", align=RGT); _c(ws, r, 3, _cum, fmt="0.0%", align=RGT)
+    _c(ws, r, 2, k(_debase(natural)), fmt="#,##0.0", align=RGT); _c(ws, r, 3, _gr, fmt="0.0%", align=RGT)
     _c(ws, r, 4, k(natural), fmt="#,##0.0", align=RGT); _c(ws, r, 5, round(stim, 2), fmt="0.00", align=RGT)
     _c(ws, r, 6, k(natural * stim), fmt="#,##0.0", align=RGT); _c(ws, r, 7, cap_share, fmt="0.0%", align=RGT)
     _c(ws, r, 8, k(p2p), fmt="#,##0.0", align=RGT); _c(ws, r, 9, ptew(p2p), fmt="#,##0", align=RGT)
@@ -197,7 +202,7 @@ def build_workbook(out_path, fc, meta=None):
                                     (f"Total connecting beyond {d['iata']}", beyond, n0(dem.get("feed_beyond_base")) * _sshare, "beyond")]:
         _c(ws, r, 1, label, font=BOLD, align=LFT)
         _c(ws, r, 2, k(_debase(cbase)) if cbase else "-", fmt="#,##0.0", align=RGT)
-        _c(ws, r, 3, _cum if cbase else "-", fmt="0.0%", align=RGT)
+        _c(ws, r, 3, _gr if cbase else "-", fmt="0.0%", align=RGT)
         _c(ws, r, 4, k(cbase) if cbase else "-", fmt="#,##0.0", align=RGT)
         _c(ws, r, 5, 1.00, fmt="0.00", align=RGT)
         _c(ws, r, 6, k(cbase) if cbase else "-", fmt="#,##0.0", align=RGT)
@@ -220,7 +225,7 @@ def build_workbook(out_path, fc, meta=None):
                 _fv = float(_t.get("forecast") or 0) * _scl
                 _c(ws, r, 1, _bl, align=LFT)
                 _c(ws, r, 2, k(_debase(_fb)) if _fb else "-", fmt="#,##0.0", align=RGT)
-                _c(ws, r, 3, _cum if _fb else "-", fmt="0.0%", align=RGT)
+                _c(ws, r, 3, _gr if _fb else "-", fmt="0.0%", align=RGT)
                 _c(ws, r, 4, k(_fb) if _fb else "-", fmt="#,##0.0", align=RGT)
                 _c(ws, r, 5, 1.00, fmt="0.00", align=RGT)
                 _c(ws, r, 6, k(_fb) if _fb else "-", fmt="#,##0.0", align=RGT)
@@ -243,7 +248,9 @@ def build_workbook(out_path, fc, meta=None):
                      "Rows show the carried allocation after the planned load factor cap and they sum to the total; "
                      "capture rates are the effective rates after that allocation, so each row multiplies through. "
                      "Where capacity binds, unconstrained demand exceeds the figures shown. "
-                     "PTEW = passengers per departure each way."
+                     + ("Growth is shown as a compound annual rate; the cumulative growth from %s to %s is %.1f%%. "
+                        % (_byr, _fyr, _cum * 100))
+                     + "PTEW = passengers per departure each way."
                      + (f"  Figures are for the {_pnoun} service (the season's share of the annual O&D)."
                         if _seasonal else ""),
        font=NOTE, align=LFT, border=None)

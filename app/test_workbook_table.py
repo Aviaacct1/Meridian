@@ -78,7 +78,10 @@ def main():
                 if k.startswith("Total ") and "point" not in k]
         check("year-labelled headers", "2025" in str(hdr[1]) and "2028" in str(hdr[3]))
         check("base decomposed from grown", abs(p2p[1] - 190.4) < 0.5, p2p[1])
-        check("cumulative growth printed", abs(p2p[2] - 0.0684) < 0.003, p2p[2])
+        # 20 August 2026 (John, consistency with the deck's CAGR fix): the column now
+        # shows the per-annum rate (the fixture's growth_rate, 0.0223), not the
+        # cumulative (0.0684) that rate compounds to over the fixture's 3 years.
+        check("CAGR printed, not the cumulative", abs(p2p[2] - 0.0223) < 0.0003, p2p[2])
         check("grown column carries the grown market", abs(p2p[3] - 203.4) < 0.1)
         check("row multiplies through (effective capture)",
               abs(p2p[5] * p2p[6] - p2p[7]) < 0.6)
