@@ -404,6 +404,21 @@ def build_contract(case: dict, outputs: dict, connecting: dict = None, growth_ra
     cnx_hub_fc = round(sum(c.get("annual_forecast", 0) for c in hub_cities)) if hub_cities else None
     cnx_dest_fc = round(sum(c.get("annual_forecast", 0) for c in dest_cities)) if dest_cities else None
 
+    # CONNECTING MARKET SIZE, TWO-WAY (20 August 2026, Jol's review of the SJC-TPE packs, the
+    # basis mix he and John caught live: "connecting market over Taipei 719,500 both directions...
+    # but this says each way"). cnx["hub_market"]/["dest_market"] arrive EACH WAY from
+    # connecting_from_forecast (dem["feed_beyond_base"]/["feed_behind_base"], the same figure
+    # verify_connecting_build.py itself names "each way"). Every OTHER figure this function builds
+    # - natural*2 four lines above, p2p_carried, cnx_carried, p2p_demand a few lines above - is
+    # explicitly doubled to two-way, so the connecting legs' market size was the one each-way
+    # number left in an otherwise two-way contract. Two measured consequences: the process-visual
+    # chart printed this each-way figure captioned "both directions", and the connecting legs'
+    # capture rate below divided a two-way carried figure by this each-way market, reading roughly
+    # double the true rate (circa 8.1% shown where circa 4.0% is correct on the TPE-beyond leg).
+    # Doubled once here, at the single place both legs and every consumer draw from.
+    _hub_mkt2 = round((cnx.get("hub_market") or 0) * 2) or None
+    _dest_mkt2 = round((cnx.get("dest_market") or 0) * 2) or None
+
     NEED_SEG = "8-segment split needs business/leisure ratio + per-zone demand + per-segment growth & capture (see field note)"
     NEED_CNX_DEST = "behind-destination home feed needs the home side of the connecting layer"
 
@@ -419,14 +434,14 @@ def build_contract(case: dict, outputs: dict, connecting: dict = None, growth_ra
             "frequency_per_week": freq, "service_year": svc_year,
             "distance_km": dist_km, "distance_nm": dist_nm,
             "catchment_headline": {"point_to_point_market": round(natural * 2),
-                                   "connecting_market_over_hub": cnx.get("hub_market"),
-                                   "connecting_market_over_destination": cnx.get("dest_market"),
+                                   "connecting_market_over_hub": _hub_mkt2,
+                                   "connecting_market_over_destination": _dest_mkt2,
                                    "_connecting_need": None if cnx else NEED_CNX_DEST},
         },
         "summary_and_schedule": {
             "point_to_point_market": round(natural * 2),
-            "connecting_market_over_hub": cnx.get("hub_market"),
-            "connecting_market_over_destination": cnx.get("dest_market"),
+            "connecting_market_over_hub": _hub_mkt2,
+            "connecting_market_over_destination": _dest_mkt2,
             "catchment_note": f"Based on AviaSolutions' {home} Service Area catchment analysis",
             "schedule": [
                 {"sector": f"{home}-{dest}", "dep_time": None, "arr_time": None, "operating_days": f"{freq}/wk",
@@ -458,15 +473,23 @@ def build_contract(case: dict, outputs: dict, connecting: dict = None, growth_ra
                     "forecast": p2p_carried,
                     "_forecast_need": (None if p2p_carried else NEED_LEG),
                     "pdew": pdew(p2p_carried or 0)},
-                "connecting_at_hub_total": ({"base_annual_demand": cnx.get("hub_market"),
-                    "demand_at_service_year": cnx.get("hub_market"), "demand_after_stimulation": cnx.get("hub_market"),
-                    "capture_rate": (airline_share(cnx_hub_carried, cnx.get("hub_market")) if cnx.get("hub_market") else None),
+                "connecting_at_hub_total": ({"base_annual_demand": _hub_mkt2,
+                    "demand_at_service_year": _hub_mkt2, "demand_after_stimulation": _hub_mkt2,
+                    "capture_rate": (airline_share(cnx_hub_carried, _hub_mkt2) if _hub_mkt2 else None),
                     "forecast": cnx_hub_carried,
                     "_forecast_need": (None if cnx_hub_carried else NEED_LEG),
                     "top_cities_forecast": cnx_hub_fc, "_top_cities_need": NEED_TOPN,
                     "pdew": pdew(cnx_hub_carried or 0)} if hub_cities else
                     {"forecast": None, "_need": NEED_CNX_DEST}),
-                "connecting_at_destination_total": ({"forecast": cnx_dest_carried,
+                # base_annual_demand/demand_at_service_year/demand_after_stimulation/capture_rate
+                # added here 20 August 2026, same fix as the hub leg above: this block previously
+                # carried forecast only, so the printed table's demand column read "-" for this leg
+                # while the hub leg above showed a number, an asymmetry with no reason behind it now
+                # that _dest_mkt2 is available on the same two-way basis as everything around it.
+                "connecting_at_destination_total": ({"base_annual_demand": _dest_mkt2,
+                    "demand_at_service_year": _dest_mkt2, "demand_after_stimulation": _dest_mkt2,
+                    "capture_rate": (airline_share(cnx_dest_carried, _dest_mkt2) if _dest_mkt2 else None),
+                    "forecast": cnx_dest_carried,
                     "_forecast_need": (None if cnx_dest_carried else NEED_LEG),
                     "top_cities_forecast": cnx_dest_fc, "_top_cities_need": NEED_TOPN,
                     "pdew": pdew(cnx_dest_carried or 0)}
