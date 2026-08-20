@@ -139,11 +139,17 @@ def test_connecting_demand_column_completes():
     """20 August 2026 (John, checking the EVA pack): the demand column's All-other row
     was left blank on the belief that a city's own O&D size does not sum to anything
     meaningful. Checked against the pipeline and it does: catchment_headline's
-    connecting_market_over_hub is dem["feed_beyond_base"], the same source the printed
-    cities' own annual_demand figures come from, additive with them, each way like the
-    city rows (unlike the forecast leg, which is two-way)."""
+    connecting_market_over_hub is the full uncapped market, the same source the printed
+    cities' own annual_demand figures come from, additive with them.
+
+    Fixture updated same day, later: connecting_market_over_hub is now doubled to two-way
+    at the source (Deck Generator/deck_contract.py, the basis fix for Jol's "719,500 both
+    directions... but this says each way" catch), so the fixture states it two-way
+    (1,438,972 = 719,486 x 2) and _connecting() halves it back to each way before summing
+    against the each-way city rows, matching the forecast leg's own /2.0 treatment. The
+    expected each-way outputs below are unchanged."""
     contract = {"route_metadata": {"service_year": 2027,
-                                    "catchment_headline": {"connecting_market_over_hub": 719486}},
+                                    "catchment_headline": {"connecting_market_over_hub": 1438972}},
                 "segment_forecast": {"summary": {
                     "connecting_at_hub_total": {"forecast": 58126}}},
                 "connecting_at_hub": {"hub": "TPE", "cities": [

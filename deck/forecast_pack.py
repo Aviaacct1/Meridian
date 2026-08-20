@@ -313,20 +313,25 @@ def _connecting(c, key, title):
              "connecting_at_hub_total" if key == "connecting_at_hub" else "connecting_at_destination_total",
              "forecast")
     # THE DEMAND-COLUMN TOTAL, 20 August 2026 (John, checking the EVA pack against the
-    # completed forecast column): connecting_market_over_hub/_destination is
-    # dem["feed_beyond_base"]/["feed_behind_base"] (Deck Generator/deck_contract.py
-    # build_contract, fed by forecast_to_contract.connecting_from_forecast), the FULL
+    # completed forecast column): connecting_market_over_hub/_destination is the FULL
     # uncapped beyond/behind market before capture, the same quantity the fifteen
-    # printed cities' own "annual_demand" figures are drawn from. It is additive with
-    # them, unlike the forecast leg's basis, which is two-way where these are each way,
-    # so no /2.0 here. 19 August's note calling this "a different quantity, leave it
-    # blank" was wrong: checked against route_metadata.catchment_headline, it is the
-    # right total to complete to, and it reconciles to the pre-fix numbers Jol first
-    # queried (the old code silently did this; the 19 August fix dropped it along with
-    # the genuine bug it was fixing elsewhere on the same page).
+    # printed cities' own "annual_demand" figures are drawn from, additive with them.
+    # 19 August's note calling this "a different quantity, leave it blank" was wrong:
+    # checked against route_metadata.catchment_headline, it is the right total to
+    # complete to, and it reconciles to the pre-fix numbers Jol first queried.
+    #
+    # BASIS, 20 August 2026 (Jol's later catch, same day: "connecting market over
+    # Taipei 719,500 both directions... but this says each way", the mix he found on
+    # the summary page). Fixing THAT defect doubled connecting_market_over_hub/
+    # _destination to two-way at the source (Deck Generator/deck_contract.py), which
+    # this page had not accounted for: it was written when that field was each way,
+    # additive with the city rows with no conversion needed. It is now two-way like
+    # the forecast leg above, so it takes the SAME /2.0 treatment as `leg_ew`, not the
+    # one this comment used to describe.
     mkt_leg = _g(c, "route_metadata", "catchment_headline",
                  "connecting_market_over_hub" if key == "connecting_at_hub"
                  else "connecting_market_over_destination")
+    mkt_leg = (mkt_leg / 2.0) if mkt_leg else 0.0
     # BASIS AND YEAR, Jol's review 19 August 2026. The city rows are EACH WAY (the
     # engine's feed detail) while the contract leg is two-way, and the old subtitle
     # compared one against the other ("23,761 of a leg of 54,518" read as 44% shown
