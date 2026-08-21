@@ -23,10 +23,17 @@ exactly as production used it. It does NOT touch preagg (deliberately stripped f
 every cell here) so every number below comes from a fresh, identical-basis Sabre pull, not a cache
 that may only hold the single-connection aggregate.
 
-SANITY CHECK, non-negotiable: cell A below (wide catchment, single-connection filter) must
-reproduce the contract's known one-way hub_market figure (719,486, from
+SANITY CHECK, non-negotiable: cell A below (wide catchment, single-connection filter, GROWN by the
+same factor g that route_forecast.forecast() applies base-year to service-year) must reproduce the
+contract's known one-way hub_market figure (719,486, from
 PITCH_SJC-TPE_CI_A359_306_5x_2027_contract.json) before any other cell is trusted. If it doesn't
 match, STOP - something about the captured arguments is wrong and nothing below is safe to read.
+
+FIRST RUN, 21 August, failed this check by exactly the missing g: 608,084 vs 719,486 (15.5% short).
+The gap matched the contract's own growth note - "+18.3% over 2yr from 2025" - to three decimal
+places, so this was g never having been applied, not a real mismatch. Fixed by capturing
+route_forecast.forecast()'s own (already-grown) beyond_detail alongside the raw feed_side call, and
+deriving g as the ratio between them - see _capturing_forecast below.
 
 CELLS, beyond (Taipei) side:
   A = wide catchment  + single-connection filter   (= today's production figure)
@@ -54,13 +61,15 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)) + r"\app")
 
-import route_feed as RFEED            # patch BEFORE cortex_app is imported/called
-import config as CFG
+import route_forecast as RFC          # patch BEFORE cortex_app is imported/called
+import route_feed as RFEED
 
 _captured_beyond = {}
 _captured_behind = {}
+_captured_forecast = {}
 _orig_feed_side = RFEED.feed_side
 _orig_behind_feed = RFEED.behind_feed
+_orig_forecast = RFC.forecast
 
 
 def _capturing_feed_side(sabre_db, oag_db, week, origin_airports, hub, year, **kw):
@@ -78,10 +87,24 @@ def _capturing_behind_feed(sabre_db, oag_db, week, origin_airports, dest_airport
     return _orig_behind_feed(sabre_db, oag_db, week, origin_airports, dest_airports, year, **kw)
 
 
+def _capturing_forecast(*args, **kwargs):
+    # route_forecast.forecast() multiplies feed_side/behind_feed's raw "base" by a growth factor g
+    # AFTER calling them (base year -> service year), so a bare feed_side() call - which is all cells
+    # A-D below can do, since C/D have no feed_side equivalent anyway - comes out g-times too small.
+    # This captures forecast()'s OWN beyond_detail/behind_detail, which already have g baked in, so g
+    # can be derived empirically (captured total / raw feed_side total) rather than guessed at from
+    # growth/growth_years internals this script has no other way to reach.
+    r = _orig_forecast(*args, **kwargs)
+    _captured_forecast["beyond_detail"] = r.get("beyond_detail") or {}
+    _captured_forecast["behind_detail"] = r.get("behind_detail") or {}
+    return r
+
+
 RFEED.feed_side = _capturing_feed_side
 RFEED.behind_feed = _capturing_behind_feed
+RFC.forecast = _capturing_forecast
 
-import cortex_app as CA                # imports route_forecast, which imports the patched route_feed
+import cortex_app as CA                # imports route_forecast -> gets the patched module
 
 
 def _strip_preagg(feed_cfg):
@@ -161,9 +184,26 @@ def main():
     side_kw["detail"] = True
 
     _, _, dmap_A = _orig_feed_side(sabre_db, oag_db, week, wide_catchment, hub, year, **side_kw)
-    cell_A = sum((v.get("base") or 0) for v in dmap_A.values())
+    cell_A_raw = sum((v.get("base") or 0) for v in dmap_A.values())
     _, _, dmap_B = _orig_feed_side(sabre_db, oag_db, week, narrow_origin, hub, year, **side_kw)
-    cell_B = sum((v.get("base") or 0) for v in dmap_B.values())
+    cell_B_raw = sum((v.get("base") or 0) for v in dmap_B.values())
+
+    # DERIVE g. route_forecast.forecast()'s own beyond_detail (captured above) already has the
+    # base-year -> service-year growth factor applied; a bare feed_side() call, which is all this
+    # script can do, does not. g = forecast()'s grown total / this script's own ungrown wide-catchment
+    # total, both built from the identical wide catchment, so this ratio IS g cleanly, no need to
+    # reach into growth/growth_years internals this script has no other route to.
+    fc_beyond_total = sum((v.get("base") or 0) for v in _captured_forecast.get("beyond_detail", {}).values())
+    if not cell_A_raw or not fc_beyond_total:
+        print("STOP: could not derive g - forecast()'s beyond_detail or this script's own wide-"
+              "catchment total came back empty. Do not trust anything below.")
+        return
+    g = fc_beyond_total / cell_A_raw
+    print(f"Derived growth factor g = {g:.4f} (forecast()'s grown beyond total {fc_beyond_total:,.0f} "
+          f"/ this script's ungrown wide-catchment total {cell_A_raw:,.0f})\n")
+
+    cell_A = cell_A_raw * g
+    cell_B = cell_B_raw * g
 
     # Cells C and D have no equivalent inside feed_side (it always applies the single-connection
     # filter), so these rebuild feed_side's own scope logic (hub_served + on_the_way) by hand, then
@@ -175,8 +215,8 @@ def main():
     scope_wide = RFEED.on_the_way(wide_catchment, hub, scope, circuity=(feed_cfg_raw or {}).get("circuity", 1.35))
     scope_narrow = RFEED.on_the_way(narrow_origin, hub, scope, circuity=(feed_cfg_raw or {}).get("circuity", 1.35))
 
-    cell_C = sum(_connecting_market_any(sabre_db, wide_catchment, scope_wide, year, factor_indirect).values())
-    cell_D = sum(_connecting_market_any(sabre_db, narrow_origin, scope_narrow, year, factor_indirect).values())
+    cell_C = sum(_connecting_market_any(sabre_db, wide_catchment, scope_wide, year, factor_indirect).values()) * g
+    cell_D = sum(_connecting_market_any(sabre_db, narrow_origin, scope_narrow, year, factor_indirect).values()) * g
 
     print("=== SANITY CHECK: beyond/Taipei ===")
     diff_pct = abs(cell_A - KNOWN_HUB_MKT_1WAY) / KNOWN_HUB_MKT_1WAY * 100
@@ -198,11 +238,14 @@ def main():
         print(f"  Filter effect (A/C):    {cell_A / cell_C:.2f}x")
     print(f"  Two-way, cell A x2 (compare to the 2026 table, 1,439,000): {cell_A*2:,.0f}")
     print(f"  Two-way, cell D x2 (closest proxy to a pre-refinement basis, compare to the 2025 "
-          f"table, 1,097,600): {cell_D*2:,.0f}\n")
+          f"table, 1,097,600 - CAVEAT: cell D is grown by g, the 2025-vintage build's own growth "
+          f"factor to ITS service year, FY2028, is not known here and may differ, so treat this one "
+          f"comparison as illustrative, not exact): {cell_D*2:,.0f}\n")
 
     # ================= BEHIND / SAN JOSE SIDE =================
     cell_Ap = KNOWN_DEST_MKT_1WAY   # production figure, already known, no need to recompute here
-    cell_Bp = sum(RFEED.connecting_market(sabre_db, wide_catchment, dest_airports, year, factor_indirect).values())
+    cell_Bp_raw = sum(RFEED.connecting_market(sabre_db, wide_catchment, dest_airports, year, factor_indirect).values())
+    cell_Bp = cell_Bp_raw * g
 
     print("=== BEHIND / SAN JOSE SIDE, one-way ===")
     print(f"  A' SJC-fed feeders + single-connection filter (= production, behind_feed's own logic): "

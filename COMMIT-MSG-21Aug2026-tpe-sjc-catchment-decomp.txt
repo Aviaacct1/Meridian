@@ -25,9 +25,15 @@ Non-negotiable sanity check built in: cell A (wide catchment, filtered - i.e. to
 production basis) must reproduce the contract's own one-way hub_market figure (719,486)
 within 2%, or the script stops rather than print cells built on a mismatched capture.
 
-NOT RUN. This sandbox has no Sabre/OAG database access (config.py's SABRE_DUCKDB/
-OAG_DUCKDB resolve to the workstation's local cache, not anything mounted here) - this
-needs the workstation, same as today's earlier two diagnostics.
+NOT RUN by me. First run, on the workstation, failed the sanity check: 608,084 vs the
+contract's 719,486, 15.5% short. That gap was this script's own bug, not the model's -
+feed_side()'s raw "base" has no growth applied, while route_forecast.forecast() grows it
+base-year to service-year before deck_contract.py ever sees it, and cell A only ever
+called feed_side(). The 15.5% shortfall matched the contract's own growth note ("+18.3%
+over 2yr from 2025") to three decimal places, confirming the diagnosis. Fixed by also
+capturing forecast()'s own already-grown beyond_detail and deriving g as the ratio
+against this script's ungrown total, then applying that g to every cell for a fair
+comparison. Needs a second run.
 
 Run:
     py -3.12 diag_tpe_sjc_catchment_decomp.py
