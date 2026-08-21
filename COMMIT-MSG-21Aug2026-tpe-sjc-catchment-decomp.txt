@@ -1,0 +1,35 @@
+Add diag_tpe_sjc_catchment_decomp.py - decompose the Taipei/San Jose connecting-market swing
+
+John, 21 August: after seeing slide 51's methodology table, John queried the SIZE of the
+12-month change on the two connecting rows, not just its direction - Taipei's connecting
+market rose 31% while San Jose's fell 67%, both allegedly under the same "realistic
+connection" refinement. My working explanation was that the two rows also differ in
+catchment scope (route_forecast.py hands feed_side() the whole Bay Area catchment for the
+Taipei/beyond side, but behind_feed() only SJC itself for the San Jose/behind side, per
+the code's own comment) - asymmetric by design, not a bug. John's response, correctly:
+show me the numbers before we defend an asymmetry as intentional.
+
+This script isolates the two effects (catchment scope, single-connection filter) instead
+of asserting the mechanism from a code comment. It monkeypatches feed_side/behind_feed to
+capture the REAL production arguments (week, year, the actual catchment airport list, the
+real feed_cfg) from a live cortex_app.calibrated_forecast("SJC","TPE",airline="CI") call,
+then re-runs the market build four ways on the beyond/Taipei side (wide catchment or SJC
+alone, crossed with the single-connection filter on or off) and two ways on the
+behind/San Jose side (the current physical-feeder logic, and the same wide-catchment
+logic as Taipei's side, as a direct symmetric test). Deliberately strips 'preagg' from
+feed_cfg for every cell, since the od_single cache has no "any connection count" table to
+answer the filter-isolation cells with - every number here is a fresh raw-Sabre pull, not
+a cache read.
+
+Non-negotiable sanity check built in: cell A (wide catchment, filtered - i.e. today's
+production basis) must reproduce the contract's own one-way hub_market figure (719,486)
+within 2%, or the script stops rather than print cells built on a mismatched capture.
+
+NOT RUN. This sandbox has no Sabre/OAG database access (config.py's SABRE_DUCKDB/
+OAG_DUCKDB resolve to the workstation's local cache, not anything mounted here) - this
+needs the workstation, same as today's earlier two diagnostics.
+
+Run:
+    py -3.12 diag_tpe_sjc_catchment_decomp.py
+
+Avia Solutions Limited. All rights reserved.
