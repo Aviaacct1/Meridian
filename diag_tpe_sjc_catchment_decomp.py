@@ -35,6 +35,21 @@ places, so this was g never having been applied, not a real mismatch. Fixed by c
 route_forecast.forecast()'s own (already-grown) beyond_detail alongside the raw feed_side call, and
 deriving g as the ratio between them - see _capturing_forecast below.
 
+SECOND RUN, 21 August, passed cleanly: catchment effect (A/B) 68.13x, filter effect (A/C) 0.95x -
+the +31% swing on the Taipei row is essentially all catchment, the realistic-connection filter barely
+touches it. That raised the real question: feed_side's capture math (conn_coeff = onward-carrier
+alliance status at Taipei; hub_dominance = the operating airline's own share of Taipei departures)
+has no term for how loyal the ORIGIN catchment is to SJC over its dominant neighbour SFO (99.34% of
+this catchment's observed air travel, per the same contract's catchment._observed_split, against
+0.17% for SJC) - unlike behind_feed, which was deliberately built to avoid exactly this by using only
+the physical airport, not the wide catchment.
+
+THIRD SECTION, added 21 August: what would the CARRIED forecast do under the same restriction
+behind_feed already applies - not a new, uncalibrated discount, just mirroring the existing design
+onto the other leg. Reads feed_side's own captured total (its first return value) for both origin
+lists, so this uses production's real capture/conn_coeff/hub-dominance math unmodified - only the
+origin_airports argument changes.
+
 CELLS, beyond (Taipei) side:
   A = wide catchment  + single-connection filter   (= today's production figure)
   B = SJC only        + single-connection filter   (isolates the catchment effect, filter held fixed)
@@ -183,9 +198,9 @@ def main():
     side_kw["feed_cfg"] = feed_cfg_raw
     side_kw["detail"] = True
 
-    _, _, dmap_A = _orig_feed_side(sabre_db, oag_db, week, wide_catchment, hub, year, **side_kw)
+    captured_A_raw, _, dmap_A = _orig_feed_side(sabre_db, oag_db, week, wide_catchment, hub, year, **side_kw)
     cell_A_raw = sum((v.get("base") or 0) for v in dmap_A.values())
-    _, _, dmap_B = _orig_feed_side(sabre_db, oag_db, week, narrow_origin, hub, year, **side_kw)
+    captured_B_raw, _, dmap_B = _orig_feed_side(sabre_db, oag_db, week, narrow_origin, hub, year, **side_kw)
     cell_B_raw = sum((v.get("base") or 0) for v in dmap_B.values())
 
     # DERIVE g. route_forecast.forecast()'s own beyond_detail (captured above) already has the
@@ -241,6 +256,32 @@ def main():
           f"table, 1,097,600 - CAVEAT: cell D is grown by g, the 2025-vintage build's own growth "
           f"factor to ITS service year, FY2028, is not known here and may differ, so treat this one "
           f"comparison as illustrative, not exact): {cell_D*2:,.0f}\n")
+
+    # ================= WHAT WOULD THE CARRIED FORECAST LOOK LIKE, SYMMETRIC TREATMENT =================
+    # John's 21 August ask: not just the market-size effect, show what happens to the actual CARRIED
+    # passenger forecast if beyond/Taipei used the same restriction behind_feed already applies to
+    # San Jose (narrow origin only), i.e. mirror the existing, already-approved design rather than
+    # invent a new discount with no calibration basis. captured_A_raw/captured_B_raw are feed_side's
+    # OWN first return value - its actual capture/conn_coeff/hub-dominance math, unmodified. Only the
+    # origin_airports argument changes between them.
+    captured_A = captured_A_raw * g
+    captured_B = captured_B_raw * g
+    KNOWN_HUB_FORECAST_1WAY = 58126   # connecting_at_hub_total.forecast, same contract file
+    diff_cap_pct = abs(captured_A - KNOWN_HUB_FORECAST_1WAY) / KNOWN_HUB_FORECAST_1WAY * 100
+    print("=== WHAT WOULD CHANGE: carried forecast, beyond/Taipei leg, one-way ===")
+    print(f"  Second sanity check - captured A (fresh, wide, current production math): {captured_A:,.0f} "
+          f"vs contract forecast {KNOWN_HUB_FORECAST_1WAY:,.0f} ({diff_cap_pct:.1f}% difference)")
+    if diff_cap_pct > 2:
+        print("  MISMATCH > 2% on the CAPTURED figure specifically - stop and find out why before "
+              "trusting the comparison below.\n")
+    else:
+        print(f"  Captured B - same capture math, SJC-only origin (mirrors behind_feed's existing "
+              f"restriction, no new assumption): {captured_B:,.0f}")
+        print(f"  That is {captured_B / captured_A * 100:.1f}% of the current production figure - a "
+              f"{'reduction' if captured_B < captured_A else 'increase'} of "
+              f"{abs(captured_A - captured_B):,.0f} one-way passengers "
+              f"({abs(captured_A - captured_B) * 2:,.0f} two-way) if beyond were restricted the same "
+              f"way behind already is.\n")
 
     # ================= BEHIND / SAN JOSE SIDE =================
     cell_Ap = KNOWN_DEST_MKT_1WAY   # production figure, already known, no need to recompute here

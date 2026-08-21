@@ -25,15 +25,31 @@ Non-negotiable sanity check built in: cell A (wide catchment, filtered - i.e. to
 production basis) must reproduce the contract's own one-way hub_market figure (719,486)
 within 2%, or the script stops rather than print cells built on a mismatched capture.
 
-NOT RUN by me. First run, on the workstation, failed the sanity check: 608,084 vs the
-contract's 719,486, 15.5% short. That gap was this script's own bug, not the model's -
-feed_side()'s raw "base" has no growth applied, while route_forecast.forecast() grows it
-base-year to service-year before deck_contract.py ever sees it, and cell A only ever
-called feed_side(). The 15.5% shortfall matched the contract's own growth note ("+18.3%
-over 2yr from 2025") to three decimal places, confirming the diagnosis. Fixed by also
-capturing forecast()'s own already-grown beyond_detail and deriving g as the ratio
-against this script's ungrown total, then applying that g to every cell for a fair
-comparison. Needs a second run.
+NOT RUN by me throughout - no Sabre/OAG access in this sandbox.
+
+Run 1 failed the sanity check: 608,084 vs the contract's 719,486, 15.5% short. That gap
+was this script's own bug, not the model's - feed_side()'s raw "base" has no growth
+applied, while route_forecast.forecast() grows it base-year to service-year before
+deck_contract.py ever sees it, and cell A only ever called feed_side(). The 15.5%
+shortfall matched the contract's own growth note ("+18.3% over 2yr from 2025") to three
+decimal places, confirming the diagnosis. Fixed by also capturing forecast()'s own
+already-grown beyond_detail and deriving g as the ratio against this script's ungrown
+total, then applying g to every cell.
+
+Run 2 passed clean and answered John's original question: catchment effect 68.13x,
+filter effect 0.95x - the Taipei row's +31% swing is essentially all catchment, the
+realistic-connection filter is not doing meaningful work on that row. That raised a
+sharper one: feed_side's capture math has no term for origin-catchment loyalty to SJC
+over SFO (99.3%/0.17% of this catchment's own observed split, sitting unused in the same
+contract file), unlike behind_feed, built specifically to avoid this on the other leg.
+
+This third addition answers John's follow-up - not "is this wrong", but "show me the
+outcome of fixing it." Reads feed_side's own captured total (unmodified capture/
+conn_coeff/hub-dominance math) for both the wide catchment and SJC alone, so this is not
+a new, uncalibrated discount - it is the existing behind_feed design, mirrored onto the
+beyond leg, to see what the carried forecast does under it. Includes a second sanity
+check against the contract's own carried figure (58,126 one-way) before trusting the
+comparison.
 
 Run:
     py -3.12 diag_tpe_sjc_catchment_decomp.py
