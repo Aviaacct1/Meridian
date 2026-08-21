@@ -1,0 +1,40 @@
+Add deck/departure_curve_uncapped.py - the departure-timing chart, rebuilt uncapped
+
+John, 21 August: the SJC-TPE departure-timing slide currently plots "route total
+carried" already clipped to the 87.5% load-factor capacity ceiling. Because the clip
+flattens the total across both the overnight window and the evening window at the
+identical ceiling value, the chart cannot show that the unrestricted optimum (circa
+00:30) would carry materially more than the chosen, curfew-compliant departure - the
+exact point Mark agreed on the 21 August call to make explicitly (we know 21:00 is not
+the true optimum, 00:30 can't be flown for roughly two years given the curfew, but
+21:00 still works well).
+
+No new model call. cortex_workbook.py's "Departure curve" sheet (added 19 August)
+already carries, per candidate departure, the scaled-but-uncapped two-way connecting
+figure and the capped two-way route total. Point-to-point is constant across the day
+(route_feed.optimise_departure's own long-standing finding), so:
+
+    true uncapped total(t) = connecting, two-way(t) + point-to-point constant
+
+both already sit in the sheet. The script reads them, self-checks that capping its own
+reconstruction at the sheet's stated ceiling reproduces the sheet's own capped column
+exactly (it does, on all 27 rows of the test file), then plots true total demand as the
+primary line with the capacity ceiling as a flat reference line instead of a clip.
+
+Tested against Meridian_SJC_TPE (27).xlsx (CI, 20 August export): self-check passed;
+true demand peaks circa 265,270 two-way at the 00:30 unrestricted optimum against a
+151,515 two-way ceiling - the gap the current chart cannot show.
+
+No database access needed - openpyxl + matplotlib only, runs against any already-
+exported Meridian Excel with a "Departure curve" sheet (CI, BR or JX). Confirmed the
+21:00 label fix on the deck itself is separate and already applied directly to the
+pptx (not part of this script).
+
+Deliberately NOT wired into the pptx yet - John asked to redo this chart as a separate
+task once the deck restructure is finished, then drop the new image in. This script is
+that separate task's tool, not yet its output.
+
+Run:
+    py -3.12 "deck/departure_curve_uncapped.py" "Meridian_SJC_TPE (27).xlsx"
+
+Avia Solutions Limited. All rights reserved.
