@@ -1,0 +1,25 @@
+deck/departure_curve_uncapped.py - restore the P2P/connecting split, stacked
+
+John, 21 August: the first version's single total-demand line lost the point-to-point
+versus connecting split the original two-line chart carried, and with it the fact
+that point-to-point is constant across the day (route_feed's own finding) while
+connecting varies. That split matters commercially: since P2P sits well under the
+capacity ceiling on its own, every passenger the 87.5% cap costs is connecting feed,
+never point-to-point - the traffic being given up is the lower-value connecting
+traffic, not the airline's own local base.
+
+Rebuilt as a stacked area: P2P as a constant base band, connecting stacked on top, the
+capacity ceiling as a reference line, and the region above the ceiling shaded
+separately and labelled "connecting demand the capacity cap costs". Before drawing,
+the script now asserts p2p2 < cap2 and exits rather than plotting if that ever fails,
+so the "everything lost is connecting" framing is checked against this run's own
+numbers, not asserted blind.
+
+Re-tested against Meridian_SJC_TPE (27).xlsx: self-check (the existing capped/uncapped
+reconciliation) and the new P2P-below-ceiling check both pass. At the 00:30
+unrestricted optimum the cap costs 113,755 two-way passengers, all of it connecting.
+
+Run (unchanged):
+    py -3.12 "deck/departure_curve_uncapped.py" "Meridian_SJC_TPE (27).xlsx"
+
+Avia Solutions Limited. All rights reserved.

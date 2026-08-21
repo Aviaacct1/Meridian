@@ -29,6 +29,15 @@ all 27 rows; true demand peaks circa 265,270 two-way at the 00:30 unrestricted o
 against a 151,515 two-way capacity ceiling - the gap the current, capped chart cannot
 show.
 
+21 AUGUST, SECOND VERSION: John flagged that the single total-demand line lost the
+point-to-point / connecting split the original two-line chart had, and with it the
+fact that P2P is constant across the day (route_feed's own finding) while connecting
+varies. Since P2P sits well under the capacity ceiling on its own, every passenger the
+cap costs is connecting feed, never point-to-point - a script assertion confirms this
+holds before the chart is drawn, rather than asserting it in a caption. Now plotted as
+a stacked band (P2P base, connecting on top) with the region above the ceiling shaded
+separately as "connecting demand the cap costs".
+
 USAGE. Run against ANY Meridian Excel export for an airline that has a "Departure curve"
 sheet - CI, BR or JX, the current run or a fresh one:
 
@@ -135,11 +144,24 @@ def build_chart(xlsx_path, out_path=None):
           f"({p2p2:,.0f}), capped at the ceiling ({cap2:,.0f}), reproduces the sheet's own "
           "'Route total carried' column exactly. The uncapped reconstruction is trustworthy.")
 
+    # JOHN, 21 AUGUST: the single total-demand line lost the P2P/connecting split - and
+    # with it, the fact that P2P is constant across the day (route_feed's own finding) so
+    # the capacity ceiling never binds on it. P2P (64,290 two-way here) sits well under the
+    # ceiling (151,515) on its own, so every passenger given up above the ceiling is
+    # CONNECTING feed, never point-to-point. Confirmed, not assumed:
+    if p2p2 >= cap2:
+        raise SystemExit(f"P2P constant ({p2p2:,.0f}) exceeds the capacity ceiling "
+                          f"({cap2:,.0f}) - the 'everything lost is connecting' framing "
+                          "below does not hold for this run. Do not use it blind.")
+    print(f"Confirmed: P2P ({p2p2:,.0f}) is always below the ceiling ({cap2:,.0f}), so "
+          "every passenger the cap costs is connecting feed, never point-to-point.")
+
     xs = [r["mins"] / 60.0 for r in rows]
+    p2p_line = [p2p2 for _ in rows]
     true_total = [r["true_total2"] for r in rows]
     chosen_mins = _mins(chosen) / 60.0
 
-    fig, ax = plt.subplots(figsize=(10, 5.2))
+    fig, ax = plt.subplots(figsize=(10, 5.6))
 
     # shade restricted hours
     in_block = False
@@ -156,30 +178,51 @@ def build_chart(xlsx_path, out_path=None):
     if in_block:
         ax.axvspan(start, 24, color="#E7EAF0", zorder=0)
 
-    ax.plot(xs, true_total, color=NAVY, linewidth=2.4,
-            label="Total demand (P2P + connecting), uncapped")
-    ax.axhline(cap2, color=BLUE, linewidth=1.8, linestyle="--",
-               label=f"Capacity ceiling, {cap2:,.0f} two-way (87.5% load factor)")
+    # STACKED: P2P as the constant base band, connecting stacked on top - so the shape of
+    # the top edge is still the total-demand curve, but the split is visible throughout.
+    ax.fill_between(xs, 0, p2p_line, color=NAVY, alpha=0.85, zorder=2,
+                     label=f"Point-to-point, constant all day ({p2p2:,.0f} two-way)")
+    ax.fill_between(xs, p2p_line, true_total, color=BLUE, alpha=0.85, zorder=2,
+                     label="Connecting, varies by departure time")
 
-    ax.annotate(f"chosen {chosen}\n{min(next(r['true_total2'] for r in rows if r['hhmm']==chosen), cap2):,.0f} carried",
-                xy=(chosen_mins, cap2), xytext=(chosen_mins + 0.6, cap2 * 0.72),
-                arrowprops=dict(arrowstyle="->", color=NAVY), color=NAVY, fontsize=10)
+    # The region above the ceiling is demand the cap costs - shade it distinctly and
+    # label it, since it is entirely connecting (proven above), never point-to-point.
+    lost = [max(t - cap2, 0) for t in true_total]
+    if any(lost):
+        ax.fill_between(xs, [min(t, cap2) for t in true_total], true_total,
+                         where=[t > cap2 for t in true_total], color="#C0504D", alpha=0.55,
+                         hatch="///", edgecolor="#C0504D", linewidth=0, zorder=3,
+                         label="Connecting demand the capacity cap costs")
+
+    ax.axhline(cap2, color="#404040", linewidth=1.6, linestyle="--",
+               zorder=4, label=f"Capacity ceiling, {cap2:,.0f} two-way (87.5% load factor)")
+
+    chosen_true = next(r["true_total2"] for r in rows if r["hhmm"] == chosen)
+    chosen_carried = min(chosen_true, cap2)
+    ax.annotate(f"chosen {chosen}: {chosen_carried:,.0f} carried",
+                xy=(chosen_mins, cap2), xytext=(chosen_mins + 0.6, cap2 * 0.60),
+                arrowprops=dict(arrowstyle="->", color="#1F1F1F"), color="#1F1F1F", fontsize=10)
     if unrestricted:
         un_row = next((r for r in rows if r["hhmm"] == unrestricted), None)
         if un_row:
-            ax.annotate(f"unrestricted optimum {unrestricted}\n{un_row['true_total2']:,.0f} true demand",
-                        xy=(_mins(unrestricted) / 60.0, un_row["true_total2"]),
-                        xytext=(_mins(unrestricted) / 60.0 + 0.6, un_row["true_total2"] * 0.92),
-                        arrowprops=dict(arrowstyle="->", color=GREY), color=GREY, fontsize=10)
+            un_lost = un_row["true_total2"] - min(un_row["true_total2"], cap2)
+            ax.annotate(
+                f"unrestricted optimum {unrestricted}: {un_row['true_total2']:,.0f} true "
+                f"demand\n{un_lost:,.0f} of it connecting feed the cap would still cost",
+                xy=(_mins(unrestricted) / 60.0, un_row["true_total2"]),
+                xytext=(_mins(unrestricted) / 60.0 + 0.6, un_row["true_total2"] * 0.90),
+                arrowprops=dict(arrowstyle="->", color="#1F1F1F"), color="#1F1F1F", fontsize=10)
 
     ax.set_xlim(0, 24)
+    ax.set_ylim(0, None)
     ax.xaxis.set_major_locator(mticker.MultipleLocator(3))
     ax.xaxis.set_major_formatter(mticker.FuncFormatter(lambda v, _: f"{int(v):02d}:00"))
     ax.set_xlabel("Departure time, origin local")
     ax.set_ylabel("Passengers a year, two-way")
-    ax.set_title("Total demand by outbound departure time - shaded hours are restricted departures",
+    ax.set_title("Demand by outbound departure time, point-to-point vs connecting - "
+                 "shaded hours are restricted departures",
                  fontsize=11, loc="left", color="#404040")
-    ax.legend(loc="upper right", frameon=False, fontsize=9)
+    ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.16), ncol=2, frameon=False, fontsize=9)
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
     ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda v, _: f"{int(v):,}"))
