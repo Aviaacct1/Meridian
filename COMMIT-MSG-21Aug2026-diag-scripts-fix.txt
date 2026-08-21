@@ -1,0 +1,31 @@
+Fix diag_beyond_tpe_region_split.py and diag_sjc_tpe_day_of_week.py
+
+diag_beyond_tpe_region_split.py: the first version read fc["demand"]["beyond_pdew"],
+which is cortex_app._feed_list()'s OUTPUT. Even with AVIA_FEED_TOP=999 removing the
+top-N truncation, _feed_list() still applies "if pv <= 0: continue", silently dropping
+every city where the given airline's captured share is zero or negative. This is why
+CI/BR/JX returned different city counts (35/33/29) and different regional totals on the
+workstation run - a capture-level artefact, not a real market difference. Fixed by
+monkeypatching route_forecast.forecast() to capture its raw, unfiltered "beyond_detail"
+return dict before cortex_app.calibrated_forecast() (which never surfaces it to the
+caller) reads it, then tagging by country via route_engine._airports(). The script now
+asserts all three airlines agree on the raw map before printing an answer, and refuses
+to print a number if they still don't.
+
+diag_sjc_tpe_day_of_week.py: Stage 3's column match ("dow" in name, or exact match on
+days/day_pattern/operating_days) did not recognise the real OAG columns days_of_op /
+arr_days_of_op, so it incorrectly reported no day-of-week column found. Fixed the match,
+and rebuilt Stage 3 to (1) sample real days_of_op values before assuming an encoding,
+(2) sample eff_from/eff_to to confirm what period the table covers, (3) pull the route's
+top connecting-market scope dynamically from the same raw beyond_detail technique as the
+region-split script, and (4) run a first-pass day tally explicitly labelled as needing
+eyeballing against the sample before use - per house method, no number is trusted
+pre-test.
+
+Neither script touches production code paths (deck_contract.py, forecast_pack.py,
+cortex_app.py, route_feed.py, route_forecast.py) - both are read-only diagnostic scripts
+against the live databases, run manually on the workstation.
+
+Re-run:
+    py -3.12 diag_beyond_tpe_region_split.py
+    py -3.12 diag_sjc_tpe_day_of_week.py
