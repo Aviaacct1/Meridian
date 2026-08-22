@@ -51,10 +51,31 @@ def _check_cancelled():
     if _cc is not None and _cc():
         raise OptimiseCancelled("optimisation stopped by user")
 
-WORK_DAYS = 365.0                     # PDEW = annual O&D / 365 / 2 (each way)
+WORK_DAYS = 365.0                     # fallback only, when the caller cannot supply a route
+                                      # frequency - see _ptew below. NOT the route's real schedule.
 DEFAULT_CONN_CAPTURE = 0.025          # global connecting-capture, calibrated to BA LHR-SJC = 48,115 with
                                       # the alliance weighting factored out separately (a cleaner residual
                                       # than the old flat capture; the back-test will confirm it generalises)
+
+
+def _ptew(annual_each_way, freq=None, season_weeks=52.0):
+    """PTEW = passengers per trip, each way: annual each-way traffic / the route's actual scheduled
+    departures that year (freq/week x weeks). Renamed from PDEW 22 August 2026 (Jol Kingham/Mark, the
+    SJC-TPE workbook review): the per-city figures in the Connecting feed detail sheet did not sum to
+    the Forecast tab's own total for the same leg - 12-46 versus 36-112 on this route's two connecting
+    legs - because this function used to divide by a flat 365 calendar days (WORK_DAYS) regardless of
+    how often the route actually flies, a DIFFERENT and smaller quantity than "passengers on a typical
+    departure", which is what every consumer of this figure (Cover, Forecast, the dashboard label)
+    actually means by it. A route flying less than daily reads a materially bigger PTEW under this fix
+    than the old PDEW figure, because the same annual passengers are now divided across fewer, not 365,
+    departures. freq=None (the caller has no specific schedule, e.g. an exploratory catchment-only
+    call) falls back to the old WORK_DAYS/2 daily-each-way basis rather than raising, since some
+    callers genuinely do not have a route defined yet - but every production caller (route_forecast.py)
+    now passes its own freq and season_weeks, so no live figure should hit this fallback."""
+    if freq:
+        dep_per_year = freq * season_weeks
+        return round((annual_each_way or 0) / dep_per_year, 1) if dep_per_year else 0.0
+    return round((annual_each_way or 0) / WORK_DAYS / 2.0, 1)
 
 
 def _con(db):
@@ -250,7 +271,8 @@ def connecting_market(sabre_db, origin_airports, beyond_airports, year, factor_i
 
 
 def feed_side(sabre_db, oag_db, week, origin_airports, hub, year, capture=DEFAULT_CONN_CAPTURE,
-              factor_indirect=1.044, beyond=True, airline=None, feed_cfg=None, detail=False):
+              factor_indirect=1.044, beyond=True, airline=None, feed_cfg=None, detail=False,
+              freq=None, season_weeks=52.0):
     """One side of the feed. beyond=True: O-catchment -> H's destinations (beyond H). beyond=False:
     H's feeders -> the route dest via O (behind). Per-city capture is alliance-weighted by the operating
     airline's connection onto the onward leg (online/alliance/interline). Returns (total, {city: pdew}).
@@ -312,12 +334,12 @@ def feed_side(sabre_db, oag_db, week, origin_airports, hub, year, capture=DEFAUL
             k = feed_cfg.get("qsi_k", 0.06)
             captured = {city: pax * k * qshare.get(city, 0.0) for city, pax in market.items()}
             total = sum(captured.values())
-            pdew = {city: round(v / WORK_DAYS / 2.0, 1) for city, v in sorted(
+            pdew = {city: _ptew(v, freq, season_weeks) for city, v in sorted(
                 captured.items(), key=lambda kv: -kv[1])}
             if detail:
                 dmap = {city: {"base": market[city], "share": k * qshare.get(city, 0.0),
                                "captured": captured.get(city, 0.0),
-                               "pdew": round(captured.get(city, 0.0) / WORK_DAYS / 2.0, 1)}
+                               "pdew": _ptew(captured.get(city, 0.0), freq, season_weeks)}
                         for city in sorted(market, key=lambda c: -captured.get(c, 0.0))}
                 return total, pdew, dmap
             return total, pdew
@@ -349,14 +371,14 @@ def feed_side(sabre_db, oag_db, week, origin_airports, hub, year, capture=DEFAUL
                 * (sched.get(city, 1.0) if sched else 1.0)
                 for city, pax in market.items()}
     total = sum(captured.values())
-    pdew = {city: round(v / WORK_DAYS / 2.0, 1) for city, v in sorted(
+    pdew = {city: _ptew(v, freq, season_weeks) for city, v in sorted(
         captured.items(), key=lambda kv: -kv[1])}
     if detail:
         dmap = {}
         for city in sorted(market, key=lambda c: -captured.get(c, 0.0)):
             cv = captured.get(city, 0.0)
             dmap[city] = {"base": market[city], "share": cap * conn_coeff(airline, onward.get(city, set()), feed_cfg),
-                          "captured": cv, "pdew": round(cv / WORK_DAYS / 2.0, 1)}
+                          "captured": cv, "pdew": _ptew(cv, freq, season_weeks)}
         return total, pdew, dmap
     return total, pdew
 
@@ -411,7 +433,8 @@ def behind_market(sabre_db, feeders, dest_airports, year, factor_indirect=1.044)
 
 
 def behind_feed(sabre_db, oag_db, week, origin_airports, dest_airports, year, capture=DEFAULT_CONN_CAPTURE,
-                factor_indirect=1.044, airline=None, circuity=1.35, feed_cfg=None, detail=False):
+                factor_indirect=1.044, airline=None, circuity=1.35, feed_cfg=None, detail=False,
+                freq=None, season_weeks=52.0):
     """BEHIND-origin feed: points that feed the origin, connecting there onto the O-D flight. Feeder ->
     origin -> destination. Alliance coefficient on the inbound feeder->origin leg. Returns (total, pdew).
     feed_cfg (the fix): zero for point-to-point carriers; use the (higher) behind base rate; and scale by
@@ -476,12 +499,12 @@ def behind_feed(sabre_db, oag_db, week, origin_airports, dest_airports, year, ca
             k = feed_cfg.get("qsi_k_behind", feed_cfg.get("qsi_k", 0.06))
             captured = {y: pax * k * qshare.get(y, 0.0) for y, pax in market.items()}
             total = sum(captured.values())
-            pdew = {y: round(v / WORK_DAYS / 2.0, 1) for y, v in sorted(
+            pdew = {y: _ptew(v, freq, season_weeks) for y, v in sorted(
                 captured.items(), key=lambda kv: -kv[1])}
             if detail:
                 dmap = {y: {"base": market[y], "share": k * qshare.get(y, 0.0),
                             "captured": captured.get(y, 0.0),
-                            "pdew": round(captured.get(y, 0.0) / WORK_DAYS / 2.0, 1)}
+                            "pdew": _ptew(captured.get(y, 0.0), freq, season_weeks)}
                         for y in sorted(market, key=lambda c: -captured.get(c, 0.0))}
                 return total, pdew, dmap
             return total, pdew
@@ -495,13 +518,13 @@ def behind_feed(sabre_db, oag_db, week, origin_airports, dest_airports, year, ca
     cap = _cap_eff(base, dom, feed_cfg)
     captured = {y: pax * cap * conn_coeff(airline, onward.get(y, set()), feed_cfg) for y, pax in market.items()}
     total = sum(captured.values())
-    pdew = {y: round(v / WORK_DAYS / 2.0, 1) for y, v in sorted(captured.items(), key=lambda kv: -kv[1])}
+    pdew = {y: _ptew(v, freq, season_weeks) for y, v in sorted(captured.items(), key=lambda kv: -kv[1])}
     if detail:
         dmap = {}
         for y in sorted(market, key=lambda c: -captured.get(c, 0.0)):
             cv = captured.get(y, 0.0)
             dmap[y] = {"base": market[y], "share": cap * conn_coeff(airline, onward.get(y, set()), feed_cfg),
-                       "captured": cv, "pdew": round(cv / WORK_DAYS / 2.0, 1)}
+                       "captured": cv, "pdew": _ptew(cv, freq, season_weeks)}
         return total, pdew, dmap
     return total, pdew
 

@@ -630,13 +630,22 @@ def forecast(sabre_db, oag_db, week, origin, dest_codes, competing_airports, *, 
                 feed_cfg.setdefault("route_origin", origin)
             bt, beyond_pdew, beyond_detail = RFEED.feed_side(sabre_db, oag_db, week, competing_airports,
                                               dest_airport, year, beyond=True, airline=airline,
-                                              feed_cfg=feed_cfg, detail=True)
+                                              feed_cfg=feed_cfg, detail=True,
+                                              freq=freq, season_weeks=season_weeks)
             # behind uses the SPECIFIC route origin (feeders physically connect there), not the wider
             # catchment - else a route into a small airport wrongly inherits a big neighbour's feed bank.
             ht, behind_pdew, behind_detail = RFEED.behind_feed(sabre_db, oag_db, week, [origin], [dest_airport],
-                                              year, airline=airline, feed_cfg=feed_cfg, detail=True)
+                                              year, airline=airline, feed_cfg=feed_cfg, detail=True,
+                                              freq=freq, season_weeks=season_weeks)
             feed_beyond, feed_behind = (bt or 0.0) * g, (ht or 0.0) * g
             if g != 1.0:
+                # 22 August 2026: beyond_pdew/behind_pdew (the separate top-level city:PTEW maps,
+                # distinct from beyond_detail/behind_detail's own "pdew" field below) were never
+                # grown by g here - only hit when a caller reads them without detail=True, which
+                # route_forecast.py itself never does, but a payload consumer might. Growing them
+                # too keeps every PTEW figure this function returns on the same basis.
+                beyond_pdew = {c: round(v * g, 1) for c, v in beyond_pdew.items()}
+                behind_pdew = {c: round(v * g, 1) for c, v in behind_pdew.items()}
                 for _dm in (beyond_detail, behind_detail):
                     for _c in _dm.values():
                         _c["base"] *= g; _c["captured"] *= g; _c["pdew"] *= g

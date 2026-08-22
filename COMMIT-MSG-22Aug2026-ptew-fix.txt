@@ -1,0 +1,65 @@
+Fix PTEW: per-city figures now use the route's real schedule, not a flat 365 days
+
+Jol/Mark, 22 August, SJC-TPE workbook review: the per-city PDEW figures in the
+Connecting feed detail sheet did not sum to the Forecast tab's own total for the
+same leg (SJC-behind: 13.1 vs 36; TPE-beyond: 45.9 vs 112), and the tab's own
+title said "PDEW" three cells above a column header that said "PTEW". Jol asked
+that the model use PTEW consistently, since Avia has always used that term and
+PDEW invites a wrong reading (could sound two-way daily, when it names a single
+each-way trip).
+
+ROOT CAUSE. app/route_feed.py computed every per-city figure as annual passengers
+/ 365 / 2 - a flat calendar-day average with no reference to the route's actual
+frequency. The Forecast tab's aggregate PTEW was already correct: annual carried
+/ actual scheduled departures (freq x weeks). A route that flies less than daily,
+this one is 5x/week, was never going to reconcile the two: 730 assumed departures
+a year against the real 260.
+
+THE FIX. app/route_feed.py: new _ptew(annual_each_way, freq, season_weeks) helper,
+called from all four places the old inline formula lived (feed_side's QSI and
+flat-capture branches, behind_feed's same two branches). Divides by freq x
+season_weeks when supplied; falls back to the old 365/2 basis only when freq is
+None (a caller with no route defined yet - no production path should hit this).
+app/route_forecast.py: both feed_side() and behind_feed() calls now pass their
+own freq and season_weeks through, so every live forecast uses its real
+schedule. Also fixed a smaller, related gap found while in there: beyond_pdew/
+behind_pdew (the top-level city:PTEW maps, separate from beyond_detail/
+behind_detail's own copy) were never grown by g - only the detail dict's copy
+was. Both now scale together.
+
+LABELS. Every user-visible "PDEW" found in the live dashboard and the workbook
+generator now reads "PTEW": app/cortex_dashboard.html and its app_avia_style
+mirror (both the section description and the total-line label), app/
+cortex_workbook.py (module docstring, the Connecting feed tab's title text and
+column header). The internal Python dict key stays "pdew" throughout - renaming
+that would touch roughly two dozen consumer files (dashboard JS, deck
+generators, contract JSON, several bt2 backtest scripts) for a label that is
+never shown to a user; only what's printed on screen or on a sheet changed.
+
+NOT SWEPT. "PDEW" still appears in about twenty other files - deck-generator
+JS (build_osprey.js, build_ba_v2/v3.js), pitch_html.py, pitch_report.py,
+route_deck.py, cortex_help.html and its mirror, forecast_pack.py, forecast_spec.py,
+deck_contract.py, several spec/handover markdown files, and one archived module.
+Left alone deliberately given the demo-week schedule and because none of them
+carry the calculation bug (only route_feed.py did) - this commit fixes the
+number and the two most-seen labels (live dashboard, workbook). A full label
+sweep across the rest is a separate, lower-risk pass whenever there's room for
+it.
+
+ALSO NOTED, not fixed here: app/app_avia_style/ carries its own full copies of
+cortex_dashboard.html and cortex_app.py, not just a shared stylesheet. Both had
+the same PDEW label bug independently, now both fixed - but two live copies of
+the same page existing at all is exactly the kind of split the Avia Tool
+Standard exists to prevent. Worth checking whether app_avia_style is a live,
+served variant or a stale fork before this drifts further.
+
+VERIFICATION. diag_ptew_fix_check.py added - calls the same live CI/SJC-TPE
+route, sums each leg's per-city PTEW under the fix, and checks the sum lands
+close to the Forecast tab's own aggregate PTEW (freq-based), rather than the
+~0.36-0.41x ratio the bug produced. Not run here - no Sabre/OAG access in this
+sandbox.
+
+Run:
+    py -3.12 diag_ptew_fix_check.py
+
+Avia Solutions Limited. All rights reserved.

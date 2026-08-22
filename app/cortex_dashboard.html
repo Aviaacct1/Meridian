@@ -478,7 +478,7 @@
         </div>
 
         <div class="card hidden" id="feedRow" style="margin-top:16px">
-          <div class="ch"><div><h3>Connecting feed detail</h3><div class="sub">passengers daily each way (PDEW), top connecting points for this airline</div></div><span class="sub" id="pdewTotal"></span></div>
+          <div class="ch"><div><h3>Connecting feed detail</h3><div class="sub">passengers per trip each way (PTEW), top connecting points for this airline</div></div><span class="sub" id="pdewTotal"></span></div>
           <div class="cb"><div class="grid">
             <div><div style="font-family:var(--sans);font-size:9px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;color:var(--muted);margin-bottom:10px">Behind the origin, feeding in</div><div class="pnl" id="behindTbl"></div></div>
             <div><div style="font-family:var(--sans);font-size:9px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;color:var(--muted);margin-bottom:10px">Beyond the destination, carrying on</div><div class="pnl" id="beyondTbl"></div></div>
@@ -1665,7 +1665,7 @@ function render(d){
 
   const fr=$("#feedRow");
   if((dem.connecting_carried!=null?dem.connecting_carried:dem.feed_total)>0 && ((dem.behind_pdew||[]).length || (dem.beyond_pdew||[]).length)){
-    $("#pdewTotal").textContent="total "+fmt(dem.pdew_total)+" PDEW";
+    $("#pdewTotal").textContent="total "+fmt(dem.pdew_total)+" PTEW";
     const tbl=list=>(list&&list.length)?list.map(x=>`<div class="pdewrow"><span class="k">${x.name} <span style="color:var(--muted);font-size:11px">${x.code}</span></span><span class="vv">${x.pdew.toLocaleString()}</span></div>`).join(""):'<div class="fnote">None on the way.</div>';
     $("#behindTbl").innerHTML=tbl(dem.behind_pdew)+splitNote((d.competition_split||{}).behind);
     $("#beyondTbl").innerHTML=tbl(dem.beyond_pdew)+splitNote((d.competition_split||{}).beyond);

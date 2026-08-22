@@ -3,7 +3,7 @@
 Avia Cortex - detailed route workbook (built straight from the calibrated forecast).
 ====================================================================================
 build_workbook(out_path, fc, meta) writes the client-ready Excel with the full tables that
-sit behind the deck: the forecast breakdown, the connecting-feed detail each way (PDEW), the
+sit behind the deck: the forecast breakdown, the connecting-feed detail each way (PTEW), the
 catchment split, the turnaround P&L line items, and an assumptions / methodology log. It reads
 the calibrated_forecast() dict directly, so every number matches the portal, and needs nothing
 from the old pipeline. Author is set to Avia Solutions.
@@ -273,7 +273,7 @@ def build_workbook(out_path, fc, meta=None):
     _svc_yr = (fc.get("schedule") or {}).get("forecast_year") or ""
     _yrtag = f" {_svc_yr}" if _svc_yr else ""
     _title(ws, "Connecting feed detail",
-           f"connecting markets each way at{_yrtag or ' the service year'}: market O&D demand, captured share, forecast, PDEW")
+           f"connecting markets each way at{_yrtag or ' the service year'}: market O&D demand, captured share, forecast, PTEW")
     _csp, _csb, _csy, _cst = carried_split(dem)
     r = 4
     # DEMAND-COLUMN TOTAL, 20 August 2026 (John, checking the EVA pack against the deck's
@@ -286,7 +286,7 @@ def build_workbook(out_path, fc, meta=None):
             (f"Connecting at {d['iata']} (beyond the destination)", "beyond_pdew", _csy, n0(dem.get("feed_beyond_base")))]:
         _sec(ws, r, label, 8); r += 1
         _hdr(ws, r, ["Nr", "Code", "City", "Country", f"Market demand{_yrtag}", "Share",
-                     f"{_padj} forecast{_yrtag}", "PDEW"],
+                     f"{_padj} forecast{_yrtag}", "PTEW"],
              [6, 10, 24, 20, 15, 10, 15, 9]); r += 1
         lst = dem.get(key) or []; sub_base = 0.0; sub_fc = 0.0
         for i, row in enumerate(lst, 1):
