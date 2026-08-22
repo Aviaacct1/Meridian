@@ -30,7 +30,7 @@ Author of any generated file: Avia Solutions.
 from __future__ import annotations
 import json, math, os, argparse
 
-DAYS_2WAY = 728  # 52 weeks x 7 days x 2 directions
+DAYS_2WAY = 728  # fallback only: 52 weeks x 7 daily x 2 directions, when no route freq is supplied
 
 
 # ----------------------------------------------------------------- derived metrics
@@ -42,8 +42,17 @@ def haversine_km(lat1, lon1, lat2, lon2):
     return 2 * r * math.asin(math.sqrt(a))
 
 
-def pdew(annual_two_way):
-    return round(annual_two_way / DAYS_2WAY, 1) if annual_two_way else 0.0
+def pdew(annual_two_way, freq=None, weeks=52.0):
+    """PDEW = annual two-way passengers / the route's actual scheduled departures that year, two-way
+    (freq/week x weeks x 2). Fixed 22 August 2026, same defect as route_feed.py's PTEW fix earlier
+    the same day: this always divided by the fallback DAYS_2WAY (728, a DAILY each-way service
+    assumed year-round), regardless of the route's real frequency. On a non-daily route the two never
+    reconciled - CI/SJC-TPE at 5x/week has 260 scheduled departures each way, not the 364 the flat
+    constant assumed, understating PDEW by roughly 29%. freq is optional and falls back to the old
+    728 basis only when the caller has no route defined yet (ba_lhr_sjc_reference's fixture is daily,
+    freq=7, so it already sits exactly on this basis and is left untouched, not converted)."""
+    dep_two_way = (freq * weeks * 2) if freq else DAYS_2WAY
+    return round(annual_two_way / dep_two_way, 1) if annual_two_way and dep_two_way else 0.0
 
 
 def ask(seats, distance_km, freq_per_week):
@@ -401,8 +410,18 @@ def build_contract(case: dict, outputs: dict, connecting: dict = None, growth_ra
     cnx = connecting or {}
     hub_cities = cnx.get("hub_cities") or []
     dest_cities = cnx.get("dest_cities") or []
-    cnx_hub_fc = round(sum(c.get("annual_forecast", 0) for c in hub_cities)) if hub_cities else None
-    cnx_dest_fc = round(sum(c.get("annual_forecast", 0) for c in dest_cities)) if dest_cities else None
+    # SECOND EACH-WAY FIGURE FOUND IN AN OTHERWISE TWO-WAY CONTRACT (22 August 2026, found while
+    # fixing the PDEW departures basis above). connecting_from_forecast hands over hub_cities/
+    # dest_cities' annual_demand/annual_forecast RAW, each way, by design (forecast_to_contract's
+    # own job is to pass the payload through unmodified; deck_contract is the one place that
+    # doubles, per the _hub_mkt2/_dest_mkt2 fix from 20 August, "doubled once here, at the single
+    # place both legs and every consumer draw from"). The per-city cities[] list and its own total
+    # were never brought into that rule, so connecting_at_hub.total.annual_forecast sat at roughly
+    # half of segment_forecast.summary.connecting_at_hub_total.forecast in the SAME contract, two
+    # "connecting at hub" figures a page apart reading a factor of two off each other, which is
+    # exactly the shape of confusion this whole EW/two-way project exists to close.
+    cnx_hub_fc = round(sum(c.get("annual_forecast", 0) for c in hub_cities) * 2) if hub_cities else None
+    cnx_dest_fc = round(sum(c.get("annual_forecast", 0) for c in dest_cities) * 2) if dest_cities else None
 
     # CONNECTING MARKET SIZE, TWO-WAY (20 August 2026, Jol's review of the SJC-TPE packs, the
     # basis mix he and John caught live: "connecting market over Taipei 719,500 both directions...
@@ -472,14 +491,14 @@ def build_contract(case: dict, outputs: dict, connecting: dict = None, growth_ra
                     "capture_rate": capture,
                     "forecast": p2p_carried,
                     "_forecast_need": (None if p2p_carried else NEED_LEG),
-                    "pdew": pdew(p2p_carried or 0)},
+                    "pdew": pdew(p2p_carried or 0, freq=freq)},
                 "connecting_at_hub_total": ({"base_annual_demand": _hub_mkt2,
                     "demand_at_service_year": _hub_mkt2, "demand_after_stimulation": _hub_mkt2,
                     "capture_rate": (airline_share(cnx_hub_carried, _hub_mkt2) if _hub_mkt2 else None),
                     "forecast": cnx_hub_carried,
                     "_forecast_need": (None if cnx_hub_carried else NEED_LEG),
                     "top_cities_forecast": cnx_hub_fc, "_top_cities_need": NEED_TOPN,
-                    "pdew": pdew(cnx_hub_carried or 0)} if hub_cities else
+                    "pdew": pdew(cnx_hub_carried or 0, freq=freq)} if hub_cities else
                     {"forecast": None, "_need": NEED_CNX_DEST}),
                 # base_annual_demand/demand_at_service_year/demand_after_stimulation/capture_rate
                 # added here 20 August 2026, same fix as the hub leg above: this block previously
@@ -492,24 +511,36 @@ def build_contract(case: dict, outputs: dict, connecting: dict = None, growth_ra
                     "forecast": cnx_dest_carried,
                     "_forecast_need": (None if cnx_dest_carried else NEED_LEG),
                     "top_cities_forecast": cnx_dest_fc, "_top_cities_need": NEED_TOPN,
-                    "pdew": pdew(cnx_dest_carried or 0)}
+                    "pdew": pdew(cnx_dest_carried or 0, freq=freq)}
                     if dest_cities else {"forecast": None, "_need": NEED_CNX_DEST}),
                 # carried ALREADY contains both connecting legs. Adding them here is what produced a
                 # load factor above the plan cap, so the total is taken and never summed.
-                "grand_total": {"forecast": carried, "pdew": pdew(carried or 0),
+                "grand_total": {"forecast": carried, "pdew": pdew(carried or 0, freq=freq),
                     "_basis": "carried, after the plan load factor cap; the legs below sum to it"},
             },
         },
         "connecting_at_hub": {"hub": hub,
             "cities": [{"nr": i + 1, "city_code": c.get("city_code") or c.get("market"),
                         "city_name": c.get("city_name"), "country": c.get("country"),
-                        "annual_demand": c.get("annual_demand"), "airline_share": c.get("airline_share"),
-                        "annual_forecast": c.get("annual_forecast"), "pdew": pdew(c.get("annual_forecast", 0))}
+                        "annual_demand": round((c.get("annual_demand") or 0) * 2) or None,
+                        "airline_share": c.get("airline_share"),
+                        "annual_forecast": round((c.get("annual_forecast") or 0) * 2) or None,
+                        "pdew": pdew((c.get("annual_forecast") or 0) * 2, freq=freq)}
                        for i, c in enumerate(hub_cities)],
-            "total": {"annual_forecast": cnx_hub_fc, "pdew": pdew(cnx_hub_fc or 0)},
+            "total": {"annual_forecast": cnx_hub_fc, "pdew": pdew(cnx_hub_fc or 0, freq=freq)},
             "_need": (None if hub_cities else "run connecting_feed and pass connecting=")},
-        "connecting_at_destination": {"destination": dest, "cities": dest_cities,
-            "total": {"annual_forecast": cnx_dest_fc, "pdew": pdew(cnx_dest_fc or 0)},
+        # dest_cities was passed straight through un-doubled until today - the same gap as the hub
+        # side above, fixed the same way and now rebuilt here rather than passed through, so both
+        # legs of the connecting table double at the one point, not two.
+        "connecting_at_destination": {"destination": dest,
+            "cities": [{"nr": i + 1, "city_code": c.get("city_code") or c.get("market"),
+                        "city_name": c.get("city_name"), "country": c.get("country"),
+                        "annual_demand": round((c.get("annual_demand") or 0) * 2) or None,
+                        "airline_share": c.get("airline_share"),
+                        "annual_forecast": round((c.get("annual_forecast") or 0) * 2) or None,
+                        "pdew": pdew((c.get("annual_forecast") or 0) * 2, freq=freq)}
+                       for i, c in enumerate(dest_cities)],
+            "total": {"annual_forecast": cnx_dest_fc, "pdew": pdew(cnx_dest_fc or 0, freq=freq)},
             "_need": (None if dest_cities else NEED_CNX_DEST)},
         "revenue_forecast": {
             "years": ([svc_year, (svc_year + 1 if svc_year else None), (svc_year + 2 if svc_year else None)]),
@@ -557,8 +588,10 @@ def build_contract(case: dict, outputs: dict, connecting: dict = None, growth_ra
                       "contested": {"definition": "Outer overlap split by generalised cost."},
                       "_observed_split": outputs.get("observed_split"),
                       "_note": "Zone geometry/population from the catchment module; the observed split is the apportionment."},
+            # same each-way source as the connecting_at_hub cities above; doubled here too, or this
+            # block would print a third, again-different "connecting market" figure per city.
             "top_markets_beyond_hub": ([{"city": c.get("city_name"), "city_code": c.get("city_code") or c.get("market"),
-                                         "annual_demand": c.get("annual_demand")}
+                                         "annual_demand": round((c.get("annual_demand") or 0) * 2) or None}
                                         for c in sorted(hub_cities, key=lambda x: -(x.get("annual_demand") or 0))[:15]]
                                        if hub_cities else []),
         },
@@ -587,6 +620,10 @@ def emit_workbook(contract: dict, path: str):
     wb = Workbook(); _author(wb)
     ws0 = wb.active; ws0.title = "Contract"
     rm = contract["route_metadata"]
+    # THE SAME PDEW FIX AS build_contract() (22 August 2026), applied to the Excel formulas below,
+    # which hardcoded DAYS_2WAY as literal text and so bypassed pdew() entirely: the route's real
+    # scheduled departures, two-way, or the old daily-service fallback when frequency is unknown.
+    _dep2 = round((rm.get("frequency_per_week") or 0) * 52 * 2) or DAYS_2WAY
     info = [["Avia deck data contract", ""], ["Author", "Avia Solutions"],
             ["Route", f"{rm['airline_name']} {rm['origin_airport']}-{rm['destination_airport']}"],
             ["Service year", rm["service_year"]], ["Aircraft", f"{rm['aircraft_type']} ({rm['seats']} seats)"],
@@ -642,13 +679,13 @@ def emit_workbook(contract: dict, path: str):
     # 3 Segment forecast
     ws = wb.create_sheet("3_Segment_Forecast")
     header(ws, ["Market segment", "Base Annual Demand", "Annual Growth Rate", "Demand at Service Year",
-                "Stimulation", "Demand After Stimulation", "Capture Rate", "Forecast", "PDEW"])
+                "Stimulation", "Demand After Stimulation", "Capture Rate", "Forecast", "PTEW"])
     first = ws.max_row + 1
     for r in contract["segment_forecast"]["rows"]:
         ws.append([r["segment"], r["base_annual_demand"], r["annual_growth_rate"], r["demand_at_service_year"],
                    r["stimulation_factor"], r["demand_after_stimulation"], r["capture_rate"], r["forecast"], None])
         row = ws.max_row
-        ws.cell(row=row, column=9).value = f"=H{row}/{DAYS_2WAY}"          # PDEW formula
+        ws.cell(row=row, column=9).value = f"=H{row}/{_dep2}"          # PTEW formula
         ws.cell(row=row, column=3).number_format = "0.0%"
         ws.cell(row=row, column=7).number_format = "0.0%"
         ws.cell(row=row, column=9).number_format = "0.0"
@@ -671,7 +708,7 @@ def emit_workbook(contract: dict, path: str):
         ws.append([lbl, s.get("base_annual_demand"), None, s.get("demand_at_service_year"), None,
                    s.get("demand_after_stimulation"), s.get("capture_rate"), s.get("forecast"), None])
         row = ws.max_row
-        ws.cell(row=row, column=9).value = f"=H{row}/{DAYS_2WAY}"
+        ws.cell(row=row, column=9).value = f"=H{row}/{_dep2}"
         ws.cell(row=row, column=7).number_format = "0.0%"; ws.cell(row=row, column=9).number_format = "0.0"
         for j in range(1, 10):
             ws.cell(row=row, column=j).font = BOLD
@@ -679,25 +716,25 @@ def emit_workbook(contract: dict, path: str):
 
     # 4 Connecting at hub
     ws = wb.create_sheet("4_Connecting_at_Hub")
-    header(ws, ["Nr", "City Code", "City Name", "Country", "Annual Demand", "Airline Share", "Annual Forecast", "PDEW"])
+    header(ws, ["Nr", "City Code", "City Name", "Country", "Annual Demand", "Airline Share", "Annual Forecast", "PTEW"])
     for c in contract["connecting_at_hub"]["cities"]:
         ws.append([c["nr"], c["city_code"], c["city_name"], c["country"], c["annual_demand"], None, c["annual_forecast"], None])
         row = ws.max_row
         ws.cell(row=row, column=6).value = f"=IF(E{row}=0,0,G{row}/E{row})"   # airline_share formula
-        ws.cell(row=row, column=8).value = f"=G{row}/{DAYS_2WAY}"             # pdew
+        ws.cell(row=row, column=8).value = f"=G{row}/{_dep2}"             # ptew
         ws.cell(row=row, column=6).number_format = "0.0%"; ws.cell(row=row, column=8).number_format = "0.0"
     n = ws.max_row
     ws.append(["", "", "TOTAL", "", f"=SUM(E2:E{n})", None, f"=SUM(G2:G{n})", None])
     row = ws.max_row
     ws.cell(row=row, column=6).value = f"=IF(E{row}=0,0,G{row}/E{row})"; ws.cell(row=row, column=6).number_format = "0.0%"
-    ws.cell(row=row, column=8).value = f"=G{row}/{DAYS_2WAY}"; ws.cell(row=row, column=8).number_format = "0.0"
+    ws.cell(row=row, column=8).value = f"=G{row}/{_dep2}"; ws.cell(row=row, column=8).number_format = "0.0"
     for j in range(1, 9):
         ws.cell(row=row, column=j).font = BOLD
     widths(ws, [5, 10, 18, 18, 14, 13, 14, 8])
 
     # 5 Connecting at destination
     ws = wb.create_sheet("5_Connecting_at_Dest")
-    header(ws, ["Nr", "City Code", "City Name", "Country", "Annual Demand", "Airline Share", "Annual Forecast", "PDEW"])
+    header(ws, ["Nr", "City Code", "City Name", "Country", "Annual Demand", "Airline Share", "Annual Forecast", "PTEW"])
     cd = contract["connecting_at_destination"]
     for c in cd["cities"]:
         ws.append([c["nr"], c["city_code"], c["city_name"], c["country"], c["annual_demand"], None, c["annual_forecast"], None])
@@ -842,7 +879,7 @@ def main():
         c, j, x = emit_from_assess(a.case, a.assess, a.out_dir, a.connecting, a.growth, a.ancillary_per_pax)
         print("wrote", j); print("wrote", x)
         pt = c["segment_forecast"]["summary"]["point_to_point_total"]
-        print("P2P forecast", pt["forecast"], "PDEW", pt["pdew"], "| aircraft",
+        print("P2P forecast", pt["forecast"], "PTEW", pt["pdew"], "| aircraft",
               c["route_metadata"]["aircraft_type"], c["route_metadata"]["seats"], "seats")
         return
     # default: the BA reference worked example
@@ -851,9 +888,9 @@ def main():
     x = emit_workbook(c, os.path.join(a.out_dir, "ba_lhr_sjc_deck_contract.xlsx"))
     print("wrote", j); print("wrote", x)
     print("P2P forecast", c["segment_forecast"]["summary"]["point_to_point_total"]["forecast"],
-          "PDEW", c["segment_forecast"]["summary"]["point_to_point_total"]["pdew"])
+          "PTEW", c["segment_forecast"]["summary"]["point_to_point_total"]["pdew"])
     print("Grand total", c["segment_forecast"]["summary"]["grand_total"]["forecast"],
-          "PDEW", c["segment_forecast"]["summary"]["grand_total"]["pdew"])
+          "PTEW", c["segment_forecast"]["summary"]["grand_total"]["pdew"])
 
 
 if __name__ == "__main__":

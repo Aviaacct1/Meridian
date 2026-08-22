@@ -66,7 +66,16 @@ def build_deck(out, forecast, pnl, meta):
     _pnoun = _smode if _seasonal else "annual"        # "summer" / "winter" / "annual"
     _padj = _smode.capitalize() if _seasonal else "Annual"
     _weeks = float(_season.get("weeks") or 52)
-    _days = (_weeks * 7.0) if _seasonal else 365.0     # season operating days for pdew -> volume
+    # THIRD INSTANCE OF THE PTEW/PDEW FLAT-CALENDAR BUG (22 August 2026), found while checking this
+    # file for domestic/international basis logic - a route_feed.py PTEW figure, correctly built on
+    # the route's real scheduled departures after today's earlier fix, was being multiplied straight
+    # back into an "annual" column by a flat CALENDAR-day count here, regardless of the route's real
+    # frequency, reintroducing the same defect at the point of display. Fixed: departures (freq x
+    # weeks) when the deck's meta carries a frequency, which it always does per this module's own
+    # docstring; the flat calendar-day count survives only as the fallback for a caller with no
+    # route defined yet.
+    _freq = meta.get("frequency")
+    _days = (_freq * _weeks) if _freq else ((_weeks * 7.0) if _seasonal else 365.0)
 
     # 1) title
     s = prs.slides.add_slide(blank); _rect(s, 0, 0, SW, SH, NAVY)
@@ -206,17 +215,17 @@ def build_deck(out, forecast, pnl, meta):
     _txt(s, Inches(0.6), Inches(6.98), Inches(12.1), Inches(0.4), meta.get('disclaimer', ''), 9.5, color=GREY, italic=True)
 
     if meta.get('full_report'):
-        # 4) connecting feed detail (PDEW each way)
+        # 4) connecting feed detail (PTEW each way)
         s = prs.slides.add_slide(blank)
         _txt(s, Inches(0.6), Inches(0.45), Inches(12.1), Inches(0.7), "Connecting feed detail", 32, bold=True)
         _txt(s, Inches(0.62), Inches(1.15), Inches(12.1), Inches(0.5),
-             "Top connecting markets each way, passengers per day each way (PDEW)", 15, color=GREY)
+             "Top connecting markets each way, passengers per trip each way (PTEW)", 15, color=GREY)
 
         def _feedtbl(x, title, rows):
             _txt(s, x, Inches(1.95), Inches(5.8), Inches(0.4), title, 14, bold=True)
             _rect(s, x, Inches(2.45), Inches(5.8), Inches(0.36), NAVY)
             _txt(s, x + Inches(0.1), Inches(2.45), Inches(2.6), Inches(0.36), "Market", 11.5, bold=True, color=WHITE, anchor=MSO_ANCHOR.MIDDLE)
-            _txt(s, x + Inches(3.5), Inches(2.45), Inches(1.05), Inches(0.36), "PDEW", 11.5, bold=True, color=WHITE, align=PP_ALIGN.RIGHT, anchor=MSO_ANCHOR.MIDDLE)
+            _txt(s, x + Inches(3.5), Inches(2.45), Inches(1.05), Inches(0.36), "PTEW", 11.5, bold=True, color=WHITE, align=PP_ALIGN.RIGHT, anchor=MSO_ANCHOR.MIDDLE)
             _txt(s, x + Inches(4.6), Inches(2.45), Inches(1.1), Inches(0.36), _padj, 11.5, bold=True, color=WHITE, align=PP_ALIGN.RIGHT, anchor=MSO_ANCHOR.MIDDLE)
             yy = Inches(2.85)
             for i, row in enumerate(rows[:10]):
@@ -229,7 +238,7 @@ def build_deck(out, forecast, pnl, meta):
         _feedtbl(Inches(0.6), f"Behind {meta['origin']}", forecast.get('behind_pdew') or [])
         _feedtbl(Inches(6.9), f"Beyond {meta['dest']}", forecast.get('beyond_pdew') or [])
         _txt(s, Inches(0.6), Inches(6.98), Inches(12.1), Inches(0.4),
-             "PDEW = passengers per day each way. Onward O&D on the selected airline, alliance-weighted and circuity-screened.",
+             "PTEW = passengers per trip each way. Onward O&D on the selected airline, alliance-weighted and circuity-screened.",
              9.5, color=GREY, italic=True)
 
         # 5) catchment and capture assumptions

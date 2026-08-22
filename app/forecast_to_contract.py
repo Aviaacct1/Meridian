@@ -206,6 +206,11 @@ def connecting_from_forecast(fc):
     feed_behind, so the two tables must sum to those two figures and not to each other's.
     """
     dem = fc.get("demand") or {}
+    # THE ROUTE'S REAL FREQUENCY (22 August 2026, same fix as deck_contract.pdew itself): both
+    # _pdew paths below divided by a flat 728 (daily each-way, assumed), regardless of how often
+    # the route actually flies. cap.get("freq") is the same field cortex_workbook.py reads for
+    # PTEW; passed through so a non-daily route (CI/SJC-TPE is 5x/week) reconciles.
+    _freq = (fc.get("capacity") or {}).get("freq")
 
     # nr AND pdew ARE INCLUDED BECAUSE ONE OF THE TWO LISTS IS PASSED STRAIGHT THROUGH.
     # build_contract wraps the HUB cities itself, adding nr as i+1 and computing pdew, but writes
@@ -215,9 +220,10 @@ def connecting_from_forecast(fc):
     # the hub side, and it means the two lists reach the writer in the same shape.
     try:
         import deck_contract as _DC
-        _pdew = _DC.pdew
+        _pdew = lambda x: _DC.pdew(x, freq=_freq)
     except Exception:                                        # noqa: BLE001
-        _pdew = lambda x: round((x or 0) / 728.0, 1)         # deck_contract's own DAYS_2WAY
+        _dep2 = (_freq * 52.0 * 2) if _freq else 728.0        # deck_contract's own DAYS_2WAY fallback
+        _pdew = lambda x: round((x or 0) / _dep2, 1)
 
     def _rows(lst):
         out = []
