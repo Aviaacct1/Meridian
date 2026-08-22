@@ -2736,6 +2736,7 @@ def api_report(origin: str, dest: str, airline: str = "", carrier_type: str = "F
         "market": fmt(dem["natural"]), "captured": fmt(dem["captured"]),
         "feed": fmt(dem["feed_total"]), "total": fmt(dem["total"]),
         "market_2w": fmt(dem["natural"] * 2), "total_2w": fmt(dem["total"] * 2),   # both-directions annual
+        "captured_2w": fmt(dem["captured"] * 2), "feed_2w": fmt(dem["feed_total"] * 2),
         "projection": fc.get("projection"),   # 5-year demand build (each way)
         "split": split, "catchment_rows": full_split, "home_label": (nm.get(home) or home),
         "behind_pdew": dem.get("behind_pdew") or [], "beyond_pdew": dem.get("beyond_pdew") or [],

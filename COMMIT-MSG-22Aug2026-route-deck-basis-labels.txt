@@ -1,0 +1,53 @@
+Task 60: wire the basis label into route_deck.py, using its own existing pattern
+
+Confirms route_deck.py is a live renderer, not an orphaned generator: cortex_app.py's
+/api/deck-style endpoint (both the app/ and app_avia_style/ copies) calls RDECK.build_deck()
+directly, and passes it a forecast dict shaped exactly as this file's docstring describes. The
+"unconfirmed whether it's even the live path" note in this morning's domestic/international commit
+is resolved: it is.
+
+WHY THIS FILE KEEPS ITS OWN PATTERN, NOT DECK_CONTRACT.PY'S. Earlier today's _disp()/_demand_basis
+work in deck_contract.py does not reach this file: route_deck.py's forecast dict (market/captured/
+feed/total, each with an optional _2w twin) has no relationship to that contract's shape, and nothing
+routes through build_contract() to get here. Rather than force-fitting a second convention onto a
+dict it was never designed for, this reuses route_deck.py's OWN idiom, which was already right on
+two of its four stats: "X each way (Y both ways/yr)".
+
+WHAT WAS ACTUALLY MISSING. The forecast slide's four headline stats: market and total already
+stated both bases; captured (captured point-to-point) and feed (connecting feed) stated neither -
+no "each way", no two-way figure, nothing. A new _ewlabel() helper carries the one pattern to all
+four, and cleans up the pre-existing behaviour on market/total too: a caller that doesn't supply
+the _2w figure now gets "captured point-to-point, each way" with no parenthetical, not the previous
+"addressable market, each way ( both ways/yr)" empty-bracket artefact.
+
+cortex_app.py (both copies) now computes captured_2w and feed_2w the same way market_2w and total_2w
+already were: the each-way figure doubled at the point of display, the same single-conversion-point
+discipline as every other basis fix today.
+
+Two further tables on the full-report path stated a number with no basis at all: the five-year
+demand-build table's "Carried" column (its neighbour, "Demand", already said "each way") and the
+connecting-feed-detail table's "Annual" column. Both now carry "(EW)" rather than the full "(each
+way)" - a compact form was needed for two reasons: the header cells are fixed-width text boxes with
+no autofit, so a longer string risks visual overflow, and the slide's own subtitle already spells
+"each way (PTEW)" out in full once, so the abbreviation on the table reads unambiguously rather than
+introducing an unexplained term.
+
+VERIFICATION. py_compile clean on route_deck.py and both cortex_app.py copies. A full synthetic
+deck built end to end through build_deck() with a full_report=True forecast/pnl/meta fixture (title,
+forecast, five-year build, P&L, connecting feed detail, catchment, methodology - seven slides).
+Rendered to PNG via LibreOffice/pdftoppm and read back: all four forecast-slide stats show the
+each-way/both-ways pattern with no truncation; the five-year build table's "Carried (EW)" header
+and the connecting-feed table's "PTEW (EW)"/"Annual (EW)" headers all fit their fixed-width cells
+cleanly at 110dpi. _ewlabel()'s no-2w-supplied path checked directly: returns the label with no
+trailing empty parenthesis.
+
+NOT IN SCOPE: genoa_nyc.py's a.ppt deck path calls build_deck() with a forecast dict that has never
+carried market/captured/feed/total keys at all (a different, older shape: pop/nyc_od/leaked/
+repatriated). That call would already KeyError against the current build_deck() signature,
+independent of anything touched today - a pre-existing break in a one-off case script, not a
+regression from this commit, and not fixed here.
+
+Run:
+    py -3.12 -c "import route_deck"
+
+Avia Solutions Limited. All rights reserved.

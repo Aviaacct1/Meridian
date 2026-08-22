@@ -56,6 +56,19 @@ def _money(v):
     return f"${v:,.0f}"
 
 
+# route_deck.py's own established idiom for stating basis (John, 22 August, task 60): the
+# forecast slide's market/total stats already read "X each way (Y both ways/yr)" - this is
+# that same pattern, applied to every stat that carries a passenger count on this deck rather
+# than to two of them. Not the deck_contract.py/_disp() machinery built earlier the same day:
+# this file's forecast dict does not map onto that contract's shape (confirmed, task 60's own
+# note), so it keeps its own pre-existing convention rather than importing a second one. The
+# both-ways figure is omitted cleanly, not printed as an empty parenthesis, when the caller
+# has not supplied it - a caller gap is not silently hidden, but nor is it papered over with a
+# blank "()" the way market/total previously were.
+def _ewlabel(short, val_2w):
+    return f"{short}, each way" + (f" ({val_2w} both ways/yr)" if val_2w else "")
+
+
 def build_deck(out, forecast, pnl, meta):
     prs = Presentation(); prs.slide_width = Inches(13.333); prs.slide_height = Inches(7.5)
     SW, SH = prs.slide_width, prs.slide_height; blank = prs.slide_layouts[6]
@@ -92,11 +105,13 @@ def build_deck(out, forecast, pnl, meta):
          f"Catchment and demand: {meta['dest']} from {oname}", 32, bold=True)
     _txt(s, Inches(0.62), Inches(1.15), Inches(12.1), Inches(0.5), forecast.get('subtitle', ''), 15, color=GREY)
     _stat(s, Inches(0.6), Inches(1.95), Inches(3.0), forecast['market'],
-          f"addressable market, each way ({forecast.get('market_2w','')} both ways/yr)")
-    _stat(s, Inches(3.7), Inches(1.95), Inches(3.0), forecast['captured'], "captured point-to-point")
-    _stat(s, Inches(6.8), Inches(1.95), Inches(3.0), forecast['feed'], "connecting feed")
+          _ewlabel("addressable market", forecast.get('market_2w', '')))
+    _stat(s, Inches(3.7), Inches(1.95), Inches(3.0), forecast['captured'],
+          _ewlabel("captured point-to-point", forecast.get('captured_2w', '')))
+    _stat(s, Inches(6.8), Inches(1.95), Inches(3.0), forecast['feed'],
+          _ewlabel("connecting feed", forecast.get('feed_2w', '')))
     _stat(s, Inches(9.9), Inches(1.95), Inches(3.0), forecast['total'],
-          f"total forecast, each way ({forecast.get('total_2w','')} both ways/yr)", vcolor=GREEN)
+          _ewlabel("total forecast", forecast.get('total_2w', '')), vcolor=GREEN)
     _txt(s, Inches(0.6), Inches(3.35), Inches(6.2), Inches(0.4),
          f"Where the region's {meta['dest']} demand departs today", 15, bold=True)
     y = Inches(3.85); barL = Inches(2.4); maxW = 4.0
@@ -128,7 +143,7 @@ def build_deck(out, forecast, pnl, meta):
         _rect(s, Inches(0.6), y0, TW, Inches(0.42), NAVY)
         _txt(s, Inches(0.75), y0, Inches(2.0), Inches(0.42), "Year", 12.5, bold=True, color=WHITE, anchor=MSO_ANCHOR.MIDDLE)
         _txt(s, Inches(2.7), y0, Inches(2.6), Inches(0.42), "Demand (each way)", 12.5, bold=True, color=WHITE, align=PP_ALIGN.RIGHT, anchor=MSO_ANCHOR.MIDDLE)
-        _txt(s, Inches(5.5), y0, Inches(2.3), Inches(0.42), "Carried", 12.5, bold=True, color=WHITE, align=PP_ALIGN.RIGHT, anchor=MSO_ANCHOR.MIDDLE)
+        _txt(s, Inches(5.5), y0, Inches(2.3), Inches(0.42), "Carried (EW)", 12.5, bold=True, color=WHITE, align=PP_ALIGN.RIGHT, anchor=MSO_ANCHOR.MIDDLE)
         _txt(s, Inches(8.0), y0, Inches(1.6), Inches(0.42), "Load", 12.5, bold=True, color=WHITE, align=PP_ALIGN.RIGHT, anchor=MSO_ANCHOR.MIDDLE)
         yy = Inches(2.62)
         for i, x in enumerate(pj['build']):
@@ -225,8 +240,11 @@ def build_deck(out, forecast, pnl, meta):
             _txt(s, x, Inches(1.95), Inches(5.8), Inches(0.4), title, 14, bold=True)
             _rect(s, x, Inches(2.45), Inches(5.8), Inches(0.36), NAVY)
             _txt(s, x + Inches(0.1), Inches(2.45), Inches(2.6), Inches(0.36), "Market", 11.5, bold=True, color=WHITE, anchor=MSO_ANCHOR.MIDDLE)
-            _txt(s, x + Inches(3.5), Inches(2.45), Inches(1.05), Inches(0.36), "PTEW", 11.5, bold=True, color=WHITE, align=PP_ALIGN.RIGHT, anchor=MSO_ANCHOR.MIDDLE)
-            _txt(s, x + Inches(4.6), Inches(2.45), Inches(1.1), Inches(0.36), _padj, 11.5, bold=True, color=WHITE, align=PP_ALIGN.RIGHT, anchor=MSO_ANCHOR.MIDDLE)
+            # "(EW)" not "(each way)": the fixed 1.05in/1.1in header cells have no autofit, and
+            # the subtitle above already spells out "passengers per trip each way (PTEW)" once,
+            # so the short form reads unambiguously without overflowing the row.
+            _txt(s, x + Inches(3.5), Inches(2.45), Inches(1.05), Inches(0.36), "PTEW (EW)", 11.5, bold=True, color=WHITE, align=PP_ALIGN.RIGHT, anchor=MSO_ANCHOR.MIDDLE)
+            _txt(s, x + Inches(4.6), Inches(2.45), Inches(1.1), Inches(0.36), f"{_padj} (EW)", 11.5, bold=True, color=WHITE, align=PP_ALIGN.RIGHT, anchor=MSO_ANCHOR.MIDDLE)
             yy = Inches(2.85)
             for i, row in enumerate(rows[:10]):
                 if i % 2 == 0:
