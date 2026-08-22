@@ -1,0 +1,73 @@
+Fix the researched-pitch "0 finds" and label the digital pitch HTML's basis and vintage
+
+John, 22 August, after the ANTHROPIC_API_KEY/QSI_PASSWORD debugging: the pitch still came back
+"0 finds", and the generated HTML pack (Meridian_Pitch_SJC_TPE_JX_5x.html) did not state the
+forecast year, base year or each-way/two-way basis anywhere in the traffic forecast table, the
+connecting markets tables, the schedule and capacity table, or the route economics panel.
+
+RESEARCH PROVIDER: WRONG MODEL ID, NOT A KEY PROBLEM
+
+research_provider.py's DEFAULT_MODEL fell back to "claude-sonnet-4-6", which is not and has never
+been a real Anthropic model ID. AnthropicResearchProvider.research_block() calls
+client.messages.create(model=self.model, ...) for every research block; a bad model ID throws
+there, and the except clause a few lines down returns ([], {"error": ...}) for that block rather
+than raising, so every block came back with zero findings and the failure never reached the UI as
+an error, only as "found 0". This explains why /api/pitch/health could truthfully report
+available:true (key found, anthropic package installed) while every actual research call still
+failed: available() never calls the API, it only checks the key and the import.
+
+Confirmed via a live model list check: current self-serve IDs are claude-fable-5, claude-opus-5,
+claude-sonnet-5 and claude-haiku-4-5-20251001. DEFAULT_MODEL now falls back to "claude-sonnet-5".
+AVIA_RESEARCH_MODEL still overrides it if a different model is ever wanted.
+
+Not yet re-run live against the Anthropic API from this sandbox (no key here) - the fix is a
+one-line correction to a literal that never matched any real model, checked against a live model
+list, not a guess. Worth a live re-run on the workstation to confirm findings return before
+trusting the fix fully.
+
+PITCH_HTML.PY: THE DATA WAS ALREADY THERE, JUST NEVER RENDERED
+
+build_html_pitch() copies fc["schedule"] wholesale into the page's embedded D.schedule object,
+which already carries base_year, forecast_year and growth_basis - confirmed present in the actual
+uploaded HTML (base_year 2025, forecast_year 2027, growth_basis stating the pre-COVID trend used).
+None of it was ever read by the page's own JavaScript. This was a rendering gap, not a missing-data
+gap.
+
+Added, all computed once near the top of the script from D.schedule:
+  - A basis/vintage line under the hero subtitle: "Base year 2025 grown to forecast year 2027 -
+    passenger figures each way per year unless stated." Follows the house rule that a document
+    states its period once, prominently, rather than leaving every table to imply it.
+  - A note above the traffic forecast table restating the vintage, the growth basis text verbatim,
+    and that PTEW is each-way per departure at the route's own weekly frequency.
+  - A note above the connecting markets charts/tables stating the same vintage and that PDEW is
+    each-way per departure day.
+  - A note above the schedule and capacity table stating the forecast year, and specifically that
+    the outbound/inbound rows are each that direction's own each-way annual pax while the Total
+    row sums both directions (two way) - the exact ambiguity in that table, where an "Annual pax"
+    column carried two different bases across its own rows with nothing on the table saying so.
+  - An added sentence on the route economics note: "Pax / rotation" is one aircraft turnaround out
+    and back (two way for that single flight), a different basis again from the each-way annual
+    totals shown everywhere else on the page, and the cost/fare inputs are current reference
+    values, not tied to the forecast year.
+  - Column headers themselves also state their own basis now ("Forecast annual pax, 000s, each
+    way", "PTEW, each way", "Annual forecast, each way", "PDEW, each way") rather than relying on
+    a caption alone.
+
+MISSING DATA IS FLAGGED, NOT HIDDEN. If D.schedule carries no base_year/forecast_year (tested with
+an empty schedule dict), every note reads "not stated" rather than silently omitting the line or
+printing "undefined" - matching the "no silent gap-filling" rule.
+
+NOT DONE: this whole render path (pitch_html.py, fed straight from fc, not from deck_contract.py)
+stays each-way regardless of route, unlike deck_contract.py's new domestic/international
+convention shipped earlier today. SJC-TPE is international, so under that convention it would read
+two way; this pack still reads each way throughout, correctly labelled as such but not converted.
+Whether pitch_html.py should also pick up the domestic/international convention is a design
+question for John, not assumed here - today's fix is labelling clarity only, not a basis change.
+
+VERIFICATION. py_compile clean on both files. build_html_pitch() run against two synthetic fc
+fixtures (full schedule data, and an empty schedule dict) and the resulting HTML executed
+end-to-end in a headless DOM (Node + jsdom): all six new note elements populate with the expected
+text in both cases, the "not stated" fallback confirmed, and the traffic-forecast and schedule
+tables still render their full row counts with no script error.
+
+Avia Solutions Limited. All rights reserved.

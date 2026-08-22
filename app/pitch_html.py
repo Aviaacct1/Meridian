@@ -159,22 +159,27 @@ table.tbl{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:4px;mi
     <div class="brand"><span class="m"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M3 12c4 0 5-7 9-7s5 14 9 7" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg></span>
       AVIA&nbsp;CORTEX<small>ROUTE INTELLIGENCE</small></div>
     <h1 id="hTitle"></h1><div class="sub" id="hSub"></div>
+    <div class="sub" id="hBasis" style="opacity:.82;font-size:13px;margin-top:3px"></div>
     <div class="kpis" id="kpis"></div>
   </div></div>
 
   <div class="sec"><h2>The opportunity</h2><p class="lead" id="lead"></p></div>
 
-  <div class="sec"><h2>Forecast, each way per year</h2><div class="bars" id="fcBars"></div></div>
+  <div class="sec"><h2>Forecast, each way per year</h2><div class="bars" id="fcBars"></div>
+    <div class="note" id="fcBarsNote"></div></div>
 
-  <div class="sec"><h2>Traffic forecast</h2><div class="scroll"><table class="tbl" id="fcTable"></table></div></div>
+  <div class="sec"><h2>Traffic forecast</h2><div class="note" id="fcTableNote" style="margin-bottom:8px"></div>
+    <div class="scroll"><table class="tbl" id="fcTable"></table></div></div>
 
   <div class="sec" id="imgSec" style="display:none"><h2>The market</h2><div class="imgrow" id="imgRow"></div></div>
 
-  <div class="sec"><h2>Connecting markets</h2><div class="bars" id="cxBars"></div>
+  <div class="sec"><h2>Connecting markets</h2><div class="note" id="cxNote" style="margin-bottom:8px"></div>
+    <div class="bars" id="cxBars"></div>
     <div class="subh" id="cxBehindH"></div><div class="scroll"><table class="tbl" id="cxBehind"></table></div>
     <div class="subh" id="cxBeyondH"></div><div class="scroll"><table class="tbl" id="cxBeyond"></table></div></div>
 
-  <div class="sec"><h2>Schedule and capacity</h2><div class="scroll"><table class="tbl" id="schedTable"></table></div>
+  <div class="sec"><h2>Schedule and capacity</h2><div class="note" id="schedNote" style="margin-bottom:8px"></div>
+    <div class="scroll"><table class="tbl" id="schedTable"></table></div>
     <div class="note">Departure and arrival are indicative local times from block time and timezone; not curfew- or slot-optimised.</div></div>
 
   <div class="sec"><h2>Route economics, move a slider</h2>
@@ -189,7 +194,7 @@ table.tbl{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:4px;mi
         </div>
         <div class="pl" id="ePl"></div>
       </div></div>
-    <div class="note">Indicative, directional guidance. Central estimate on validated type costs; not the airline's actual costs. Adjust the sliders to test fares, fuel, frequency and cabin mix.</div>
+    <div class="note" id="econNote">Indicative, directional guidance. Central estimate on validated type costs; not the airline's actual costs. Adjust the sliders to test fares, fuel, frequency and cabin mix.</div>
   </div>
 
   <div class="sec" id="resSec"><h2>Why this route</h2><div class="rgrid" id="research"></div>
@@ -208,11 +213,24 @@ const fmtM=n=>n>=1e6?(n/1e6).toFixed(1)+'m':n>=1e3?Math.round(n/1e3)+'k':String(
 $('#hTitle').textContent=`${D.origin.city} to ${D.dest.city}`;
 $('#hSub').textContent=`A route opportunity for ${D.airline}  ·  ${D.capacity.aircraft||''} · ${D.capacity.freq||''}x weekly`+(D.date?`  ·  ${D.date}`:'');
 if(D.images&&D.images.hero) $('#heroImg').style.backgroundImage=`url(${D.images.hero})`;
+
+// Basis/vintage line (John, 22 August: the traffic forecast, connecting markets, schedule and
+// economics tables gave no year and no each-way/two-way basis, so a reader could not tell what a
+// figure counted or when. D.schedule.base_year/forecast_year/growth_basis were already present in
+// the data this whole time, just never rendered. Flagged rather than silently omitted if missing,
+// per the "no silent gap-filling" rule: house style is to say "not stated", not hide the gap.
+const SC=D.schedule||{};
+const BY=SC.base_year, FY=SC.forecast_year;
+const BYtxt=BY?String(BY):'not stated', FYtxt=FY?String(FY):'not stated';
+const VINT=(BY&&FY)?`Base year ${BYtxt} grown to forecast year ${FYtxt}`
+  :(FY?`Forecast year ${FYtxt}`:`Forecast year: ${FYtxt}`);
+$('#hBasis').textContent=`${VINT}  ·  passenger figures each way per year unless stated`;
+
 $('#kpis').innerHTML=[
-  ['Total forecast',fmt(D.demand.total),'each way / year'],
+  ['Total forecast',fmt(D.demand.total),'each way / year, FY'+FYtxt],
   ['Load factor',Math.round(D.capacity.load*100)+'%','at '+(D.capacity.freq||'')+'x weekly'],
   ['Catchment capture',Math.round(D.demand.qsi_share*100)+'%','of the local market'],
-  ['Connecting feed',fmt(D.demand.feed_total),'behind + beyond'],
+  ['Connecting feed',fmt(D.demand.feed_total),'behind + beyond, each way'],
 ].map(k=>`<div class="kpi"><div class="l">${k[0]}</div><div class="v">${k[1]}</div><div class="s">${k[2]}</div></div>`).join('');
 
 $('#lead').textContent=`Cortex forecasts ${fmt(D.demand.total)} passengers each way per year on a nonstop ${D.origin.city} to ${D.dest.city} service. Demand is measured from Sabre Global Demand Data origin-and-destination traffic in the ${D.origin.city} catchment, where the new nonstop captures ${Math.round(D.demand.qsi_share*100)}% of a ${fmt(D.demand.natural)} addressable market, with ${D.airline}'s connecting feed added behind ${D.origin.city} and beyond ${D.dest.city}.`;
@@ -224,10 +242,13 @@ $('#lead').textContent=`Cortex forecasts ${fmt(D.demand.total)} passengers each 
   const mx=Math.max(...rows.map(r=>r[1]))||1;
   $('#fcBars').innerHTML=rows.map(r=>`<div class="bar"><div class="nm">${r[0]}</div><div class="tr">
     <div class="fl ${r[2]?'g':''}" style="width:${Math.max(r[1]/mx*100,7)}%">${fmt(r[1])}</div></div></div>`).join('');
+  $('#fcBarsNote').textContent=`Passengers each way per year, forecast year ${FYtxt}.`;
 })();
 
 // connecting markets chart
 (function(){
+  $('#cxNote').textContent=`Connecting passengers each way per year, forecast year ${FYtxt}. `
+    +`PDEW is passengers each way per departure day.`;
   if(!D.beyond.length){ $('#cxBars').innerHTML='<div class="note">No connecting feed for this airline, or a point-to-point carrier.</div>'; return; }
   const mx=Math.max(...D.beyond.map(b=>b.pax))||1;
   $('#cxBars').innerHTML=D.beyond.map(b=>`<div class="bar"><div class="nm">${b.city}</div><div class="tr">
@@ -242,10 +263,13 @@ $('#lead').textContent=`Cortex forecasts ${fmt(D.demand.total)} passengers each 
     ['Point to point', dm.natural, dm.natural, stim, dm.natural*stim, dm.qsi_share, dm.captured],
     ['Connecting behind '+D.origin.iata, dm.feed_behind_base, dm.feed_behind_base, 1, dm.feed_behind_base, (dm.feed_behind_base?dm.feed_behind/dm.feed_behind_base:0), dm.feed_behind],
     ['Connecting beyond '+D.dest.iata, dm.feed_beyond_base, dm.feed_beyond_base, 1, dm.feed_beyond_base, (dm.feed_beyond_base?dm.feed_beyond/dm.feed_beyond_base:0), dm.feed_beyond]];
-  let h='<tr><th>Market</th><th>Base (000s)</th><th>Growth</th><th>Grown (000s)</th><th>Stim.</th><th>Stimulated (000s)</th><th>Capture</th><th>Forecast (000s)</th><th>PTEW</th></tr>';
+  let h='<tr><th>Market</th><th>Base annual O&D, 000s</th><th>Growth</th><th>Grown annual O&D, 000s</th><th>Stim.</th><th>Stimulated annual O&D, 000s</th><th>Capture</th><th>Forecast annual pax, 000s, each way</th><th>PTEW, each way</th></tr>';
   rows.forEach(r=>{ h+=`<tr><td class="b">${r[0]}</td><td>${r[1]?k(r[1]):'-'}</td><td>0%</td><td>${r[2]?k(r[2]):'-'}</td><td>${r[3].toFixed(2)}</td><td>${r[4]?k(r[4]):'-'}</td><td>${r[5]?(r[5]*100).toFixed(1)+'%':'-'}</td><td class="b">${k(r[6])}</td><td>${pt(r[6])}</td></tr>`; });
   h+=`<tr class="tot"><td>Grand total</td><td>-</td><td></td><td>-</td><td></td><td>-</td><td></td><td>${k(dm.total)}</td><td>${pt(dm.total)}</td></tr>`;
   $('#fcTable').innerHTML=h;
+  $('#fcTableNote').textContent=`${VINT}. Passengers each way per year.`
+    +(SC.growth_basis?` Growth basis: ${SC.growth_basis}.`:'')
+    +` PTEW is passengers each way per departure, at ${freq}x weekly.`;
 })();
 
 // connecting-city tables (base demand, share, forecast, PDEW)
@@ -261,7 +285,7 @@ function cxtbl(list,elid,hid,label,mktTot,fcTot){
   const el=$('#'+elid), hh=$('#'+hid);
   if(!list||!list.length){ if(hh)hh.style.display='none'; if(el)el.style.display='none'; return; }
   hh.textContent=label;
-  let h='<tr><th>Nr</th><th>Code</th><th>City</th><th>Country</th><th>Annual demand</th><th>Share</th><th>Annual forecast</th><th>PDEW</th></tr>',tb=0,tf=0;
+  let h='<tr><th>Nr</th><th>Code</th><th>City</th><th>Country</th><th>Annual O&D demand</th><th>Share</th><th>Annual forecast, each way</th><th>PDEW, each way</th></tr>',tb=0,tf=0;
   list.forEach((r,i)=>{ tb+=r.base; tf+=r.pax;
     h+=`<tr><td>${i+1}</td><td>${r.code||''}</td><td class="b" style="text-align:left">${r.city}</td><td style="text-align:left">${r.country||''}</td><td>${r.base?fmt(r.base):'-'}</td><td>${r.base?(r.share*100).toFixed(1)+'%':'-'}</td><td>${fmt(r.pax)}</td><td>${r.pdew.toFixed(1)}</td></tr>`; });
   const otherDem=(mktTot&&mktTot>tb+0.5)?(mktTot-tb):0, otherFc=(fcTot&&fcTot>tf+0.5)?(fcTot-tf):0;
@@ -277,11 +301,14 @@ cxtbl(D.beyond,'cxBeyond','cxBeyondH','Connecting at '+D.dest.iata+' (beyond the
 // schedule and capacity
 (function(){
   const c=D.capacity, seats=c.seats||0, freq=c.freq||0, annS=seats*freq*52, sc=D.schedule||{};
-  let h='<tr><th>Sector</th><th>Dep</th><th>Arr</th><th>Op days/wk</th><th>Aircraft</th><th>Seats</th><th>Annual seats</th><th>Annual pax</th><th>Seat factor</th></tr>';
+  $('#schedNote').textContent=`Schedule and capacity at forecast year ${FYtxt}. Each of the outbound and `
+    +`inbound rows is that direction's own annual pax, each way. The Total row sums both directions `
+    +`(two way, i.e. outbound plus inbound).`;
+  let h='<tr><th>Sector</th><th>Dep</th><th>Arr</th><th>Op days/wk</th><th>Aircraft</th><th>Seats</th><th>Annual seats, this direction</th><th>Annual pax, this direction (each way)</th><th>Seat factor</th></tr>';
   ['outbound','inbound'].forEach(leg=>{ const s=sc[leg]||{};
     const sector=s.sector||(leg==='outbound'?D.origin.iata+'-'+D.dest.iata:D.dest.iata+'-'+D.origin.iata);
     h+=`<tr><td class="b" style="text-align:left">${sector}</td><td>${s.dep||'-'}</td><td>${s.arr||'-'}</td><td>${freq}</td><td>${c.aircraft||''}</td><td>${fmt(seats)}</td><td>${fmt(annS)}</td><td>${fmt(D.demand.total)}</td><td>${Math.round(c.load*100)}%</td></tr>`; });
-  h+=`<tr class="tot"><td>Total</td><td></td><td></td><td></td><td></td><td></td><td>${fmt(annS*2)}</td><td>${fmt(D.demand.total*2)}</td><td>${Math.round(c.load*100)}%</td></tr>`;
+  h+=`<tr class="tot"><td>Total, both directions (two way)</td><td></td><td></td><td></td><td></td><td></td><td>${fmt(annS*2)}</td><td>${fmt(D.demand.total*2)}</td><td>${Math.round(c.load*100)}%</td></tr>`;
   $('#schedTable').innerHTML=h;
 })();
 
@@ -324,6 +351,14 @@ const SL=[['freq','Frequency (each way / week)',3,21,1,CM.freq||7,v=>v],
 $('#sliders').innerHTML=SL.map(s=>`<div class="ctl"><label>${s[1]} <b id="o_${s[0]}"></b></label>
   <input id="s_${s[0]}" type="range" min="${s[2]}" max="${s[3]}" step="${s[4]}" value="${s[5]}"></div>`).join('');
 if(CM.bus_seats<=0){const b=$('#s_bf'); if(b) b.closest('.ctl').style.opacity=.4;}
+// "Pax / rotation" is one aircraft turnaround, out and back - a DIFFERENT basis from the
+// each-way annual totals shown everywhere else on this page (which is why John flagged this
+// panel as unlabelled: two conventions on one page, neither stated). Flagged explicitly here
+// rather than left to be inferred from the word "rotation" alone.
+$('#econNote').textContent+=` "Pax / rotation" is one aircraft turnaround, out and back (two way `
+  +`for that single flight) - a different basis from the each-way annual totals shown elsewhere `
+  +`on this page. Costs and fares here are current reference values, not tied to forecast year `
+  +`${FYtxt}.`;
 function recompute(){
   const g=id=>+$('#s_'+id).value;
   SL.forEach(s=>$('#o_'+s[0]).textContent=s[6](g(s[0])));

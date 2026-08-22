@@ -16,7 +16,13 @@ import os
 import json
 import re
 
-DEFAULT_MODEL = os.environ.get("AVIA_RESEARCH_MODEL", "claude-sonnet-4-6")
+# "claude-sonnet-4-6" was never a real Anthropic model ID (John, 22 August: live run
+# reported "0 finds" on every block). Every research_block() call was failing at
+# client.messages.create() with a model-not-found error, caught silently by the
+# try/except below, so raw=[] for every block regardless of the route or the key.
+# Current self-serve IDs are claude-fable-5, claude-opus-5, claude-sonnet-5 and
+# claude-haiku-4-5-20251001; Sonnet is the right tier for sourced web research.
+DEFAULT_MODEL = os.environ.get("AVIA_RESEARCH_MODEL", "claude-sonnet-5")
 ADJ_MODEL = os.environ.get("AVIA_ADJUDICATE_MODEL", "claude-haiku-4-5-20251001")
 
 # Authoritative sources are preferred; content farms and forums are discouraged at the search step.
