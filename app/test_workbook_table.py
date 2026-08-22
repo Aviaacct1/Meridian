@@ -65,7 +65,11 @@ def _table(fc, tmp, name):
                                  "date": "18 Aug 2026", "plan_lf": 0.875,
                                  "capture_basis": "measured", "econ_fare": 975})
     wb = openpyxl.load_workbook(out, data_only=True)
-    fs = wb["Forecast"]
+    # 22 August 2026 (EW/2-way pair): "Forecast" no longer exists as a bare sheet
+    # name; "Forecast EW" carries the identical figures the old single tab did
+    # (native each-way, un-multiplied), so every numeric assertion below is
+    # unchanged - only the sheet name moved.
+    fs = wb["Forecast EW"]
     return {str(r[0].value): [c.value for c in r]
             for r in fs.iter_rows(min_row=4) if r[0].value}
 
@@ -117,7 +121,7 @@ def main():
                                      "plan_lf": 0.875, "capture_basis": "m",
                                      "econ_fare": 975})
         wb = openpyxl.load_workbook(out, data_only=True)
-        ws = wb["Connecting feed"]
+        ws = wb["Connecting feed EW"]  # 22 August 2026: same figures as the old bare tab
         txt = [[c.value for c in row] for row in ws.iter_rows(min_row=1, max_row=30)]
         flat = ["|".join(str(v) for v in row if v is not None) for row in txt]
         check("feed headers carry the service year",
@@ -161,8 +165,12 @@ def main():
                                      "plan_lf": 0.875, "capture_basis": "m",
                                      "econ_fare": 975})
         wb = openpyxl.load_workbook(out)
-        check("departure curve sheet exists", "Departure curve" in wb.sheetnames)
-        ws = wb["Departure curve"]
+        # 22 August 2026: the old bare "Departure curve" tab was always built two-way
+        # (every figure already carried a x2), so "Departure curve 2-way" is the exact
+        # same figures under the new name; the *2 in the check below is unchanged.
+        check("departure curve sheet exists", "Departure curve 2-way" in wb.sheetnames
+              and "Departure curve EW" in wb.sheetnames)
+        ws = wb["Departure curve 2-way"]
         cr = {str(r[0].value): [c.value for c in r] for r in ws.iter_rows(min_row=5, max_row=8)}
         check("curve reconciles with the headline at the chosen departure",
               abs(cr["20:59"][3] - fc["demand"]["connecting_carried"] * 2) < 3
@@ -174,7 +182,8 @@ def main():
               "aircraft ceiling" in nt and "Meridian analysis" in nt)
         wb2 = openpyxl.load_workbook(os.path.join(tmp, "grown.xlsx"))
         check("no curve, no sheet, never fabricated",
-              "Departure curve" not in wb2.sheetnames)
+              "Departure curve EW" not in wb2.sheetnames
+              and "Departure curve 2-way" not in wb2.sheetnames)
     print("\n%d checks, %d failed%s" % (CHECKS, len(FAIL),
           ": " + ", ".join(FAIL) if FAIL else ""))
     sys.exit(1 if FAIL else 0)
