@@ -3120,7 +3120,12 @@ def api_pitch_health():
     try:
         import research_provider as RP
         prov = RP.get_provider()
-        has_key = bool(os.environ.get("ANTHROPIC_API_KEY", "").strip())
+        # MISLEADING UNTIL 22 August 2026: this checked only the environment variable, so a key
+        # supplied via the gitignored anthropic_key.txt fallback (research_provider._load_api_key)
+        # reported has_key=false even when the provider itself had found the key and was working -
+        # exactly the state John hit checking this endpoint after setting the file, not the env var.
+        # Reads the provider's own loaded key instead, so this reports what is actually in use.
+        has_key = bool(getattr(prov, "_key", "") or "")
         try:
             import anthropic  # noqa: F401
             has_pkg = True

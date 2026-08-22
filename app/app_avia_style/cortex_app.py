@@ -1320,7 +1320,10 @@ def api_pitch_health():
     try:
         import research_provider as RP
         prov = RP.get_provider()
-        has_key = bool(os.environ.get("ANTHROPIC_API_KEY", "").strip())
+        # Same fix as app/cortex_app.py, 22 August 2026: reads the provider's own loaded key
+        # (env or the gitignored anthropic_key.txt fallback) rather than only the environment
+        # variable, which reported has_key=false even when the file-based key was working.
+        has_key = bool(getattr(prov, "_key", "") or "")
         try:
             import anthropic  # noqa: F401
             has_pkg = True
