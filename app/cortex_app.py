@@ -2764,7 +2764,16 @@ def api_report(origin: str, dest: str, airline: str = "", carrier_type: str = "F
         "full_report": True, "catchment_text": catchment_text,
         "season": fc.get("season", {"mode": "annual", "share": 1.0, "weeks": 52}),
     }
-    base = f'Meridian_{o["iata"]}_{d.get("iata", d["city"])}'
+    # 22 August 2026, John: multiple configurations of the same route (different airline,
+    # aircraft, frequency) all downloaded as the same "Meridian_SJC_TPE" base name, so the
+    # browser's own "(1)", "(2)" counter was the only thing telling two versions apart -
+    # meaningless once you have more than a couple. Airline/aircraft/frequency now ride in
+    # the filename itself; a blank airline (new-entrant scenarios) is dropped rather than
+    # printed as an empty segment.
+    _fn_tag = "_".join(x for x in [
+        (airline or fc.get("airline") or "").upper(), cap.get("aircraft") or "",
+        (f'{cap["freq"]}x' if cap.get("freq") else "")] if x)
+    base = f'Meridian_{o["iata"]}_{d.get("iata", d["city"])}' + (f'_{_fn_tag}' if _fn_tag else "")
     tmpd = tempfile.gettempdir()
     deck_path = os.path.join(tmpd, base + ".pptx")
     xlsx_path = os.path.join(tmpd, base + ".xlsx")
@@ -2849,7 +2858,12 @@ def _run_pitch_job(job_id, p):
         _stage(job_id, "researching and verifying sources (the long step)")
         deck_path, html_path, audit = PR.build_pitch(fc, inputs)
         _stage(job_id, "building the deck, workbook and pack")
-        base = f'Meridian_Pitch_{o["iata"]}_{d["iata"]}'
+        # Same fix as the standard download (22 August 2026): airline/aircraft/frequency in the
+        # filename so multiple pitch runs on one route stay distinguishable without opening each.
+        _fn_tag = "_".join(x for x in [
+            (p["airline"] or fc.get("airline") or "").upper(), p.get("aircraft") or "",
+            (f'{p["freq"]}x' if p.get("freq") else "")] if x)
+        base = f'Meridian_Pitch_{o["iata"]}_{d["iata"]}' + (f'_{_fn_tag}' if _fn_tag else "")
         tmpd = tempfile.gettempdir()
         files = [(deck_path, base + ".pptx")]
         if html_path:

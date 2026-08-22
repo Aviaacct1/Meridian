@@ -1,0 +1,19 @@
+Filenames carry airline, aircraft and frequency, not just the route
+
+John, 22 August: every download for a given route shared one base name -
+"Meridian_SJC_TPE.xlsx" whether it was CI on an A359 5x/week or BR on a 777 3x/week
+- so the only thing telling two configurations apart on disk was the browser's own
+"(1)", "(2)" counter, meaningless once you've pulled more than a couple.
+
+app/cortex_app.py, both places a download filename is built (the standard
+deck/workbook/csv/zip download around line 2767, and the pitch-job build around
+line 2852): airline, aircraft and frequency now ride in the base name, e.g.
+Meridian_SJC_TPE_CI_A359_5x.xlsx. A blank airline (new-entrant scenarios with no
+carrier set) is dropped from the tag rather than printed as an empty segment, so
+the filename degrades gracefully instead of reading "Meridian_SJC_TPE__A359_5x".
+
+Not touched: the demo lead-capture pack's filename (a separate, single-recipient,
+watermarked artifact, not something compared side by side the way pitch downloads
+are) - flag if that should carry the same tag.
+
+Avia Solutions Limited. All rights reserved.
