@@ -95,9 +95,18 @@ def case_and_outputs(fc):
         except Exception:                                    # noqa: BLE001
             cabin_config = {"business": 0, "premium_coach": 0, "coach": int(seats_total)}
 
+    # DOMESTIC/INTERNATIONAL (22 August 2026, John): US domestic route traffic is conventionally
+    # quoted each way, the DOT/T-100 enplanement basis every US carrier and airport already reports
+    # in; international traffic (SJC-TPE included) is conventionally quoted two way. One comparison,
+    # keyed off the ROUTE itself (both endpoints in the US), never re-decided market by market inside
+    # a table - see deck_contract.build_contract's _disp() for where this is actually applied.
+    _domestic = (str(o.get("country") or "").upper() == "US"
+                 and str(d.get("country") or "").upper() == "US")
+
     case = {
         "aircraft": cap.get("aircraft"),
         "cabin_config": cabin_config,
+        "domestic": _domestic,
         "sector_nm": fc.get("distance_nm"),
         "home": o.get("iata") or o.get("code"),
         "primary_dest": d.get("iata") or d.get("code"),

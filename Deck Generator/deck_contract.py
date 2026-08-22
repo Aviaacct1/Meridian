@@ -42,17 +42,24 @@ def haversine_km(lat1, lon1, lat2, lon2):
     return 2 * r * math.asin(math.sqrt(a))
 
 
-def pdew(annual_two_way, freq=None, weeks=52.0):
-    """PDEW = annual two-way passengers / the route's actual scheduled departures that year, two-way
-    (freq/week x weeks x 2). Fixed 22 August 2026, same defect as route_feed.py's PTEW fix earlier
-    the same day: this always divided by the fallback DAYS_2WAY (728, a DAILY each-way service
-    assumed year-round), regardless of the route's real frequency. On a non-daily route the two never
-    reconciled - CI/SJC-TPE at 5x/week has 260 scheduled departures each way, not the 364 the flat
-    constant assumed, understating PDEW by roughly 29%. freq is optional and falls back to the old
-    728 basis only when the caller has no route defined yet (ba_lhr_sjc_reference's fixture is daily,
-    freq=7, so it already sits exactly on this basis and is left untouched, not converted)."""
-    dep_two_way = (freq * weeks * 2) if freq else DAYS_2WAY
-    return round(annual_two_way / dep_two_way, 1) if annual_two_way and dep_two_way else 0.0
+def pdew(passengers, freq=None, weeks=52.0, mult=2):
+    """PDEW = annual passengers / the route's actual scheduled departures that year, on the SAME
+    basis as `passengers` itself (freq/week x weeks x mult). Fixed 22 August 2026, same defect as
+    route_feed.py's PTEW fix earlier the same day: this always divided by the fallback DAYS_2WAY
+    (728, a DAILY each-way service assumed year-round), regardless of the route's real frequency. On
+    a non-daily route the two never reconciled - CI/SJC-TPE at 5x/week has 260 scheduled departures
+    each way, not the 364 the flat constant assumed, understating PDEW by roughly 29%. freq is
+    optional and falls back to the old 728 basis (scaled by mult/2) only when the caller has no route
+    defined yet (ba_lhr_sjc_reference's fixture is daily, freq=7, so it already sits exactly on the
+    default mult=2 basis and is left untouched, not converted).
+
+    mult MUST match the basis `passengers` is already stated in, or the rate reads wrong even though
+    each side looks right alone - added the same day for the domestic/international project: a US
+    domestic route's passenger figures are halved to each way by build_contract's _disp(), so its
+    PDEW calls pass mult=1, keeping this a genuine RATE that reads the same regardless of which
+    basis the deck is showing, exactly like every other rate in the tool (capture rate, CAGR)."""
+    dep_basis = (freq * weeks * mult) if freq else (DAYS_2WAY * mult / 2.0)
+    return round(passengers / dep_basis, 1) if passengers and dep_basis else 0.0
 
 
 def ask(seats, distance_km, freq_per_week):
@@ -352,6 +359,28 @@ def build_contract(case: dict, outputs: dict, connecting: dict = None, growth_ra
     hub = case.get("hub_airport") or home
     svc_year = case.get("service_year")
 
+    # DOMESTIC/INTERNATIONAL DISPLAY BASIS (22 August 2026, John). US domestic route traffic is
+    # conventionally quoted each way (DOT/T-100 enplanements); international traffic is quoted two
+    # way, the basis this whole file was already built on. case["domestic"] is set once, by
+    # forecast_to_contract.case_and_outputs, from the route's own two endpoints - never re-decided
+    # market by market, so a reader never meets two bases on one page.
+    #
+    # EVERYTHING BELOW IS STILL COMPUTED TWO WAY, UNCHANGED. natural, p2p_carried, cnx_carried,
+    # carried, the connecting city figures - every one of them stays exactly the figure this file has
+    # always produced, proven correct through the 14/20 August fixes. _disp() is the ONLY new thing:
+    # a display-only wrapper applied at the small set of points that PRINT a passenger count into the
+    # contract's demand-summary fields (segment_forecast, connecting_at_hub/destination, the
+    # catchment/summary market-size headlines). Capacity, revenue, schedule and economics are
+    # deliberately NOT wrapped - a rotation's cost, an aircraft's seats and ASK/PRASK/CASK are
+    # operational and financial facts, not a passenger-count convention choice, the same reasoning
+    # that held cortex_workbook.py's Economics tab out of the EW/2-way pairing on 22 August. Wrapping
+    # the proven two-way math at the display edge, rather than re-deriving it two-way and each-way in
+    # parallel, is deliberate: one set of numbers, one place they could go wrong, not two.
+    _domestic = bool(case.get("domestic"))
+    _mult = 1 if _domestic else 2       # passed to pdew() so its own rate stays basis-consistent
+    def _disp(v):
+        return round(v / 2) if (_domestic and v is not None) else v
+
     natural = outputs.get("natural") or 0.0
     each_way = outputs.get("directional_demand") or 0.0
     capture = outputs.get("capture")
@@ -441,9 +470,29 @@ def build_contract(case: dict, outputs: dict, connecting: dict = None, growth_ra
     NEED_SEG = "8-segment split needs business/leisure ratio + per-zone demand + per-segment growth & capture (see field note)"
     NEED_CNX_DEST = "behind-destination home feed needs the home side of the connecting layer"
 
+    # DISPLAY-BASIS FIGURES, computed once so every block below reads the same numbers rather than
+    # each calling _disp() on its own copy. capture_rate figures deliberately keep reading the RAW
+    # two-way variables just below (cnx_hub_carried, _hub_mkt2, etc) rather than these _d versions -
+    # a ratio of two figures halved together is unchanged either way, so there is nothing to fix
+    # there, only something to avoid touching by mistake.
+    _p2p_mkt_d = _disp(round(natural * 2))
+    _hub_mkt_d = _disp(_hub_mkt2)
+    _dest_mkt_d = _disp(_dest_mkt2)
+    _p2p_demand_d = _disp(p2p_demand)
+    _p2p_carried_d = _disp(p2p_carried)
+    _cnx_hub_carried_d = _disp(cnx_hub_carried)
+    _cnx_dest_carried_d = _disp(cnx_dest_carried)
+    _carried_d = _disp(carried)
+    _cnx_hub_fc_d = _disp(cnx_hub_fc)
+    _cnx_dest_fc_d = _disp(cnx_dest_fc)
+
     contract = {
         "_contract": "Avia deck data contract v1", "_author": "Avia Solutions",
         "_source": f"model run: assess() for {outputs.get('case_id', case.get('case_id'))}",
+        # ONE canonical field a consumer (route_deck.py, emit_workbook) can read rather than
+        # re-deriving domestic/international itself. Passenger-count fields below are stated on
+        # this basis; capacity, revenue, schedule and economics figures stay two way regardless.
+        "_demand_basis": "each way (US domestic)" if _domestic else "two way",
         "route_metadata": {
             "airline_name": case.get("airline_name") or "Generic (airline-agnostic)",
             "airline_iata": case.get("airline_iata") or "",
@@ -452,15 +501,17 @@ def build_contract(case: dict, outputs: dict, connecting: dict = None, growth_ra
             "hub_airport": hub, "aircraft_type": aircraft, "seats": seats,
             "frequency_per_week": freq, "service_year": svc_year,
             "distance_km": dist_km, "distance_nm": dist_nm,
-            "catchment_headline": {"point_to_point_market": round(natural * 2),
-                                   "connecting_market_over_hub": _hub_mkt2,
-                                   "connecting_market_over_destination": _dest_mkt2,
-                                   "_connecting_need": None if cnx else NEED_CNX_DEST},
+            "catchment_headline": {"point_to_point_market": _p2p_mkt_d,
+                                   "connecting_market_over_hub": _hub_mkt_d,
+                                   "connecting_market_over_destination": _dest_mkt_d,
+                                   "_connecting_need": None if cnx else NEED_CNX_DEST,
+                                   "_basis": "each way (US domestic)" if _domestic else "two way"},
         },
         "summary_and_schedule": {
-            "point_to_point_market": round(natural * 2),
-            "connecting_market_over_hub": _hub_mkt2,
-            "connecting_market_over_destination": _dest_mkt2,
+            "point_to_point_market": _p2p_mkt_d,
+            "connecting_market_over_hub": _hub_mkt_d,
+            "connecting_market_over_destination": _dest_mkt_d,
+            "_basis": "each way (US domestic)" if _domestic else "two way",
             "catchment_note": f"Based on AviaSolutions' {home} Service Area catchment analysis",
             "schedule": [
                 {"sector": f"{home}-{dest}", "dep_time": None, "arr_time": None, "operating_days": f"{freq}/wk",
@@ -482,65 +533,70 @@ def build_contract(case: dict, outputs: dict, connecting: dict = None, growth_ra
             "_rows_need": (None if segment_rows else NEED_SEG),
             "_rows_source": ("segment_model.build_segment_table (route-current Sabre cabin mix + zone bands + analyst capture)" if segment_rows else None),
             "summary": {
-                "point_to_point_total": {"base_annual_demand": round(natural * 2),
+                "point_to_point_total": {"base_annual_demand": _p2p_mkt_d,
                     # demand_at_service_year is the leg BEFORE stimulation and the payload does not
                     # carry it, so it is named as a gap rather than filled with the figure beside it.
                     "demand_at_service_year": None,
                     "_demand_at_service_year_need": "no pre-stimulation local leg in the payload",
-                    "demand_after_stimulation": p2p_demand,
+                    "demand_after_stimulation": _p2p_demand_d,
                     "capture_rate": capture,
-                    "forecast": p2p_carried,
+                    "forecast": _p2p_carried_d,
                     "_forecast_need": (None if p2p_carried else NEED_LEG),
-                    "pdew": pdew(p2p_carried or 0, freq=freq)},
-                "connecting_at_hub_total": ({"base_annual_demand": _hub_mkt2,
-                    "demand_at_service_year": _hub_mkt2, "demand_after_stimulation": _hub_mkt2,
+                    "pdew": pdew(_p2p_carried_d or 0, freq=freq, mult=_mult)},
+                "connecting_at_hub_total": ({"base_annual_demand": _hub_mkt_d,
+                    "demand_at_service_year": _hub_mkt_d, "demand_after_stimulation": _hub_mkt_d,
+                    # capture_rate reads the RAW two-way cnx_hub_carried/_hub_mkt2, not the _d
+                    # versions - a ratio of two figures halved together is unchanged either way.
                     "capture_rate": (airline_share(cnx_hub_carried, _hub_mkt2) if _hub_mkt2 else None),
-                    "forecast": cnx_hub_carried,
+                    "forecast": _cnx_hub_carried_d,
                     "_forecast_need": (None if cnx_hub_carried else NEED_LEG),
-                    "top_cities_forecast": cnx_hub_fc, "_top_cities_need": NEED_TOPN,
-                    "pdew": pdew(cnx_hub_carried or 0, freq=freq)} if hub_cities else
+                    "top_cities_forecast": _cnx_hub_fc_d, "_top_cities_need": NEED_TOPN,
+                    "pdew": pdew(_cnx_hub_carried_d or 0, freq=freq, mult=_mult)} if hub_cities else
                     {"forecast": None, "_need": NEED_CNX_DEST}),
                 # base_annual_demand/demand_at_service_year/demand_after_stimulation/capture_rate
                 # added here 20 August 2026, same fix as the hub leg above: this block previously
                 # carried forecast only, so the printed table's demand column read "-" for this leg
                 # while the hub leg above showed a number, an asymmetry with no reason behind it now
                 # that _dest_mkt2 is available on the same two-way basis as everything around it.
-                "connecting_at_destination_total": ({"base_annual_demand": _dest_mkt2,
-                    "demand_at_service_year": _dest_mkt2, "demand_after_stimulation": _dest_mkt2,
+                "connecting_at_destination_total": ({"base_annual_demand": _dest_mkt_d,
+                    "demand_at_service_year": _dest_mkt_d, "demand_after_stimulation": _dest_mkt_d,
                     "capture_rate": (airline_share(cnx_dest_carried, _dest_mkt2) if _dest_mkt2 else None),
-                    "forecast": cnx_dest_carried,
+                    "forecast": _cnx_dest_carried_d,
                     "_forecast_need": (None if cnx_dest_carried else NEED_LEG),
-                    "top_cities_forecast": cnx_dest_fc, "_top_cities_need": NEED_TOPN,
-                    "pdew": pdew(cnx_dest_carried or 0, freq=freq)}
+                    "top_cities_forecast": _cnx_dest_fc_d, "_top_cities_need": NEED_TOPN,
+                    "pdew": pdew(_cnx_dest_carried_d or 0, freq=freq, mult=_mult)}
                     if dest_cities else {"forecast": None, "_need": NEED_CNX_DEST}),
                 # carried ALREADY contains both connecting legs. Adding them here is what produced a
                 # load factor above the plan cap, so the total is taken and never summed.
-                "grand_total": {"forecast": carried, "pdew": pdew(carried or 0, freq=freq),
-                    "_basis": "carried, after the plan load factor cap; the legs below sum to it"},
+                "grand_total": {"forecast": _carried_d, "pdew": pdew(_carried_d or 0, freq=freq, mult=_mult),
+                    "_basis": ("carried, after the plan load factor cap; the legs below sum to it. "
+                               + ("Stated each way (US domestic)." if _domestic else "Stated two way.")),},
             },
         },
         "connecting_at_hub": {"hub": hub,
+            "_basis": "each way (US domestic)" if _domestic else "two way",
             "cities": [{"nr": i + 1, "city_code": c.get("city_code") or c.get("market"),
                         "city_name": c.get("city_name"), "country": c.get("country"),
-                        "annual_demand": round((c.get("annual_demand") or 0) * 2) or None,
+                        "annual_demand": _disp(round((c.get("annual_demand") or 0) * 2) or None),
                         "airline_share": c.get("airline_share"),
-                        "annual_forecast": round((c.get("annual_forecast") or 0) * 2) or None,
-                        "pdew": pdew((c.get("annual_forecast") or 0) * 2, freq=freq)}
+                        "annual_forecast": _disp(round((c.get("annual_forecast") or 0) * 2) or None),
+                        "pdew": pdew(_disp((c.get("annual_forecast") or 0) * 2), freq=freq, mult=_mult)}
                        for i, c in enumerate(hub_cities)],
-            "total": {"annual_forecast": cnx_hub_fc, "pdew": pdew(cnx_hub_fc or 0, freq=freq)},
+            "total": {"annual_forecast": _cnx_hub_fc_d, "pdew": pdew(_cnx_hub_fc_d or 0, freq=freq, mult=_mult)},
             "_need": (None if hub_cities else "run connecting_feed and pass connecting=")},
         # dest_cities was passed straight through un-doubled until today - the same gap as the hub
         # side above, fixed the same way and now rebuilt here rather than passed through, so both
         # legs of the connecting table double at the one point, not two.
         "connecting_at_destination": {"destination": dest,
+            "_basis": "each way (US domestic)" if _domestic else "two way",
             "cities": [{"nr": i + 1, "city_code": c.get("city_code") or c.get("market"),
                         "city_name": c.get("city_name"), "country": c.get("country"),
-                        "annual_demand": round((c.get("annual_demand") or 0) * 2) or None,
+                        "annual_demand": _disp(round((c.get("annual_demand") or 0) * 2) or None),
                         "airline_share": c.get("airline_share"),
-                        "annual_forecast": round((c.get("annual_forecast") or 0) * 2) or None,
-                        "pdew": pdew((c.get("annual_forecast") or 0) * 2, freq=freq)}
+                        "annual_forecast": _disp(round((c.get("annual_forecast") or 0) * 2) or None),
+                        "pdew": pdew(_disp((c.get("annual_forecast") or 0) * 2), freq=freq, mult=_mult)}
                        for i, c in enumerate(dest_cities)],
-            "total": {"annual_forecast": cnx_dest_fc, "pdew": pdew(cnx_dest_fc or 0, freq=freq)},
+            "total": {"annual_forecast": _cnx_dest_fc_d, "pdew": pdew(_cnx_dest_fc_d or 0, freq=freq, mult=_mult)},
             "_need": (None if dest_cities else NEED_CNX_DEST)},
         "revenue_forecast": {
             "years": ([svc_year, (svc_year + 1 if svc_year else None), (svc_year + 2 if svc_year else None)]),
@@ -589,9 +645,10 @@ def build_contract(case: dict, outputs: dict, connecting: dict = None, growth_ra
                       "_observed_split": outputs.get("observed_split"),
                       "_note": "Zone geometry/population from the catchment module; the observed split is the apportionment."},
             # same each-way source as the connecting_at_hub cities above; doubled here too, or this
-            # block would print a third, again-different "connecting market" figure per city.
+            # block would print a third, again-different "connecting market" figure per city. Then
+            # _disp()'d the same way as connecting_at_hub.cities, so all three agree under either basis.
             "top_markets_beyond_hub": ([{"city": c.get("city_name"), "city_code": c.get("city_code") or c.get("market"),
-                                         "annual_demand": round((c.get("annual_demand") or 0) * 2) or None}
+                                         "annual_demand": _disp(round((c.get("annual_demand") or 0) * 2) or None)}
                                         for c in sorted(hub_cities, key=lambda x: -(x.get("annual_demand") or 0))[:15]]
                                        if hub_cities else []),
         },
