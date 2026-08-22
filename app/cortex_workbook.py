@@ -149,7 +149,15 @@ def build_workbook(out_path, fc, meta=None):
         r += 1
 
     # ---- 2. Traffic forecast (Avia gold-standard layout) -------------------
-    ws = wb.create_sheet("Forecast")
+    # EW / 2-way pair (John, 22 August 2026): every tab that carries a passenger
+    # COUNT is now built once, natively each way, and written to two tabs - "EW"
+    # at the native value, "2-way" at the same value x2 - so the basis is stated
+    # in the tab name itself and never has to be inferred from a footnote. Rates
+    # (CAGR, capture share, PTEW - passengers per departure, which nets to the
+    # same figure either way since passengers and departures scale together) are
+    # written unchanged on both tabs; only the counted columns take the
+    # multiplier, at this single point, never recomputed a second way.
+    #
     # BASE / GROWTH / GROWN decomposed (18 August 2026): with a forecast year set,
     # this sheet printed the GROWN market in the base column with growth showing 0,
     # so a client table could not state its own growth. The payload now carries the
@@ -161,19 +169,8 @@ def build_workbook(out_path, fc, meta=None):
     _byr = _sch.get("base_year") or fc.get("year") or ""
     _fyr = _sch.get("forecast_year") or _byr
     _debase = lambda grown: (grown / (1.0 + _cum)) if _cum else grown
-    _title(ws, "Traffic forecast", f"each way per {_pnoun}; connecting rows show the captured feed")
-    # CAGR, not the cumulative (20 August 2026, Mark Kiehl/SJC, reviewing the PPTX packs,
-    # then applied here for the same reason John raised about the identical growth-rate
-    # display in the deck: one basis everywhere this table appears). 18.3% over two years
-    # reads as a big, alarming number; _gr is the per-annum rate the cumulative was built
-    # from, roughly half of it and in single digits. The cumulative is stated in the note.
-    _hdr(ws, 4, ["Market", f"Base demand {_byr} (000s)", f"CAGR {_fyr} v {_byr}",
-                 f"Grown demand {_fyr} (000s)", "Stimulation",
-                 "Stimulated demand (000s)", "Capture rate", "Forecast (000s)", "PTEW"],
-         [30, 15, 12, 15, 11, 15, 11, 12, 9])
     cap_share = n0(dem.get("qsi_share")); stim = n0(dem.get("stimulation")) or 1.0
-    natural = n0(dem.get("natural")) * _sshare; p2p = n0(dem.get("captured"))
-    behind = n0(dem.get("feed_behind")); beyond = n0(dem.get("feed_beyond")); tot = n0(dem.get("total"))
+    natural = n0(dem.get("natural")) * _sshare
     # THE ROWS ARE THE CARRIED ALLOCATION (18 August 2026). This sheet printed
     # UNCAPPED legs under the CAPPED total, so its rows did not sum to its own grand
     # total (76.0 over a 55.7 total on the SJC-TPE airline tables, found the moment a
@@ -188,72 +185,85 @@ def build_workbook(out_path, fc, meta=None):
     if natural * stim > 0:
         cap_share = p2p / (natural * stim)
     freq = n0(cap.get("freq")) or 7.0
-    k = lambda x: round(x / 1000.0, 1)
     ptew = lambda x: round(x / (freq * weeks)) if freq else 0
-    r = 5
-    _c(ws, r, 1, "Total point to point", font=BOLD, align=LFT)
-    _c(ws, r, 2, k(_debase(natural)), fmt="#,##0.0", align=RGT); _c(ws, r, 3, _gr, fmt="0.0%", align=RGT)
-    _c(ws, r, 4, k(natural), fmt="#,##0.0", align=RGT); _c(ws, r, 5, round(stim, 2), fmt="0.00", align=RGT)
-    _c(ws, r, 6, k(natural * stim), fmt="#,##0.0", align=RGT); _c(ws, r, 7, cap_share, fmt="0.0%", align=RGT)
-    _c(ws, r, 8, k(p2p), fmt="#,##0.0", align=RGT); _c(ws, r, 9, ptew(p2p), fmt="#,##0", align=RGT)
-    r += 1
     _cs = fc.get("competition_split") or {}
-    for label, val, cbase, _leg in [(f"Total connecting behind {home}", behind, n0(dem.get("feed_behind_base")) * _sshare, "behind"),
-                                    (f"Total connecting beyond {d['iata']}", beyond, n0(dem.get("feed_beyond_base")) * _sshare, "beyond")]:
-        _c(ws, r, 1, label, font=BOLD, align=LFT)
-        _c(ws, r, 2, k(_debase(cbase)) if cbase else "-", fmt="#,##0.0", align=RGT)
-        _c(ws, r, 3, _gr if cbase else "-", fmt="0.0%", align=RGT)
-        _c(ws, r, 4, k(cbase) if cbase else "-", fmt="#,##0.0", align=RGT)
-        _c(ws, r, 5, 1.00, fmt="0.00", align=RGT)
-        _c(ws, r, 6, k(cbase) if cbase else "-", fmt="#,##0.0", align=RGT)
-        _c(ws, r, 7, (val / cbase) if cbase else "-", fmt="0.0%", align=RGT)
-        _c(ws, r, 8, k(val), fmt="#,##0.0", align=RGT); _c(ws, r, 9, ptew(val), fmt="#,##0", align=RGT)
+    for _suf, _mult, _bw in (("EW", 1, "each way"), ("2-way", 2, "two way")):
+        ws = wb.create_sheet(f"Forecast {_suf}")
+        k = lambda x, _m=_mult: round(x * _m / 1000.0, 1)
+        # CAGR, not the cumulative (20 August 2026, Mark Kiehl/SJC, reviewing the PPTX packs,
+        # then applied here for the same reason John raised about the identical growth-rate
+        # display in the deck: one basis everywhere this table appears). 18.3% over two years
+        # reads as a big, alarming number; _gr is the per-annum rate the cumulative was built
+        # from, roughly half of it and in single digits. The cumulative is stated in the note.
+        _title(ws, "Traffic forecast", f"{_bw} per {_pnoun}; connecting rows show the captured feed")
+        _hdr(ws, 4, ["Market", f"Base demand {_byr} (000s)", f"CAGR {_fyr} v {_byr}",
+                     f"Grown demand {_fyr} (000s)", "Stimulation",
+                     "Stimulated demand (000s)", "Capture rate", "Forecast (000s)", "PTEW"],
+             [30, 15, 12, 15, 11, 15, 11, 12, 9])
+        r = 5
+        _c(ws, r, 1, "Total point to point", font=BOLD, align=LFT)
+        _c(ws, r, 2, k(_debase(natural)), fmt="#,##0.0", align=RGT); _c(ws, r, 3, _gr, fmt="0.0%", align=RGT)
+        _c(ws, r, 4, k(natural), fmt="#,##0.0", align=RGT); _c(ws, r, 5, round(stim, 2), fmt="0.00", align=RGT)
+        _c(ws, r, 6, k(natural * stim), fmt="#,##0.0", align=RGT); _c(ws, r, 7, cap_share, fmt="0.0%", align=RGT)
+        _c(ws, r, 8, k(p2p), fmt="#,##0.0", align=RGT); _c(ws, r, 9, ptew(p2p), fmt="#,##0", align=RGT)
         r += 1
-        # THE COMPETITION SUB-ROWS (John's ruling, 18 August 2026, validated against
-        # the 2025 analyst's split): direct / without direct competition beneath each
-        # leg, scaled to the displayed carried leg so the two sum to the row above.
-        # Absent block, no sub-rows, never zeros.
-        _tt = ((_cs.get(_leg) or {}).get("totals") or {})
-        _dsum = sum(((_tt.get(_k) or {}).get("forecast") or 0)
-                    for _k in ("direct", "no_direct"))
-        if _dsum > 0 and val > 0:
-            _scl = val / _dsum
-            for _bk, _bl in (("direct", "   O&Ds with direct competition"),
-                             ("no_direct", "   O&Ds without direct competition")):
-                _t = _tt.get(_bk) or {}
-                _fb = float(_t.get("base") or 0)
-                _fv = float(_t.get("forecast") or 0) * _scl
-                _c(ws, r, 1, _bl, align=LFT)
-                _c(ws, r, 2, k(_debase(_fb)) if _fb else "-", fmt="#,##0.0", align=RGT)
-                _c(ws, r, 3, _gr if _fb else "-", fmt="0.0%", align=RGT)
-                _c(ws, r, 4, k(_fb) if _fb else "-", fmt="#,##0.0", align=RGT)
-                _c(ws, r, 5, 1.00, fmt="0.00", align=RGT)
-                _c(ws, r, 6, k(_fb) if _fb else "-", fmt="#,##0.0", align=RGT)
-                _c(ws, r, 7, (_fv / _fb) if _fb else "-", fmt="0.0%", align=RGT)
-                _c(ws, r, 8, k(_fv), fmt="#,##0.0", align=RGT)
-                _c(ws, r, 9, ptew(_fv), fmt="#,##0", align=RGT)
-                r += 1
-    _c(ws, r, 1, "GRAND TOTAL", font=TOTF_FONT, fill=TOTF, align=LFT)
-    _bb = n0(dem.get("feed_behind_base")) * _sshare; _yb = n0(dem.get("feed_beyond_base")) * _sshare
-    _c(ws, r, 2, k(_debase(natural + _bb + _yb)), font=TOTF_FONT, fill=TOTF, fmt="#,##0.0", align=RGT)
-    _c(ws, r, 3, None, fill=TOTF)
-    _c(ws, r, 4, k(natural + _bb + _yb), font=TOTF_FONT, fill=TOTF, fmt="#,##0.0", align=RGT)
-    _c(ws, r, 5, None, fill=TOTF)
-    _c(ws, r, 6, k(natural * stim + _bb + _yb), font=TOTF_FONT, fill=TOTF, fmt="#,##0.0", align=RGT)
-    _c(ws, r, 7, (tot / (natural * stim + _bb + _yb)) if (natural * stim + _bb + _yb) > 0 else None,
-       font=TOTF_FONT, fill=TOTF, fmt="0.0%", align=RGT)
-    _c(ws, r, 8, k(tot), font=TOTF_FONT, fill=TOTF, fmt="#,##0.0", align=RGT)
-    _c(ws, r, 9, ptew(tot), font=TOTF_FONT, fill=TOTF, fmt="#,##0", align=RGT)
-    _c(ws, r + 2, 1, "Base demand is the addressable each-way O&D market from Sabre Global Demand Data in the origin catchment. "
-                     "Rows show the carried allocation after the planned load factor cap and they sum to the total; "
-                     "capture rates are the effective rates after that allocation, so each row multiplies through. "
-                     "Where capacity binds, unconstrained demand exceeds the figures shown. "
-                     + ("Growth is shown as a compound annual rate; the cumulative growth from %s to %s is %.1f%%. "
-                        % (_byr, _fyr, _cum * 100))
-                     + "PTEW = passengers per departure each way."
-                     + (f"  Figures are for the {_pnoun} service (the season's share of the annual O&D)."
-                        if _seasonal else ""),
-       font=NOTE, align=LFT, border=None)
+        for label, val, cbase, _leg in [(f"Total connecting behind {home}", behind, n0(dem.get("feed_behind_base")) * _sshare, "behind"),
+                                        (f"Total connecting beyond {d['iata']}", beyond, n0(dem.get("feed_beyond_base")) * _sshare, "beyond")]:
+            _c(ws, r, 1, label, font=BOLD, align=LFT)
+            _c(ws, r, 2, k(_debase(cbase)) if cbase else "-", fmt="#,##0.0", align=RGT)
+            _c(ws, r, 3, _gr if cbase else "-", fmt="0.0%", align=RGT)
+            _c(ws, r, 4, k(cbase) if cbase else "-", fmt="#,##0.0", align=RGT)
+            _c(ws, r, 5, 1.00, fmt="0.00", align=RGT)
+            _c(ws, r, 6, k(cbase) if cbase else "-", fmt="#,##0.0", align=RGT)
+            _c(ws, r, 7, (val / cbase) if cbase else "-", fmt="0.0%", align=RGT)
+            _c(ws, r, 8, k(val), fmt="#,##0.0", align=RGT); _c(ws, r, 9, ptew(val), fmt="#,##0", align=RGT)
+            r += 1
+            # THE COMPETITION SUB-ROWS (John's ruling, 18 August 2026, validated against
+            # the 2025 analyst's split): direct / without direct competition beneath each
+            # leg, scaled to the displayed carried leg so the two sum to the row above.
+            # Absent block, no sub-rows, never zeros.
+            _tt = ((_cs.get(_leg) or {}).get("totals") or {})
+            _dsum = sum(((_tt.get(_k) or {}).get("forecast") or 0)
+                        for _k in ("direct", "no_direct"))
+            if _dsum > 0 and val > 0:
+                _scl = val / _dsum
+                for _bk, _bl in (("direct", "   O&Ds with direct competition"),
+                                 ("no_direct", "   O&Ds without direct competition")):
+                    _t = _tt.get(_bk) or {}
+                    _fb = float(_t.get("base") or 0)
+                    _fv = float(_t.get("forecast") or 0) * _scl
+                    _c(ws, r, 1, _bl, align=LFT)
+                    _c(ws, r, 2, k(_debase(_fb)) if _fb else "-", fmt="#,##0.0", align=RGT)
+                    _c(ws, r, 3, _gr if _fb else "-", fmt="0.0%", align=RGT)
+                    _c(ws, r, 4, k(_fb) if _fb else "-", fmt="#,##0.0", align=RGT)
+                    _c(ws, r, 5, 1.00, fmt="0.00", align=RGT)
+                    _c(ws, r, 6, k(_fb) if _fb else "-", fmt="#,##0.0", align=RGT)
+                    _c(ws, r, 7, (_fv / _fb) if _fb else "-", fmt="0.0%", align=RGT)
+                    _c(ws, r, 8, k(_fv), fmt="#,##0.0", align=RGT)
+                    _c(ws, r, 9, ptew(_fv), fmt="#,##0", align=RGT)
+                    r += 1
+        _c(ws, r, 1, "GRAND TOTAL", font=TOTF_FONT, fill=TOTF, align=LFT)
+        _bb = n0(dem.get("feed_behind_base")) * _sshare; _yb = n0(dem.get("feed_beyond_base")) * _sshare
+        _c(ws, r, 2, k(_debase(natural + _bb + _yb)), font=TOTF_FONT, fill=TOTF, fmt="#,##0.0", align=RGT)
+        _c(ws, r, 3, None, fill=TOTF)
+        _c(ws, r, 4, k(natural + _bb + _yb), font=TOTF_FONT, fill=TOTF, fmt="#,##0.0", align=RGT)
+        _c(ws, r, 5, None, fill=TOTF)
+        _c(ws, r, 6, k(natural * stim + _bb + _yb), font=TOTF_FONT, fill=TOTF, fmt="#,##0.0", align=RGT)
+        _c(ws, r, 7, (tot / (natural * stim + _bb + _yb)) if (natural * stim + _bb + _yb) > 0 else None,
+           font=TOTF_FONT, fill=TOTF, fmt="0.0%", align=RGT)
+        _c(ws, r, 8, k(tot), font=TOTF_FONT, fill=TOTF, fmt="#,##0.0", align=RGT)
+        _c(ws, r, 9, ptew(tot), font=TOTF_FONT, fill=TOTF, fmt="#,##0", align=RGT)
+        _c(ws, r + 2, 1, f"Figures on this tab are {_bw}. "
+                         "Base demand is the addressable each-way O&D market from Sabre Global Demand Data in the origin catchment. "
+                         "Rows show the carried allocation after the planned load factor cap and they sum to the total; "
+                         "capture rates are the effective rates after that allocation, so each row multiplies through. "
+                         "Where capacity binds, unconstrained demand exceeds the figures shown. "
+                         + ("Growth is shown as a compound annual rate; the cumulative growth from %s to %s is %.1f%%. "
+                            % (_byr, _fyr, _cum * 100))
+                         + "PTEW = passengers per departure each way, the same figure on the EW and 2-way tabs."
+                         + (f"  Figures are for the {_pnoun} service (the season's share of the annual O&D)."
+                            if _seasonal else ""),
+           font=NOTE, align=LFT, border=None)
 
     # ---- 3. Connecting feed detail (base demand, share, forecast, PDEW) -----
     # JOL'S REVIEW, 19 August 2026, two findings both fixed here.
@@ -269,68 +279,69 @@ def build_workbook(out_path, fc, meta=None):
     #     line ~642 grows the city detail's base AND captured to the forecast year,
     #     so both figure columns are AT the service year, not the base year, and the
     #     headers now say so.
-    ws = wb.create_sheet("Connecting feed")
     _svc_yr = (fc.get("schedule") or {}).get("forecast_year") or ""
     _yrtag = f" {_svc_yr}" if _svc_yr else ""
-    _title(ws, "Connecting feed detail",
-           f"connecting markets each way at{_yrtag or ' the service year'}: market O&D demand, captured share, forecast, PTEW")
     _csp, _csb, _csy, _cst = carried_split(dem)
-    r = 4
-    # DEMAND-COLUMN TOTAL, 20 August 2026 (John, checking the EVA pack against the deck's
-    # completed forecast column): feed_beyond_base/feed_behind_base are the FULL uncapped
-    # market before capture, the same quantity each city's own "base"/demand figure is
-    # drawn from, additive with them. The 19 August note calling this "a different
-    # quantity, leave it blank" was wrong; mirrored in deck/forecast_pack.py the same day.
-    for label, key, _leg_ew, _mkt_ew in [
-            (f"Connecting at {home} (behind the origin)", "behind_pdew", _csb, n0(dem.get("feed_behind_base"))),
-            (f"Connecting at {d['iata']} (beyond the destination)", "beyond_pdew", _csy, n0(dem.get("feed_beyond_base")))]:
-        _sec(ws, r, label, 8); r += 1
-        _hdr(ws, r, ["Nr", "Code", "City", "Country", f"Market demand{_yrtag}", "Share",
-                     f"{_padj} forecast{_yrtag}", "PTEW"],
-             [6, 10, 24, 20, 15, 10, 15, 9]); r += 1
-        lst = dem.get(key) or []; sub_base = 0.0; sub_fc = 0.0
-        for i, row in enumerate(lst, 1):
-            base = n0(row.get("base")); shr = n0(row.get("share"))
-            fcv = n0(row.get("forecast")) or (n0(row.get("pdew")) * weeks * 7.0); pdv = n0(row.get("pdew"))
-            if fcv <= 0 and pdv <= 0:
-                continue
-            sub_base += base; sub_fc += fcv
-            _c(ws, r, 1, i, align=CTR); _c(ws, r, 2, row.get("code"), align=CTR)
-            _c(ws, r, 3, row.get("name"), align=LFT); _c(ws, r, 4, row.get("country") or "", align=LFT)
-            _c(ws, r, 5, round(base) if base else "-", fmt="#,##0", align=RGT)
-            _c(ws, r, 6, shr if base else "-", fmt="0.0%", align=RGT)
-            _c(ws, r, 7, round(fcv), fmt="#,##0", align=RGT); _c(ws, r, 8, round(pdv, 1), fmt="#,##0.0", align=RGT)
-            r += 1
-        # The tail: every connecting market smaller than the listed ones. Only drawn
-        # when the carried leg genuinely exceeds the listed sum; a seasonal or older
-        # payload where the two bases differ keeps the honest subtotal instead. Demand
-        # completes to _mkt_ew the same way; a run without feed_beyond_base/behind_base
-        # (an older payload) keeps the honest "-" rather than a fabricated figure.
-        _other = (_leg_ew - sub_fc) if (_leg_ew and _leg_ew > sub_fc + 0.5) else 0.0
-        _other_dem = (_mkt_ew - sub_base) if (_mkt_ew and _mkt_ew > sub_base + 0.5) else 0.0
-        if _other or _other_dem:
-            _c(ws, r, 1, "", align=CTR)
-            _c(ws, r, 3, "All other connecting markets", align=LFT)
-            _c(ws, r, 5, round(_other_dem) if _other_dem else "-", fmt="#,##0", align=RGT)
-            _c(ws, r, 6, "-", align=RGT)
-            _c(ws, r, 7, round(_other), fmt="#,##0", align=RGT)
-            _c(ws, r, 8, round(_other / (weeks * 7.0), 1), fmt="#,##0.0", align=RGT)
-            r += 1
-        _c(ws, r, 1, "Total", font=BOLD, fill=TOTF, align=LFT)
-        for cc in (2, 3, 4, 6, 8):
-            _c(ws, r, cc, None, fill=TOTF)
-        _c(ws, r, 5, round(sub_base + _other_dem) if (sub_base or _other_dem) else "-",
-           font=BOLD, fill=TOTF, fmt="#,##0", align=RGT)
-        _c(ws, r, 7, round(sub_fc + _other), font=BOLD, fill=TOTF, fmt="#,##0", align=RGT); r += 1
-        _c(ws, r, 1, "Market demand and forecast both complete to their carried-leg and "
-                     "market totals via the All-other row, so both columns now agree with "
-                     "the forecast table and each other.",
-           font=NOTE, align=LFT, border=None)
-        ws.merge_cells(start_row=r, start_column=1, end_row=r, end_column=8)
-        r += 2
+    for _suf, _mult, _bw in (("EW", 1, "each way"), ("2-way", 2, "two way")):
+        ws = wb.create_sheet(f"Connecting feed {_suf}")
+        _title(ws, "Connecting feed detail",
+               f"connecting markets {_bw} at{_yrtag or ' the service year'}: market O&D demand, captured share, forecast, PTEW")
+        r = 4
+        # DEMAND-COLUMN TOTAL, 20 August 2026 (John, checking the EVA pack against the deck's
+        # completed forecast column): feed_beyond_base/feed_behind_base are the FULL uncapped
+        # market before capture, the same quantity each city's own "base"/demand figure is
+        # drawn from, additive with them. The 19 August note calling this "a different
+        # quantity, leave it blank" was wrong; mirrored in deck/forecast_pack.py the same day.
+        for label, key, _leg_ew, _mkt_ew in [
+                (f"Connecting at {home} (behind the origin)", "behind_pdew", _csb, n0(dem.get("feed_behind_base"))),
+                (f"Connecting at {d['iata']} (beyond the destination)", "beyond_pdew", _csy, n0(dem.get("feed_beyond_base")))]:
+            _sec(ws, r, label, 8); r += 1
+            _hdr(ws, r, ["Nr", "Code", "City", "Country", f"Market demand{_yrtag}", "Share",
+                         f"{_padj} forecast{_yrtag}", "PTEW"],
+                 [6, 10, 24, 20, 15, 10, 15, 9]); r += 1
+            lst = dem.get(key) or []; sub_base = 0.0; sub_fc = 0.0
+            for i, row in enumerate(lst, 1):
+                base = n0(row.get("base")); shr = n0(row.get("share"))
+                fcv = n0(row.get("forecast")) or (n0(row.get("pdew")) * weeks * 7.0); pdv = n0(row.get("pdew"))
+                if fcv <= 0 and pdv <= 0:
+                    continue
+                sub_base += base; sub_fc += fcv
+                _c(ws, r, 1, i, align=CTR); _c(ws, r, 2, row.get("code"), align=CTR)
+                _c(ws, r, 3, row.get("name"), align=LFT); _c(ws, r, 4, row.get("country") or "", align=LFT)
+                _c(ws, r, 5, round(base * _mult) if base else "-", fmt="#,##0", align=RGT)
+                _c(ws, r, 6, shr if base else "-", fmt="0.0%", align=RGT)
+                _c(ws, r, 7, round(fcv * _mult), fmt="#,##0", align=RGT); _c(ws, r, 8, round(pdv, 1), fmt="#,##0.0", align=RGT)
+                r += 1
+            # The tail: every connecting market smaller than the listed ones. Only drawn
+            # when the carried leg genuinely exceeds the listed sum; a seasonal or older
+            # payload where the two bases differ keeps the honest subtotal instead. Demand
+            # completes to _mkt_ew the same way; a run without feed_beyond_base/behind_base
+            # (an older payload) keeps the honest "-" rather than a fabricated figure.
+            _other = (_leg_ew - sub_fc) if (_leg_ew and _leg_ew > sub_fc + 0.5) else 0.0
+            _other_dem = (_mkt_ew - sub_base) if (_mkt_ew and _mkt_ew > sub_base + 0.5) else 0.0
+            if _other or _other_dem:
+                _c(ws, r, 1, "", align=CTR)
+                _c(ws, r, 3, "All other connecting markets", align=LFT)
+                _c(ws, r, 5, round(_other_dem * _mult) if _other_dem else "-", fmt="#,##0", align=RGT)
+                _c(ws, r, 6, "-", align=RGT)
+                _c(ws, r, 7, round(_other * _mult), fmt="#,##0", align=RGT)
+                _c(ws, r, 8, round(_other / (weeks * 7.0), 1), fmt="#,##0.0", align=RGT)
+                r += 1
+            _c(ws, r, 1, "Total", font=BOLD, fill=TOTF, align=LFT)
+            for cc in (2, 3, 4, 6, 8):
+                _c(ws, r, cc, None, fill=TOTF)
+            _c(ws, r, 5, round((sub_base + _other_dem) * _mult) if (sub_base or _other_dem) else "-",
+               font=BOLD, fill=TOTF, fmt="#,##0", align=RGT)
+            _c(ws, r, 7, round((sub_fc + _other) * _mult), font=BOLD, fill=TOTF, fmt="#,##0", align=RGT); r += 1
+            _c(ws, r, 1, f"Figures on this tab are {_bw}; PTEW (passengers per departure) is a rate and reads the "
+                         "same on the EW and 2-way tabs. Market demand and forecast both complete to their carried-leg "
+                         "and market totals via the All-other row, so both columns now agree with "
+                         "the forecast table and each other.",
+               font=NOTE, align=LFT, border=None)
+            ws.merge_cells(start_row=r, start_column=1, end_row=r, end_column=8)
+            r += 2
 
     # ---- 3b. Schedule and capacity ----------------------------------------
-    ws = wb.create_sheet("Schedule")
     # THE TITLE AND NOTE STATE THE TIMES' BASIS (19 August 2026): the sheet always
     # read the payload's times, but its wording claimed "indicative" even when the
     # optimiser chose them, which read as a mismatch against the screen.
@@ -338,35 +349,44 @@ def build_workbook(out_path, fc, meta=None):
     _tbasis = ("indicative times" if _sch0.get("indicative")
                else "optimised departure" if not _sch0.get("basis")
                else str(_sch0.get("basis"))[:40])
-    _title(ws, "Schedule and capacity", f'{cap.get("aircraft","")} at {int(freq)}x/week ({_tbasis})')
-    _hdr(ws, 4, ["Sector", "Dep", "Arr", "Op days/week", "Aircraft", "Seats", f"{_padj} seats", f"{_padj} pax", "Seat factor"],
-         [13, 9, 9, 13, 12, 9, 14, 13, 11])
     sched = fc.get("schedule") or {}
     seats = n0(ec.get("seats")); load = n0(cap.get("load"))
     ann_seats_dir = seats * freq * weeks
-    r = 5
-    for leg in ("outbound", "inbound"):
-        s = sched.get(leg) or {}
-        sector = s.get("sector") or (f'{home}-{d["iata"]}' if leg == "outbound" else f'{d["iata"]}-{home}')
-        _c(ws, r, 1, sector, font=BOLD, align=LFT); _c(ws, r, 2, s.get("dep") or "-", align=CTR)
-        _c(ws, r, 3, s.get("arr") or "-", align=CTR); _c(ws, r, 4, int(freq), align=RGT)
-        _c(ws, r, 5, cap.get("aircraft", ""), align=CTR); _c(ws, r, 6, round(seats), fmt="#,##0", align=RGT)
-        _c(ws, r, 7, round(ann_seats_dir), fmt="#,##0", align=RGT); _c(ws, r, 8, round(tot), fmt="#,##0", align=RGT)
-        _c(ws, r, 9, load, fmt="0.0%", align=RGT); r += 1
-    _c(ws, r, 1, "Total", font=BOLD, fill=TOTF, align=LFT)
-    for cc in (2, 3, 4, 5, 6):
-        _c(ws, r, cc, None, fill=TOTF)
-    _c(ws, r, 7, round(ann_seats_dir * 2), font=BOLD, fill=TOTF, fmt="#,##0", align=RGT)
-    _c(ws, r, 8, round(tot * 2), font=BOLD, fill=TOTF, fmt="#,##0", align=RGT)
-    _c(ws, r, 9, load, font=BOLD, fill=TOTF, fmt="0.0%", align=RGT)
-    _c(ws, r + 2, 1,
-       (("Departure and arrival are indicative local times derived from block time and "
-         "timezone; not curfew- or slot-optimised. ") if _sch0.get("indicative") else
-        ("Departure and arrival are the run's chosen schedule"
-         + (f" ({_sch0.get('basis')})" if _sch0.get("basis") else "") + ". "))
-       + f"{_padj} seats = seats x frequency x {int(weeks)}, each "
-         f"direction; {_pnoun} pax is the forecast each way; seat factor is the planned load.",
-       font=NOTE, align=LFT, border=None)
+    # EW / 2-way pair (22 August 2026): the outbound and inbound ROWS are each one
+    # direction by definition, so they print the same on both tabs, never doubled.
+    # Only the Total row differs - the EW tab's total is one direction's own annual
+    # figures, the 2-way tab's is both directions combined, the figure this sheet
+    # always showed before this change.
+    for _suf, _mult, _bw in (("EW", 1, "each way"), ("2-way", 2, "two way")):
+        ws = wb.create_sheet(f"Schedule {_suf}")
+        _title(ws, "Schedule and capacity", f'{cap.get("aircraft","")} at {int(freq)}x/week ({_tbasis})')
+        _hdr(ws, 4, ["Sector", "Dep", "Arr", "Op days/week", "Aircraft", "Seats", f"{_padj} seats", f"{_padj} pax", "Seat factor"],
+             [13, 9, 9, 13, 12, 9, 14, 13, 11])
+        r = 5
+        for leg in ("outbound", "inbound"):
+            s = sched.get(leg) or {}
+            sector = s.get("sector") or (f'{home}-{d["iata"]}' if leg == "outbound" else f'{d["iata"]}-{home}')
+            _c(ws, r, 1, sector, font=BOLD, align=LFT); _c(ws, r, 2, s.get("dep") or "-", align=CTR)
+            _c(ws, r, 3, s.get("arr") or "-", align=CTR); _c(ws, r, 4, int(freq), align=RGT)
+            _c(ws, r, 5, cap.get("aircraft", ""), align=CTR); _c(ws, r, 6, round(seats), fmt="#,##0", align=RGT)
+            _c(ws, r, 7, round(ann_seats_dir), fmt="#,##0", align=RGT); _c(ws, r, 8, round(tot), fmt="#,##0", align=RGT)
+            _c(ws, r, 9, load, fmt="0.0%", align=RGT); r += 1
+        _c(ws, r, 1, "Total", font=BOLD, fill=TOTF, align=LFT)
+        for cc in (2, 3, 4, 5, 6):
+            _c(ws, r, cc, None, fill=TOTF)
+        _c(ws, r, 7, round(ann_seats_dir * _mult), font=BOLD, fill=TOTF, fmt="#,##0", align=RGT)
+        _c(ws, r, 8, round(tot * _mult), font=BOLD, fill=TOTF, fmt="#,##0", align=RGT)
+        _c(ws, r, 9, load, font=BOLD, fill=TOTF, fmt="0.0%", align=RGT)
+        _c(ws, r + 2, 1,
+           (("Departure and arrival are indicative local times derived from block time and "
+             "timezone; not curfew- or slot-optimised. ") if _sch0.get("indicative") else
+            ("Departure and arrival are the run's chosen schedule"
+             + (f" ({_sch0.get('basis')})" if _sch0.get("basis") else "") + ". "))
+           + "The outbound and inbound rows above are each one direction, so they read the same on "
+             f"the EW and 2-way tabs; only the Total row differs, {'one direction' if _mult == 1 else 'both directions combined'}. "
+           + f"{_padj} seats = seats x frequency x {int(weeks)}, each "
+             f"direction; {_pnoun} pax is the forecast each way; seat factor is the planned load.",
+           font=NOTE, align=LFT, border=None)
 
     # ---- 3c. Departure curve (John, 19 August 2026) ------------------------
     # The day curve with its raw data and a native Excel chart, so the analysis
@@ -388,69 +408,92 @@ def build_workbook(out_path, fc, meta=None):
         _at = float(_anchor.get("total") or 0)
         if _at > 0:
             _scl2 = _connc2 / _at
-            ws = wb.create_sheet("Departure curve")
-            _title(ws, "Connecting traffic by departure time",
-                   f"forecast {_sch0.get('forecast_year') or fc.get('year', '')}; two-way annual passengers; "
-                   "derived from this run's own carried figures")
-            _hdr(ws, 4, ["Departure (origin local)", "Permitted", "Connecting score (raw)",
-                         "Connecting, two-way", "of which beyond", "of which behind",
-                         "Route total carried, two-way"], [18, 10, 15, 15, 13, 13, 18])
-            r = 5
-            for p in _curve:
-                _fe = float(p.get("total") or 0) * _scl2
-                _tot2 = (min(_p2pc2 + _fe, _capew2) if _capew2 > 0 else (_p2pc2 + _fe)) * 2
-                _c(ws, r, 1, p.get("hhmm") or "", align=CTR)
-                _c(ws, r, 2, "yes" if p.get("permitted") else "no", align=CTR)
-                _c(ws, r, 3, round(float(p.get("total") or 0)), fmt="#,##0", align=RGT)
-                _c(ws, r, 4, round(_fe * 2), fmt="#,##0", align=RGT)
-                _c(ws, r, 5, round(float(p.get("beyond") or 0) * _scl2 * 2), fmt="#,##0", align=RGT)
-                _c(ws, r, 6, round(float(p.get("behind") or 0) * _scl2 * 2), fmt="#,##0", align=RGT)
-                _c(ws, r, 7, round(_tot2), fmt="#,##0", align=RGT)
-                r += 1
-            _rw = ", ".join(_op0.get("restricted") or []) or "none"
-            _c(ws, r + 1, 1,
-               f"Chosen departure {_chosen}"
-               + (f"; unrestricted optimum {_op0.get('unrestricted_dep')}" if _op0.get("unrestricted_dep") else "")
-               + f"; restricted hours {_rw}. Point to point is constant across the day "
-               f"({round(_p2pc2 * 2):,} two-way); every movement in the total comes from the "
-               f"connecting side, scored on the outbound departure. The route total is capped "
-               f"at the aircraft ceiling ({round(_capew2 * 2):,} two-way at the plan load factor). "
-               "Connecting is shown uncapped, as on the dashboard chart. "
-               + attribution.SOURCE_LINE,
-               font=NOTE, align=LFT, border=None)
-            try:
-                from openpyxl.chart import LineChart, Reference
-                _ch = LineChart()
-                _ch.title = (f"Two-way annual passengers by outbound departure "
-                             f"(forecast {_sch0.get('forecast_year') or fc.get('year', '')})")
-                _ch.y_axis.title = "passengers / yr, two-way"
-                _ch.x_axis.title = "outbound departure, origin local"
-                _n = len(_curve)
-                _ch.add_data(Reference(ws, min_col=7, min_row=4, max_row=4 + _n), titles_from_data=True)
-                _ch.add_data(Reference(ws, min_col=4, min_row=4, max_row=4 + _n), titles_from_data=True)
-                _ch.set_categories(Reference(ws, min_col=1, min_row=5, max_row=4 + _n))
-                _ch.height, _ch.width = 9, 24
-                ws.add_chart(_ch, "I4")
-            except Exception as _ce:                         # noqa: BLE001
-                _c(ws, r + 3, 1, "chart not rendered: %s" % _ce, font=NOTE, align=LFT, border=None)
+            # EW / 2-way pair (22 August 2026): this sheet was always built two-way
+            # (every figure here already carried a x2). That existing content is now
+            # the "2-way" tab, unchanged; a new "EW" tab sits beside it built from the
+            # same native, undoubled figures. Do not read the old single tab as "the
+            # EW basis" - it never was.
+            for _suf, _mult, _bw in (("EW", 1, "each way"), ("2-way", 2, "two way")):
+                ws = wb.create_sheet(f"Departure curve {_suf}")
+                _title(ws, "Connecting traffic by departure time",
+                       f"forecast {_sch0.get('forecast_year') or fc.get('year', '')}; {_bw} annual passengers; "
+                       "derived from this run's own carried figures")
+                _hdr(ws, 4, ["Departure (origin local)", "Permitted", "Connecting score (raw)",
+                             f"Connecting, {_bw}", "of which beyond", "of which behind",
+                             f"Route total carried, {_bw}"], [18, 10, 15, 15, 13, 13, 18])
+                r = 5
+                for p in _curve:
+                    _fe = float(p.get("total") or 0) * _scl2
+                    _tot2 = (min(_p2pc2 + _fe, _capew2) if _capew2 > 0 else (_p2pc2 + _fe)) * _mult
+                    _c(ws, r, 1, p.get("hhmm") or "", align=CTR)
+                    _c(ws, r, 2, "yes" if p.get("permitted") else "no", align=CTR)
+                    _c(ws, r, 3, round(float(p.get("total") or 0)), fmt="#,##0", align=RGT)
+                    _c(ws, r, 4, round(_fe * _mult), fmt="#,##0", align=RGT)
+                    _c(ws, r, 5, round(float(p.get("beyond") or 0) * _scl2 * _mult), fmt="#,##0", align=RGT)
+                    _c(ws, r, 6, round(float(p.get("behind") or 0) * _scl2 * _mult), fmt="#,##0", align=RGT)
+                    _c(ws, r, 7, round(_tot2), fmt="#,##0", align=RGT)
+                    r += 1
+                _rw = ", ".join(_op0.get("restricted") or []) or "none"
+                _c(ws, r + 1, 1,
+                   f"Chosen departure {_chosen}"
+                   + (f"; unrestricted optimum {_op0.get('unrestricted_dep')}" if _op0.get("unrestricted_dep") else "")
+                   + f"; restricted hours {_rw}. Point to point is constant across the day "
+                   f"({round(_p2pc2 * _mult):,} {_bw}); every movement in the total comes from the "
+                   f"connecting side, scored on the outbound departure. The route total is capped "
+                   f"at the aircraft ceiling ({round(_capew2 * _mult):,} {_bw} at the plan load factor). "
+                   "Connecting is shown uncapped, as on the dashboard chart. "
+                   + attribution.SOURCE_LINE,
+                   font=NOTE, align=LFT, border=None)
+                try:
+                    from openpyxl.chart import LineChart, Reference
+                    _ch = LineChart()
+                    _ch.title = (f"{_bw.capitalize()} annual passengers by outbound departure "
+                                 f"(forecast {_sch0.get('forecast_year') or fc.get('year', '')})")
+                    _ch.y_axis.title = f"passengers / yr, {_bw}"
+                    _ch.x_axis.title = "outbound departure, origin local"
+                    _n = len(_curve)
+                    _ch.add_data(Reference(ws, min_col=7, min_row=4, max_row=4 + _n), titles_from_data=True)
+                    _ch.add_data(Reference(ws, min_col=4, min_row=4, max_row=4 + _n), titles_from_data=True)
+                    _ch.set_categories(Reference(ws, min_col=1, min_row=5, max_row=4 + _n))
+                    _ch.height, _ch.width = 9, 24
+                    ws.add_chart(_ch, "I4")
+                except Exception as _ce:                         # noqa: BLE001
+                    _c(ws, r + 3, 1, "chart not rendered: %s" % _ce, font=NOTE, align=LFT, border=None)
 
     # ---- 4. Catchment split ------------------------------------------------
-    ws = wb.create_sheet("Catchment")
-    _title(ws, "Catchment airport split", "how the origin catchment's demand splits across competing airports today")
-    _hdr(ws, 4, ["Airport", "Share of catchment"], [40, 18])
-    r = 5
-    for c, v in sorted(sh.items(), key=lambda kv: -kv[1]):
-        lbl = nm.get(c) or c
-        _c(ws, r, 1, lbl + ("  (this route's origin)" if c == home else ""),
-           font=(BOLD if c == home else NORM), fill=(GREENF and PatternFill("solid", fgColor=GREENF)) if c == home else None, align=LFT)
-        _c(ws, r, 2, round(n0(v), 4), fmt="0.0%", align=RGT); r += 1
-    cb = meta.get("capture_basis", "modelled from drive time and competing service")
-    _c(ws, r + 1, 1, f"Assumed capture with this route's own nonstop: {cap_share*100:.1f}%  ({cb}).",
-       font=NOTE, align=LFT, border=None)
+    # EW / 2-way pair, built for structural consistency with the other tabs (John,
+    # 22 August 2026): this table is a SHARE of catchment demand, not a passenger
+    # count, so it has no each-way/two-way basis and prints identically on both
+    # tabs. Said so on the tab itself, so an identical pair reads as by design.
+    for _suf in ("EW", "2-way"):
+        ws = wb.create_sheet(f"Catchment {_suf}")
+        _title(ws, "Catchment airport split", "how the origin catchment's demand splits across competing airports today")
+        _hdr(ws, 4, ["Airport", "Share of catchment"], [40, 18])
+        r = 5
+        for c, v in sorted(sh.items(), key=lambda kv: -kv[1]):
+            lbl = nm.get(c) or c
+            _c(ws, r, 1, lbl + ("  (this route's origin)" if c == home else ""),
+               font=(BOLD if c == home else NORM), fill=(GREENF and PatternFill("solid", fgColor=GREENF)) if c == home else None, align=LFT)
+            _c(ws, r, 2, round(n0(v), 4), fmt="0.0%", align=RGT); r += 1
+        cb = meta.get("capture_basis", "modelled from drive time and competing service")
+        _c(ws, r + 1, 1, f"Assumed capture with this route's own nonstop: {cap_share*100:.1f}%  ({cb}). "
+                         "This tab is a share of catchment demand, not a passenger count, so it reads "
+                         "identically on the EW and 2-way tabs.",
+           font=NOTE, align=LFT, border=None)
 
     # ---- 5. Route economics (turnaround P&L) -------------------------------
+    # NOT given an EW/2-way pair (John's 22 August EW/2-way project; checked against
+    # aircraft_economics.py before deciding, not assumed). A rotation is an out-
+    # and-back unit and every cost line already reflects that: pax_turn = 2 x
+    # (econ_ow + bus_ow), and fuel, maintenance, landing and ground handling are
+    # priced per ROTATION, not per passenger, so they have no coherent each-way
+    # half - an aircraft does not burn half its fuel for "half a rotation."
+    # Halving only the passenger-linked lines (revenue, catering, per-pax charges)
+    # while leaving the block-hour and per-turn costs whole would set a halved
+    # revenue against a full-rotation cost base and understate profit, a wrong P&L,
+    # not a basis choice. This tab stays single and is now labelled explicitly.
     ws = wb.create_sheet("Economics")
-    _title(ws, "Route economics", f'turnaround P&L on the {cap.get("aircraft","")}, one rotation out and back')
+    _title(ws, "Route economics", f'turnaround P&L on the {cap.get("aircraft","")}, one rotation out and back, two way')
     _hdr(ws, 4, ["Line item", "Per rotation ($)"], [40, 20]); r = 5
     def prow(k, v, bold=False, fill=None):
         nonlocal r
@@ -511,20 +554,25 @@ def build_workbook(out_path, fc, meta=None):
     _ends = [e for e in (_alli.get("origin"), _alli.get("dest"))
              if isinstance(e, dict) and e.get("ok")]
     if _ends:
-        ws = wb.create_sheet("Competition")
-        _title(ws, "Alliance seat share", "departing seats by alliance at each end, OAG snapshot week")
-        r = 4
-        for e in _ends:
-            _c(ws, r, 1, "%s  -  week %s, %s weekly departing seats"
-               % (e.get("airport"), e.get("week"), f"{e.get('weekly_seats', 0):,}"),
-               font=BOLD); r += 1
-            _hdr(ws, r, ["Alliance", "Share of seats"], [30, 20]); r += 1
-            for name, share in (e.get("rows") or []):
-                _c(ws, r, 1, name)
-                _c(ws, r, 2, f"{share * 100:.1f}%")
+        # EW / 2-way pair, built for structural consistency (John, 22 August 2026):
+        # seat share is a percentage, not a passenger count, so it prints
+        # identically on both tabs; said so on the tab itself.
+        for _suf in ("EW", "2-way"):
+            ws = wb.create_sheet(f"Competition {_suf}")
+            _title(ws, "Alliance seat share", "departing seats by alliance at each end, OAG snapshot week")
+            r = 4
+            for e in _ends:
+                _c(ws, r, 1, "%s  -  week %s, %s weekly departing seats"
+                   % (e.get("airport"), e.get("week"), f"{e.get('weekly_seats', 0):,}"),
+                   font=BOLD); r += 1
+                _hdr(ws, r, ["Alliance", "Share of seats"], [30, 20]); r += 1
+                for name, share in (e.get("rows") or []):
+                    _c(ws, r, 1, name)
+                    _c(ws, r, 2, f"{share * 100:.1f}%")
+                    r += 1
                 r += 1
-            r += 1
-        _c(ws, r, 1, "Source: OAG schedules, Meridian analysis.")
+            _c(ws, r, 1, "Source: OAG schedules, Meridian analysis. Seat shares are a percentage, not a "
+                         "passenger count, so this tab reads identically on the EW and 2-way tabs.")
 
     # ---- 6. Assumptions & methodology --------------------------------------
     ws = wb.create_sheet("Assumptions")
