@@ -158,8 +158,10 @@ def main():
     check('exactly one "Economics" sheet, no EW/2-way pair', "Economics" in names
           and "Economics EW" not in names and "Economics 2-way" not in names)
     ews = wb["Economics"]
-    title_row = " ".join(str(cell(ews, 1, c) or "") for c in range(1, 8))
-    check('Economics title states "two way"', "two way" in title_row.lower(), title_row)
+    # _title() writes the heading to row 1 and the subtitle to row 2 - "two way"
+    # lives in the subtitle, so both rows need reading, not just the first.
+    title_text = " ".join(str(cell(ews, r, c) or "") for r in (1, 2) for c in range(1, 8))
+    check('Economics title states "two way"', "two way" in title_text.lower(), title_text)
 
     print("\n" + "=" * 70)
     if FAIL:
