@@ -23,13 +23,15 @@ to generate false bug reports while John is away. Nothing in section 4 requires 
 design decisions. Where a step needs a decision only John can make, it says so and stops
 there rather than guessing.
 
-**ADDENDUM, added after this handover was first written today**: a fifth instance of the
-PTEW basis bug was found and fixed after section 3 below was written, and it is very
-likely the actual cause of Jol Kingham's "PTEW mismatch" email of 22 August. A reply
-draft is already sitting in John's Outlook Drafts folder, sent nowhere yet, promising
-regenerated CI/BR/JX workbooks to follow. **This is now the highest-priority item in
-section 4 - see the new task 0** - because it is the one thing in this file with a
-promise already made to a colleague. Do not let the other eight tasks bump it.
+**ADDENDUM, added after this handover was first written today, now CLOSED**: a fifth
+instance of the PTEW basis bug was found and fixed after section 3 below was written, and
+it was confirmed to be the actual cause of Jol Kingham's "PTEW mismatch" email of 22
+August. Task 0 in section 4 (below) covers the full story: the fix alone did not show up
+in the first regeneration, because the live server process had not been restarted, only
+pulled - proof, live, of the standing "a pull does not update an already-running process"
+trap. After a proper restart, all three CI/BR/JX workbooks checked out clean and John has
+sent the corrected files to Jol. No action needed on this by whoever picks this file up
+next; it is recorded here for the record, not as a task.
 
 ---
 
@@ -169,7 +171,7 @@ Work through these in order. Each has a command block (labelled DevPC / Workstat
 John pastes the transcript back) and an explicit pass/fail so there's no ambiguity about
 whether a step succeeded.
 
-### Task 0 - Regenerate and send the corrected CI/BR/JX workbooks to Jol (do this FIRST)
+### Task 0 - CLOSED (23 August, same day). Regenerate and send the corrected CI/BR/JX workbooks to Jol
 
 Found after the rest of this handover was written, so it sits out of numerical order but
 not out of priority: Jol Kingham (22 August, "SJC: PTEW mismatch" and its follow-up)
@@ -190,20 +192,15 @@ remaining live "PDEW" labels in `pitch_html.py` and two in `deck/forecast_spec.p
 deliberately left alone - the frozen "Project Redwood" historical BA deck, same category
 as the `ba_lhr_sjc_reference()` fixture.
 
-**A reply draft is already sitting in John's Outlook Drafts folder**, threaded to Jol's
-"FW: SJC: PTEW mismatch" email, explaining the fix in the terms above and ending "Regenerating
-the CI, BR and JX workbooks now and will send corrected copies as soon as they are through."
-It has NOT been sent. It has NO attachments yet - this session has no Sabre/OAG data access
-to build real workbooks. The action:
-
-1. Confirm this fix has actually deployed (folds into task 1 below - same pull/restart).
-2. Re-run the three recommended cases live on the dashboard (CI A359 306 5x, BR B77W 333
-   5x, JX A359 306 5x - the same cases as `app/cases_sjc_tpe_pitch.json`) and download each
-   workbook fresh.
-3. Spot check by eye on all three: Cover's "Passengers/day each way" equals the Forecast
-   tab's grand-total PTEW figure. If it doesn't, stop, don't send, diagnose.
-4. Attach the three corrected xlsx files to the waiting draft (find it in Drafts, subject
-   "RE: FW: SJC: PTEW mismatch") and send it as John, from John's own mailbox.
+**DONE.** The first regeneration (still on the pre-restart server process) reproduced the
+exact same 1.40x mismatch (365 vs 260 departures/year), proving the code fix alone is not
+enough - the live server process has to be actually killed and restarted, a pull does not
+touch an already-running process. After `Meridian-run.bat` was properly restarted (window
+closed first, not just re-run over the live one), all three regenerated workbooks checked
+out clean: CI 267.8 vs Forecast EW grand total 268, BR 275 vs 275 exact, JX 252.3 vs 252,
+all within rounding, and Forecast 2-way agreed with Forecast EW on all three (PTEW holding
+as a genuine rate, as it should). No "PDEW" anywhere on any of the three. John attached the
+three corrected files to the waiting draft and sent it. Nothing further to do here.
 
 ### Task 1 - Deploy today's code to the workstation, correctly
 
