@@ -1,0 +1,63 @@
+The actual cause of Jol's PTEW mismatch: Cover's own figure, not a display bug
+
+Jol Kingham, 22 August, forwarded from Mark Kiehl: "the TPE/SJC PTEWs in tab 'Connecting
+feed' do not match the PTEWs in the main forecast output in tab 'forecast'." A follow-up
+email the same morning added: "tab 'Cover' also has a different PDEW to 'Connecting feed'
+and to 'forecast'... We have always used PTEW so please can the model use that also."
+
+Three earlier commits this week (4b4aff4, 0c4e730, and the PDEW-to-PTEW label sweep in
+deck_contract.py and route_deck.py) fixed the same bug CLASS - a flat 728 or 365 calendar-
+day divisor standing in for the route's real scheduled departures - in four places. None
+of those four was Cover's own figure. This commit finds and fixes the fifth, which is very
+likely the one Jol actually saw.
+
+THE ACTUAL DEFECT. cortex_app.py's own api_forecast (both the app/ and app_avia_style/
+copies) computed demand.pdew_total - the figure cortex_workbook.py's Cover tab prints
+verbatim as "Passengers/day each way" - as carried_ew / 365.0, unconditionally. Meanwhile
+cortex_workbook.py's Forecast tab has, since before this week, computed its own PTEW as
+carried / (freq x weeks), correctly against the route's real frequency. On daily service
+the two happen to agree (365 ~ 7 x 52). On anything else - CI, BR and JX are all 5x/week -
+they cannot: 365 versus 260 departures a year is a 40% gap, printed as two different
+PTEW figures on two tabs of the same workbook for the same route. This is the mismatch
+Jol reported, and it was never touched by any of this week's other PTEW fixes because it
+lives entirely in cortex_app.py, upstream of the workbook builder cortex_workbook.py calls.
+
+THE FIX. pdew_total now divides by freq x season_weeks, the same formula the Forecast tab
+already used, falling back to the flat 365 only if a caller genuinely supplies no
+frequency. Fixed in both cortex_app.py copies - the known duplicate-file gap, not resolved
+here, but both kept in step as this week's other fixes have done throughout.
+
+THE NAMING POINT. Jol's second ask - use PTEW, never PDEW, since PDEW reads as though it
+could be a two-way daily figure and PTEW is unambiguously "per trip, each way" - was
+already true of cortex_workbook.py's own labels (checked, all clean bar one code comment).
+It was NOT true of two other live surfaces touched earlier this week without a full sweep:
+pitch_html.py (the digital HTML pitch pack; a column header and two notes still said
+"PDEW" even though the note beside it already said "PTEW" - the exact kind of
+self-contradiction Jol is objecting to) and deck/forecast_spec.py (confirmed live via
+pitch_report.py's from_forecast path; two table headers said "PDEW"). Both swept to PTEW.
+forecast_spec.py's own _fc_connecting also carried a SIXTH instance of the flat-calendar-
+day bug (a hardcoded x365 with no frequency awareness at all, reading straight off the
+engine payload rather than through any of the other four fixed files) - fixed to the same
+freq x weeks basis. deck/build_ba_sjc.py's three PDEW headers were left untouched
+deliberately: it is the frozen "Project Redwood" historical BA LHR-SJC deck generator,
+same category as deck_contract.py's ba_lhr_sjc_reference() acceptance fixture, and
+touching either has no live-client benefit.
+
+VERIFICATION. test_workbook_table.py extended with a genuine cross-tab consistency check
+that did not exist before: the fixture's pdew_total is now computed the SAME way the fixed
+engine computes it (previously an arbitrary hardcoded 152.6, which could never have caught
+this bug because nothing tied it to the Forecast tab's own calculation), and a new check
+confirms Cover's printed PTEW equals Forecast EW's grand-total PTEW within rounding
+(267.8 vs 268 on the fixture). 23/23 checks pass, up from 22. test_deck_contract_ptew.py
+re-run clean, 27/27, confirming this commit did not disturb yesterday's domestic/
+international work. forecast_spec.py's _fc_connecting checked directly against a synthetic
+fixture: header now reads PTEW, and the freq-based annual figure (2,678 at 5x/week) matches
+the same city's figure in pitch_html.py's own equivalent table, computed via a completely
+different code path - the cross-check Jol's complaint was really asking for.
+
+NOT YET DONE: this fix has not been proven against a live engine call - this sandbox has
+no Sabre/OAG data access. The three CI/BR/JX SJC-TPE workbooks need regenerating on the
+workstation from this commit before they go back to Jol as the corrected attachments his
+first email asked for.
+
+Avia Solutions Limited. All rights reserved.

@@ -142,7 +142,7 @@ def _segments_table(c):
                          _pct(t.get("capture_rate"), 1), _int(t.get("forecast")),
                          _one_dp(t.get("pdew"))))
     return {"head": ["Segment", "Base market", "At service year", "Stimulation",
-                     "Capture", "Forecast", "PDEW"],
+                     "Capture", "Forecast", "PTEW"],
             "rows": body, "widths": [2.8, 1.4, 1.5, 1.2, 1.0, 1.2, 0.9]}
 
 
@@ -160,7 +160,7 @@ def _connecting_table(c):
     if t:
         body.append(_row("All onward cities", "", _int(t.get("annual_demand")), "",
                          _int(t.get("annual_forecast")), _one_dp(t.get("pdew"))))
-    return {"head": ["Onward city", "Country", "Market", "Share", "Forecast", "PDEW"],
+    return {"head": ["Onward city", "Country", "Market", "Share", "Forecast", "PTEW"],
             "rows": body, "widths": [2.2, 1.8, 1.4, 1.0, 1.3, 0.9]}
 
 
@@ -344,10 +344,20 @@ def _fc_connecting(fc):
                   key=lambda r: -(r.get("pdew") or 0))[:MAX_CNX_CITIES]
     if not rows:
         return None
+    # FOURTH INSTANCE OF THE FLAT-CALENDAR-DAY PTEW BUG (22 August 2026, found while
+    # answering Jol's PTEW mismatch email): PTEW is passengers per trip each way against
+    # the route's OWN scheduled departures, not a flat 365 calendar days, which over-reads
+    # on anything less than daily service. deck_contract.py's pdew(), route_deck.py's
+    # _days and forecast_to_contract.py's fallback all carried the same defect and were
+    # fixed the same day; this function reads straight from the engine payload rather than
+    # through any of those three, so it needed its own fix.
+    _freq = (fc.get("capacity") or {}).get("freq")
+    _weeks = float((fc.get("season") or {}).get("weeks") or 52)
+    _dep = (_freq * _weeks) if _freq else 365.0
     body = [_row(r.get("name") or r.get("code"), r.get("country"),
                  _one_dp(r.get("pdew")),
-                 _int((r.get("pdew") or 0) * 365)) for r in rows]
-    return {"head": ["Onward city", "Country", "PDEW", "Each way per year"],
+                 _int((r.get("pdew") or 0) * _dep)) for r in rows]
+    return {"head": ["Onward city", "Country", "PTEW", "Each way per year"],
             "rows": body, "widths": [2.2, 1.8, 1.0, 1.5]}
 
 

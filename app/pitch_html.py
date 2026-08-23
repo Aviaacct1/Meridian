@@ -40,7 +40,7 @@ def build_html_pitch(fc, research_blocks=None, inputs=None):
     airline = inputs.get("airline_name") or fc.get("airline") or "the airline"
     images = inputs.get("images", {}) or {}
 
-    # connecting markets: full detail (base O&D, share, forecast, PDEW) for the charts and tables
+    # connecting markets: full detail (base O&D, share, forecast, PTEW) for the charts and tables
     def _clist(key, n=15):
         out = []
         for r in (dem.get(key) or [])[:n]:
@@ -263,7 +263,7 @@ $('#lead').textContent=`Cortex forecasts ${fmt(D.demand.total)} passengers each 
 // connecting markets chart
 (function(){
   $('#cxNote').textContent=`Connecting passengers each way per year, forecast year ${FYtxt}. `
-    +`PDEW is passengers each way per departure day.`;
+    +`PTEW is passengers per trip each way.`;
   if(!D.beyond.length){ $('#cxBars').innerHTML='<div class="note">No connecting feed for this airline, or a point-to-point carrier.</div>'; return; }
   const mx=Math.max(...D.beyond.map(b=>b.pax))||1;
   $('#cxBars').innerHTML=D.beyond.map(b=>`<div class="bar"><div class="nm">${b.city}</div><div class="tr">
@@ -287,7 +287,7 @@ $('#lead').textContent=`Cortex forecasts ${fmt(D.demand.total)} passengers each 
     +` PTEW is passengers each way per departure, at ${freq}x weekly.`;
 })();
 
-// connecting-city tables (base demand, share, forecast, PDEW)
+// connecting-city tables (base demand, share, forecast, PTEW)
 // 20 August 2026 (John, checking the EVA pack; same defect Mark Kiehl/SJC found on the
 // PPTX): the fifteen printed rows were summed and the sum mislabelled "Total", when the
 // list is a top-15 cut (cortex_app._feed_list) and the true leg/market run wider. Mirrors
@@ -300,7 +300,7 @@ function cxtbl(list,elid,hid,label,mktTot,fcTot){
   const el=$('#'+elid), hh=$('#'+hid);
   if(!list||!list.length){ if(hh)hh.style.display='none'; if(el)el.style.display='none'; return; }
   hh.textContent=label;
-  let h='<tr><th>Nr</th><th>Code</th><th>City</th><th>Country</th><th>Annual O&D demand</th><th>Share</th><th>Annual forecast, each way</th><th>PDEW, each way</th></tr>',tb=0,tf=0;
+  let h='<tr><th>Nr</th><th>Code</th><th>City</th><th>Country</th><th>Annual O&D demand</th><th>Share</th><th>Annual forecast, each way</th><th>PTEW, each way</th></tr>',tb=0,tf=0;
   list.forEach((r,i)=>{ tb+=r.base; tf+=r.pax;
     h+=`<tr><td>${i+1}</td><td>${r.code||''}</td><td class="b" style="text-align:left">${r.city}</td><td style="text-align:left">${r.country||''}</td><td>${r.base?fmt(r.base):'-'}</td><td>${r.base?(r.share*100).toFixed(1)+'%':'-'}</td><td>${fmt(r.pax)}</td><td>${r.pdew.toFixed(1)}</td></tr>`; });
   const otherDem=(mktTot&&mktTot>tb+0.5)?(mktTot-tb):0, otherFc=(fcTot&&fcTot>tf+0.5)?(fcTot-tf):0;

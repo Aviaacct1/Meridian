@@ -1330,7 +1330,15 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
                    "att": r.get("att_exponent"), "stimulation": r.get("stimulation"),
                    "induced": r.get("induced", False), "induced_lf": r.get("induced_lf"),
                    "induced_fare": r.get("induced_fare"),
-                   "pdew_total": round(carried_ew / 365.0, 1),   # carried annual each-way pax / 365 = PDEW carried per day each way
+                   # FIFTH INSTANCE OF THE FLAT-CALENDAR-DAY PTEW BUG (23 August 2026, Jol
+                   # Kingham: "tab Cover has a different PDEW to Connecting feed and to
+                   # forecast"). This is very likely the actual cause of his report: this
+                   # figure divided by a flat 365 regardless of frequency, while
+                   # cortex_workbook.py's Forecast tab already divided by the route's real
+                   # freq x weeks (260 departures/yr at 5x, not 365) - the two could never
+                   # agree except on daily service. Same basis, same source values, now.
+                   "pdew_total": round(carried_ew / (freq * season_weeks), 1) if freq
+                                 else round(carried_ew / 365.0, 1),
                    "beyond_pdew": beyond_list, "behind_pdew": behind_list},
         "capacity": {"carried": r["carried_forecast"], "spill": r["spill"], "load": r["planned_load_factor"],
                      "annual_capacity": r["annual_capacity"], "recommendation": r["recommendation"],

@@ -39,6 +39,16 @@ def _fc(grown=True):
     sch = {"forecast_year": 2028, "base_year": 2025, "growth_rate": 0.0223,
            "growth_years": 3, "growth_basis": "measured pre-COVID trend, tapered",
            "legs": []} if grown else {"legs": []}
+    _freq, _weeks, _total = 4, 52, 55692
+    # 23 August 2026 (Jol Kingham: "tab Cover has a different PDEW to Connecting
+    # feed and to forecast"). The fixture used to hardcode pdew_total at an
+    # arbitrary 152.6, which could never have caught this bug - it never agreed
+    # with the Forecast tab's own PTEW because nothing tied the two together. The
+    # real defect was upstream, in cortex_app.py's own pdew_total calculation
+    # (divided by a flat 365 regardless of frequency; fixed the same day to
+    # freq x weeks, matching the formula this sheet's Forecast tab already used).
+    # Computing it here the SAME way the fixed engine now does is what lets
+    # "cross-tab PTEW consistency" below actually test something.
     return {
         "ok": True, "origin": {"city": "San Jose", "iata": "SJC", "country": "US"},
         "dest": {"city": "Taipei", "iata": "TPE", "country": "TW"},
@@ -48,14 +58,15 @@ def _fc(grown=True):
                    "stimulation": 1.15, "feed_behind": 7400, "feed_beyond": 23200,
                    "feed_behind_base": 198200, "feed_beyond_base": 768800,
                    "p2p_carried": 33300, "connecting_carried": 22392,
-                   "total": 55692, "total_demand": 76000, "pdew_total": 152.6,
+                   "total": _total, "total_demand": 76000,
+                   "pdew_total": round(_total / (_freq * _weeks), 1),
                    "beyond_pdew": [], "behind_pdew": [],
                    "avg_fare_band": {"label": "950-1000"}},
-        "capacity": {"carried": 55692, "load": 0.875, "freq": 4, "aircraft": "A359",
+        "capacity": {"carried": _total, "load": 0.875, "freq": _freq, "aircraft": "A359",
                      "annual_capacity": 63648, "recommendation": ""},
         "catchment": {"observed_share": {}, "names": {}, "home": "SJC"},
         "economics": {"raw": {}, "econ_fare": 975, "seats": 306},
-        "season": {"mode": "annual", "share": 1.0, "weeks": 52},
+        "season": {"mode": "annual", "share": 1.0, "weeks": _weeks},
     }
 
 
@@ -93,6 +104,20 @@ def main():
               abs(p2p[7] + sum(legs) - gt[7]) < 0.15,
               "%s + %s = %s" % (p2p[7], legs, gt[7]))
         check("grand total base column summed", abs(gt[1] - 1095.5) < 0.5, gt[1])
+
+        # CROSS-TAB PTEW CONSISTENCY (23 August 2026, Jol Kingham's exact complaint:
+        # Cover's PDEW/PTEW did not match Connecting feed's or Forecast's). Cover
+        # prints dem["pdew_total"] verbatim, straight from the engine payload;
+        # Forecast EW computes its own grand-total PTEW independently, from the
+        # carried total and the route's freq x weeks. The two must read the same
+        # figure for the same route, or a client sees exactly what Jol saw.
+        wb_grown = openpyxl.load_workbook(os.path.join(tmp, "grown.xlsx"), data_only=True)
+        cov = wb_grown["Cover"]
+        cov_pdew = next(c[1].value for c in cov.iter_rows(min_row=1)
+                         if c[0].value == "Passengers/day each way")
+        check("Cover PTEW matches Forecast tab's grand-total PTEW (Jol's mismatch)",
+              abs(cov_pdew - gt[8]) < 0.6, f"Cover={cov_pdew}, Forecast grand total={gt[8]}")
+
         rows = _table(_fc(grown=False), tmp, "steady.xlsx")
         p2p = rows["Total point to point"]
         check("steady state: base equals grown", p2p[1] == p2p[3])

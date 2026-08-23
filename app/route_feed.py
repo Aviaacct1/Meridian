@@ -946,7 +946,7 @@ def main():
           f"alliance-weighted base {weighted:,.0f}")
     print(f"  BEYOND-{a.hub} FEED (capture {a.capture}): {r['beyond_total']:,}  [analyst reference = 48,115]")
     print(f"  implied capture to hit 48,115: {48115/weighted:.3f}" if weighted else "")
-    print("  top beyond cities (PDEW):")
+    print("  top beyond cities (PTEW):")
     for c, p in r["beyond_pdew_top"].items():
         print(f"    {c:6} {p}")
     print(f"  BEHIND feed (points feeding into {origin} onto the flight): {r['behind_total']:,}")
