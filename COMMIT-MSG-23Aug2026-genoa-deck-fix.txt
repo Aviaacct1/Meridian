@@ -1,0 +1,29 @@
+Fix genoa_nyc.py's --ppt path: forecast dict was missing four keys
+build_deck() reads directly
+
+Named as a known, non-urgent break in HANDOVER-23Aug2026.md section 8 (out of
+scope for the readiness push): genoa_nyc.py --ppt called build_deck() with a
+forecast dict shape that predates the current build_deck signature and would
+KeyError if run. Fixed now, at John's request, because it is small, contained
+to a one-off case script nobody else runs, and carries no risk to the live
+served product.
+
+Root cause: route_deck.py's build_deck() forecast-slide stats (line ~107-114)
+read forecast['market'], ['captured'], ['feed'] and ['total'] directly, no
+.get() fallback. genoa_nyc.py's forecast dict only ever supplied pop, nyc_od,
+leaked, repatriated, home_label, subtitle, split, fit_lines, the OLD shape
+still named in this module's own docstring, which predates whichever change
+moved build_deck onto the new one.
+
+- app/genoa_nyc.py
+  forecast dict now also supplies market (the addressable NYC catchment,
+  `natural`), captured and total (both `each_way`, the directional demand
+  with a nonstop), and feed ("0"). Genoa-NYC has no airline connections
+  modelled, it is a repatriation case bounded by GOA's own catchment, not
+  the full connecting-feed engine, so feed is genuinely zero here rather
+  than an omission.
+
+Verified offline: python3 -m py_compile clean on both files. NOT run live,
+this script needs the Sabre store and a GeoNames extract that only exist on
+the workstation/DevPC, not the sandbox this session runs in. Next actual run
+of `genoa_nyc.py cities5000.txt --sabre ... --ppt` is the real test.

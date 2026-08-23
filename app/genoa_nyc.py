@@ -129,9 +129,18 @@ def main():
         NAMES = {"GOA": "Genoa", "MXP": "Milan MXP", "LIN": "Milan Linate",
                  "BGY": "Bergamo", "TRN": "Turin", "BLQ": "Bologna"}
         split = sorted(((NAMES.get(c, c), observed[c] / total_nyc) for c in observed), key=lambda kv: -kv[1])
+        # THE STALE SHAPE (23 August 2026): build_deck()'s forecast-slide stats (route_deck.py
+        # line ~107-114) read forecast['market'], ['captured'], ['feed'] and ['total'] directly,
+        # with no .get() fallback - a KeyError this script has thrown since build_deck moved onto
+        # that shape (this module's own docstring still names the OLD dict shape, pop/nyc_od/
+        # leaked/repatriated/directional, which predates the change). Genoa-NYC has no airline
+        # connections modelled (it is a repatriation case, not the full engine), so feed is
+        # genuinely zero here and captured/total are both the same directional figure.
         forecast = dict(
             pop=f"{pop/1e6:.1f}m", nyc_od=f"{total_nyc:,.0f}",
             leaked=f"{b['leaked_pool']:,.0f}", repatriated=f"{b['repatriated']:,.0f}",
+            market=f"{natural:,.0f}", captured=f"{each_way:,.0f}",
+            feed="0", total=f"{each_way:,.0f}",
             home_label="Genoa",
             subtitle="Genoa's New York travellers leak to Milan today; a Genoa nonstop repatriates its own catchment",
             split=split,
