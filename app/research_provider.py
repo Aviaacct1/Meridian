@@ -82,14 +82,24 @@ MAX_TOKENS = int(os.environ.get("AVIA_RESEARCH_MAX_TOKENS", "8000"))
 def _load_api_key():
     """Anthropic key (Avia Solutions): env ANTHROPIC_API_KEY first, else the first non-comment line of
     anthropic_key.txt next to this file - so the researched-pitch key survives a server restart even when
-    the env var was not exported into that shell. The file is git-ignored (a secret)."""
-    k = (os.environ.get("ANTHROPIC_API_KEY") or "").strip()
+    the env var was not exported into that shell. The file is git-ignored (a secret).
+
+    BOM STRIP (23 August 2026, John's live test_research.py run): opened plain "utf-8", a BOM-prefixed
+    file (Notepad's "UTF-8" save option and PowerShell's Out-File/Set-Content both default to UTF-8 WITH
+    BOM on Windows) left a literal U+FEFF as the key's first character. str.strip() does not remove it,
+    it is not whitespace, so the corrupted key reached client.messages.create() and the SDK failed
+    building the Authorization header: HTTP headers must be ASCII, and U+FEFF is not representable in
+    ASCII - "'ascii' codec can't encode character '\\ufeff' in position 0", every block, every route,
+    regardless of the model-ID fix. "utf-8-sig" strips a leading BOM if present and is identical to
+    "utf-8" if not, so this is safe either way; the explicit lstrip belt-and-braces both paths in case a
+    key is ever set via the env var by a similarly BOM-writing tool."""
+    k = (os.environ.get("ANTHROPIC_API_KEY") or "").strip().lstrip("\ufeff")
     if k:
         return k
     fp = os.path.join(os.path.dirname(os.path.abspath(__file__)), "anthropic_key.txt")
     if os.path.exists(fp):
-        for line in open(fp, encoding="utf-8"):
-            s = line.strip()
+        for line in open(fp, encoding="utf-8-sig"):
+            s = line.strip().lstrip("\ufeff")
             if s and not s.startswith("#"):
                 return s
     return ""
