@@ -63,15 +63,30 @@ def build_html_pitch(fc, research_blocks=None, inputs=None):
                          "findings": [{"claim": f.get("claim", ""), "source": f.get("source_name", ""),
                                        "year": f.get("year", "")} for f in blk["findings"]]})
 
+    # ANCHOR ON THE CARRIED FIGURES (23 August 2026), the same basis-mixing fault the dashboard's
+    # drawCurve was fixed for on TPA-AUS (feed_total read 100,295 against a connecting carried of
+    # 48,209 there). This file had the same fault, undetected until today's readiness push: it put
+    # dem.captured (46,671, the raw uncapped P2P demand) and dem.feed_total (25,018, the raw
+    # pre-split engine feed, computed before the connectivity re-split scales feed_beyond/feed_behind)
+    # into the same bars/KPIs as feed_behind/feed_beyond and total (both already carried), so
+    # captured + feed_behind + feed_beyond (84,993) did not sum to "Total each way" (69,615) on the
+    # same slide. Checked against this run's own bundled workbook (Forecast EW: point to point
+    # 31,293 + connecting behind 9,259 + connecting beyond 29,063 = 69,615, matching Total exactly):
+    # p2p_carried and connecting_carried are the carried, self-consistent basis. Mirrors
+    # cortex_dashboard.html's established _ptp/_cf fix exactly (p2p_carried, falling back to the
+    # total when there is no airline feed to carry).
+    _p2p_carried = dem.get("p2p_carried")
+    _p2p = _n(_p2p_carried) if _p2p_carried is not None else _n(dem.get("total"))
+    _feed_behind_n, _feed_beyond_n = _n(dem.get("feed_behind")), _n(dem.get("feed_beyond"))
     data = {
         "origin": {"iata": o.get("iata"), "city": o.get("city"), "country": o.get("country")},
         "dest": {"iata": d.get("iata"), "city": d.get("city"), "country": d.get("country")},
         "airline": airline, "date": inputs.get("date", ""),
-        "demand": {"natural": round(_n(dem.get("natural"))), "captured": round(_n(dem.get("captured"))),
-                   "feed_behind": round(_n(dem.get("feed_behind"))), "feed_beyond": round(_n(dem.get("feed_beyond"))),
+        "demand": {"natural": round(_n(dem.get("natural"))), "captured": round(_p2p),
+                   "feed_behind": round(_feed_behind_n), "feed_beyond": round(_feed_beyond_n),
                    "feed_behind_base": round(_n(dem.get("feed_behind_base"))),
                    "feed_beyond_base": round(_n(dem.get("feed_beyond_base"))),
-                   "feed_total": round(_n(dem.get("feed_total"))), "total": round(_n(dem.get("total"))),
+                   "feed_total": round(_feed_behind_n + _feed_beyond_n), "total": round(_n(dem.get("total"))),
                    "stimulation": _n(dem.get("stimulation")) or 1.0, "qsi_share": _n(dem.get("qsi_share"))},
         "capacity": {"aircraft": cap.get("aircraft"), "freq": cap.get("freq"), "load": _n(cap.get("load")),
                      "carried": round(_n(cap.get("carried"))), "seats": ec.get("seats")},

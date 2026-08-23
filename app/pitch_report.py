@@ -139,8 +139,16 @@ def _pptx_config(fc, inputs):
         "airline_name": airline, "aircraft_type": cap.get("aircraft", ""), "seats": ec.get("seats", ""),
         "frequency": cap.get("freq", ""), "date": inputs.get("date", ""),
         "client_name": airline, "executive_summary": exec_sum,
+        # ANCHOR ON THE CARRIED FIGURE (23 August 2026): dem.get("captured") is the raw uncapped
+        # P2P demand (46,671 on the SJC-TPE case that surfaced this), not what the route actually
+        # carries; grand_total above is already the carried total, so p2p_total + cnx_home_total +
+        # cnx_dest_total did not sum to grand_total on the same slide. Same fault, same fix as
+        # pitch_html.py and cortex_workbook.py's carried_split(): p2p_carried is the carried figure,
+        # falling back to total only when there is no airline feed to carry (dashboard's own
+        # convention for that case).
         "forecast": {"grand_total": total, "load_factor": load,
-                     "p2p_total": dem.get("captured"), "cnx_home_total": dem.get("feed_behind"),
+                     "p2p_total": dem.get("p2p_carried") if dem.get("p2p_carried") is not None else total,
+                     "cnx_home_total": dem.get("feed_behind"),
                      "cnx_dest_total": dem.get("feed_beyond")},
         "connecting_cities": _connecting_cities(dem),
         "assumptions": {"qsi_adjustment": 1.0, "qsi_ceiling": 1.0,

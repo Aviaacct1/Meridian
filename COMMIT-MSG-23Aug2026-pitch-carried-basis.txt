@@ -1,0 +1,53 @@
+Fix the pitch pack's own numbers: HTML and pptx were mixing raw and
+carried demand on the same slide
+
+Second defect found while proving today's one-run-alignment fix
+(c5986b2) on a live SJC-TPE pack: the researched pitch's own HTML
+bars did not sum to its own "Total each way" figure, even after
+that fix (captured 46,671 + feed_behind 9,259 + feed_beyond 29,063
+= 84,993 against a Total each way of 69,615). Not a rerun of the
+earlier symptom; a different, pre-existing fault, present before
+today's alignment fix and still present after it, now confirmed by
+checking against this run's own bundled workbook (Forecast EW:
+31,293 point to point + 9,259 connecting behind + 29,063 connecting
+beyond = 69,615, matching Total exactly).
+
+Root cause: route_forecast.py computes demand.feed_total once
+(feed_beyond + feed_behind, line 776) BEFORE the connectivity
+re-split (split_floor, line ~876-899) rescales feed_beyond and
+feed_behind in place to match the carried connecting total; feed
+itself (-> demand.feed_total in the API payload) is never rescaled
+alongside them, so it stays a stale, raw, pre-split figure while
+feed_behind/feed_beyond end up on the carried basis. demand.captured
+has the same shape: it is the raw uncapped P2P demand, not
+p2p_carried, the carried figure. The dashboard's KPI cards
+(cortex_dashboard.html, _ptp/_cf) and cortex_workbook.py
+(carried_split()) already anchor on p2p_carried/connecting_carried
+for exactly this reason; pitch_html.py and pitch_report.py never
+got that fix; they still read demand.captured and demand.feed_total
+directly. Not touched by today's earlier one-run-alignment fix,
+which was a real, separate, and still-valid fix (the pitch now runs
+the exact query on screen); this is a basis-mixing fault inside the
+figures that reach the pack regardless of which engine call
+produced them.
+
+- app/pitch_html.py
+  build_html_pitch(): "captured" now reads demand.p2p_carried
+  (falling back to demand.total only when there is no airline feed
+  to carry, the same case the dashboard's own fallback handles).
+  "feed_total" is now feed_behind + feed_beyond, which are already
+  on the carried basis, so the value finally matches its own
+  caption ("behind + beyond, each way").
+
+- app/pitch_report.py
+  _pptx_config(): forecast.p2p_total now reads demand.p2p_carried
+  with the same fallback, so p2p_total + cnx_home_total +
+  cnx_dest_total sums to grand_total in the bundled pptx deck, which
+  had the identical fault.
+
+Verified offline: python3 -m py_compile clean on both files; the
+arithmetic checked by hand against the SJC-TPE case's own bundled
+workbook (69,615 = 31,293 + 9,259 + 29,063). NOT yet proven live,
+a workstation pull and a fresh researched pitch on the same case is
+needed to confirm the HTML pack and the bundled pptx now both
+reconcile to their own Total.
