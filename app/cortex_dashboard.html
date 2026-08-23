@@ -1320,10 +1320,17 @@ function downloadReport(part){
 }
 let PITCH_POLL=null;
 function pitchGenerate(){
-  const o=$("#origin").value.trim(), d=$("#dest").value.trim();
-  if(!o||!d){ showErr("enter an origin and destination first"); return; }
-  const q=new URLSearchParams({origin:o,dest:d,airline:$("#airline").value.trim(),
-    carrier_type:$("#ctype").value,aircraft:$("#aircraft").value,freq:$("#freq").value||7,season:$("#season").value||"annual"});
+  // ONE RUN DEFINITION (23 August 2026): this used to rebuild a minimal query from the
+  // current form fields, the same rebuilt-minimum bug the plain download had until 18
+  // August, so a researched pitch's demand numbers could not match the deck/workbook from
+  // the same on-screen run (found live: the HTML pack's own feed split did not even sum
+  // to its own feed_total). Reuses STATE.lastQ exactly as downloadReport does, refusing
+  // rather than silently rebuilding a different run.
+  if(!STATE.lastQ){
+    showErr("run an assessment first, so the researched pitch reproduces the exact run on screen.");
+    return;
+  }
+  const q=new URLSearchParams(STATE.lastQ);
   const btn=$("#pitchBtn"); btn.disabled=true; const t0=Date.now();
   $("#pitchNote").textContent="Researching sources and verifying, this takes a few minutes…";
   btn.innerHTML='<span class="spinner"></span>Researching…';

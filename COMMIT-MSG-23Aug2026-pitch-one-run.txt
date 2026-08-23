@@ -1,0 +1,59 @@
+Fix the researched pitch to reproduce the run on screen, not a
+reduced re-run
+
+Found live during the readiness push (23 August), verifying today's
+pack fixes on a real SJC-TPE case: the HTML pitch pack's demand
+numbers did not match the deck/workbook built from the same
+on-screen run, and were not even internally consistent within
+themselves (feed_behind 5,447 + feed_beyond 17,096 did not sum to
+the pack's own feed_total of 25,018). John asked for this to be
+added to today's task list ("Can we add the HTML issue to todays
+task to fix").
+
+Root cause: _run_pitch_job called calibrated_forecast() directly
+with a reduced, hand-maintained parameter list (origin, dest,
+airline, carrier_type, aircraft, freq, econ_share, plan_lf,
+econ_fare, bus_fare, fuel_price, with_econ, season). It never saw
+dep_time, curfews, partners, forecast_year, split_floor or seats,
+so a researched pitch was a different, reduced engine call from the
+one the dashboard showed, not a rounding difference. pitch_html.py
+was checked and is a pure passthrough of fc["demand"] fields; it
+does no computation, so the fault was upstream of it.
+
+Same defect shape as the 18-19 August one-run-definition fix for
+/api/report (COMMIT-MSG-19Aug2026-one-run-definition.txt), extended
+here to the researched pitch:
+
+- app/cortex_app.py
+  _run_pitch_job now calls api_forecast(**p) instead of
+  calibrated_forecast(...), exactly as api_report does, so a
+  researched pitch cannot differ from the run on screen by
+  construction.
+  api_pitch_start rewritten from a typed, hand-maintained parameter
+  list to (request: Request, origin: str, dest: str), coercing the
+  full query against api_forecast's own signature via
+  inspect.signature() + demo_leads.coerce_params(), mirroring
+  api_report_start. Any future api_forecast parameter reaches the
+  pitch job automatically, with nothing here to drift out of step.
+  coerce_params only returns keys present in the actual query
+  string (a field the plain dashboard query never sets, e.g.
+  plan_lf, is simply absent from its output), so kw is built as
+  {**defaults, **coerce_params(...)} to guarantee every key
+  _run_pitch_job reads by bracket access exists, checked by reading
+  demo_leads.py before this could reach a live run and KeyError.
+
+- app/cortex_dashboard.html
+  pitchGenerate() used to rebuild a minimal query from the current
+  form fields (origin, dest, airline, carrier_type, aircraft, freq,
+  season only), the same rebuilt-minimum defect the plain download
+  had until 18 August. Now reuses STATE.lastQ exactly as
+  downloadReport() does, and refuses with a clear message ("run an
+  assessment first, so the researched pitch reproduces the exact
+  run on screen") if no assessment has run this session, rather
+  than silently sending a different one.
+
+Verified offline: python3 -m py_compile cortex_app.py clean; the
+dashboard's inline script block passes node --check. NOT yet proven
+live, a workstation pull plus a fresh researched pitch on the same
+SJC-TPE case is needed to confirm the HTML pack, deck and workbook
+now agree and that the feed split sums to its own total.

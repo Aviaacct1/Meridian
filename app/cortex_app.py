@@ -2844,13 +2844,21 @@ def _run_pitch_job(job_id, p):
     import pitch_report as PR, cortex_workbook as CWB
     try:
         _stage(job_id, "sizing the market and running the forecast")
-        fc = calibrated_forecast(p["origin"], p["dest"], airline=(p["airline"] or None),
-                                 carrier_type=p["carrier_type"], aircraft=p["aircraft"], freq=p["freq"],
-                                 econ_share=(p["econ_share"] if (p.get("econ_share") and p["econ_share"] > 0) else None),
-                                 plan_lf=p["plan_lf"],
-                                 econ_fare=(p["econ_fare"] or None), bus_fare=p["bus_fare"],
-                                 fuel_price=(p["fuel_price"] or None), with_econ=True,
-                                 season=p.get("season", "annual"))
+        # ONE RUN DEFINITION (23 August 2026), the same fix /api/report got on 19 August,
+        # extended to the researched pitch: this used to call calibrated_forecast() directly
+        # with a reduced param set (no dep_time, curfews, partners, forecast_year, split_floor,
+        # seats), so a researched pitch's demand numbers could not match the deck/workbook from
+        # the same on-screen run. Found live 23 August during the readiness push: the HTML
+        # pack's own feed split (5,447 behind / 17,096 beyond) didn't even sum to its own
+        # feed_total (25,018), because this call never saw the optimised departure the real
+        # run used - a different, reduced engine call, not a rounding difference. Now consumes
+        # /api/forecast exactly as api_report does: a researched pitch cannot differ from the
+        # run on screen by construction. p comes from api_pitch_start's full query coercion
+        # against api_forecast's own signature, so any future api_forecast parameter reaches
+        # here automatically. p (built in api_pitch_start) already carries origin/dest alongside
+        # the coerced defaults, so this is the same shape as api_report's own api_forecast call.
+        _resp = api_forecast(**p)
+        fc = json.loads(bytes(_resp.body))
         if not fc.get("ok"):
             PITCH_JOBS[job_id] = {"state": "error", "error": fc.get("error", "forecast failed")}; return
         o = fc["origin"]; d = fc["dest"]
@@ -2900,13 +2908,18 @@ def _run_pitch_job(job_id, p):
 
 
 @app.get("/api/pitch/start")
-def api_pitch_start(origin: str, dest: str, airline: str = "", carrier_type: str = "FSC",
-                    aircraft: str = "A21X", freq: int = 7, econ_share: float = 0.0,
-                    plan_lf: float = 0.875, econ_fare: float = 0.0, bus_fare: float = 1400.0,
-                    fuel_price: float = 0.0, season: str = "annual"):
+def api_pitch_start(request: Request, origin: str, dest: str):
     """Kick off a researched airline pitch as a background job (it runs web research + verification,
-    which takes minutes, longer than the tunnel's request timeout). Returns a job_id to poll."""
+    which takes minutes, longer than the tunnel's request timeout). Returns a job_id to poll.
+
+    ONE RUN DEFINITION (23 August 2026): the full query is coerced against api_forecast's own
+    signature, the same pattern api_report_start already uses for api_report, so this endpoint
+    accepts exactly the query the dashboard's STATE.lastQ carries (dep_time, curfews, partners,
+    forecast_year, split_floor, seats and any future api_forecast parameter) without a second,
+    hand-maintained parameter list here to drift out of step."""
     import threading, uuid, time
+    import inspect
+    import demo_leads as DL
     # PRE-FLIGHT (Jessica, 3 Jul 2026: clicked Generate and got silence): fail fast and clearly
     # if the research provider isn't wired, instead of running the whole forecast first.
     try:
@@ -2919,12 +2932,18 @@ def api_pitch_start(origin: str, dest: str, airline: str = "", carrier_type: str
     except Exception as e:
         return JSONResponse({"ok": False, "error": f"research provider unavailable: {e}"},
                             status_code=503)
+    q = dict(request.query_params)
+    defaults = {k: p.default for k, p in inspect.signature(api_forecast).parameters.items()
+                if p.default is not inspect.Parameter.empty}
+    # coerce_params only returns keys the CLIENT actually sent (a key the dashboard left out
+    # entirely, e.g. plan_lf, which the plain forecast query never sets, is simply absent from
+    # its output) - merge over defaults so _run_pitch_job's direct p["..."] reads (plan_lf,
+    # airline, freq) can never KeyError on a field the client didn't happen to send this time.
+    kw = {**defaults, **DL.coerce_params(q, defaults)}
+    kw["origin"], kw["dest"] = origin, dest
     job_id = uuid.uuid4().hex[:12]
-    params = dict(origin=origin, dest=dest, airline=airline, carrier_type=carrier_type, aircraft=aircraft,
-                  freq=freq, econ_share=econ_share, plan_lf=plan_lf, econ_fare=econ_fare, bus_fare=bus_fare,
-                  fuel_price=fuel_price, season=season)
     PITCH_JOBS[job_id] = {"state": "running", "started": time.time(), "stage": "starting"}
-    threading.Thread(target=_run_pitch_job, args=(job_id, params), daemon=True).start()
+    threading.Thread(target=_run_pitch_job, args=(job_id, kw), daemon=True).start()
     return JSONResponse({"ok": True, "job_id": job_id})
 
 
