@@ -319,6 +319,15 @@ def main():
               and abs(cr["20:59"][6] - fc["demand"]["total"] * 2) < 3)
         check("permitted flags carried", cr["00:00"][1] == "no" and cr["12:00"][1] == "yes")
         check("native chart embedded", len(ws._charts) == 1)
+        # THE ACTUAL DELIVERY CHECK (24 August 2026, found live): render_curve_png() writing
+        # a file next to out_path on the SERVER's own disk proved nothing about whether the
+        # picture ever reaches a client - api_report() only ever returns the xlsx itself or
+        # a deck+xlsx zip, never that sibling file, so three straight "live-run miss" reports
+        # from John came from a genuinely working renderer with no path back to him at all.
+        # This is the check that would have caught it: the picture must be EMBEDDED in the
+        # workbook the caller actually gets back, not merely present somewhere on disk.
+        check("curve picture embedded in the workbook itself, not just saved beside it",
+              len(ws._images) == 1)
         nt = " ".join(str(c.value) for row in ws.iter_rows(min_row=9) for c in row if c.value)
         check("curve note states ceiling and source",
               "aircraft ceiling" in nt and "Meridian analysis" in nt)

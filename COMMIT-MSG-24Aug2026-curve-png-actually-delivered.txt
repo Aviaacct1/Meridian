@@ -1,0 +1,42 @@
+Curve PNG: embed it in the workbook - it was never actually reaching John
+
+The real bug, after three rounds of chasing render-time failures that were each genuine
+but each insufficient. render_curve_png() was wired as a side effect of build_workbook(),
+called AFTER wb.save(out_path), writing its output to a sibling file next to out_path -
+on the SERVER's own temp directory. api_report()'s download paths (part=xlsx, the button
+John actually clicks; part=both, the deck+xlsx zip) only ever return the xlsx itself or
+zip the deck and the xlsx together. The sibling PNG had no route back to the browser at
+all, on any of the three attempts today, independent of whether it rendered correctly.
+
+Confirmed directly: extracted the earlier live-diagnosed xlsx and checked its zip
+contents (xl/media/) - empty, no image, on every uploaded file today. The pinned-
+departure gap, the backend no-op and the pyplot thread race were all real and all worth
+fixing (each would have stopped the PNG existing at all, which would have been a second,
+independent way for John to see nothing), but even a perfectly-rendered file was always
+going to be invisible to him with the wiring as it stood.
+
+Fix: render_curve_png() now runs BEFORE wb.save(), inside the same Departure curve
+section that already computes the identical curve data (moved up from being a
+post-save side effect). Its output is embedded directly into the "Departure curve
+2-way" worksheet via openpyxl.drawing.image.Image, anchored below the existing table
+and native chart, sized to 760x429 (matplotlib's 11x6.2in canvas scaled to fit a sheet
+without dominating it). Only on the 2-way tab, never the EW tab - the picture is
+inherently two-way (mult=2 in render_curve_png itself), and embedding a two-way picture
+under an each-way header would be exactly the basis mismatch this workbook is otherwise
+strict about. The standalone sibling file is still written too (render_curve_png's
+existing, tested contract) - harmless, and correct if a future caller does have server
+file-system access.
+
+test_workbook_table.py: new check asserts the image is actually embedded in the
+reloaded workbook (ws._images), not merely present on disk - the check that would have
+caught this the first time, since the file-on-disk check alone passed all three times
+today while the actual delivery gap sat undetected underneath it. 34/34 pass (up from
+33). Verified beyond the test suite: built a workbook, opened its raw zip, extracted
+xl/media/image1.png directly, and confirmed it is the correct, fully-rendered curve
+picture - genuine end-to-end proof, not just an assertion that a Python attribute is
+non-empty.
+
+Not yet checked against a live workstation download - the mechanism is proven in the
+sandbox by extracting the actual embedded bytes, which the earlier fixes' sandbox
+tests never did; a real download is still the final confirmation before trusting this
+for the batch.

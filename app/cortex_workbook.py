@@ -703,6 +703,29 @@ def build_workbook(out_path, fc, meta=None):
         _at = float(_anchor.get("total") or 0)
         if _at > 0:
             _scl2 = _connc2 / _at
+            # THE CURVE PICTURE, embedded (24 August 2026, found live): render_curve_png()
+            # was built and wired as a side effect of build_workbook(), called AFTER
+            # wb.save() and saving only to a sibling file next to out_path on the SERVER's
+            # own temp directory. Every api_report() download path (part=xlsx, the one John
+            # actually clicks; the part=both zip) only ever returns the xlsx or the
+            # deck+xlsx zip - the sibling PNG was never zipped, never attached, never on
+            # any path back to the browser. Three real rendering bugs got found and fixed
+            # today (the pinned-departure gap, the backend no-op, the pyplot thread race)
+            # and every one of them was necessary, but none of them was sufficient,
+            # because even a perfectly-rendered PNG was sitting on a machine John never
+            # gets a file listing of. Rendered here, BEFORE wb.save(), and embedded
+            # directly into the workbook that actually reaches him, so it travels with a
+            # single xlsx download regardless of which button he clicks. The standalone
+            # file next to out_path is still written too (render_curve_png's own contract,
+            # what test_workbook_table.py already checks) - harmless, and useful if a
+            # future caller does have real file-system access to the server.
+            try:
+                _png_path = render_curve_png(fc, meta, out_path)
+            except Exception:                                        # noqa: BLE001
+                import traceback
+                print("render_curve_png: not rendered -")
+                traceback.print_exc()
+                _png_path = None
             # EW / 2-way pair (22 August 2026): this sheet was always built two-way
             # (every figure here already carried a x2). That existing content is now
             # the "2-way" tab, unchanged; a new "EW" tab sits beside it built from the
@@ -754,6 +777,19 @@ def build_workbook(out_path, fc, meta=None):
                     ws.add_chart(_ch, "I4")
                 except Exception as _ce:                         # noqa: BLE001
                     _c(ws, r + 3, 1, "chart not rendered: %s" % _ce, font=NOTE, align=LFT, border=None)
+                # The picture, on the two-way tab only (matplotlib.mult=2 in render_curve_png,
+                # so its own axis already reads "two way" - embedding it a second time on the
+                # EW tab would print a two-way picture under an each-way header, which is
+                # exactly the kind of basis mismatch this workbook is otherwise strict about).
+                # Below the note, well clear of the native chart's own anchor at I4.
+                if _suf == "2-way" and _png_path and os.path.exists(_png_path):
+                    try:
+                        from openpyxl.drawing.image import Image as _XLImage
+                        _img = _XLImage(_png_path)
+                        _img.width, _img.height = 760, 429   # matplotlib's 11x6.2in @150dpi scaled to fit a sheet
+                        ws.add_image(_img, f"A{r + 5}")
+                    except Exception as _ie:                       # noqa: BLE001
+                        _c(ws, r + 5, 1, "picture not embedded: %s" % _ie, font=NOTE, align=LFT, border=None)
 
     # ---- 4. Catchment split ------------------------------------------------
     # EW / 2-way pair, built for structural consistency with the other tabs (John,
@@ -909,18 +945,9 @@ def build_workbook(out_path, fc, meta=None):
     cp.creator = "Avia Solutions"; cp.lastModifiedBy = "Avia Solutions"
     cp.title = f'{o["city"]} to {d["city"]} route workbook'
     wb.save(out_path)
-    # Curve picture (John Carter, 24 August 2026), alongside the workbook automatically -
-    # a side effect, not a change to this function's return value, so every existing
-    # caller (tests, the download endpoint) is unaffected whether or not a curve exists.
-    # Never lets a rendering problem break the primary xlsx delivery.
-    try:
-        render_curve_png(fc, meta, out_path)
-    except Exception:                                              # noqa: BLE001
-        # Full traceback, not just str(e) (24 August 2026): the first live miss gave no clue
-        # at all why the PNG did not land, because the backend-selection failure this was
-        # changed to guard against (see render_curve_png's own force=True note) does not
-        # always raise a message that says so on its own line.
-        import traceback
-        print("render_curve_png: not rendered -")
-        traceback.print_exc()
+    # render_curve_png() already ran earlier, in the Departure curve section above, so its
+    # output could be embedded into the "Departure curve 2-way" sheet before this save -
+    # a workbook once saved cannot have an image added after the fact without reopening it,
+    # so this has to happen before wb.save(), not after it. See that section's own note
+    # (24 August 2026) for why embedding, not a sibling file, is what actually reaches John.
     return out_path
