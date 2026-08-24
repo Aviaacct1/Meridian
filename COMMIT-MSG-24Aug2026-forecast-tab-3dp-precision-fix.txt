@@ -1,0 +1,24 @@
+Forecast tab: demand columns actually carry 3dp precision (24 Aug 2026)
+
+Follow-up to this morning's labelling batch. That change bumped the Forecast tabs'
+number FORMAT string from "#,##0.0" to "#,##0.000", but missed that the underlying
+value was still being rounded to 1 decimal place before the format string ever saw
+it (the k() lambda: round(x * mult / 1000.0, 1)). The tab was showing "160.900"
+rather than genuine added precision - format changed, value did not.
+
+Caught by John's own check against a live regeneration of the JX workbook, not by
+the sandbox test suite (test_workbook_table.py's assertions use a loose tolerance
+and never noticed the trailing zeros).
+
+Fixed: k()'s rounding bumped from 1dp to 3dp, matching the display format. Base
+demand, grown demand, stimulated demand and forecast columns now show genuine
+3-decimal precision (e.g. 190.378, not 190.4).
+
+Verification: test_workbook_table.py's tolerances are loose enough that this was
+already passing before the fix and continues to pass after (26/26); manually
+confirmed the underlying values changed (190.4 -> 190.378) by running the fixture
+before and after. Full regression suite re-run clean, same two pre-existing
+sandbox-only failures as the rest of today's batches (no fastapi; a workstation-only
+Z: drive reference file).
+
+Not yet done: live regeneration and eyeball check.

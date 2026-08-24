@@ -218,7 +218,14 @@ def build_workbook(out_path, fc, meta=None):
     _cs = fc.get("competition_split") or {}
     for _suf, _mult, _bw in (("EW", 1, "each way"), ("2-way", 2, "two way")):
         ws = wb.create_sheet(f"Forecast {_suf}")
-        k = lambda x, _m=_mult: round(x * _m / 1000.0, 1)
+        # Bumped 1dp -> 3dp (24 August 2026, Jol Kingham: "can demand columns and
+        # forecast column show figures to at least 3 decimal places?"). The fmt="#,##0.000"
+        # display format was changed earlier the same day but this rounding was missed -
+        # the value itself was still baked to 1dp before the format string ever saw it, so
+        # the tab was showing "160.900" rather than genuine added precision. Caught by
+        # John's own check against a live regeneration, not by the sandbox test suite,
+        # which only asserts against a tolerance and never noticed the trailing zeros.
+        k = lambda x, _m=_mult: round(x * _m / 1000.0, 3)
         # CAGR, not the cumulative (20 August 2026, Mark Kiehl/SJC, reviewing the PPTX packs,
         # then applied here for the same reason John raised about the identical growth-rate
         # display in the deck: one basis everywhere this table appears). 18.3% over two years

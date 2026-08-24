@@ -82,6 +82,24 @@ anything further to Jol until that is done.** This is now the THIRD time this we
 sandbox-verified PTEW fix has needed a live check before being trusted; treat that as the
 standing rule for this figure specifically, not bad luck.
 
+**FOURTH ADDENDUM, 24 August 2026, same day**: the labelling batch's live check (finally
+run against a genuinely fresh workstation build, after an unrelated detour - see below)
+confirmed the Cover, footing and Connecting feed Total fixes all work correctly, but
+caught a real miss: the Forecast tabs' demand columns showed "160.900" instead of real
+3dp precision. The number FORMAT string had been changed correctly, but the underlying
+`k()` rounding lambda was still baked to 1dp before the format ever saw it - value and
+format changed independently, only one of them got fixed. Corrected (1dp to 3dp);
+`COMMIT-MSG-24Aug2026-forecast-tab-3dp-precision-fix.txt` has detail. Also recorded here
+because it is a genuinely useful lesson for future work on this file: a display FORMAT
+change and a VALUE rounding change are two different things, and checking only the format
+string is not enough - the sandbox test suite's loose tolerances did not catch this either,
+only John's own eyeball check of a live file did. **Separately, and not a code issue**:
+today's push took three attempts because `C:\AviaDev` and `C:\src\meridian` are two
+separate clones of the same repo on John's machine, and a stale `.git\index.lock` in
+`C:\AviaDev` (left by this session's own read-only git calls through the Cowork mount)
+blocked commits there until manually removed. Both clones are now in sync at the latest
+commit; worth a decision at some point on whether to keep running two clones.
+
 ---
 
 ## 1. The clock
