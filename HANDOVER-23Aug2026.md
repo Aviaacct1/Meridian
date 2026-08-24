@@ -100,6 +100,16 @@ separate clones of the same repo on John's machine, and a stale `.git\index.lock
 blocked commits there until manually removed. Both clones are now in sync at the latest
 commit; worth a decision at some point on whether to keep running two clones.
 
+**FIFTH ADDENDUM, 24 August 2026, CLOSED, verified against a live regeneration**: a fresh
+CI workbook, regenerated on the workstation after the 3dp fix, checked out correct against
+every point in both of Jol's emails - the PTEW label spelled out in full, the Cover 2-way
+rows (exact doubles, cross-checking against the Forecast tab's carried legs to the pound),
+the year printing clean with no comma, the OAG week reading "(beginning)", the Forecast
+tab's genuine 3dp precision, the GRAND TOTAL PTEW footing exactly (120 + 36 + 112 = 268 on
+both EW and 2-way), the Connecting feed headers renamed, and the Connecting feed Total row
+now printing a real PTEW figure consistent with the Forecast tab's own leg figure. Ready to
+send to Jol. No action needed by whoever picks this file up next.
+
 ---
 
 ## 1. The clock
