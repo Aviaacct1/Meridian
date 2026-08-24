@@ -1,0 +1,18 @@
+Curve PNG: stop calling the shaded band "restricted departures"
+
+John, SJC runs: entering restricted_hours 21:00-06:00 (wider than SJC's real 23:30-06:00
+curfew) is his own device to force the optimiser onto the 20:59 departure - selecting
+21:00 directly loses the curve entirely (the separate, known dep-time-pinning gap). The
+shaded band is a genuine input to the run, but calling it "restricted departures" in the
+chart title states it as an operational fact (the airport's curfew) when it may just be
+a modelling choice to land on a specific departure. Removed the label; the shading stays,
+now unlabelled, so it reads as shading and nothing is asserted about what it represents.
+
+Title is now "Year 1 (<year>) forecast by outbound departure time" with no further
+clause. Nothing else on the chart changed. 34/34 regression checks still pass (nothing
+tests the title string itself).
+
+Flagged, not changed: the bottom-left insight caption ("capacity-bound: the restriction
+costs..." / "the restriction costs up to X carried passengers/yr...") has the identical
+basis - it is built from the same restricted_hours input. Left as is pending John's
+answer on whether it should go too.

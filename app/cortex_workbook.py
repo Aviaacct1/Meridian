@@ -75,12 +75,16 @@ def _curve_series(fc):
     points = []
     for p in curve:
         conn_ew = float(p.get("total") or 0) * scl
-        tot_ew = min(p2p_c + conn_ew, cap_ew) if cap_ew > 0 else (p2p_c + conn_ew)
+        demand_ew = p2p_c + conn_ew   # the UNCAPPED total: what the market would carry with
+                                      # no aircraft ceiling, before spill (John Carter, 24
+                                      # August 2026: the capped total line alone hides how
+                                      # much demand a poor departure time actually spills)
+        tot_ew = min(demand_ew, cap_ew) if cap_ew > 0 else demand_ew
         points.append({"dep": float(p.get("dep") or 0), "hhmm": p.get("hhmm") or "",
                         "permitted": bool(p.get("permitted")),
                         "beyond_ew": float(p.get("beyond") or 0) * scl,
                         "behind_ew": float(p.get("behind") or 0) * scl,
-                        "connecting_ew": conn_ew, "total_ew": tot_ew})
+                        "connecting_ew": conn_ew, "total_ew": tot_ew, "demand_ew": demand_ew})
     return {"points": points, "p2p_ew": p2p_c, "cap_ew": cap_ew, "chosen": chosen,
             "chosen_mins": cmins, "unrestricted_dep": op.get("unrestricted_dep"),
             "restricted": op.get("restricted") or [],
@@ -124,13 +128,23 @@ def render_curve_png(fc, meta, out_path):
     times = [_dt.datetime(2000, 1, 1) + _dt.timedelta(minutes=p["dep"]) for p in pts]
     conn = [p["connecting_ew"] * mult / 1000.0 for p in pts]
     tot = [p["total_ew"] * mult / 1000.0 for p in pts]
+    dem = [p["demand_ew"] * mult / 1000.0 for p in pts]
 
     fig = Figure(figsize=(11, 6.2))
     FigureCanvasAgg(fig)
     ax = fig.add_subplot(111)
-    NAVY, STEEL = "#" + AVIA, "#4C8FBF"
-    ax.plot(times, conn, color=STEEL, linewidth=2, label="Connecting demand at the departure time")
-    ax.plot(times, tot, color=NAVY, linewidth=2.4, label="Route total carried")
+    NAVY, STEEL, AMBER = "#" + AVIA, "#4C8FBF", "#C9822E"
+    # THREE LINES, not two (John Carter, 24 August 2026): the capped total alone hides how
+    # much demand a poor departure time actually spills - P2P is not itself capped anywhere
+    # in the engine, it is the ROUTE TOTAL that is capped at the aircraft ceiling, so a
+    # departure with strong connecting demand can show an uncapped total well above what is
+    # actually carried. Drawn first/thin/dashed so the two solid lines that were already
+    # here read exactly as they did before wherever demand sits at or under the ceiling.
+    ax.plot(times, dem, color=AMBER, linewidth=1.6, linestyle="--", zorder=1,
+            label="Total demand (uncapped)")
+    ax.plot(times, conn, color=STEEL, linewidth=2, zorder=2,
+            label="Connecting demand at the departure time")
+    ax.plot(times, tot, color=NAVY, linewidth=2.4, zorder=3, label="Route total carried")
 
     # Restricted-hour shading, wraparound-aware (e.g. "21:00-06:00" spans midnight).
     def _hhmm_to_dt(s):
@@ -150,8 +164,10 @@ def render_curve_png(fc, meta, out_path):
             ax.axvspan(ta, tb, color="#DCE3EE", zorder=0)
 
     # Headroom at the top so the callout box and legend never sit flush against the highest
-    # line (24 August 2026: the first draft cramped both against the axis ceiling).
-    y_top = max(tot + conn) if (tot or conn) else 1.0
+    # line (24 August 2026: the first draft cramped both against the axis ceiling; extended
+    # the same day to include the new uncapped demand line, which can now be the highest of
+    # the three wherever a departure spills demand past the aircraft ceiling).
+    y_top = max(tot + conn + dem) if (tot or conn or dem) else 1.0
     ax.set_ylim(0, y_top * 1.18)
 
     # Chosen-departure marker and callout - offset a short, fixed distance from the point
@@ -196,8 +212,13 @@ def render_curve_png(fc, meta, out_path):
                         transform=ax.transAxes, fontsize=10, color="#555555")
 
     yr = cs["forecast_year"]
-    ax.set_title(f"Year 1 ({yr}) forecast by outbound departure time - shaded hours are "
-                 "restricted departures", fontsize=13, loc="left")
+    # NOT labelled as the restriction (John Carter, 24 August 2026): the shaded band is
+    # whatever restricted_hours the run was actually given, which is a real input but not
+    # necessarily the airport's own published curfew - John's own SJC runs enter 21:00-06:00
+    # to force the optimiser onto 20:59, wider than SJC's real 23:30-06:00 curfew. Calling it
+    # "restricted departures" reads as an operational fact when it may be a modelling choice,
+    # so the band is shown unlabelled rather than asserted as something it may not be.
+    ax.set_title(f"Year 1 ({yr}) forecast by outbound departure time", fontsize=13, loc="left")
     ax.set_xlabel(f"Departure time, {home or o.get('iata','')} local")
     ax.set_ylabel("Passengers a year, two-way (000s)")
     ax.xaxis.set_major_formatter(mdates.DateFormatter("%H:%M"))
