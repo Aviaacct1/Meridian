@@ -1,0 +1,51 @@
+PTEW footing, one level deeper (Jol Kingham, 24 Aug 2026, annotated screenshot)
+
+Jol's follow-up to the two PTEW footing fixes made earlier the same day, this time with
+his own working shown: "the PTEW column in the excels don't add - CI says 268 but is 270
+sum of the parts, same for the others." His annotated screenshot (Forecast tab and both
+Connecting feed legs) showed exactly what he was summing:
+
+- Forecast tab: he summed point to point (120) plus the FOUR competition sub-rows (2, 33,
+  36, 76) - not the two leg-total rows above them - and got 267 against a printed GRAND
+  TOTAL of 268.
+- Connecting feed (SJC behind): he summed the 15 listed city rows plus All-other and got
+  35.5 against a printed Total of 35.6. Same pattern on the TPE beyond leg (111.7 v 111.8).
+
+Both are the same rounding-drift issue already fixed once today at the top level (GRAND
+TOTAL = sum of the three leg PTEWs), recurring one level further down: the competition
+sub-rows and the individual city rows are each independently rounded to a fixed number of
+decimal places, so their sum drifts from their own parent total by ordinary rounding error.
+
+Two fixes in app/cortex_workbook.py, both using the same principle already applied to the
+GRAND TOTAL row - force the last item in a breakdown to be the remainder against its own
+parent, rather than an independently-rounded figure, so the breakdown always foots:
+
+1. Forecast tab competition sub-rows: "O&Ds with direct competition" keeps its own rounded
+   PTEW; "O&Ds without direct competition" is now the remainder against the leg row's own
+   PTEW (already proven to foot into the grand total). Direct + without now always equals
+   the leg total exactly, at both levels of the hierarchy, not just the top.
+
+2. Connecting feed All-other row: its PTEW was computed independently from the residual
+   passenger volume (_other / (freq x weeks)). Now computed as the remainder against the
+   Total row's own PTEW, less the sum of the displayed city rows' PTEW - the same design
+   already used for the row's own demand and forecast columns (both already residuals).
+   The full column - every listed city plus All-other - now foots exactly to the Total row
+   beneath it, on every leg, on every tab.
+
+The note text under each tab and the "note states..." regression check were both stale
+(pointed at the old, incomplete fix) and updated to match.
+
+Verification: two new fixtures added to test_workbook_table.py. The Forecast sub-row test
+needed real competition_split data added to the fixture (the fixture previously had none,
+so the untested code path never actually drew sub-rows) with deliberately chosen
+direct/no_direct forecast values that DO drift under independent rounding (round(525/208)
++ round(4890/208) = 3+24 = 27, not 26) - proving the fix corrects a real case, not just
+the coincidentally-already-footing real CI/JX/BR files. Both new checks pass ([3, 23] = 26
+after the fix). The Connecting feed check reads the raw sheet rows (not the _table() dict
+helper, which would collide on the two legs' identical sub-row labels) and confirms both
+legs foot exactly. 30/30 checks pass (up from 26). Full regression suite re-run clean,
+same two pre-existing sandbox-only failures as every other batch today (no fastapi; a
+workstation-only Z: drive reference file).
+
+Not yet done: live regeneration and an eyeball check against Jol's own annotated numbers.
+Do not send anything further to Jol until that is done.

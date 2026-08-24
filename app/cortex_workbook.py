@@ -277,11 +277,27 @@ def build_workbook(out_path, fc, meta=None):
                         for _k in ("direct", "no_direct"))
             if _dsum > 0 and val > 0:
                 _scl = val / _dsum
-                for _bk, _bl in (("direct", "   O&Ds with direct competition"),
-                                 ("no_direct", "   O&Ds without direct competition")):
+                # SUB-ROW PTEW FOOTING (24 August 2026, Jol Kingham, one level deeper than
+                # the GRAND TOTAL footing fixed earlier today: "the PTEW column in the
+                # excels don't add - CI says 268 but is 270 sum of the parts"). His own
+                # annotated sum used these two sub-rows, not the leg-total row above them,
+                # and got 267 against a printed 268 - the same independent-rounding drift,
+                # one row down: the forecast (000s) column already sums exactly here
+                # (scaled by _scl for that reason), but PTEW was still rounded per sub-row
+                # independently. The "with direct competition" row keeps its own rounded
+                # figure; "without" is now the remainder against the leg's own PTEW
+                # (already proven to foot into the grand total), so direct + without always
+                # equals the leg row above, and the whole table foots at every level, not
+                # only the top.
+                _fv_direct = float((_tt.get("direct") or {}).get("forecast") or 0) * _scl
+                _fv_nodirect = float((_tt.get("no_direct") or {}).get("forecast") or 0) * _scl
+                _ptew_direct = ptew(_fv_direct)
+                _ptew_nodirect = _leg_ptew - _ptew_direct
+                for _bk, _bl, _fv, _pt in (
+                        ("direct", "   O&Ds with direct competition", _fv_direct, _ptew_direct),
+                        ("no_direct", "   O&Ds without direct competition", _fv_nodirect, _ptew_nodirect)):
                     _t = _tt.get(_bk) or {}
                     _fb = float(_t.get("base") or 0)
-                    _fv = float(_t.get("forecast") or 0) * _scl
                     _c(ws, r, 1, _bl, align=LFT)
                     _c(ws, r, 2, k(_debase(_fb)) if _fb else "-", fmt="#,##0.000", align=RGT)
                     _c(ws, r, 3, _gr if _fb else "-", fmt="0.0%", align=RGT)
@@ -290,7 +306,7 @@ def build_workbook(out_path, fc, meta=None):
                     _c(ws, r, 6, k(_fb) if _fb else "-", fmt="#,##0.000", align=RGT)
                     _c(ws, r, 7, (_fv / _fb) if _fb else "-", fmt="0.0%", align=RGT)
                     _c(ws, r, 8, k(_fv), fmt="#,##0.000", align=RGT)
-                    _c(ws, r, 9, ptew(_fv), fmt="#,##0", align=RGT)
+                    _c(ws, r, 9, _pt, fmt="#,##0", align=RGT)
                     r += 1
         _c(ws, r, 1, "GRAND TOTAL", font=TOTF_FONT, fill=TOTF, align=LFT)
         _bb = n0(dem.get("feed_behind_base")) * _sshare; _yb = n0(dem.get("feed_beyond_base")) * _sshare
@@ -356,7 +372,7 @@ def build_workbook(out_path, fc, meta=None):
             _hdr(ws, r, ["Nr", "Airport Code", "City Name", "Country Code", f"Market demand{_yrtag}", "Share",
                          f"{_padj} forecast{_yrtag}", "PTEW"],
                  [6, 12, 24, 14, 15, 10, 15, 9]); r += 1
-            lst = dem.get(key) or []; sub_base = 0.0; sub_fc = 0.0
+            lst = dem.get(key) or []; sub_base = 0.0; sub_fc = 0.0; sub_ptew = 0.0
             for i, row in enumerate(lst, 1):
                 base = n0(row.get("base")); shr = n0(row.get("share"))
                 # SEVENTH INSTANCE OF THE FLAT-DAY PTEW BUG (24 August 2026, Jol Kingham: the
@@ -368,7 +384,7 @@ def build_workbook(out_path, fc, meta=None):
                 fcv = n0(row.get("forecast")) or (n0(row.get("pdew")) * freq * weeks); pdv = n0(row.get("pdew"))
                 if fcv <= 0 and pdv <= 0:
                     continue
-                sub_base += base; sub_fc += fcv
+                sub_base += base; sub_fc += fcv; sub_ptew += round(pdv, 1)
                 _c(ws, r, 1, i, align=CTR); _c(ws, r, 2, row.get("code"), align=CTR)
                 _c(ws, r, 3, row.get("name"), align=LFT); _c(ws, r, 4, row.get("country") or "", align=LFT)
                 _c(ws, r, 5, round(base * _mult) if base else "-", fmt="#,##0", align=RGT)
@@ -382,13 +398,26 @@ def build_workbook(out_path, fc, meta=None):
             # (an older payload) keeps the honest "-" rather than a fabricated figure.
             _other = (_leg_ew - sub_fc) if (_leg_ew and _leg_ew > sub_fc + 0.5) else 0.0
             _other_dem = (_mkt_ew - sub_base) if (_mkt_ew and _mkt_ew > sub_base + 0.5) else 0.0
+            # Total row's own PTEW (the authoritative figure, see below) computed here so
+            # the All-other row can foot against it.
+            _total_ptew = round(_leg_ew / (freq * weeks), 1) if freq else None
             if _other or _other_dem:
+                # ALL-OTHER PTEW FOOTING (24 August 2026, Jol Kingham: his own annotated sum
+                # of the SJC behind leg's PTEW column read 35.5 against a printed Total of
+                # 35.6 - each of the ~15 listed cities is independently rounded to 1dp, and
+                # that rounding accumulates over that many rows). All-other is already a
+                # residual row for the demand and forecast columns (it completes the listed
+                # cities to the leg's true total); PTEW now follows the same design - the
+                # remainder against the leg's own Total PTEW, not an independent calculation
+                # from _other - so the full column, cities plus All-other, always foots
+                # exactly to the Total row beneath it.
+                _other_ptew = (round(_total_ptew - sub_ptew, 1) if _total_ptew is not None else None)
                 _c(ws, r, 1, "", align=CTR)
                 _c(ws, r, 3, "All other connecting markets", align=LFT)
                 _c(ws, r, 5, round(_other_dem * _mult) if _other_dem else "-", fmt="#,##0", align=RGT)
                 _c(ws, r, 6, "-", align=RGT)
                 _c(ws, r, 7, round(_other * _mult), fmt="#,##0", align=RGT)
-                _c(ws, r, 8, round(_other / (freq * weeks), 1) if freq else "-", fmt="#,##0.0", align=RGT)
+                _c(ws, r, 8, _other_ptew if _other_ptew is not None else "-", fmt="#,##0.0", align=RGT)
                 r += 1
             # Total row PTEW (24 August 2026, Jol Kingham): this cell was blank, so a
             # reader summing the column by hand was building their own total from
@@ -396,21 +425,22 @@ def build_workbook(out_path, fc, meta=None):
             # by ordinary rounding error as the list gets longer. Printed directly instead,
             # from the same carried-leg figure and the same freq x weeks basis Cover and
             # the Forecast tabs use for this leg, so this cell agrees with both by
-            # construction rather than by chance.
+            # construction rather than by chance - and now, with the All-other row above
+            # footing to it too, the whole column sums to this figure exactly.
             _c(ws, r, 1, "Total", font=BOLD, fill=TOTF, align=LFT)
             for cc in (2, 3, 4, 6):
                 _c(ws, r, cc, None, fill=TOTF)
             _c(ws, r, 5, round((sub_base + _other_dem) * _mult) if (sub_base or _other_dem) else "-",
                font=BOLD, fill=TOTF, fmt="#,##0", align=RGT)
             _c(ws, r, 7, round((sub_fc + _other) * _mult), font=BOLD, fill=TOTF, fmt="#,##0", align=RGT)
-            _c(ws, r, 8, round(_leg_ew / (freq * weeks), 1) if freq else "-",
+            _c(ws, r, 8, _total_ptew if _total_ptew is not None else "-",
                font=BOLD, fill=TOTF, fmt="#,##0.0", align=RGT); r += 1
             _c(ws, r, 1, f"Figures on this tab are {_bw}; PTEW (passengers per departure) is a rate and reads the "
-                         "same on the EW and 2-way tabs. Market demand and forecast both complete to their carried-leg "
-                         "and market totals via the All-other row, so both columns now agree with "
-                         "the forecast table and each other. The Total row's PTEW is this leg's carried total divided "
-                         "by scheduled departures, the same figure and basis as Cover and the Forecast tabs; the "
-                         "individual city rows above will not sum to it exactly, each being rounded separately.",
+                         "same on the EW and 2-way tabs. Market demand, forecast and PTEW all complete to their "
+                         "carried-leg and market totals via the All-other row, so every column foots exactly to the "
+                         "Total row and agrees with the Forecast tab and Cover. Where no All-other row is drawn (the "
+                         "listed markets already account for the full leg), the city rows sum to the Total within "
+                         "ordinary rounding.",
                font=NOTE, align=LFT, border=None)
             ws.merge_cells(start_row=r, start_column=1, end_row=r, end_column=8)
             r += 2

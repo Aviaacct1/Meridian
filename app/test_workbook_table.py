@@ -64,6 +64,19 @@ def _fc(grown=True):
                    "avg_fare_band": {"label": "950-1000"}},
         "capacity": {"carried": _total, "load": 0.875, "freq": _freq, "aircraft": "A359",
                      "annual_capacity": 63648, "recommendation": ""},
+        # Deliberately chosen (24 August 2026, sub-row PTEW footing test) so that
+        # round(direct/(freq*weeks)) + round(no_direct/(freq*weeks)) does NOT equal
+        # round(leg/(freq*weeks)) if each is rounded independently - direct=525/4890 sums
+        # exactly to the behind leg's 5415, but rounds independently to 3+24=27, not the
+        # leg's own 26; beyond's 50/16927 sums exactly to 16977 but rounds to 0+81=81, not
+        # 82. Proves the remainder fix actually does something on this fixture, not just
+        # on the real CI/JX/BR files where it happened to already foot.
+        "competition_split": {
+            "behind": {"totals": {"direct": {"base": 0, "forecast": 525},
+                                   "no_direct": {"base": 0, "forecast": 4890}}},
+            "beyond": {"totals": {"direct": {"base": 0, "forecast": 50},
+                                   "no_direct": {"base": 0, "forecast": 16927}}},
+        },
         "catchment": {"observed_share": {}, "names": {}, "home": "SJC"},
         "economics": {"raw": {}, "econ_fare": 975, "seats": 306},
         "season": {"mode": "annual", "share": 1.0, "weeks": _weeks},
@@ -132,6 +145,33 @@ def main():
         check("Cover PTEW matches Forecast tab's grand-total PTEW (Jol's mismatch)",
               abs(cov_pdew - gt[8]) < 0.6, f"Cover={cov_pdew}, Forecast grand total={gt[8]}")
 
+        # SUB-ROW PTEW FOOTING (24 August 2026, Jol Kingham's annotated screenshot: his own
+        # sum of the two "O&Ds with/without direct competition" rows plus point to point
+        # read 267 against a printed GRAND TOTAL of 268 - the footing fix above only forces
+        # the three LEG rows to sum to the grand total; the two sub-rows one level down were
+        # still independently rounded and did not reliably sum to their own parent leg row.
+        # "with direct competition" keeps its own rounded figure; "without" is now the
+        # remainder against the leg row, so the two must sum to their parent exactly, for
+        # both legs. Read from the raw sheet, not the _table() dict, because both legs'
+        # sub-rows share identical labels and would collide as dict keys.
+        fs_ws = wb_grown["Forecast EW"]
+        _leg_ptew = None
+        _sub_ptews = []
+        for r in fs_ws.iter_rows(min_row=5, max_row=12):
+            label = str(r[0].value or "")
+            if label.startswith("Total connecting"):
+                if _leg_ptew is not None:
+                    check(f"sub-rows foot exactly to their leg row ({_leg_label})",
+                          sum(_sub_ptews) == _leg_ptew,
+                          f"{_sub_ptews} = {sum(_sub_ptews)}, leg={_leg_ptew}")
+                _leg_ptew = r[8].value; _leg_label = label; _sub_ptews = []
+            elif label.strip().startswith("O&Ds"):
+                _sub_ptews.append(r[8].value)
+        if _leg_ptew is not None:
+            check(f"sub-rows foot exactly to their leg row ({_leg_label})",
+                  sum(_sub_ptews) == _leg_ptew,
+                  f"{_sub_ptews} = {sum(_sub_ptews)}, leg={_leg_ptew}")
+
         rows = _table(_fc(grown=False), tmp, "steady.xlsx")
         p2p = rows["Total point to point"]
         check("steady state: base equals grown", p2p[1] == p2p[3])
@@ -178,7 +218,7 @@ def main():
         check("behind demand completes to the full market", t_beh_dem == 55000, t_beh_dem)
         check("beyond demand completes to the full market", t_bey_dem == 200000, t_bey_dem)
         check("note states both columns now reconcile",
-              any("both columns now agree" in s for s in flat))
+              any("foots exactly to the Total row" in s for s in flat))
         # CONNECTING FEED TOTAL PTEW (24 August 2026, Jol Kingham: "the PTEWs in tabs
         # 'Connecting feed EW' and 'Connecting feed 2-way' ... does not match Cover tab
         # row 24, nor the two Forecast tabs"). Two defects: the Total row's PTEW cell
@@ -197,6 +237,32 @@ def main():
               abs(totals[0][7] - exp_beh_ptew) < 0.1, f"{totals[0][7]} vs {exp_beh_ptew}")
         check("Connecting feed Total PTEW matches Cover/Forecast basis (beyond)",
               abs(totals[1][7] - exp_bey_ptew) < 0.1, f"{totals[1][7]} vs {exp_bey_ptew}")
+
+        # CITY ROWS + ALL-OTHER FOOT EXACTLY TO THE TOTAL (24 August 2026, Jol Kingham's
+        # annotated screenshot: his own sum of the 15 SJC-behind city rows plus All-other
+        # read 35.5 against a printed Total of 35.6). All-other's PTEW is now the remainder
+        # against the Total, the same design already used for its demand and forecast
+        # columns, so the full column - every listed city plus All-other - must sum to the
+        # Total exactly, not just within rounding tolerance.
+        def _leg_rows(start_row):
+            out = []
+            for r in ws.iter_rows(min_row=start_row, max_row=start_row + 20):
+                if r[0].value == "Total":
+                    break
+                pv = r[7].value
+                if pv is not None:
+                    out.append(pv)
+            return out
+        _tpe_hdr_row = next(r[0].row for r in ws.iter_rows(min_row=1)
+                             if r[0].value and "Connecting at" in str(r[0].value) and "TPE" in str(r[0].value))
+        beh_city_ptews = _leg_rows(6)
+        bey_city_ptews = _leg_rows(_tpe_hdr_row + 2)
+        check("SJC behind: city rows + All-other foot exactly to the Total",
+              sum(beh_city_ptews) == totals[0][7],
+              f"{beh_city_ptews} = {sum(beh_city_ptews)}, Total={totals[0][7]}")
+        check("TPE beyond: city rows + All-other foot exactly to the Total",
+              sum(bey_city_ptews) == totals[1][7],
+              f"{bey_city_ptews} = {sum(bey_city_ptews)}, Total={totals[1][7]}")
 
         # the Departure curve sheet (19 August 2026): raw curve + the dashboard's own
         # carried transform + a native chart; must reconcile with the headline at the

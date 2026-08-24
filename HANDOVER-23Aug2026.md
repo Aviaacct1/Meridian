@@ -110,6 +110,26 @@ both EW and 2-way), the Connecting feed headers renamed, and the Connecting feed
 now printing a real PTEW figure consistent with the Forecast tab's own leg figure. Ready to
 send to Jol. No action needed by whoever picks this file up next.
 
+**SIXTH ADDENDUM, 24 August 2026, same day, CODE DONE, LIVE VERIFICATION AND SEND STILL
+OWED**: the "ready to send" verdict above was premature - Jol sent an annotated screenshot
+minutes later showing his own working: "the PTEW column in the excels don't add - CI says
+268 but is 270 sum of the parts, same for the others." He was summing one level deeper
+than what got fixed earlier - the Forecast tab's competition sub-rows (not the leg-total
+rows above them) and the Connecting feed tabs' individual city rows plus All-other - and
+each of those, being independently rounded, drifted from its own parent total by ordinary
+rounding error, the same pattern as the earlier fix just recurring one level down. Fixed
+with the same principle: the smaller/residual item in each breakdown (the "without direct
+competition" sub-row; the "All other" row) is now the remainder against its own parent
+total rather than an independent rounding, so every level of both tables foots exactly,
+not just the top. Full detail in
+`COMMIT-MSG-24Aug2026-ptew-footing-one-level-deeper.txt`. Two new regression fixtures
+added (30/30 pass, up from 26), one of which needed real competition_split data added to
+the test fixture since the sub-row code path had never actually been exercised by a test
+before. **Not done: live regeneration and an eyeball check against Jol's own annotated
+numbers - do not send anything further to him until that is done.** This is now the fourth
+distinct PTEW-related fix this week that has needed a live check; the pattern is clearly
+"verify every PTEW change against a live file before saying it's ready," not bad luck.
+
 ---
 
 ## 1. The clock
