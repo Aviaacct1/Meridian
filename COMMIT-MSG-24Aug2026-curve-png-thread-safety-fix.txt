@@ -1,0 +1,34 @@
+Curve PNG: stop using pyplot, it is not thread-safe and the batch proved it
+
+The backend fix (cf40b64) did not hold. Confirmed live on the workstation via a direct
+in-process diagnostic (John's own SJC-TPE/CI/B789/5x route, run through the actual
+deployed code over SSH): render_curve_png() worked perfectly called on its own. But
+every real download runs through api_report_start's background threading.Thread
+(cortex_app.py), and John's batch this afternoon is exactly the case where several of
+those threads run close together - EVA/CI/JX at 4x/5x/7x plus the CI 787-9, back to
+back.
+
+Reproduced the mechanism directly: fired 10 threads at the old plt.subplots()-based
+render concurrently, each with different data. All 10 "succeeded" - no exception, files
+written, sensible sizes. All 10 files were byte-for-byte identical (same MD5), despite
+different input data. matplotlib.pyplot's current-figure state (what plt.subplots(),
+matplotlib.use() and the whole pyplot module operate on) is one set of global variables
+shared by the entire process, not one per thread; concurrent threads calling into it can
+silently overwrite each other's in-progress figure. This is a documented, known category
+of matplotlib bug, not a novel one - the mistake was reaching for pyplot inside a
+function called from a threaded web server at all, and the earlier "force the backend"
+fix (cf40b64) addressed a real but different problem (the backend already being set by
+the deck/ path) that happened to look like the same symptom.
+
+Fix: render_curve_png() now builds the figure with matplotlib.figure.Figure and
+matplotlib.backends.backend_agg.FigureCanvasAgg directly, never touching pyplot. Each
+call gets its own Figure/Canvas objects with no shared global state - nothing to race,
+because there is nothing left to share. No backend selection needed either (Agg is the
+canvas class itself, not a global setting), so cf40b64's force=True call is now removed
+as moot rather than left in as dead defence.
+
+Verified: same 10-thread concurrent test against the new code - 10/10 succeeded, 10
+genuinely distinct file sizes (no duplication). 33/33 regression checks still pass. Not
+yet verified against a real live batch on the workstation - the diagnostic proves the
+mechanism and the fix, not the deployed instance; worth an eye on the next batch run to
+confirm no PNG comes back missing or duplicated across a real multi-download run.

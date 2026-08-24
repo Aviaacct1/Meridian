@@ -101,15 +101,20 @@ def render_curve_png(fc, meta, out_path):
     cs = _curve_series(fc)
     if not cs:
         return None
-    import matplotlib
-    # force=True (24 August 2026, live-run miss): the deck/ path (avia_charts.py etc.) already
-    # imports matplotlib.pyplot elsewhere in this same long-running server process, sometimes
-    # before this function ever runs, and a plain matplotlib.use("Agg") is a silent no-op once
-    # pyplot has already picked a backend - it does not raise, so the try/except around this
-    # call in build_workbook() had nothing to catch, and the workbook shipped with no PNG and
-    # no error either. force=True actually switches the backend regardless of what ran first.
-    matplotlib.use("Agg", force=True)
-    import matplotlib.pyplot as plt
+    # NOT matplotlib.pyplot (24 August 2026, second live-run miss after a first fix that
+    # forced the Agg backend and still didn't hold under a real batch). api_report_start
+    # runs every download in its own background thread (threading.Thread, cortex_app.py),
+    # and pyplot's state - the current-figure registry, plt.subplots(), matplotlib.use()
+    # itself - is one set of global variables shared by the whole process, not one per
+    # thread. Two downloads built close together, exactly what a batch run is, can have
+    # two threads mutating that same global state inside the same few milliseconds: one
+    # thread's matplotlib.use() or plt.subplots() can invalidate the figure another thread
+    # is mid-render on, with no guarantee either side raises loud enough to be caught.
+    # The Figure/FigureCanvasAgg pair below is matplotlib's own documented route round
+    # this - each call gets its own Figure object, own canvas, nothing global, nothing to
+    # race. No backend to select either, so today's earlier force=True fix is now moot.
+    from matplotlib.figure import Figure
+    from matplotlib.backends.backend_agg import FigureCanvasAgg
     import matplotlib.dates as mdates
     import datetime as _dt
 
@@ -120,7 +125,9 @@ def render_curve_png(fc, meta, out_path):
     conn = [p["connecting_ew"] * mult / 1000.0 for p in pts]
     tot = [p["total_ew"] * mult / 1000.0 for p in pts]
 
-    fig, ax = plt.subplots(figsize=(11, 6.2))
+    fig = Figure(figsize=(11, 6.2))
+    FigureCanvasAgg(fig)
+    ax = fig.add_subplot(111)
     NAVY, STEEL = "#" + AVIA, "#4C8FBF"
     ax.plot(times, conn, color=STEEL, linewidth=2, label="Connecting demand at the departure time")
     ax.plot(times, tot, color=NAVY, linewidth=2.4, label="Route total carried")
@@ -206,7 +213,9 @@ def render_curve_png(fc, meta, out_path):
 
     png_path = os.path.splitext(out_path)[0] + "_curve.png"
     fig.savefig(png_path, dpi=150)
-    plt.close(fig)
+    # No plt.close(fig): this Figure was never registered with pyplot's global figure
+    # manager (that IS the point, see the note above), so there is nothing there to leak
+    # or clean up - it is just released when fig goes out of scope, like any other object.
     return png_path
 
 
