@@ -130,6 +130,13 @@ numbers - do not send anything further to him until that is done.** This is now 
 distinct PTEW-related fix this week that has needed a live check; the pattern is clearly
 "verify every PTEW change against a live file before saying it's ready," not bad luck.
 
+**CLOSED, verified against a live regeneration**: a fresh CI workbook checked out exactly
+against Jol's own annotated screenshot numbers - Forecast sub-rows now foot 2+34=36 (was
+2+33=35) and 36+76=112; Connecting feed SJC behind foots 33.9+1.7=35.6 (All-other moved
+1.6->1.7); TPE beyond foots 93.5+18.3=111.8 (All-other moved 18.2->18.3). GRAND TOTAL
+120+36+112=268, matching on both EW and 2-way tabs. Ready to send to Jol. No action
+needed by whoever picks this file up next.
+
 ---
 
 ## 1. The clock
