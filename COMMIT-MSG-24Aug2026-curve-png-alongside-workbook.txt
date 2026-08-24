@@ -1,0 +1,60 @@
+Departure-curve picture, generated alongside every workbook (John Carter, 24 Aug 2026)
+
+John is running a batch of EVA/CI/JX forecasts at 4x/5x/7x weekly, plus the CI 787-9,
+and wants the departure-time curve as a picture for each one, not a workbook chart he
+has to screenshot. Asked directly which was better: run the batch first and hand me the
+excels afterward, or bake picture generation into the Excel-build pipeline so it is
+automatic every time. Recommendation given and taken: build it into the pipeline, one
+picture per workbook, no separate step to remember.
+
+John then asked whether the native Excel chart could instead be made to look as
+polished as a reference image he generated (shaded restricted-hour bands, an annotated
+"Chosen Dep" callout, a data-driven insight caption) - "I suspect that is difficult."
+Confirmed: genuinely difficult with openpyxl's native chart object, which cannot do
+shaded regions or annotated callouts without hand-editing chart XML. Built with
+matplotlib instead, which is already a declared, actively-used dependency (the
+Observatory deck generator) rather than a new one.
+
+Two additions to app/cortex_workbook.py:
+
+1. _curve_series(fc): the departure curve on the CARRIED allocation, as one shared
+   calculation. Mirrors the dashboard slider's own transform (anchor on the curve point
+   nearest the chosen departure, scale connecting scores by connecting_carried at that
+   anchor, cap at annual capacity x plan cap). Returns None if there is no optimiser
+   curve - never a fabricated one, same rule as the Excel sheet's own curve section.
+
+   NOT wired into the existing Excel "Departure curve" sheet, which keeps its own
+   separately-computed variables (_op0/_curve/_p2pc2 etc.) exactly as they were. A
+   conscious choice: refactoring a working, heavily-tested sheet under today's time
+   pressure was a bigger regression risk than carrying two implementations of the same
+   formula for now. Flagged, not hidden - worth unifying once there is headroom.
+
+2. render_curve_png(fc, meta, out_path): builds the picture from _curve_series() and
+   saves it as "<workbook name>_curve.png" beside the xlsx. Restricted hours shaded,
+   chosen-departure marker with an offset callout box (flips side of the point once the
+   departure is in the second half of the day, so it clears the legend), and a
+   data-derived insight line: checks whether every restricted hour is still at the
+   capacity ceiling (costs nothing) or names the actual passengers lost at the least
+   favourable permitted departure. Not John's caption copied over - computed from this
+   route's own curve, true only when true for THIS run. Author line uses the same
+   attribution.SOURCE_LINE constant as the Excel sheet.
+
+Wired into build_workbook() as a side effect, right before the return, wrapped in
+try/except that prints and continues rather than breaking the primary xlsx delivery.
+build_workbook()'s return value is unchanged (still just the xlsx path), so no existing
+caller is affected.
+
+Verification:
+- test_workbook_table.py: two new checks, mirroring the sheet's own "never fabricated"
+  rule - PNG exists alongside the workbook when curve data exists, absent when it does
+  not. Full suite: 33/33 passed (was 31 before this feature).
+- Rendered and visually inspected two test cases directly (an evening departure and a
+  morning departure) - caught and fixed a first-draft overlap between the callout box
+  and the insight text, and cramped headroom against the top of the chart. Both now
+  render cleanly.
+- matplotlib confirmed already declared in app/requirements.txt (line 80, "every chart,
+  and the drawing surface the maps sit on" - the Observatory deck generator) and already
+  in live use there, so this is not a new, unverified dependency for the workstation.
+
+Not yet done: a live workstation regeneration confirming the PNG is actually produced
+on a real run (sandbox fixtures only, so far) before John's batch this afternoon.

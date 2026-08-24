@@ -326,6 +326,18 @@ def main():
         check("no curve, no sheet, never fabricated",
               "Departure curve EW" not in wb2.sheetnames
               and "Departure curve 2-way" not in wb2.sheetnames)
+
+        # THE CURVE PICTURE (24 August 2026, John Carter: running a batch of EVA/CI/JX
+        # forecasts and wanting the departure curve as a picture alongside each workbook,
+        # not a chart he has to screenshot). Same "never fabricated" discipline as the
+        # Excel sheet - a picture must exist when there is a curve to draw, and must not
+        # exist when there is not, checked against the SAME two fixtures used above.
+        png_path = os.path.join(tmp, "curve_curve.png")
+        check("curve picture generated alongside the workbook when a curve exists",
+              os.path.exists(png_path) and os.path.getsize(png_path) > 1000)
+        no_png_path = os.path.join(tmp, "grown_curve.png")
+        check("no curve picture when there is no optimiser curve, never fabricated",
+              not os.path.exists(no_png_path))
     print("\n%d checks, %d failed%s" % (CHECKS, len(FAIL),
           ": " + ", ".join(FAIL) if FAIL else ""))
     sys.exit(1 if FAIL else 0)

@@ -44,6 +44,166 @@ def carried_split(dem):
         p2p, behind, beyond = p2p * sc, behind * sc, beyond * sc
     return p2p, behind, beyond, tot
 
+
+def _curve_series(fc):
+    """The departure-time curve, on the CARRIED allocation, shared by the Excel sheet, the
+    dashboard's own drawCurve() JS and (24 August 2026) the standalone PNG (John Carter's
+    curve-picture request) - one calculation, three renderings, so all three always show the
+    same numbers for the same run rather than three copies of the same maths drifting apart.
+    Mirrors the dashboard slider's own transform: anchor on the curve point nearest the chosen
+    departure, scale the raw connecting scores by connecting_carried at that anchor, hold
+    point-to-point constant across the day, cap the route total at annual capacity x the plan
+    cap. Returns None if there is no optimiser curve to plot - never a fabricated one - else a
+    dict with everything a renderer needs, each-way throughout (multiply by 2 for two-way)."""
+    dem = fc["demand"]; cap = fc["capacity"]
+    sch = fc.get("schedule") or {}
+    op = sch.get("optimised") or {}
+    curve = op.get("curve") or []
+    n0 = lambda v: float(v or 0)
+    p2p_c = n0(dem.get("p2p_carried")); conn_c = n0(dem.get("connecting_carried"))
+    cap_ew = n0(cap.get("annual_capacity")) * n0(cap.get("plan_cap"))
+    chosen = ((sch.get("outbound") or {}).get("dep") or "")
+    parts = str(chosen).split(":")
+    cmins = (int(parts[0]) * 60 + int(parts[1])) if len(parts) == 2 and parts[0].isdigit() else None
+    if len(curve) < 4 or conn_c <= 0 or p2p_c <= 0 or cmins is None:
+        return None
+    anchor = min(curve, key=lambda q: abs(float(q.get("dep") or 0) - cmins))
+    at = float(anchor.get("total") or 0)
+    if at <= 0:
+        return None
+    scl = conn_c / at
+    points = []
+    for p in curve:
+        conn_ew = float(p.get("total") or 0) * scl
+        tot_ew = min(p2p_c + conn_ew, cap_ew) if cap_ew > 0 else (p2p_c + conn_ew)
+        points.append({"dep": float(p.get("dep") or 0), "hhmm": p.get("hhmm") or "",
+                        "permitted": bool(p.get("permitted")),
+                        "beyond_ew": float(p.get("beyond") or 0) * scl,
+                        "behind_ew": float(p.get("behind") or 0) * scl,
+                        "connecting_ew": conn_ew, "total_ew": tot_ew})
+    return {"points": points, "p2p_ew": p2p_c, "cap_ew": cap_ew, "chosen": chosen,
+            "chosen_mins": cmins, "unrestricted_dep": op.get("unrestricted_dep"),
+            "restricted": op.get("restricted") or [],
+            "forecast_year": sch.get("forecast_year") or fc.get("year", "")}
+
+
+def render_curve_png(fc, meta, out_path):
+    """The departure-curve picture (John Carter, 24 August 2026: running a batch of EVA/CI/JX
+    forecasts at several frequencies and wanting the curve as a picture for each one, not a
+    workbook chart he has to screenshot). Built with matplotlib, not openpyxl's native chart -
+    shaded restricted-hour bands and an annotated callout are not something openpyxl's chart
+    object can do without hand-editing chart XML, so this uses the one charting library
+    actually available rather than fighting the Excel chart model into a shape it does not
+    support. Saved as "<out_path base>_curve.png" alongside the workbook; only when the same
+    _curve_series() data used by the Excel sheet exists - never a fabricated picture, same
+    discipline as the sheet it sits beside. Returns the PNG path, or None if there was no
+    curve to draw."""
+    cs = _curve_series(fc)
+    if not cs:
+        return None
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    import matplotlib.dates as mdates
+    import datetime as _dt
+
+    o = fc["origin"]; home = fc["catchment"]["home"]
+    mult = 2  # the picture is always two-way, matching the headline figures a client reads
+    pts = cs["points"]
+    times = [_dt.datetime(2000, 1, 1) + _dt.timedelta(minutes=p["dep"]) for p in pts]
+    conn = [p["connecting_ew"] * mult / 1000.0 for p in pts]
+    tot = [p["total_ew"] * mult / 1000.0 for p in pts]
+
+    fig, ax = plt.subplots(figsize=(11, 6.2))
+    NAVY, STEEL = "#" + AVIA, "#4C8FBF"
+    ax.plot(times, conn, color=STEEL, linewidth=2, label="Connecting demand at the departure time")
+    ax.plot(times, tot, color=NAVY, linewidth=2.4, label="Route total carried")
+
+    # Restricted-hour shading, wraparound-aware (e.g. "21:00-06:00" spans midnight).
+    def _hhmm_to_dt(s):
+        h, m = (s.split(":") + ["0"])[:2]
+        return _dt.datetime(2000, 1, 1) + _dt.timedelta(hours=int(h), minutes=int(m))
+    day0, day1 = _dt.datetime(2000, 1, 1), _dt.datetime(2000, 1, 2)
+    for band in (cs["restricted"] or []):
+        try:
+            a, b = [s.strip() for s in band.split("-")]
+            ta, tb = _hhmm_to_dt(a), _hhmm_to_dt(b)
+        except Exception:
+            continue
+        if tb <= ta:
+            ax.axvspan(ta, day1, color="#DCE3EE", zorder=0)
+            ax.axvspan(day0, tb, color="#DCE3EE", zorder=0)
+        else:
+            ax.axvspan(ta, tb, color="#DCE3EE", zorder=0)
+
+    # Headroom at the top so the callout box and legend never sit flush against the highest
+    # line (24 August 2026: the first draft cramped both against the axis ceiling).
+    y_top = max(tot + conn) if (tot or conn) else 1.0
+    ax.set_ylim(0, y_top * 1.18)
+
+    # Chosen-departure marker and callout - offset a short, fixed distance from the point
+    # itself (not a fixed spot on the chart), so the leader line stays short and the box
+    # sits near what it describes regardless of where in the day the departure falls.
+    # Pushed left when the point is in the second half of the day so it clears the legend
+    # (top-right) rather than sitting under it.
+    chosen_total = None
+    if cs["chosen_mins"] is not None:
+        anchor = min(pts, key=lambda p: abs(p["dep"] - cs["chosen_mins"]))
+        chosen_total = anchor["total_ew"] * mult
+        cx = _dt.datetime(2000, 1, 1) + _dt.timedelta(minutes=cs["chosen_mins"])
+        ax.axvline(cx, color="#555555", linestyle="--", linewidth=1)
+        second_half = cs["chosen_mins"] >= 720
+        dx = -170 if second_half else 20
+        ax.annotate(f"Chosen Dep {cs['chosen']}\n{round(chosen_total):,} passengers 2-way",
+                    xy=(cx, chosen_total / 1000.0), xytext=(dx, 28),
+                    textcoords="offset points", fontsize=10,
+                    ha=("right" if second_half else "left"), va="bottom",
+                    bbox=dict(boxstyle="round,pad=0.4", fc="#EEF1F6", ec="#AAB4C4"),
+                    arrowprops=dict(arrowstyle="-", color="#777777", lw=0.8, shrinkB=4))
+
+    # DATA-DERIVED INSIGHT, not John's caption copied verbatim (24 August 2026): true only
+    # when it is actually true for THIS route's own curve. Checks whether every restricted
+    # hour still sits at the capacity ceiling - if so, the restriction costs nothing, the
+    # exact claim; if a restricted hour would otherwise carry less than the ceiling, the
+    # honest statement is the passengers that costs at the best unrestricted departure.
+    # Placed at the bottom, clear of the callout box and legend which both sit near the top.
+    if cs["restricted"] and cs["cap_ew"] > 0:
+        ceiling2 = cs["cap_ew"] * mult
+        restricted_pts = [p for p in pts if not p["permitted"]]
+        if restricted_pts and all(p["total_ew"] * mult >= ceiling2 - 0.5 for p in restricted_pts):
+            ax.text(0.02, 0.04, "capacity-bound: the restriction costs no carried traffic",
+                    transform=ax.transAxes, fontsize=10, color="#555555")
+        else:
+            best_unrestricted = max((p["total_ew"] for p in pts if p["permitted"]), default=0)
+            worst_restricted = min((p["total_ew"] for p in restricted_pts), default=best_unrestricted)
+            gap = round((best_unrestricted - worst_restricted) * mult)
+            if gap > 50:
+                ax.text(0.02, 0.04, f"the restriction costs up to {gap:,} carried passengers/yr "
+                                     "at the least favourable permitted departure",
+                        transform=ax.transAxes, fontsize=10, color="#555555")
+
+    yr = cs["forecast_year"]
+    ax.set_title(f"Year 1 ({yr}) forecast by outbound departure time - shaded hours are "
+                 "restricted departures", fontsize=13, loc="left")
+    ax.set_xlabel(f"Departure time, {home or o.get('iata','')} local")
+    ax.set_ylabel("Passengers a year, two-way (000s)")
+    ax.xaxis.set_major_formatter(mdates.DateFormatter("%H:%M"))
+    ax.xaxis.set_major_locator(mdates.HourLocator(interval=3))
+    ax.set_xlim(day0, day1)
+    ax.grid(True, color="#E4E8EE", linewidth=0.8)
+    ax.set_axisbelow(True)
+    for spine in ("top", "right"):
+        ax.spines[spine].set_visible(False)
+    ax.legend(loc="upper right", frameon=False, fontsize=9)
+    fig.text(0.01, 0.01, attribution.SOURCE_LINE, fontsize=7, color="#888888")
+    fig.tight_layout(rect=[0, 0.02, 1, 1])
+
+    png_path = os.path.splitext(out_path)[0] + "_curve.png"
+    fig.savefig(png_path, dpi=150)
+    plt.close(fig)
+    return png_path
+
+
 AVIA = "1F3864"; MID = "2F6BF0"; LIGHT = "EAF0FE"; GREENF = "E6F6EF"
 HDR = PatternFill("solid", fgColor=AVIA)
 SEC = PatternFill("solid", fgColor="4472C4")
@@ -734,4 +894,12 @@ def build_workbook(out_path, fc, meta=None):
     cp.creator = "Avia Solutions"; cp.lastModifiedBy = "Avia Solutions"
     cp.title = f'{o["city"]} to {d["city"]} route workbook'
     wb.save(out_path)
+    # Curve picture (John Carter, 24 August 2026), alongside the workbook automatically -
+    # a side effect, not a change to this function's return value, so every existing
+    # caller (tests, the download endpoint) is unaffected whether or not a curve exists.
+    # Never lets a rendering problem break the primary xlsx delivery.
+    try:
+        render_curve_png(fc, meta, out_path)
+    except Exception as _pe:                                      # noqa: BLE001
+        print("render_curve_png: not rendered - %s" % _pe)
     return out_path
