@@ -17,6 +17,9 @@
         }
       },
       "B78X": {"first": 0, "business": 48, "premium_coach": 35, "coach": 173, "total": 256, "source": "BA 787-10 Club Suite"}
+    },
+    "CI": {
+      "B789": {"first": 0, "business": 30, "premium_coach": 28, "coach": 230, "total": 288, "source": "China Airlines 787-9 seat map, provided by John Carter 24 Aug 2026 - new-delivery aircraft, winter 2026 onward, not yet in OAG schedule data"}
     }
   }
 }

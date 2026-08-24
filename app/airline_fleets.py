@@ -87,9 +87,23 @@ FLEETS = {k: _clean(v) for k, v in FLEETS.items()}
 
 _OBS_WARNED = set()
 
+# KNOWN-UPCOMING AIRCRAFT (24 August 2026, John Carter): a confirmed near-term delivery
+# OAG cannot see yet, because the aircraft is not flying the airline's schedule yet.
+# Deliberately narrow and hand-curated - the opposite of the old FLEETS table this
+# function's own docstring below explains was retired for being wrong on every carrier
+# checked. Add an entry only for a specific, confirmed delivery the picker needs to offer
+# before OAG catches up (e.g. for a client meeting); remove the entry once OAG shows the
+# type in the airline's schedule, so this does not quietly drift back into a second stale
+# table nobody remembers to update.
+KNOWN_UPCOMING = {
+    "CI": ["B789"],   # China Airlines 787-9 (30J/28W/230Y, see lopa_store.json), winter
+                       # 2026 delivery - not yet in OAG schedule data as of 24 Aug 2026.
+}
+
 
 def fleet_observed(airline_iata, distance_km, period="2025-%"):
-    """What the carrier is measured to fly at this sector length, from OAG, or [] if nothing.
+    """What the carrier is measured to fly at this sector length, from OAG, or [] if nothing,
+    unioned with any confirmed KNOWN_UPCOMING delivery for that carrier.
 
     The table below is hand-maintained and was wrong on every carrier checked on 10 August 2026:
     China Airlines carried a 787-9 it does not fly on 10,000 km sectors and no 777-300ER, EVA carried
@@ -100,20 +114,22 @@ def fleet_observed(airline_iata, distance_km, period="2025-%"):
     # distance_km=None asks for the whole observed fleet, all sector lengths (19 Aug
     # 2026): the picker has no route yet, and the hand table it fell back to missed
     # AF's A220s and SAS's CRJ900s in one evening.
+    upcoming = KNOWN_UPCOMING.get((airline_iata or "").upper(), [])
     if not airline_iata:
         return []
     try:
         import capacity_frame as CF
         keys, unmapped, sectors = CF.types_for(airline_iata, distance_km)
     except Exception:
-        return []                      # no store, no measurement: the table below still stands
+        return list(upcoming)          # no store, no measurement: the table below still stands
     if unmapped and airline_iata not in _OBS_WARNED:
         # Named, not swallowed. An observed type the economics module cannot cost is a gap in the
         # economics module, and it silently narrows the option set the carrier is offered.
         _OBS_WARNED.add(airline_iata)
         print("fleet_observed: %s flies these at this sector length and the economics module has no "
               "entry, so they are not offered: %s" % (airline_iata, ", ".join(unmapped)))
-    return keys if sectors else []
+    observed = keys if sectors else []
+    return sorted(set(observed) | set(upcoming)) if (observed or upcoming) else []
 
 
 def fleet_for(airline_iata, available_codes, distance_km=None, margin=1.03, observed=True):

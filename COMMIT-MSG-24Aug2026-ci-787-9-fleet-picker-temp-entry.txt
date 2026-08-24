@@ -1,0 +1,36 @@
+Aircraft picker: CI 787-9 selectable ahead of OAG (John Carter, 24 Aug 2026)
+
+China Airlines is taking delivery of 787-9s over winter 2026, seats configured
+30 Business / 28 Premium Economy / 230 Economy (288 total) - John's own seat map. OAG
+schedule data won't show CI actually flying the type until it enters service, so the
+picker (driven entirely by OAG-observed fleet, see airline_fleets.py's own docstring on
+why the old hand-maintained table was retired) can't offer it yet. John wants to run and
+show this live at a CI meeting, so a temporary way to select it in the tool itself - not
+a URL workaround - is a better fit for that occasion than the API-direct approach given
+earlier today.
+
+Two changes:
+
+1. app/lopa_store.json: added airlines.CI.B789 (30/28/230, 288 total, sourced to John's
+   seat map). Verified directly against lopa.py: get_lopa("B789","CI") returns the
+   carrier-specific entry (basis="carrier"), not the generic B789 type average.
+
+2. app/airline_fleets.py: added a new, deliberately narrow KNOWN_UPCOMING dict
+   ({"CI": ["B789"]}), unioned into fleet_observed()'s result alongside whatever OAG
+   actually shows. This is NOT a return to the old FLEETS hand-table as the primary
+   source - that table stays the emergency fallback only, unused while OAG has any data
+   for the airline - it is a single, named, commented exception for a confirmed near-term
+   delivery OAG cannot see yet. Remove the CI entry once OAG shows the 787-9 in China
+   Airlines' schedule, so this does not quietly become a second stale table.
+
+Verification: airline_fleets.py compiles clean. fleet_observed("CI", ...) now returns
+B789 unioned with whatever the sandbox's OAG query returns (the sandbox has no access to
+the real OAG store, so this only proves the union logic, not a live OAG-observed result -
+that needs the workstation). fleet_observed() for other airlines (BA, unknown codes,
+blank airline) unaffected - confirmed empty/normal results, no B789 leaking in elsewhere.
+No existing test file references airline_fleets.py.
+
+Not yet done: a live check on the workstation, where the real OAG store is available -
+confirm CI's aircraft dropdown now lists B789 alongside the real A350/777-300ER OAG
+result, and that a full run (CI, SJC-TPE, B789) produces a sensible workbook using the
+new LOPA before the meeting.
