@@ -111,6 +111,16 @@ def build_workbook(out_path, fc, meta=None):
     _pnoun = _smode if _seasonal else "year"          # "summer" / "winter" / "year"
     _padj = _smode.capitalize() if _seasonal else "Annual"   # "Summer" / "Winter" / "Annual"
     wb = openpyxl.Workbook()
+    # Moved up from the Forecast tab section (24 August 2026, Jol Kingham: "Connecting
+    # feed 2-way" H22+H43 = 147.4, "Forecast 2-way"/Cover show 148 - is that ok?"). Cover's
+    # own PTEW used to come from dem["pdew_total"], a figure computed independently in
+    # cortex_app.py; Forecast's PTEW comes from this same freq/weeks basis but footed
+    # through ptew(). Two different code paths computing "the same" figure is exactly the
+    # class of problem this whole day has been closing out one tab at a time - so Cover now
+    # uses this identical, already-footed calculation directly, not a separately-sourced
+    # figure that can only ever be close, never guaranteed equal.
+    freq = n0(cap.get("freq")) or 7.0
+    ptew = lambda x: round(x / (freq * weeks), 1) if freq else 0
 
     # ---- 1. Cover -----------------------------------------------------------
     ws = wb.active; ws.title = "Cover"
@@ -124,6 +134,11 @@ def build_workbook(out_path, fc, meta=None):
     _cover_split = carried_split(dem)
     _p2p_ew, _beh_ew, _bey_ew = round(_cover_split[0]), round(_cover_split[1]), round(_cover_split[2])
     _tot_ew = round(n0(dem.get("total")))
+    # Cover's PTEW: the same footed sum the Forecast tab prints on its own GRAND TOTAL row
+    # (each leg's own PTEW, footed, then summed - not an independent round of the total),
+    # so this figure can never again disagree with Forecast, by construction rather than
+    # by coincidence.
+    _cover_ptew = ptew(_p2p_ew) + ptew(_beh_ew) + ptew(_bey_ew)
     blocks = [
         ("ROUTE", [("Origin", f'{o["city"]} ({home})'), ("Destination", f'{d["city"]} ({d["iata"]})'),
                    ("Country", f'{o.get("country","")} to {d.get("country","")}'),
@@ -152,7 +167,7 @@ def build_workbook(out_path, fc, meta=None):
                      ("Total forecast (each way)", _tot_ew),
                      ("Total forecast (2-way)", _tot_ew * 2),
                      ("Planned load factor", n0(cap.get("load"))),
-                     ("Passenger Trip Each Way (PTEW)", dem.get("pdew_total"))]),
+                     ("Passenger Trip Each Way (PTEW)", _cover_ptew)]),
         # JOL, same email: (3) row 28's year printed "2,025" - the generic row-renderer
         # below applies a thousands-separator format to every int/float, and a year is an
         # int with no digit-grouping meaning at all. Cast to a string here so it falls
@@ -213,8 +228,9 @@ def build_workbook(out_path, fc, meta=None):
     # effective P2P capture after the allocation, so the row multiplies through
     if natural * stim > 0:
         cap_share = p2p / (natural * stim)
-    freq = n0(cap.get("freq")) or 7.0
-    ptew = lambda x: round(x / (freq * weeks)) if freq else 0
+    # freq and ptew() are now defined once, up in the Cover section, so Cover and this
+    # tab always use the identical figure - see the note there (24 August 2026, Jol
+    # Kingham's "148 v 147" question).
     _cs = fc.get("competition_split") or {}
     for _suf, _mult, _bw in (("EW", 1, "each way"), ("2-way", 2, "two way")):
         ws = wb.create_sheet(f"Forecast {_suf}")
@@ -253,7 +269,7 @@ def build_workbook(out_path, fc, meta=None):
         _c(ws, r, 2, k(_debase(natural)), fmt="#,##0.000", align=RGT); _c(ws, r, 3, _gr, fmt="0.0%", align=RGT)
         _c(ws, r, 4, k(natural), fmt="#,##0.000", align=RGT); _c(ws, r, 5, round(stim, 2), fmt="0.00", align=RGT)
         _c(ws, r, 6, k(natural * stim), fmt="#,##0.000", align=RGT); _c(ws, r, 7, cap_share, fmt="0.0%", align=RGT)
-        _c(ws, r, 8, k(p2p), fmt="#,##0.000", align=RGT); _c(ws, r, 9, _p2p_ptew, fmt="#,##0", align=RGT)
+        _c(ws, r, 8, k(p2p), fmt="#,##0.000", align=RGT); _c(ws, r, 9, _p2p_ptew, fmt="#,##0.0", align=RGT)
         r += 1
         for label, val, cbase, _leg in [(f"Total connecting behind {home}", behind, n0(dem.get("feed_behind_base")) * _sshare, "behind"),
                                         (f"Total connecting beyond {d['iata']}", beyond, n0(dem.get("feed_beyond_base")) * _sshare, "beyond")]:
@@ -266,7 +282,7 @@ def build_workbook(out_path, fc, meta=None):
             _c(ws, r, 5, 1.00, fmt="0.00", align=RGT)
             _c(ws, r, 6, k(cbase) if cbase else "-", fmt="#,##0.000", align=RGT)
             _c(ws, r, 7, (val / cbase) if cbase else "-", fmt="0.0%", align=RGT)
-            _c(ws, r, 8, k(val), fmt="#,##0.000", align=RGT); _c(ws, r, 9, _leg_ptew, fmt="#,##0", align=RGT)
+            _c(ws, r, 8, k(val), fmt="#,##0.000", align=RGT); _c(ws, r, 9, _leg_ptew, fmt="#,##0.0", align=RGT)
             r += 1
             # THE COMPETITION SUB-ROWS (John's ruling, 18 August 2026, validated against
             # the 2025 analyst's split): direct / without direct competition beneath each
@@ -306,7 +322,7 @@ def build_workbook(out_path, fc, meta=None):
                     _c(ws, r, 6, k(_fb) if _fb else "-", fmt="#,##0.000", align=RGT)
                     _c(ws, r, 7, (_fv / _fb) if _fb else "-", fmt="0.0%", align=RGT)
                     _c(ws, r, 8, k(_fv), fmt="#,##0.000", align=RGT)
-                    _c(ws, r, 9, _pt, fmt="#,##0", align=RGT)
+                    _c(ws, r, 9, _pt, fmt="#,##0.0", align=RGT)
                     r += 1
         _c(ws, r, 1, "GRAND TOTAL", font=TOTF_FONT, fill=TOTF, align=LFT)
         _bb = n0(dem.get("feed_behind_base")) * _sshare; _yb = n0(dem.get("feed_beyond_base")) * _sshare
@@ -318,7 +334,7 @@ def build_workbook(out_path, fc, meta=None):
         _c(ws, r, 7, (tot / (natural * stim + _bb + _yb)) if (natural * stim + _bb + _yb) > 0 else None,
            font=TOTF_FONT, fill=TOTF, fmt="0.0%", align=RGT)
         _c(ws, r, 8, k(tot), font=TOTF_FONT, fill=TOTF, fmt="#,##0.000", align=RGT)
-        _c(ws, r, 9, _legs_ptew, font=TOTF_FONT, fill=TOTF, fmt="#,##0", align=RGT)
+        _c(ws, r, 9, _legs_ptew, font=TOTF_FONT, fill=TOTF, fmt="#,##0.0", align=RGT)
         _c(ws, r + 2, 1, f"Figures on this tab are {_bw}. "
                          "Base demand is the addressable each-way O&D market from Sabre Global Demand Data in the origin catchment. "
                          "Rows show the carried allocation after the planned load factor cap and they sum to the total; "

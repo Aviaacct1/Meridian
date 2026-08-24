@@ -1,0 +1,46 @@
+PTEW: one calculation, one precision, across Cover, Forecast and Connecting feed
+(Jol Kingham, 24 Aug 2026, "SJC: PTEWs inconsistency")
+
+Jol's email: "Connecting feed 2-way" H22 (35.6) + H43 (111.8) = 147.4. "Forecast 2-way"
+and "Cover" show 148, not 147. Is that ok?
+
+Not "ok" by the standard set earlier today (every PTEW figure across every tab should
+foot and agree, not merely round close). Root cause was different from the earlier
+footing bugs: the Forecast tab's PTEW column rounded to a WHOLE NUMBER
+(round(x/(freq*weeks))), while Cover and the Connecting feed tabs already showed 1
+decimal place. Summing two values independently rounded from 1dp to 0dp, then comparing
+against the 1dp answer, produced a genuine, expected difference (behind 35.611 rounds to
+36 at 0dp but 35.6 at 1dp; beyond 111.78 rounds to 112 at 0dp but 111.8 at 1dp;
+36+112=148, 35.6+111.8=147.4->147).
+
+Two changes in app/cortex_workbook.py:
+
+1. Forecast tab's ptew() lambda bumped from round(x, 0) to round(x, 1), matching the
+   precision already used everywhere else PTEW appears. All four PTEW cell formats on
+   that tab (fmt="#,##0" -> fmt="#,##0.0") updated to match. The footing logic itself
+   (grand total = sum of parts; sub-rows = remainder against their leg) is unchanged,
+   just operating at finer granularity.
+
+2. Cover's own PTEW figure no longer comes from dem["pdew_total"], a figure computed
+   independently in cortex_app.py from the same freq/weeks basis but via a completely
+   separate code path. freq and the ptew() lambda are now defined once, at the top of
+   build_workbook(), before Cover is built, and Cover's PTEW is the identical footed sum
+   (ptew(p2p) + ptew(behind) + ptew(beyond)) the Forecast tab's GRAND TOTAL row prints.
+   Two tabs computing "the same" figure via two different formulas is exactly the class
+   of problem closed out three times already today - this removes the second formula
+   entirely rather than patching it to agree more closely. cortex_app.py's own
+   pdew_total is untouched and still used by the dashboard and deck, which this change
+   does not touch.
+
+Verification: test_workbook_table.py's Cover-matches-Forecast check tightened from a
+0.6 tolerance to exact equality (was masking a genuine, if small, disagreement between
+two formulas that are now one). The two Connecting-feed-matches-Forecast checks
+tightened the same way. A new check reproduces Jol's exact scenario - the sum of the two
+Connecting feed Total PTEWs must equal the sum of the Forecast tab's own two leg PTEW
+rows, not merely round to the same whole number. 31/31 checks pass (up from 30). Full
+regression suite re-run clean, same two pre-existing sandbox-only failures as every
+other batch today.
+
+Not yet done: live regeneration and a check against Jol's own cited cells (H22, H43 on
+Connecting feed 2-way; the Forecast 2-way and Cover PTEW figures). Do not reply to Jol
+until that is done.

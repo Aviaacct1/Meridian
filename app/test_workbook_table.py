@@ -142,8 +142,12 @@ def main():
         # Way (PTEW)" in full, spelling the term out on first use for the whole workbook.
         cov_pdew = next(c[1].value for c in cov.iter_rows(min_row=1)
                          if c[0].value == "Passenger Trip Each Way (PTEW)")
-        check("Cover PTEW matches Forecast tab's grand-total PTEW (Jol's mismatch)",
-              abs(cov_pdew - gt[8]) < 0.6, f"Cover={cov_pdew}, Forecast grand total={gt[8]}")
+        # Tightened to an exact equality (24 August 2026, Jol Kingham's "148 v 147"
+        # question): Cover's PTEW now comes from the identical footed ptew() calculation
+        # the Forecast tab's GRAND TOTAL row uses, not a separately-sourced figure that
+        # could only ever be close. A tolerance check would hide a real future regression.
+        check("Cover PTEW matches Forecast tab's grand-total PTEW exactly",
+              cov_pdew == gt[8], f"Cover={cov_pdew}, Forecast grand total={gt[8]}")
 
         # SUB-ROW PTEW FOOTING (24 August 2026, Jol Kingham's annotated screenshot: his own
         # sum of the two "O&Ds with/without direct competition" rows plus point to point
@@ -233,10 +237,25 @@ def main():
         freq, weeks = 4, 52
         exp_beh_ptew = round(t_beh / (freq * weeks), 1)
         exp_bey_ptew = round(t_bey / (freq * weeks), 1)
-        check("Connecting feed Total PTEW matches Cover/Forecast basis (behind)",
-              abs(totals[0][7] - exp_beh_ptew) < 0.1, f"{totals[0][7]} vs {exp_beh_ptew}")
-        check("Connecting feed Total PTEW matches Cover/Forecast basis (beyond)",
-              abs(totals[1][7] - exp_bey_ptew) < 0.1, f"{totals[1][7]} vs {exp_bey_ptew}")
+        # Tightened to exact equality (24 August 2026, Jol Kingham: "Connecting feed 2-way"
+        # H22+H43 = 147.4 v "Forecast 2-way"/Cover showing 148 - the two tabs rounded the
+        # same figure to different precisions). Both now use the identical freq x weeks,
+        # 1dp calculation, so this must hold exactly.
+        check("Connecting feed Total PTEW matches Forecast basis exactly (behind)",
+              totals[0][7] == exp_beh_ptew, f"{totals[0][7]} vs {exp_beh_ptew}")
+        check("Connecting feed Total PTEW matches Forecast basis exactly (beyond)",
+              totals[1][7] == exp_bey_ptew, f"{totals[1][7]} vs {exp_bey_ptew}")
+
+        # JOL'S EXACT SCENARIO: the sum of the two Connecting feed Total PTEWs (his own
+        # "147.4") must equal the sum of the Forecast tab's own two leg PTEW rows, not
+        # merely round to the same whole number.
+        fs2 = wb["Forecast EW"]
+        leg_ptews = [r[8].value for r in fs2.iter_rows(min_row=5, max_row=12)
+                     if str(r[0].value or "").startswith("Total connecting")]
+        check("Connecting feed legs sum to the same figure as Forecast's own leg PTEWs",
+              (totals[0][7] + totals[1][7]) == sum(leg_ptews),
+              f"feed: {totals[0][7]}+{totals[1][7]}={totals[0][7]+totals[1][7]}, "
+              f"forecast legs: {leg_ptews}={sum(leg_ptews)}")
 
         # CITY ROWS + ALL-OTHER FOOT EXACTLY TO THE TOTAL (24 August 2026, Jol Kingham's
         # annotated screenshot: his own sum of the 15 SJC-behind city rows plus All-other

@@ -137,6 +137,23 @@ against Jol's own annotated screenshot numbers - Forecast sub-rows now foot 2+34
 120+36+112=268, matching on both EW and 2-way tabs. Ready to send to Jol. No action
 needed by whoever picks this file up next.
 
+**SEVENTH ADDENDUM, 24 August 2026, same day**: Jol immediately found a further, genuinely
+different issue - "Connecting feed 2-way" H22+H43 = 147.4, but "Forecast 2-way"/Cover show
+148. Root cause this time was not a footing bug but a PRECISION mismatch: the Forecast
+tab's PTEW column rounded to a whole number while Cover and Connecting feed already showed
+1dp, so the same underlying figure read differently depending which tab you looked at.
+Fixed by bumping Forecast's PTEW column to 1dp (matching everywhere else) AND by removing
+the SECOND, independent calculation entirely: Cover's PTEW no longer comes from
+dem["pdew_total"] (a separate figure from cortex_app.py), it now uses the identical footed
+ptew() sum the Forecast tab's own GRAND TOTAL row prints, moved earlier in the function so
+both tabs share one calculation. Three of today's Cover/Forecast-matching test tolerances
+tightened to exact equality accordingly - they were masking a real, if small, disagreement.
+31/31 checks pass. Full detail:
+`COMMIT-MSG-24Aug2026-ptew-precision-unified-cover-forecast-feed.txt`. **Not done: live
+regeneration and a check against Jol's own cited cells.** Do not reply to him until that
+is done - this is the fifth distinct PTEW fix today; each one has been real and each one
+has needed a live check before being trusted.
+
 ---
 
 ## 1. The clock
