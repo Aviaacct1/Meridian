@@ -117,6 +117,13 @@ def build_workbook(out_path, fc, meta=None):
     ws.column_dimensions["A"].width = 34; ws.column_dimensions["B"].width = 40
     _title(ws, f'{o["city"]} to {d["city"]}  ({home}-{d["iata"]})', "Meridian route forecast - detailed workbook")
     r = 4
+    # Each-way figures, computed once; every 2-way figure below is this doubled at this
+    # one point, per the workbook's standing EW/2-way discipline (Jol Kingham, 24 Aug 2026).
+    # Named _cover_split, not _cs, because _cs is reused below for the Forecast tab's
+    # competition_split dict - two different things, kept apart deliberately.
+    _cover_split = carried_split(dem)
+    _p2p_ew, _beh_ew, _bey_ew = round(_cover_split[0]), round(_cover_split[1]), round(_cover_split[2])
+    _tot_ew = round(n0(dem.get("total")))
     blocks = [
         ("ROUTE", [("Origin", f'{o["city"]} ({home})'), ("Destination", f'{d["city"]} ({d["iata"]})'),
                    ("Country", f'{o.get("country","")} to {d.get("country","")}'),
@@ -126,13 +133,35 @@ def build_workbook(out_path, fc, meta=None):
                      ("Frequency", f'{cap.get("freq","")}x/week')]),
         # Carried allocation on the cover too (18 Aug 2026): the cover printed the
         # same uncapped legs beside the capped total as the Forecast sheet did.
-        ("FORECAST (each way / year)", [("Point to point", round(carried_split(dem)[0])),
-                     ("Connecting behind " + home, round(carried_split(dem)[1])),
-                     ("Connecting beyond " + d["iata"], round(carried_split(dem)[2])),
-                     ("Total forecast", round(n0(dem.get("total")))),
+        #
+        # JOL KINGHAM, 24 August 2026, on the corrected CI/BR/JX files: (1) row 24's label
+        # should say PTEW, not a plain-English paraphrase, so it sets the term up for the
+        # rest of the workbook (John: spell it out in full on first use here - "Passenger
+        # Trip Each Way (PTEW)" - the same house-style rule as any other sector-specific
+        # abbreviation); (2) include the 2-way figure too. Each passenger-count row now
+        # states its own basis in its own label and the 2-way figure is the each-way figure
+        # doubled at this one point, never recomputed a second way - the same discipline as
+        # every other EW/2-way pairing in this workbook.
+        ("FORECAST (per year)", [
+                     ("Point to point (each way)", _p2p_ew),
+                     ("Point to point (2-way)", _p2p_ew * 2),
+                     ("Connecting behind " + home + " (each way)", _beh_ew),
+                     ("Connecting behind " + home + " (2-way)", _beh_ew * 2),
+                     ("Connecting beyond " + d["iata"] + " (each way)", _bey_ew),
+                     ("Connecting beyond " + d["iata"] + " (2-way)", _bey_ew * 2),
+                     ("Total forecast (each way)", _tot_ew),
+                     ("Total forecast (2-way)", _tot_ew * 2),
                      ("Planned load factor", n0(cap.get("load"))),
-                     ("Passengers/day each way", dem.get("pdew_total"))]),
-        ("BASIS", [("OAG schedule week", fc.get("week","")), ("Sabre Global Demand Data year", fc.get("year","")),
+                     ("Passenger Trip Each Way (PTEW)", dem.get("pdew_total"))]),
+        # JOL, same email: (3) row 28's year printed "2,025" - the generic row-renderer
+        # below applies a thousands-separator format to every int/float, and a year is an
+        # int with no digit-grouping meaning at all. Cast to a string here so it falls
+        # through to the plain-text branch instead. (4) row 27, is the OAG schedule week
+        # beginning or ending - sourced, not guessed: resolve_oag_week()'s own docstring
+        # (this file's caller, cortex_app.py line ~470) documents the single-week store
+        # label as "week commencing", so it is beginning, and the header now says so.
+        ("BASIS", [("OAG schedule week (beginning)", fc.get("week","")),
+                   ("Sabre Global Demand Data year", str(fc.get("year") or "")),
                    ("Analyst", meta.get("analyst","Avia Solutions")), ("Date", meta.get("date",""))]),
     ]
     for title, rows in blocks:
@@ -201,22 +230,36 @@ def build_workbook(out_path, fc, meta=None):
                      "Stimulated demand (000s)", "Capture rate", "Forecast (000s)", "PTEW"],
              [30, 15, 12, 15, 11, 15, 11, 12, 9])
         r = 5
+        # JOL KINGHAM, 24 August 2026: the three main rows' PTEW column did not sum to
+        # the GRAND TOTAL row's own PTEW (267 v 268). Both figures were true, and this
+        # was never a basis bug like the others this week - p2p+behind+beyond equals tot
+        # exactly (carried_split's own invariant), but ptew() rounds each to a whole
+        # number independently, so round(p2p)+round(behind)+round(beyond) does not
+        # generally equal round(p2p+behind+beyond); a 1-unit drift is ordinary rounding,
+        # not an error. A table that a reader adds up by hand has to foot, so the GRAND
+        # TOTAL row below now sums the three displayed PTEW figures instead of rounding
+        # the true total separately - the row a reader checks against is the row that is
+        # actually right when checked.
+        _p2p_ptew = ptew(p2p)
+        _legs_ptew = _p2p_ptew
         _c(ws, r, 1, "Total point to point", font=BOLD, align=LFT)
-        _c(ws, r, 2, k(_debase(natural)), fmt="#,##0.0", align=RGT); _c(ws, r, 3, _gr, fmt="0.0%", align=RGT)
-        _c(ws, r, 4, k(natural), fmt="#,##0.0", align=RGT); _c(ws, r, 5, round(stim, 2), fmt="0.00", align=RGT)
-        _c(ws, r, 6, k(natural * stim), fmt="#,##0.0", align=RGT); _c(ws, r, 7, cap_share, fmt="0.0%", align=RGT)
-        _c(ws, r, 8, k(p2p), fmt="#,##0.0", align=RGT); _c(ws, r, 9, ptew(p2p), fmt="#,##0", align=RGT)
+        _c(ws, r, 2, k(_debase(natural)), fmt="#,##0.000", align=RGT); _c(ws, r, 3, _gr, fmt="0.0%", align=RGT)
+        _c(ws, r, 4, k(natural), fmt="#,##0.000", align=RGT); _c(ws, r, 5, round(stim, 2), fmt="0.00", align=RGT)
+        _c(ws, r, 6, k(natural * stim), fmt="#,##0.000", align=RGT); _c(ws, r, 7, cap_share, fmt="0.0%", align=RGT)
+        _c(ws, r, 8, k(p2p), fmt="#,##0.000", align=RGT); _c(ws, r, 9, _p2p_ptew, fmt="#,##0", align=RGT)
         r += 1
         for label, val, cbase, _leg in [(f"Total connecting behind {home}", behind, n0(dem.get("feed_behind_base")) * _sshare, "behind"),
                                         (f"Total connecting beyond {d['iata']}", beyond, n0(dem.get("feed_beyond_base")) * _sshare, "beyond")]:
+            _leg_ptew = ptew(val)
+            _legs_ptew += _leg_ptew
             _c(ws, r, 1, label, font=BOLD, align=LFT)
-            _c(ws, r, 2, k(_debase(cbase)) if cbase else "-", fmt="#,##0.0", align=RGT)
+            _c(ws, r, 2, k(_debase(cbase)) if cbase else "-", fmt="#,##0.000", align=RGT)
             _c(ws, r, 3, _gr if cbase else "-", fmt="0.0%", align=RGT)
-            _c(ws, r, 4, k(cbase) if cbase else "-", fmt="#,##0.0", align=RGT)
+            _c(ws, r, 4, k(cbase) if cbase else "-", fmt="#,##0.000", align=RGT)
             _c(ws, r, 5, 1.00, fmt="0.00", align=RGT)
-            _c(ws, r, 6, k(cbase) if cbase else "-", fmt="#,##0.0", align=RGT)
+            _c(ws, r, 6, k(cbase) if cbase else "-", fmt="#,##0.000", align=RGT)
             _c(ws, r, 7, (val / cbase) if cbase else "-", fmt="0.0%", align=RGT)
-            _c(ws, r, 8, k(val), fmt="#,##0.0", align=RGT); _c(ws, r, 9, ptew(val), fmt="#,##0", align=RGT)
+            _c(ws, r, 8, k(val), fmt="#,##0.000", align=RGT); _c(ws, r, 9, _leg_ptew, fmt="#,##0", align=RGT)
             r += 1
             # THE COMPETITION SUB-ROWS (John's ruling, 18 August 2026, validated against
             # the 2025 analyst's split): direct / without direct competition beneath each
@@ -233,26 +276,26 @@ def build_workbook(out_path, fc, meta=None):
                     _fb = float(_t.get("base") or 0)
                     _fv = float(_t.get("forecast") or 0) * _scl
                     _c(ws, r, 1, _bl, align=LFT)
-                    _c(ws, r, 2, k(_debase(_fb)) if _fb else "-", fmt="#,##0.0", align=RGT)
+                    _c(ws, r, 2, k(_debase(_fb)) if _fb else "-", fmt="#,##0.000", align=RGT)
                     _c(ws, r, 3, _gr if _fb else "-", fmt="0.0%", align=RGT)
-                    _c(ws, r, 4, k(_fb) if _fb else "-", fmt="#,##0.0", align=RGT)
+                    _c(ws, r, 4, k(_fb) if _fb else "-", fmt="#,##0.000", align=RGT)
                     _c(ws, r, 5, 1.00, fmt="0.00", align=RGT)
-                    _c(ws, r, 6, k(_fb) if _fb else "-", fmt="#,##0.0", align=RGT)
+                    _c(ws, r, 6, k(_fb) if _fb else "-", fmt="#,##0.000", align=RGT)
                     _c(ws, r, 7, (_fv / _fb) if _fb else "-", fmt="0.0%", align=RGT)
-                    _c(ws, r, 8, k(_fv), fmt="#,##0.0", align=RGT)
+                    _c(ws, r, 8, k(_fv), fmt="#,##0.000", align=RGT)
                     _c(ws, r, 9, ptew(_fv), fmt="#,##0", align=RGT)
                     r += 1
         _c(ws, r, 1, "GRAND TOTAL", font=TOTF_FONT, fill=TOTF, align=LFT)
         _bb = n0(dem.get("feed_behind_base")) * _sshare; _yb = n0(dem.get("feed_beyond_base")) * _sshare
-        _c(ws, r, 2, k(_debase(natural + _bb + _yb)), font=TOTF_FONT, fill=TOTF, fmt="#,##0.0", align=RGT)
+        _c(ws, r, 2, k(_debase(natural + _bb + _yb)), font=TOTF_FONT, fill=TOTF, fmt="#,##0.000", align=RGT)
         _c(ws, r, 3, None, fill=TOTF)
-        _c(ws, r, 4, k(natural + _bb + _yb), font=TOTF_FONT, fill=TOTF, fmt="#,##0.0", align=RGT)
+        _c(ws, r, 4, k(natural + _bb + _yb), font=TOTF_FONT, fill=TOTF, fmt="#,##0.000", align=RGT)
         _c(ws, r, 5, None, fill=TOTF)
-        _c(ws, r, 6, k(natural * stim + _bb + _yb), font=TOTF_FONT, fill=TOTF, fmt="#,##0.0", align=RGT)
+        _c(ws, r, 6, k(natural * stim + _bb + _yb), font=TOTF_FONT, fill=TOTF, fmt="#,##0.000", align=RGT)
         _c(ws, r, 7, (tot / (natural * stim + _bb + _yb)) if (natural * stim + _bb + _yb) > 0 else None,
            font=TOTF_FONT, fill=TOTF, fmt="0.0%", align=RGT)
-        _c(ws, r, 8, k(tot), font=TOTF_FONT, fill=TOTF, fmt="#,##0.0", align=RGT)
-        _c(ws, r, 9, ptew(tot), font=TOTF_FONT, fill=TOTF, fmt="#,##0", align=RGT)
+        _c(ws, r, 8, k(tot), font=TOTF_FONT, fill=TOTF, fmt="#,##0.000", align=RGT)
+        _c(ws, r, 9, _legs_ptew, font=TOTF_FONT, fill=TOTF, fmt="#,##0", align=RGT)
         _c(ws, r + 2, 1, f"Figures on this tab are {_bw}. "
                          "Base demand is the addressable each-way O&D market from Sabre Global Demand Data in the origin catchment. "
                          "Rows show the carried allocation after the planned load factor cap and they sum to the total; "
@@ -295,14 +338,27 @@ def build_workbook(out_path, fc, meta=None):
         for label, key, _leg_ew, _mkt_ew in [
                 (f"Connecting at {home} (behind the origin)", "behind_pdew", _csb, n0(dem.get("feed_behind_base"))),
                 (f"Connecting at {d['iata']} (beyond the destination)", "beyond_pdew", _csy, n0(dem.get("feed_beyond_base")))]:
+            # JOL KINGHAM, 24 August 2026: "Code" is ambiguous (airport or IATA city code);
+            # "City" and "Country" likewise don't say name or code. Traced against
+            # _feed_list()'s actual field semantics in cortex_app.py: "code" is keyed into
+            # the airport table (an airport code, not a city code - it disambiguates
+            # airports sharing a city, e.g. the London group), the city field is a name,
+            # and country is the 2-letter ISO code (confirmed against pitch_html.py's own
+            # sample payloads, e.g. "PH", "VN"). Headers now state exactly what each is.
             _sec(ws, r, label, 8); r += 1
-            _hdr(ws, r, ["Nr", "Code", "City", "Country", f"Market demand{_yrtag}", "Share",
+            _hdr(ws, r, ["Nr", "Airport Code", "City Name", "Country Code", f"Market demand{_yrtag}", "Share",
                          f"{_padj} forecast{_yrtag}", "PTEW"],
-                 [6, 10, 24, 20, 15, 10, 15, 9]); r += 1
+                 [6, 12, 24, 14, 15, 10, 15, 9]); r += 1
             lst = dem.get(key) or []; sub_base = 0.0; sub_fc = 0.0
             for i, row in enumerate(lst, 1):
                 base = n0(row.get("base")); shr = n0(row.get("share"))
-                fcv = n0(row.get("forecast")) or (n0(row.get("pdew")) * weeks * 7.0); pdv = n0(row.get("pdew"))
+                # SEVENTH INSTANCE OF THE FLAT-DAY PTEW BUG (24 August 2026, Jol Kingham: the
+                # Connecting feed tabs' PTEW column did not sum to Cover row 24 nor the
+                # Forecast tabs). This fallback (only used when a row's own "forecast" field
+                # is missing) reconstructed it from pdew x weeks x 7.0 - a flat daily-service
+                # assumption, the same wrong basis as the six other instances fixed this week -
+                # instead of the route's actual freq x weeks departures.
+                fcv = n0(row.get("forecast")) or (n0(row.get("pdew")) * freq * weeks); pdv = n0(row.get("pdew"))
                 if fcv <= 0 and pdv <= 0:
                     continue
                 sub_base += base; sub_fc += fcv
@@ -325,18 +381,29 @@ def build_workbook(out_path, fc, meta=None):
                 _c(ws, r, 5, round(_other_dem * _mult) if _other_dem else "-", fmt="#,##0", align=RGT)
                 _c(ws, r, 6, "-", align=RGT)
                 _c(ws, r, 7, round(_other * _mult), fmt="#,##0", align=RGT)
-                _c(ws, r, 8, round(_other / (weeks * 7.0), 1), fmt="#,##0.0", align=RGT)
+                _c(ws, r, 8, round(_other / (freq * weeks), 1) if freq else "-", fmt="#,##0.0", align=RGT)
                 r += 1
+            # Total row PTEW (24 August 2026, Jol Kingham): this cell was blank, so a
+            # reader summing the column by hand was building their own total from
+            # individually-rounded per-city figures, which drifts from the true leg total
+            # by ordinary rounding error as the list gets longer. Printed directly instead,
+            # from the same carried-leg figure and the same freq x weeks basis Cover and
+            # the Forecast tabs use for this leg, so this cell agrees with both by
+            # construction rather than by chance.
             _c(ws, r, 1, "Total", font=BOLD, fill=TOTF, align=LFT)
-            for cc in (2, 3, 4, 6, 8):
+            for cc in (2, 3, 4, 6):
                 _c(ws, r, cc, None, fill=TOTF)
             _c(ws, r, 5, round((sub_base + _other_dem) * _mult) if (sub_base or _other_dem) else "-",
                font=BOLD, fill=TOTF, fmt="#,##0", align=RGT)
-            _c(ws, r, 7, round((sub_fc + _other) * _mult), font=BOLD, fill=TOTF, fmt="#,##0", align=RGT); r += 1
+            _c(ws, r, 7, round((sub_fc + _other) * _mult), font=BOLD, fill=TOTF, fmt="#,##0", align=RGT)
+            _c(ws, r, 8, round(_leg_ew / (freq * weeks), 1) if freq else "-",
+               font=BOLD, fill=TOTF, fmt="#,##0.0", align=RGT); r += 1
             _c(ws, r, 1, f"Figures on this tab are {_bw}; PTEW (passengers per departure) is a rate and reads the "
                          "same on the EW and 2-way tabs. Market demand and forecast both complete to their carried-leg "
                          "and market totals via the All-other row, so both columns now agree with "
-                         "the forecast table and each other.",
+                         "the forecast table and each other. The Total row's PTEW is this leg's carried total divided "
+                         "by scheduled departures, the same figure and basis as Cover and the Forecast tabs; the "
+                         "individual city rows above will not sum to it exactly, each being rounded separately.",
                font=NOTE, align=LFT, border=None)
             ws.merge_cells(start_row=r, start_column=1, end_row=r, end_column=8)
             r += 2

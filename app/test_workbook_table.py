@@ -105,6 +105,18 @@ def main():
               "%s + %s = %s" % (p2p[7], legs, gt[7]))
         check("grand total base column summed", abs(gt[1] - 1095.5) < 0.5, gt[1])
 
+        # GRAND TOTAL PTEW FOOTS TO THE DISPLAYED PARTS (24 August 2026, Jol Kingham:
+        # "the two forecast tabs PTEW sum of parts (267) does not match the total
+        # (268)"). Not a basis bug - p2p+behind+beyond equals tot exactly by
+        # carried_split's own invariant, but each row's PTEW was independently rounded
+        # to a whole number, so the parts as displayed did not sum to the total as
+        # displayed. The GRAND TOTAL row's PTEW is now the sum of the three displayed
+        # PTEW cells, so this must hold exactly, not just within tolerance.
+        legs_ptew = [rows[k][8] for k in rows if k.startswith("Total ") and "point" not in k]
+        check("GRAND TOTAL PTEW foots exactly to the displayed parts",
+              p2p[8] + sum(legs_ptew) == gt[8],
+              f"{p2p[8]} + {legs_ptew} = {p2p[8] + sum(legs_ptew)}, GRAND TOTAL={gt[8]}")
+
         # CROSS-TAB PTEW CONSISTENCY (23 August 2026, Jol Kingham's exact complaint:
         # Cover's PDEW/PTEW did not match Connecting feed's or Forecast's). Cover
         # prints dem["pdew_total"] verbatim, straight from the engine payload;
@@ -113,8 +125,10 @@ def main():
         # figure for the same route, or a client sees exactly what Jol saw.
         wb_grown = openpyxl.load_workbook(os.path.join(tmp, "grown.xlsx"), data_only=True)
         cov = wb_grown["Cover"]
+        # Label updated 24 Aug 2026 (Jol Kingham): Cover now says "Passenger Trip Each
+        # Way (PTEW)" in full, spelling the term out on first use for the whole workbook.
         cov_pdew = next(c[1].value for c in cov.iter_rows(min_row=1)
-                         if c[0].value == "Passengers/day each way")
+                         if c[0].value == "Passenger Trip Each Way (PTEW)")
         check("Cover PTEW matches Forecast tab's grand-total PTEW (Jol's mismatch)",
               abs(cov_pdew - gt[8]) < 0.6, f"Cover={cov_pdew}, Forecast grand total={gt[8]}")
 
@@ -165,6 +179,24 @@ def main():
         check("beyond demand completes to the full market", t_bey_dem == 200000, t_bey_dem)
         check("note states both columns now reconcile",
               any("both columns now agree" in s for s in flat))
+        # CONNECTING FEED TOTAL PTEW (24 August 2026, Jol Kingham: "the PTEWs in tabs
+        # 'Connecting feed EW' and 'Connecting feed 2-way' ... does not match Cover tab
+        # row 24, nor the two Forecast tabs"). Two defects: the Total row's PTEW cell
+        # was blank (a reader summing the city rows by hand was building their own,
+        # rounding-drifted total), and the All-other row's own PTEW used a flat
+        # weeks x 7.0 denominator (assumed daily service) instead of the route's real
+        # freq x weeks - the same bug class as the six other PTEW instances fixed this
+        # week, just not caught until now because this tab had no visible total to
+        # check it against. Both fixed: the Total row now prints the leg's carried
+        # total divided by freq x weeks directly, the same figure and formula Cover
+        # and the Forecast tabs use for the same leg.
+        freq, weeks = 4, 52
+        exp_beh_ptew = round(t_beh / (freq * weeks), 1)
+        exp_bey_ptew = round(t_bey / (freq * weeks), 1)
+        check("Connecting feed Total PTEW matches Cover/Forecast basis (behind)",
+              abs(totals[0][7] - exp_beh_ptew) < 0.1, f"{totals[0][7]} vs {exp_beh_ptew}")
+        check("Connecting feed Total PTEW matches Cover/Forecast basis (beyond)",
+              abs(totals[1][7] - exp_bey_ptew) < 0.1, f"{totals[1][7]} vs {exp_bey_ptew}")
 
         # the Departure curve sheet (19 August 2026): raw curve + the dashboard's own
         # carried transform + a native chart; must reconcile with the headline at the

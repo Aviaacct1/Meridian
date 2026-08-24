@@ -1,0 +1,59 @@
+Cover, Forecast and Connecting feed tab fixes (Jol Kingham, 24 Aug 2026 email)
+
+Second round of review comments on the corrected CI/BR/JX workbooks, this time on
+labelling and display precision rather than the underlying PTEW figures themselves
+(those were fixed and confirmed correct the same week - see
+COMMIT-MSG-23Aug2026-jol-ptew-mismatch-root-cause.txt).
+
+Six fixes, all in app/cortex_workbook.py:
+
+1. Cover tab: "Passengers/day each way" -> "Passenger Trip Each Way (PTEW)". Spells
+   the term out in full on first use, setting it up for the rest of the workbook, per
+   Avia's own house rule on sector abbreviations (John's exact wording).
+
+2. Cover tab FORECAST block: now carries both each-way and 2-way figures for point to
+   point, connecting behind, connecting beyond and total forecast (eight rows, up from
+   four), each row's own label stating its basis. The 2-way figure is the each-way
+   figure doubled at one point (_p2p_ew * 2 etc), never recomputed a second way - the
+   same discipline as every other EW/2-way pairing in this workbook.
+
+3. Cover tab BASIS block: "Sabre Global Demand Data year" printed "2,025" instead of
+   "2025". Root cause: the block's generic row-renderer applies a thousands-separator
+   number format to any int/float value, and a year is an int with no digit-grouping
+   meaning. Cast to a string at the point the row tuple is built, so it falls through
+   to the plain-text branch instead.
+
+4. Cover tab BASIS block: "OAG schedule week" renamed to "OAG schedule week
+   (beginning)". Sourced, not guessed - resolve_oag_week()'s own docstring in
+   cortex_app.py documents the single-week store label as "week commencing".
+
+5. Forecast tab: base demand, grown demand, stimulated demand and forecast columns
+   (columns 2, 4, 6, 8) bumped from one decimal place to three (fmt="#,##0.000").
+   CAGR, stimulation factor, capture rate and PTEW columns untouched - Jol asked
+   specifically about the demand and forecast columns.
+
+6. Connecting feed tabs: header row renamed "Code"/"City"/"Country" to "Airport
+   Code"/"City Name"/"Country Code". Traced against _feed_list()'s actual field
+   semantics in cortex_app.py: "code" keys into the airport table (an airport code,
+   disambiguating airports that share a city, e.g. the London group), the city field
+   is a name, and country is the 2-letter ISO code (cross-checked against
+   pitch_html.py's own sample payloads, e.g. "PH", "VN").
+
+Verification:
+- test_workbook_table.py's Cover-PTEW-matches-Forecast check updated to look up the
+  new label text; 23/23 checks pass.
+- Full app/ regression suite run: no failures attributable to this change. The two
+  failures seen (test_mct.py: fastapi not installed in this sandbox; test_regression_v2.py:
+  a workstation-only Z: drive reference file) are pre-existing sandbox environment
+  limitations, not regressions - confirmed by reading both tracebacks, neither touches
+  cortex_workbook.py.
+- A dedicated sweep of app/ for any other code or test depending on the six changed
+  strings/formats/row-counts found no other references; test_workbook_table.py reads
+  the Cover tab by label lookup, not row index, so the 4-row-to-8-row FORECAST block
+  split does not break it.
+
+Not yet done: no live regeneration of a real route workbook and eyeball check against
+the CI/BR/JX files Jol is looking at - that needs the workstation. Reply to Jol not yet
+sent; wait for the workstation-verified regeneration first, same discipline as the
+first PTEW fix (a code fix without a live-verified regeneration was not enough to send
+to a client once already this week).

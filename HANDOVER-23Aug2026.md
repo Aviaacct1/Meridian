@@ -33,6 +33,55 @@ trap. After a proper restart, all three CI/BR/JX workbooks checked out clean and
 sent the corrected files to Jol. No action needed on this by whoever picks this file up
 next; it is recorded here for the record, not as a task.
 
+**SECOND ADDENDUM, 24 August 2026, CODE DONE, LIVE VERIFICATION AND SEND STILL OWED**: Jol
+sent a follow-up email the same morning, this time on labelling and display precision in
+the corrected CI/BR/JX workbooks (the underlying PTEW figures themselves were already
+right - see above). Six fixes made in `app/cortex_workbook.py`, all traced against the
+code's own logic before being made, not guessed: Cover tab's PTEW row spelled out in full
+("Passenger Trip Each Way (PTEW)", John's own wording); Cover tab now carries 2-way
+figures alongside each-way for the four forecast rows; the "2,025" year-formatting bug
+fixed (was falling into the generic thousands-separator format); "OAG schedule week"
+relabelled "(beginning)", sourced from `resolve_oag_week()`'s own docstring ("week
+commencing"); Forecast tab demand/forecast columns bumped from 1dp to 3dp; Connecting feed
+header row renamed "Airport Code"/"City Name"/"Country Code", traced against
+`_feed_list()`'s actual field semantics. Full detail and verification in
+`COMMIT-MSG-24Aug2026-jol-second-email-cover-forecast-feed-labels.txt`. `test_workbook_table.py`
+passes 23/23 (its Cover-PTEW-lookup updated to the new label) and a dedicated sweep of
+`app/` found no other code or test depending on the six changed strings/formats/row-counts.
+Full regression suite run clean bar two pre-existing sandbox-only failures (no `fastapi`
+installed; a workstation-only `Z:` drive reference file), neither touching this change.
+
+**Not done**: no live regeneration of a real route workbook against these code changes -
+that needs the workstation, same as the first PTEW fix, which looked right in the sandbox
+too until a live regeneration caught the stale-process trap. **Do not send anything to Jol
+until a workstation-regenerated CI/BR/JX (or equivalent) file has been eyeballed against
+this list.** Files changed and staged for commit, not yet committed or pushed - see the
+DevPC block in that COMMIT-MSG file's own session for the exact `git add` list (deliberately
+excludes three xlsx/pptx test-output files this session's own local test run touched as a
+side effect, and the pre-existing unrelated `diag_tpe_sjc_catchment_decomp.py` edit).
+
+**THIRD ADDENDUM, 24 August 2026, same day, CODE DONE, LIVE VERIFICATION AND SEND STILL
+OWED**: Jol sent a further follow-up within the hour (12:27) - the labelling batch above
+did not touch the actual PTEW figures, and he had already spotted they were still wrong:
+"unless I am going mad... does not match Cover tab row 24, nor the two Forecast tabs...
+the two forecast tabs PTEW sum of parts (267) does not match the total (268)." Two real
+issues found and fixed in `cortex_workbook.py`, not display bugs this time. First: the
+Forecast tabs' GRAND TOTAL PTEW was independently rounded from the true total rather than
+summed from the three displayed rows, so 267 (sum of the rounded parts) and 268 (round of
+the true total) were both "correct" and never going to agree by hand - now the GRAND TOTAL
+row sums the displayed parts, so it foots exactly, always. Second: the Connecting feed
+tabs had no Total row PTEW figure at all (Jol was summing city rows himself), and the
+All-other row's own PTEW used a flat weeks-times-7 denominator (assumed daily service) -
+the SEVENTH instance of this week's flat-day PTEW bug, found only because this fix went
+looking for why the tab had no total to check against. Both fixed; full detail in
+`COMMIT-MSG-24Aug2026-jol-third-email-ptew-footing-and-feed-total.txt`. Two new regression
+checks added (GRAND TOTAL footing is now a hard equality, not a tolerance); 26/26 checks
+pass; full suite re-run clean bar the same two pre-existing sandbox-only failures. **Not
+done: live regeneration and eyeball check against a real CI/BR/JX file - do not send
+anything further to Jol until that is done.** This is now the THIRD time this week a
+sandbox-verified PTEW fix has needed a live check before being trusted; treat that as the
+standing rule for this figure specifically, not bad luck.
+
 ---
 
 ## 1. The clock

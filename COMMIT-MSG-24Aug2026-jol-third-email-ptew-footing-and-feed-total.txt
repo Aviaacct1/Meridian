@@ -1,0 +1,58 @@
+Connecting feed and Forecast tab PTEW footing (Jol Kingham, 24 Aug 2026, 12:27 email)
+
+Jol's follow-up to the labelling batch fixed earlier the same day - this time on
+substance, not display: "unless I am going mad, the PTEWs in tabs 'Connecting feed
+EW' and 'Connecting feed 2-way' are still not correct... does not match Cover tab
+row 24, nor the two Forecast tabs. Further, the two forecast tabs PTEW sum of parts
+(267) does not match the total (268)."
+
+Two genuinely separate issues, both in app/cortex_workbook.py, traced before either
+was touched:
+
+1. FORECAST TAB FOOTING (267 v 268). Not a basis bug - p2p + behind + beyond equals
+   the grand total exactly, by carried_split()'s own invariant (the comment at line
+   ~203 already documents this: "the legs sum to the total by construction"). The
+   drift was pure independent rounding: each row's PTEW is round(x / (freq x weeks))
+   to a whole number, and round(a) + round(b) + round(c) does not generally equal
+   round(a+b+c). The GRAND TOTAL row's PTEW column now sums the three displayed PTEW
+   values instead of rounding the true total separately, so the row a reader checks
+   by hand is the row that is actually right when checked. This is a hard equality
+   now (checked in the test as p2p_ptew + sum(leg_ptews) == grand_total_ptew, not a
+   tolerance), by construction.
+
+2. CONNECTING FEED TOTAL PTEW - two defects, found together:
+   a) The Total row's PTEW cell was blank. A reader summing the visible city rows by
+      hand (which is what Jol was doing) was building their own total from
+      individually-rounded per-city PTEW figures - a total that drifts from the true
+      leg total by ordinary rounding error as the list gets longer, and was never
+      going to agree with Cover or Forecast to the unit. Fixed by printing the
+      figure directly: the leg's carried total (the same _leg_ew Cover and Forecast
+      already use for this leg, both ultimately from the same carried_split(dem)
+      call) divided by the route's real freq x weeks - the same formula, same
+      source figures as Cover row 24 and the Forecast tabs' own leg rows, so this
+      cell agrees with both by construction rather than by chance.
+   b) SEVENTH INSTANCE of this week's flat-day PTEW bug, found while fixing (a): the
+      "All other connecting markets" row's own PTEW was computed as
+      _other / (weeks * 7.0) - a flat, assumed-daily-service denominator, the same
+      wrong basis as the six other instances fixed earlier this week (Cover's
+      pdew_total, forecast_spec.py's _fc_connecting, etc), just not caught until now
+      because this tab had no visible total to check the column against. Fixed to
+      freq x weeks, the route's actual scheduled departures. The same wrong
+      constant was also present in a fallback at the top of the per-city loop
+      (reconstructing "forecast" from "pdew" when a row's own forecast field is
+      missing) - fixed for consistency, though it is a rarely-hit fallback path.
+
+Verification:
+- Two new regression checks in test_workbook_table.py: the GRAND TOTAL PTEW footing
+  (exact equality, not tolerance) and the Connecting feed Total row's PTEW against
+  the same freq x weeks formula Cover/Forecast use. Both pass; 26/26 checks overall
+  (up from 23).
+- Full app/ regression suite re-run clean, same two pre-existing sandbox-only
+  failures as this morning's batch (no fastapi installed; a workstation-only Z:
+  drive reference file), neither touching cortex_workbook.py.
+
+Not yet done: live regeneration against the workstation and an eyeball check of a
+real CI/BR/JX file against Jol's specific numbers (267/268, the Connecting feed
+totals he was summing). Do not send anything to Jol until that live check is done -
+the sandbox has looked right before and been wrong once already this week because of
+the stale-server-process trap, not a code defect.
