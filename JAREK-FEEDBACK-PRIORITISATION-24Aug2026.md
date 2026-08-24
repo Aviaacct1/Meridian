@@ -118,20 +118,89 @@ extension, not new methodology risk.
   than Monte Carlo. Worth doing once fare is genuinely in the model, not before.
 - Fully agentic assistant (item 16): no detail given, long-term direction only.
 
-## Suggested order on return
+## Suggested order on return, SUPERSEDED below
 
-1. Curfew labelling fix (should have, product, already caused live confusion).
-2. Fare into the QSI capture layer (should have, methodology, the single highest-precedent gap
-   against both the industry standard and Avia's own stated post-pandemic ambition).
-3. Aircraft-type QSI coefficient (should have, methodology, moderate effort, rides alongside the
-   fare work since both touch the capture score).
-4. Alliance/codeshare sensitivity UI (should have, methodology-adjacent, mechanism already exists).
-5. OAG week/Sabre year selection and comparison tab; MCT override; permissions and Expert Mode
-   gating (should have, product, roughly parallel tracks, no sequencing dependency between them).
-6. Cannibalisation/share-of-market reporting: verify current state before scoping as new work.
-7. Everything in the nice-to-have list, unscheduled, revisit after the above closes.
+The order originally set out here (curfew, then fare, then aircraft-type, then alliance UI, then
+the product items, methodology ahead of visuals throughout) was built purely on methodology
+precedent: what closes a real, documented gap against the standard model. John's ruling below
+overrides that ordering on commercial grounds and is the one to work from.
+
+## John's ruling on sequencing, 24 August 2026 (later same day)
+
+Visual/UX quick wins go first, ahead of the fare and aircraft-type engine work, even though the
+engine work has the stronger methodology precedent. Reasoning, John's own: at demos, the visual
+items change how capable Meridian LOOKS with comparatively little effort, while the fare/
+aircraft-type work sits mostly in the engine and does not change what a viewer at Routes actually
+sees. Given the near-term calendar is demos, not methodology defence, perceived capability now
+outweighs engine depth that would matter more once the tool is being scrutinised by an analyst
+like Nick rather than shown at a stand.
+
+This does not reverse the earlier finding that fare and aircraft-type are the strongest-precedented
+gaps; it changes when they get built, not whether. Both stay should-have and move to the second
+phase.
+
+John also flagged the real constraint on the visual side: adding chart/map depth without
+overwhelming a first-time user is a design problem in its own right, not a free add. Given Jarek's
+own item 1 (hide Expert Mode behind a permission so casual users aren't shown complexity they don't
+need), the likely shape is progressive disclosure, a clean default view with the new visual detail
+available rather than forced on screen, but the actual design is deferred to John's return along
+with everything else here.
+
+## Revised order on return
+
+1. Curfew labelling fix (already caused live tester confusion, small, do first regardless).
+2. Visual/UX quick wins (John's ruling): interactive maps, hover detail on origin/destination/
+   connection points, dynamic behind/beyond routing and volume visuals, auto-generated market
+   background, CSV/export completeness for charts. Scope each for genuine quick-win effort before
+   committing; some of Jarek's "nice to have" visual items may turn out to be a full build once
+   priced, at which point they drop back down the order.
+3. The UX-overwhelm design question: how the added visual depth sits alongside the existing clean
+   dashboard without burying a first-time user. Needs deciding before item 2 ships, not after.
+4. Product items with no methodology risk and no demo-perception value on their own: OAG week/
+   Sabre year selection and comparison tab, MCT override, permissions and Expert Mode gating,
+   save/load scenarios.
+5. Fare into the QSI capture layer; aircraft-type QSI coefficient. Strongest methodology
+   precedent, deferred behind the visual work per John's ruling, not behind it on merit.
+6. Alliance/codeshare sensitivity UI (mechanism already exists, low risk, no urgency either way).
+7. Cannibalisation/share-of-market reporting: verify current state before scoping as new work.
+8. Everything remaining in the nice-to-have list (double-stop QSI, Monte Carlo/sensitivity,
+   agentic assistant), unscheduled.
 
 Day-of-week frequency allocation (raised separately by John, 24 August, not from Jarek's list)
-sits alongside item 2 in effort and precedent, since it is also a genuine capture-model extension
-rather than a display fix; sequence it with the fare and aircraft-type work rather than
-separately.
+is engine-side like fare and aircraft-type, not demo-visible on its own, so it sequences with
+item 5, not earlier.
+
+## Design note: where the market background and visual analysis lives (24 August, John's ask)
+
+Decision proposed: NOT a new menu item, NOT always-on dashboard content. A collapsed "Market
+background" panel on the Dashboard itself, between route entry and the Run button, populating
+automatically once origin, destination and airline resolve.
+
+Against a separate menu item: the evidence is in Jarek's own email. Pieces of what he asked for
+already exist behind menu items (/catchment map, /api/watch/series airport capacity and demand,
+/api/hubbank bank analysis) and he missed all of them ("you may already have some of this and I
+simply missed it"). A new menu item repeats that failure, and breaks his stated sequence of
+background-before-forecast, since nobody navigates to a second page between typing a route and
+pressing Run.
+
+Against always-on dashboard content: the overwhelm problem. The dashboard's clean route-entry-
+plus-Run shape is what Jarek praised; six charts above the fold kills it.
+
+The shape: on route resolution, a one-line summary strip renders (P2P market size, existing
+direct service or "none", top carriers by share, catchment population). One click expands to the
+full set: catchment map, behind/beyond potential, demand by airport at stated circuity, cabin
+split, alliance/airline split, each chart downloadable. Collapsed by default, expansion state
+remembered per user. Same progressive-disclosure pattern as gating Expert Mode. Demo effect:
+type a route at a stand and the market paints itself before anything is run.
+
+Why quick-win: the dashboard already fires lookups as route fields resolve (/api/lookup,
+/api/route_status), so the trigger exists; most data is behind built endpoints (catchment, watch
+series, hubbank, basis). Work = one aggregating endpoint (/api/market_brief) assembling what
+exists, the panel, and charts reusing existing dashboard chart primitives plus the DDFS
+SVG-download pattern. Genuinely new data work is limited to cabin split and alliance share by
+route, both straight Sabre/OAG queries.
+
+Caution: Sabre queries are the expensive part of every run. The brief must not slow the
+forecast: debounce until both endpoints resolve, cache per (route, week, year), never block the
+Run button on the brief completing. A brief that fills in over ten seconds while the user sets
+assumptions is fine; one that delays the forecast is a net loss.
