@@ -1,0 +1,38 @@
+Curve PNG: force the matplotlib backend, name the exception (John Carter, live-run miss)
+
+John's first two live regenerations exposed the actual defect this fix closes. Run 1
+(fixed dep_time 20:59, no optimiser sweep) correctly produced neither the Excel
+"Departure curve" sheet nor the PNG - traced to the download reproducing a pinned
+departure, a separate, pre-existing product gap, not a bug in today's work. Run 2 (a
+genuine optimised run, curve data present, confirmed by uploading the workbook and
+reading the "Departure curve EW" tab directly) produced the sheet correctly but not the
+PNG - a real defect in this feature.
+
+Reconstructed his exact live figures (p2p_carried 29,452, connecting_carried circa
+36,068, cap 74,880 x 0.875, the 27-point curve, the 21:00-06:00 restricted band, chosen
+20:59) into a synthetic fc and called render_curve_png() directly: it rendered cleanly
+in the sandbox, so the rendering logic and the guard conditions are not the fault -
+_curve_series() reads the identical fields the existing "Departure curve" sheet code
+already reads successfully from the same live fc.
+
+The remaining explanation is the matplotlib backend. app/cortex_workbook.py's
+render_curve_png() called matplotlib.use("Agg") - but the deck path (avia_charts.py and
+the other Observatory deck generator modules) already imports matplotlib.pyplot
+elsewhere in the same long-running server process, sometimes before this function ever
+runs. Once pyplot has been imported, a plain matplotlib.use("Agg") is a silent no-op: it
+does not raise, so there was nothing for the try/except in build_workbook() to catch,
+and the workbook shipped with no PNG and no visible error either.
+
+Two changes:
+1. matplotlib.use("Agg", force=True) - this does switch the backend even after pyplot
+   has already been imported elsewhere in the process, which a plain .use() call does not.
+2. The wrapping try/except in build_workbook() now prints the full traceback
+   (traceback.print_exc()), not just str(e), so if this or anything else in the render
+   path fails again, the server console names the actual line rather than a bare message.
+
+Not proven against the live workstation process - this is the best-supported explanation
+given the reconstructed data rendered clean and the mechanism is a known, documented
+matplotlib footgun (a silent no-op on a second .use() call), not a guess made without
+first ruling out the data itself. Verified: 33/33 checks still pass, full regression
+clean. Should be the last of today's PNG fixes - if the traceback fires again after this
+is deployed, the console output is the next thing to read, not another blind guess.

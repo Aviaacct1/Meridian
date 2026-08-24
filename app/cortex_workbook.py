@@ -102,7 +102,13 @@ def render_curve_png(fc, meta, out_path):
     if not cs:
         return None
     import matplotlib
-    matplotlib.use("Agg")
+    # force=True (24 August 2026, live-run miss): the deck/ path (avia_charts.py etc.) already
+    # imports matplotlib.pyplot elsewhere in this same long-running server process, sometimes
+    # before this function ever runs, and a plain matplotlib.use("Agg") is a silent no-op once
+    # pyplot has already picked a backend - it does not raise, so the try/except around this
+    # call in build_workbook() had nothing to catch, and the workbook shipped with no PNG and
+    # no error either. force=True actually switches the backend regardless of what ran first.
+    matplotlib.use("Agg", force=True)
     import matplotlib.pyplot as plt
     import matplotlib.dates as mdates
     import datetime as _dt
@@ -900,6 +906,12 @@ def build_workbook(out_path, fc, meta=None):
     # Never lets a rendering problem break the primary xlsx delivery.
     try:
         render_curve_png(fc, meta, out_path)
-    except Exception as _pe:                                      # noqa: BLE001
-        print("render_curve_png: not rendered - %s" % _pe)
+    except Exception:                                              # noqa: BLE001
+        # Full traceback, not just str(e) (24 August 2026): the first live miss gave no clue
+        # at all why the PNG did not land, because the backend-selection failure this was
+        # changed to guard against (see render_curve_png's own force=True note) does not
+        # always raise a message that says so on its own line.
+        import traceback
+        print("render_curve_png: not rendered -")
+        traceback.print_exc()
     return out_path
