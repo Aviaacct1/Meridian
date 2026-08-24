@@ -190,26 +190,18 @@ def render_curve_png(fc, meta, out_path):
                     bbox=dict(boxstyle="round,pad=0.4", fc="#EEF1F6", ec="#AAB4C4"),
                     arrowprops=dict(arrowstyle="-", color="#777777", lw=0.8, shrinkB=4))
 
-    # DATA-DERIVED INSIGHT, not John's caption copied verbatim (24 August 2026): true only
-    # when it is actually true for THIS route's own curve. Checks whether every restricted
-    # hour still sits at the capacity ceiling - if so, the restriction costs nothing, the
-    # exact claim; if a restricted hour would otherwise carry less than the ceiling, the
-    # honest statement is the passengers that costs at the best unrestricted departure.
-    # Placed at the bottom, clear of the callout box and legend which both sit near the top.
-    if cs["restricted"] and cs["cap_ew"] > 0:
-        ceiling2 = cs["cap_ew"] * mult
-        restricted_pts = [p for p in pts if not p["permitted"]]
-        if restricted_pts and all(p["total_ew"] * mult >= ceiling2 - 0.5 for p in restricted_pts):
-            ax.text(0.02, 0.04, "capacity-bound: the restriction costs no carried traffic",
-                    transform=ax.transAxes, fontsize=10, color="#555555")
-        else:
-            best_unrestricted = max((p["total_ew"] for p in pts if p["permitted"]), default=0)
-            worst_restricted = min((p["total_ew"] for p in restricted_pts), default=best_unrestricted)
-            gap = round((best_unrestricted - worst_restricted) * mult)
-            if gap > 50:
-                ax.text(0.02, 0.04, f"the restriction costs up to {gap:,} carried passengers/yr "
-                                     "at the least favourable permitted departure",
-                        transform=ax.transAxes, fontsize=10, color="#555555")
+    # REMOVED (John Carter, 24 August 2026): this caption made the same "the restriction"
+    # claim as the title clause dropped alongside it, and for the same reason - a run's
+    # restricted_hours input is not necessarily the airport's real curfew (John's own SJC
+    # runs enter 21:00-06:00, wider than SJC's actual 23:30-06:00, purely to force the
+    # optimiser onto the 20:59 departure, a workaround for the separate dep-time-pinning
+    # gap where selecting 21:00 directly loses the curve entirely). Confusing rather than
+    # informative while that workaround is the only way to see a curve for a chosen time.
+    # THE REAL FIX, noted for later, not attempted now: let a caller fix a departure time
+    # AND still get the curve, so the picture can show where that choice sits against the
+    # optimum for the same frequency - the dashboard's own dep_time-blank-only rule
+    # (cortex_app.py line ~1046, optimise_departure only runs when dep_mins is None) is
+    # the thing to change, not this chart.
 
     yr = cs["forecast_year"]
     # NOT labelled as the restriction (John Carter, 24 August 2026): the shaded band is

@@ -1,0 +1,20 @@
+Curve PNG: drop the "restriction costs" caption too (John Carter, 24 Aug 2026)
+
+Same reasoning as the title clause dropped earlier today: the caption ("capacity-bound:
+the restriction costs no carried traffic" / "the restriction costs up to X carried
+passengers/yr...") describes John's SJC restricted_hours override (21:00-06:00, entered
+to force the optimiser onto 20:59) as if it were the airport's real curfew (23:30-06:00).
+Confusing while that override is the only way to get a curve for a chosen departure at
+all. Removed; the shaded band is now genuinely unlabelled, no text anywhere claiming
+what the shading represents.
+
+John's own framing, recorded for later rather than attempted now: "we should be able to
+select a time to run and still generate the curve, so they can see where the selection
+sits on the optimum curve for that freq." Root cause is cortex_app.py line circa 1046 -
+route_feed.optimise_departure() (the function that sweeps the whole day) only runs when
+dep_mins is None; the moment any departure time is supplied, even the optimiser's own
+just-chosen one on a download, the sweep is skipped and there is no curve at all. Full
+detail in the new meridian-fixed-dep-curve-backlog memory - not scoped, not started,
+flagged for whenever this is picked up.
+
+Verified: 34/34 regression checks still pass (no test read the caption text).
