@@ -773,10 +773,24 @@ def _econ_block(each_way, aircraft, freq, home, dest_airport, gcd, econ_share, p
 
 
 def _schedule_times(o_code, d_code, o, d, block_min, dep_out=11.0, turn_h=2.0,
-                    restricted=None, restricted_dest=None):
-    """Indicative local dep/arr clock times from block time and an approximate timezone offset (by
-    longitude). Illustrative only: not curfew-, slot- or connection-optimised, but gives the schedule
-    a sensible shape. Outbound departs the origin late morning; the return turns at the destination."""
+                    restricted=None, restricted_dest=None, arr_return_mins=None,
+                    turn_client=False):
+    """Local dep/arr clock times from block time and an approximate timezone offset (by longitude).
+
+    THE RETURN'S BASIS IS STATED, NOT LABELLED ILLUSTRATIVE (John, 24 August 2026: "illustrative"
+    was fine in development, but close to launch most numbers rest on a stated decision). The
+    default draw times the return to land one turnaround before the next outbound, and the
+    turnaround is the type/sector standard from route_feed.turnaround_mins (or the caller's own
+    figure when turn_client is set), so the honest label is that basis, said in words on the
+    schedule line, not "indicative".
+
+    arr_return_mins, new 24 August 2026 (the arrival-time input agreed with John from Jarek's
+    feedback): the caller fixes the RETURN'S ARRIVAL at the origin, in origin local minutes, and
+    the return departure is derived to hit it. Return timing moves no demand anywhere in the
+    engine (both feed sides price off the outbound departure alone), so this is schedule drawing,
+    never forecasting. When the derived rotation cannot physically turn at the destination inside
+    the stated turnaround, the draw says so rather than moving the caller's time: the same
+    flag-not-hide rule as the curfewed return."""
     def tz(a):
         try:
             return round((a.get("lon") or 0.0) / 15.0)
@@ -829,15 +843,38 @@ def _schedule_times(o_code, d_code, o, d, block_min, dep_out=11.0, turn_h=2.0,
     # If the implied arrival falls inside a restriction then the DEPARTURE is not flyable, and
     # that belongs in optimise_departure's permitted() rather than being papered over here.
     ground_h = turn_h
-    target_arr_origin = dep_out - ground_h
+    turn_basis = "caller-set" if turn_client else "type-standard"
+    if arr_return_mins is not None:
+        # THE CALLER'S ARRIVAL WINS. The return is derived to land at the stated time; the
+        # turnaround is then a feasibility check on the rotation, not an input to the draw.
+        target_arr_origin = (float(arr_return_mins) / 60.0) % 24.0
+        return_basis = (f"return arrival {hhmm(target_arr_origin)} set by the caller; "
+                        f"departure derived from it")
+    else:
+        target_arr_origin = dep_out - ground_h
+        return_basis = (f"return timed to land {int(round(turn_h * 60))} min "
+                        f"({turn_basis} turnaround) before the next departure")
     dep_ret = (target_arr_origin - bh - (tzo - tzd)) % 24.0
     ret_note = None
+    if arr_return_mins is not None:
+        # Can the rotation physically turn at the destination? The derived return departure
+        # against the outbound's arrival there, in destination local time. Flag, never move:
+        # a time the caller set must not be rewritten, only questioned out loud.
+        _dest_ground_h = (dep_ret - (arr_dest_local % 24.0)) % 24.0
+        if _dest_ground_h < ground_h:
+            ret_note = (f"the return would depart {d_code} {_dest_ground_h * 60:.0f} min after "
+                        f"the outbound arrives, inside the {int(round(turn_h * 60))} min "
+                        f"{turn_basis} turnaround - this arrival needs a second aircraft "
+                        f"or an earlier outbound")
     if restricted or restricted_dest:
         try:
             import route_feed as _RF
             w_o = _RF.parse_windows(restricted) if restricted else []
             w_d = _RF.parse_windows(restricted_dest) if restricted_dest else []
-            _arr_m = int(round(((dep_out - ground_h) % 24.0) * 60)) % 1440
+            # The return's actual arrival, which is the caller's time when one was set; the old
+            # derivation here silently assumed the default draw and would have screened the wrong
+            # clock time against the curfew on an arrival-driven return.
+            _arr_m = int(round((target_arr_origin % 24.0) * 60)) % 1440
             _dep_m = int(round(dep_ret * 60)) % 1440
             bad = []
             if _RF.in_window(_arr_m, w_o):
@@ -848,10 +885,11 @@ def _schedule_times(o_code, d_code, o, d, block_min, dep_out=11.0, turn_h=2.0,
             if bad:
                 # Drawn as it stands and NAMED. A schedule that cannot be flown must not be shown
                 # silently, and moving it here would hide an infeasible departure rather than
-                # rejecting it where the departure is chosen.
-                ret_note = "; ".join(bad)
+                # rejecting it where the departure is chosen. Appended to any turnaround flag
+                # above rather than replacing it: two problems are two problems.
+                ret_note = (ret_note + "; " if ret_note else "") + "; ".join(bad)
         except ValueError as e:                                # unreadable window: say so
-            ret_note = str(e)
+            ret_note = (ret_note + "; " if ret_note else "") + str(e)
     # What the draw actually costs at the outstation, stated rather than left to be worked out
     # from two clock times on a line.
     _arr_o = (dep_ret + bh + (tzo - tzd)) % 24.0
@@ -859,7 +897,15 @@ def _schedule_times(o_code, d_code, o, d, block_min, dep_out=11.0, turn_h=2.0,
     dr, ar = leg(dep_ret, tzd, tzo)
     out = {"outbound": {"sector": f"{o_code}-{d_code}", "dep": do, "arr": ao},
            "inbound": {"sector": f"{d_code}-{o_code}", "dep": dr, "arr": ar},
-           "block_min": block_min, "indicative": True,
+           "block_min": block_min,
+           # Kept for existing consumers (deck contract reads it); False when the caller set
+           # the arrival, because a caller-set time is not an indication, it is an instruction.
+           "indicative": arr_return_mins is None,
+           "return_basis": return_basis,
+           # The turnaround the draw used and whose figure it is, for the tail-rotation chart
+           # (John, 24 August 2026): the aircraft count is arithmetic on block and turn, and the
+           # chart must state the same basis the schedule line does.
+           "turn_min": int(round(turn_h * 60)), "turn_basis": turn_basis,
            "ground_origin_h": round(ground_origin, 2)}
     if ret_note:
         out["inbound_need"] = ret_note
@@ -877,7 +923,7 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
                         induced_floor=True, fixed_overrides=None, seats=None, charges_override=None,
                         dep_time_mins=None, restricted_hours=None, restricted_hours_dest=None,
                         partner_carriers=None, split_floor=True, forecast_year=None,
-                        qsi_k=None, qsi_k_behind=None):
+                        qsi_k=None, qsi_k_behind=None, arr_time_mins=None, turnaround_min=None):
     """Any city pair through the CALIBRATED engine (route_forecast.forecast). season = annual (default)
     / summer / winter runs a seasonal service: demand scaled to the season's share of the year, capacity
     over the season's weeks.
@@ -1039,6 +1085,14 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
     import route_feed as _RFT
     _turn_min = _RFT.turnaround_mins((o or {}).get("country"), (d or {}).get("country"), gcd,
                                      feed_cfg, aircraft_code=aircraft)
+    # A CALLER-SET TURNAROUND REPLACES THE NUMBER, NOT THE BASIS (John, 24 August 2026). It rides
+    # everywhere the standard figure rode: the departure screen in optimise_departure (a departure
+    # implies an arrival one turnaround earlier), the schedule draw, and the optimum cache key
+    # below, because a different turnaround changes which departures are permitted and a cached
+    # optimum taken under the standard figure must not answer for the caller's.
+    _turn_client = bool(turnaround_min and float(turnaround_min) > 0)
+    if _turn_client:
+        _turn_min = int(float(turnaround_min))
     feed_cfg["turnaround_mins"] = _turn_min
     dep_basis = ("set by the caller" if dep_time_mins is not None else
                  "indicative only, no operator named so no connecting feed is built")
@@ -1050,7 +1104,7 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
             # somebody has to know, so it is entered rather than inferred.
             _rh, _rd = _rh_disp, _rd_disp
             _dk = ("dep", home, dest_airport, airline, ctx["week"], ctx["year"], str(_rh), str(_rd),
-                   ",".join(_partners))
+                   ",".join(_partners), str(_turn_min))
             if _dk not in S:
                 import route_feed as _RFD
                 try:
@@ -1359,7 +1413,8 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
         "schedule": dict(_schedule_times(home, dest_airport, o, d, bmin,
                                          dep_out=((dep_mins / 60.0) if dep_mins is not None else 11.0),
                                          turn_h=(_turn_min / 60.0),
-                                         restricted=_rh_disp, restricted_dest=_rd_disp),
+                                         restricted=_rh_disp, restricted_dest=_rd_disp,
+                                         arr_return_mins=arr_time_mins, turn_client=_turn_client),
                          basis=dep_basis, partners=(_partners or None),
                          forecast_year=fy, growth_basis=growth_basis,
                          # The NUMBERS behind the basis string (18 August 2026), so a
@@ -1804,7 +1859,8 @@ def api_forecast(origin: str, dest: str, airline: str = "", carrier_type: str = 
                  circuity: float = 1.35, factor_indirect: float = 1.044, mct_banking: int = 0,
                  season: str = "annual", own_bh: float = 0.0, crew_bh: float = 0.0, util_bh: float = 0.0,
                  dep_time: str = "", curfew_origin: str = "", curfew_dest: str = "", partners: str = "",
-                 forecast_year: int = 0, split_floor: int = 1, seats: float = 0.0):
+                 forecast_year: int = 0, split_floor: int = 1, seats: float = 0.0,
+                 arr_time: str = "", turnaround: float = 0.0):
     """The CALIBRATED any-city-pair forecast (coverage + feed + alliance). ~10s per call. The
     override args (default sentinels = off) are the Expert hooks: adjust any stage of the engine.
     own_bh/crew_bh/util_bh are the airline-specific fixed-cost overrides ($/block-hour, $/block-hour, BH/yr).
@@ -1874,6 +1930,7 @@ def api_forecast(origin: str, dest: str, airline: str = "", carrier_type: str = 
         # /api/report already took it; the forecast endpoint the page itself calls did not.
         seats=(float(seats) if seats else None),
         dep_time_mins=_hhmm_to_mins(dep_time),
+        arr_time_mins=_hhmm_to_mins(arr_time), turnaround_min=(turnaround or None),
         restricted_hours=(curfew_origin or None), restricted_hours_dest=(curfew_dest or None), partner_carriers=(partners or None), forecast_year=(forecast_year or None), split_floor=bool(split_floor))
     if isinstance(fc, dict) and fc.get("ok"):
         if _auto_ac:
@@ -2205,6 +2262,39 @@ def api_catchment(place: str = "", origin: str = ""):
         return JSONResponse({"ok": False, "error": str(e)})
 
 
+# MARKET BACKGROUND BRIEF (24 August 2026, Jarek Zych's tester feedback; design agreed on
+# MOCKUP-market-background-24Aug2026.html). Measured market fact only, no forecast content,
+# so the panel can never disagree with a run. Cached per (origin, dest, week, year): the
+# connecting-market builds are the same Sabre aggregates the optimiser pays for, and the
+# store only changes on a refresh, so the price is paid once per route per vintage. The
+# dashboard fires this in the background after the route resolves and never blocks Run on it.
+_BRIEF_CACHE, _BRIEF_LOCK = {}, __import__("threading").Lock()
+
+
+@app.get("/api/market_brief")
+def api_market_brief(origin: str = "", dest: str = ""):
+    try:
+        if not origin.strip() or not dest.strip():
+            return JSONResponse({"ok": False, "error": "origin and dest are both needed"})
+        ctx = _live_ctx()
+        if not ctx.get("week") or not ctx.get("year"):
+            return JSONResponse({"ok": False, "error": "OAG/Sabre databases not found"})
+        key = (origin.strip().upper(), dest.strip().upper(), ctx["week"], ctx["year"])
+        with _BRIEF_LOCK:
+            hit = _BRIEF_CACHE.get(key)
+        if hit is not None:
+            return JSONResponse(hit)
+        import market_brief as MB
+        brief = MB.build_brief(ctx, origin.strip(), dest.strip(), dump=DUMP,
+                               catchment_fn=catchment_profile)
+        if brief.get("ok"):
+            with _BRIEF_LOCK:
+                _BRIEF_CACHE[key] = brief
+        return JSONResponse(brief)
+    except Exception as e:
+        return JSONResponse({"ok": False, "error": str(e)})
+
+
 def _hhmm_to_mins(t):
     """"12:00" or "1200" to minutes past local midnight. Blank returns None, which means optimise."""
     t = str(t or "").strip()
@@ -2429,7 +2519,8 @@ def api_optimise(origin: str, dest: str, airline: str = "", carrier_type: str = 
                  econ_share: float = 0.0, plan_lf: float = 0.875, bus_fare: float = 1400.0,
                  season: str = "annual", aircraft: str = "", freq: int = 0,
                  dep_time: str = "", curfew_origin: str = "", curfew_dest: str = "", partners: str = "",
-                 forecast_year: int = 0, split_floor: int = 1):
+                 forecast_year: int = 0, split_floor: int = 1,
+                 arr_time: str = "", turnaround: float = 0.0):
     # CONSTRAINED OPTIMISE: any field the client fills is honoured, any left blank is optimised. A fixed aircraft
     # restricts the gauge; a fixed freq restricts the frequency; a fixed airline restricts the operator (handled below).
     """Blank inputs choose the best PATH. The operating airline changes the demand (its connecting
@@ -2483,6 +2574,7 @@ def api_optimise(origin: str, dest: str, airline: str = "", carrier_type: str = 
                 fc = calibrated_forecast(origin, dest, airline=(cand or None), carrier_type=ct_i,
                                          aircraft="A21N", freq=7, with_econ=False, season=sea_i,
                                          induced_floor=False, dep_time_mins=_dep_fixed,
+                                         turnaround_min=(turnaround or None),
                                          restricted_hours=(curfew_origin or None),
                                          restricted_hours_dest=(curfew_dest or None), partner_carriers=(partners or None), forecast_year=(forecast_year or None), split_floor=bool(split_floor))   # measured demand for this operator + model + schedule
                 if not fc.get("ok"):
@@ -2511,6 +2603,7 @@ def api_optimise(origin: str, dest: str, airline: str = "", carrier_type: str = 
                         _fcf = calibrated_forecast(origin, dest, airline=(cand or None), carrier_type=ct_i,
                                                    aircraft="A21N", freq=f, with_econ=False, season=sea_i,
                                                    induced_floor=False, dep_time_mins=_dep_fixed,
+                                                   turnaround_min=(turnaround or None),
                                                    restricted_hours=(curfew_origin or None),
                                                    restricted_hours_dest=(curfew_dest or None), partner_carriers=(partners or None), forecast_year=(forecast_year or None), split_floor=bool(split_floor))
                         if not _fcf.get("ok"):
@@ -2576,6 +2669,7 @@ def api_optimise(origin: str, dest: str, airline: str = "", carrier_type: str = 
                                 econ_share=(econ_share if (econ_share and econ_share > 0) else None),
                                 plan_lf=plan_lf, bus_fare=bus_fare, with_econ=True, season=best.get("season", "annual"),
                                 seats=best.get("seats"), dep_time_mins=_dep_fixed,
+                                arr_time_mins=_hhmm_to_mins(arr_time), turnaround_min=(turnaround or None),
                                 restricted_hours=(curfew_origin or None),
                                 restricted_hours_dest=(curfew_dest or None), partner_carriers=(partners or None), forecast_year=(forecast_year or None), split_floor=bool(split_floor))
     _attach_airfield(final, best["aircraft"], plan_lf)
@@ -2779,9 +2873,20 @@ def api_report(origin: str, dest: str, airline: str = "", carrier_type: str = "F
     # meaningless once you have more than a couple. Airline/aircraft/frequency now ride in
     # the filename itself; a blank airline (new-entrant scenarios) is dropped rather than
     # printed as an empty segment.
+    # Forecast year rides in the filename too (John Carter, 25 August 2026): running the
+    # same route/airline/aircraft/frequency at different forecast years produces files that
+    # were otherwise indistinguishable without opening each one, the same problem the
+    # 22 August fix solved for airline/aircraft/frequency.
+    # fc.get("year") is the SABRE DATA year (the BASIS block already states this on the
+    # Cover tab), a different figure from the forecast/maturity year - falling back to it
+    # here would silently put the wrong year in a slot the filename reserves for the
+    # forecast year, so this reads schedule.forecast_year only and drops the segment
+    # entirely (via the "if x" filter below) if that is genuinely absent, same discipline
+    # as the airline segment already gets.
+    _fc_year = (fc.get("schedule") or {}).get("forecast_year") or ""
     _fn_tag = "_".join(x for x in [
         (airline or fc.get("airline") or "").upper(), cap.get("aircraft") or "",
-        (f'{cap["freq"]}x' if cap.get("freq") else "")] if x)
+        (f'{cap["freq"]}x' if cap.get("freq") else ""), (str(_fc_year) if _fc_year else "")] if x)
     base = f'Meridian_{o["iata"]}_{d.get("iata", d["city"])}' + (f'_{_fn_tag}' if _fn_tag else "")
     tmpd = tempfile.gettempdir()
     deck_path = os.path.join(tmpd, base + ".pptx")
@@ -2875,11 +2980,15 @@ def _run_pitch_job(job_id, p):
         _stage(job_id, "researching and verifying sources (the long step)")
         deck_path, html_path, audit = PR.build_pitch(fc, inputs)
         _stage(job_id, "building the deck, workbook and pack")
-        # Same fix as the standard download (22 August 2026): airline/aircraft/frequency in the
-        # filename so multiple pitch runs on one route stay distinguishable without opening each.
+        # Same fix as the standard download (22 August 2026, extended 25 August to include
+        # the forecast year alongside airline/aircraft/frequency): pitch runs on one route
+        # at different years or configurations stay distinguishable without opening each.
+        # fc.get("year") is the SABRE DATA year, a different figure from the forecast/
+        # maturity year, so this reads schedule.forecast_year only, same as api_report.
+        _fc_year = (fc.get("schedule") or {}).get("forecast_year") or ""
         _fn_tag = "_".join(x for x in [
             (p["airline"] or fc.get("airline") or "").upper(), p.get("aircraft") or "",
-            (f'{p["freq"]}x' if p.get("freq") else "")] if x)
+            (f'{p["freq"]}x' if p.get("freq") else ""), (str(_fc_year) if _fc_year else "")] if x)
         base = f'Meridian_Pitch_{o["iata"]}_{d["iata"]}' + (f'_{_fn_tag}' if _fn_tag else "")
         tmpd = tempfile.gettempdir()
         files = [(deck_path, base + ".pptx")]

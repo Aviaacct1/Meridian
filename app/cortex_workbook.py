@@ -363,7 +363,15 @@ def build_workbook(out_path, fc, meta=None):
         # beginning or ending - sourced, not guessed: resolve_oag_week()'s own docstring
         # (this file's caller, cortex_app.py line ~470) documents the single-week store
         # label as "week commencing", so it is beginning, and the header now says so.
-        ("BASIS", [("OAG schedule week (beginning)", fc.get("week","")),
+        # FORECAST YEAR (John Carter, 25 August 2026): stated nowhere on Cover before this -
+        # every figure on this tab is that year's forecast, and the only place the year
+        # itself appeared was inside other tabs' own column headers ("Market demand 2027"
+        # etc.), never as a fact about the run as a whole. Read from schedule.forecast_year,
+        # the same field the filename and the Departure curve sheet already use - not
+        # fc.get("year"), which is the Sabre DATA year the row directly below already
+        # states and is a different figure.
+        ("BASIS", [("Forecast year", str((fc.get("schedule") or {}).get("forecast_year") or "")),
+                   ("OAG schedule week (beginning)", fc.get("week","")),
                    ("Sabre Global Demand Data year", str(fc.get("year") or "")),
                    ("Analyst", meta.get("analyst","Avia Solutions")), ("Date", meta.get("date",""))]),
     ]

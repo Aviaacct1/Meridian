@@ -1,0 +1,39 @@
+Forecast year: in the filename, and stated on Cover (John Carter, 25 Aug 2026)
+
+John: the 22 August fix put airline/aircraft/frequency in the download filename so
+multiple configurations of a route stayed distinguishable without opening each one -
+but not the forecast year, so running the same route/airline/aircraft/frequency at
+different years still produced indistinguishable filenames. Separately: the forecast
+year itself was never stated as a fact about the run on the Cover tab, only visible
+inside other tabs' own column headers ("Market demand 2027" etc.) - a reader opening
+Cover first, which is the point of a cover tab, had no way to tell which year they were
+looking at.
+
+Two changes:
+
+1. app/cortex_app.py: both filename-building blocks (api_report's standard download,
+   api_pitch_start's researched-pitch job) now append the forecast year to the existing
+   airline/aircraft/frequency tag, read from schedule.forecast_year - the same field the
+   Departure curve sheet already sources its own year label from. Deliberately NOT
+   fc.get("year"), which is the Sabre DATA year (what the BASIS block on Cover already
+   calls it) - a different figure, and falling back to it here would have silently put
+   the wrong year in a filename slot reserved for the forecast year. If forecast_year is
+   genuinely absent the segment is simply dropped, matching how a blank airline is
+   already handled, not silently substituted.
+
+   Example: Meridian_SJC_TPE_CI_B789_5x.xlsx becomes
+   Meridian_SJC_TPE_CI_B789_5x_2027.xlsx.
+
+2. app/cortex_workbook.py: Cover's BASIS block gains a "Forecast year" row, first in the
+   block, read from the same schedule.forecast_year field, printed as text (not a number
+   openpyxl would thousands-format oddly, same fix already applied to the Sabre data year
+   row in an earlier commit today). Sits directly above "Sabre Global Demand Data year"
+   so the two distinct years - what year the forecast targets, and what year's Sabre data
+   it was built from - read next to each other rather than one of them being absent.
+
+Verified: 34/34 regression checks pass (none of the existing checks read the BASIS
+block's row count or the filename string, so nothing needed updating for this to not
+break, but nothing proves the new row either - added by direct build-and-inspect: built
+a fixture workbook and confirmed Cover shows "Forecast year 2027" separate from "Sabre
+Global Demand Data year" [whatever fc["year"] carries], and confirmed the filename
+logic directly returns "Meridian_SJC_TPE_CI_B789_5x_2027" for a 2027 forecast_year.
