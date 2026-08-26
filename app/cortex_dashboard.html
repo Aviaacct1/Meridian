@@ -2083,7 +2083,16 @@ function render(d){
   renderMap(d);
   $("#hubChart").innerHTML=""; $("#hubNote").textContent=""; $("#hubRow").classList.remove("hidden");
   applyMode();
+  // EVERY path that lands results passes through here, so this is where the market background
+  // collapses (John, live test 24 August 2026: the collapse sat in doForecast only, so an
+  // OPTIMISE run rendered results under the open panel and nothing said so). Contextual, not
+  // saved: the user's remembered open/closed preference is untouched, and the strip reopens it
+  // over the results deliberately. Then bring the results into view - a collapsed strip still
+  // leaves the KPIs below the fold on a small screen, and a forecast nobody can see is a
+  // forecast that did not visibly land.
+  const _mbp2=$("#mbPanel"); if(_mbp2) _mbp2.classList.remove("open");
   $("#results").classList.remove("hidden");
+  try{ $("#results").scrollIntoView({behavior:"smooth",block:"start"}); }catch(e){}
 }
 $("#hubBtn") && ($("#hubBtn").onclick=loadHubBanks);
 function loadHubBanks(){
