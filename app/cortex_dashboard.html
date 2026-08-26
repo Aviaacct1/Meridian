@@ -932,7 +932,12 @@ function saveRecent(q){ let r=loadRecent().filter(x=>!(x.o===q.o&&x.d===q.d&&(x.
 // behaves exactly like typing the same values in by hand: the field state changes, Run
 // assessment or Optimise stays the one explicit trigger.
 async function applyRecent(x){ $("#origin").value=x.o; $("#dest").value=x.d; $("#airline").value=x.a||""; $("#ctype").value=x.t||"FSC";
-  await filterAircraftByAirline(); if(x.ac && [...$("#aircraft").options].some(o=>o.value===x.ac)) $("#aircraft").value=x.ac; }
+  await filterAircraftByAirline(); if(x.ac && [...$("#aircraft").options].some(o=>o.value===x.ac)) $("#aircraft").value=x.ac;
+  // A programmatic field write fires no change/blur events, so the market background never
+  // heard a recent-chip click (John, live, 24 August 2026). Same for the deep-link prefill
+  // below, which sets the fields the same way. One explicit nudge; mbTrigger's own key check
+  // makes a repeat click on the same pair free.
+  if(typeof mbTrigger==="function") mbTrigger(); }
 function renderRecent(){ const el=$("#recentChips"); if(!el)return; const r=loadRecent();
   el.innerHTML=r.map((x,i)=>`<span class="exchip" data-i="${i}">${x.o} → ${x.d}${x.a?' · '+x.a.toUpperCase():''}</span>`).join("");
   el.querySelectorAll(".exchip").forEach(c=>c.onclick=()=>applyRecent(loadRecent()[+c.dataset.i])); }
@@ -943,7 +948,7 @@ renderRecent();
 // Deep-link prefill: /?origin=X&dest=Y (used by the Catchment and demand page) runs that pair on load.
 (function(){const u=new URLSearchParams(location.search); const o=u.get('origin'), d=u.get('dest');
   if(o&&d){ $("#origin").value=o; $("#dest").value=d; const al=u.get('airline'); if(al)$("#airline").value=al;
-    setTimeout(()=>{ try{ filterAircraftByAirline(); }catch(e){} run(); }, 250); } })();
+    setTimeout(()=>{ try{ filterAircraftByAirline(); }catch(e){} try{ mbTrigger(); }catch(e){} run(); }, 250); } })();
 
 // ---- MARKET BACKGROUND (24 August 2026). Fires in the background once both ends are
 // entered; never blocks Run; server caches per route and store vintage so a repeat is free.
