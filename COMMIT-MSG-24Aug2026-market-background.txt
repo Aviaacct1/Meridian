@@ -1,0 +1,74 @@
+Market background panel: measured pre-run market brief on the dashboard
+
+From Jarek Zych's tester feedback (24 Aug 2026); form agreed on
+MOCKUP-market-background-24Aug2026.html before build. Once origin and
+destination resolve, a collapsed strip renders the measured market facts
+(P2P market, direct service today, leading carrier, catchment population,
+connecting potential) and expands to charts: demand series by year, carrier
+share, how the market travels today, cabin mix, connecting potential over
+each end, the deduped nonstop service table, catchment summary. SVG/CSV
+downloads per cell.
+
+Design rules carried: measured fact only, NO forecast content, so the panel
+can never disagree with a run; flag-rather-than-fill (a store that cannot
+answer a section says so; the carrier cell introspects the Sabre schema for
+a carrier column rather than assuming one); OAG dedupe via the wave_cache
+distinct-flight rule with days-of-op masks unioned; server cache per
+(origin, dest, week, year); the request fires in the background and never
+blocks Run; collapsed by default, state remembered.
+
+Also in this batch, from the same feedback: the panel collapses to its
+strip when a run starts (an expanded panel pushed the results below the
+fold; contextual, the user's saved open/closed preference is not written),
+New forecast clears and hides the panel, and curfewSanity catches the
+inverted-curfew entry Jarek actually hit live: he entered 05:30-23:00
+meaning operating hours, the tool lawfully picked 04:59, and nothing said
+why. A restriction of 14 hours or more now stops the run with the swap
+spelled out - an error, not a silent auto-swap, because the tool must not
+rewrite a fact on the user's behalf. Wired on both Run and Optimise.
+
+Return arrival and turnaround (John's ruling, 24 Aug): "illustrative" was a
+development label; near launch a number rests on a stated decision. The
+schedule line now states the return's basis in words (type-standard
+turnaround / caller-set turnaround / caller-set arrival) instead of
+"indicative". New inputs: Return arrival (origin local, quarter-hours,
+blank = turnaround-based) derives the return departure to hit the caller's
+time exactly; Turnaround (min, blank = type/sector standard) replaces the
+number not the basis and rides into the departure screen, the schedule draw
+and the optimiser cache key (a cached optimum taken under the standard turn
+must not answer for the caller's). A rotation that cannot physically turn
+at the destination inside the stated turnaround is flagged on the schedule
+line, never silently moved; curfew flags append rather than replace. The
+curfew screen on the return now tests the ACTUAL arrival (caller's time
+when set) - the old derivation assumed the default draw. Return timing
+moves no demand anywhere in the engine (both feed sides price off the
+outbound departure), so all of this is schedule drawing, not forecasting.
+Deliberately NOT built: optimising the return on traffic - it would strand
+the aircraft, and there is no demand signal for it to optimise.
+
+Tail rotation chart (John, 24 Aug; rebuilt week-native same day on his
+ruling that day-of-week allocation lands soon and the chart must not need
+a second build then): in the results under the schedule line, how many
+aircraft the route ties up and why, drawn over one week. Arithmetic on
+block and the stated turnaround. THE SEAM FOR DAY-OF-WEEK IS tailPattern()
+AND NOTHING ELSE: count (tailCountCirc, circular so a Day-7 rotation
+spilling past the week counts against Day 1), row assignment and drawing
+all take an explicit list of departure day-offsets plus a stated basis.
+Today that is daily (fact) or consecutive days (labelled working
+assumption, the pattern named as the airline's choice); when the engine
+allocates real days it sends schedule.operating_days and the dormant
+branch takes over with no other change. Verified: 10h daily -> 1 tail,
+12h daily -> 2, 12h 5x consecutive -> 2, 12h Mon/Wed/Fri -> 1 (the
+day-choice dividend, now visible), week-wrap case -> 2. _schedule_times
+returns turn_min and turn_basis so the chart states the same basis as the
+schedule line. Answers Jarek's aircraft-required item (9) visually.
+
+Market panel expand control restyled as a clear brass button (John, 24
+Aug): it read as a bare glyph on the cream strip, not as a control.
+
+New: app/market_brief.py; /api/market_brief in cortex_app.py; panel CSS,
+markup and JS in cortex_dashboard.html. Verified: py_compile both, JS
+brace/backtick balance, unit checks on the dedupe/day-union/introspection
+logic (fake store), curfew threshold maths (05:30-23:00 caught, 23:00-05:30
+clean). NOT yet run against live stores: first live check is SJC-TPE and
+Genoa-NYC after the OAG demo, before testers see it.

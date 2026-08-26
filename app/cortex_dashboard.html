@@ -158,6 +158,41 @@
   /* ---- provenance rail (brief section 4.7) ---- */
   .prov{font-family:var(--sans);font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin-top:14px;padding-top:9px;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;gap:6px 16px;align-items:baseline}
   .prov b{font-weight:600;color:var(--muted)}
+
+  /* ---- market background panel (24 Aug 2026, design agreed on the mockup) ---- */
+  .mb{border:1px solid var(--line);border-radius:var(--r);background:var(--card);margin-top:16px}
+  .mb-strip{display:flex;align-items:stretch;cursor:pointer;user-select:none}
+  .mb-strip:hover{background:#F2EDE1}
+  .mb-title{flex:0 0 auto;display:flex;flex-direction:column;justify-content:center;gap:3px;padding:14px 20px;border-right:1px solid var(--line);min-width:200px}
+  .mb-title .t{font-family:var(--serif);font-weight:500;font-size:16px;color:var(--ink)}
+  .mb-title .s{font-family:var(--sans);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--brass-deep);font-weight:600}
+  .mb-kpi{flex:1;padding:12px 18px;border-right:1px solid var(--line);display:flex;flex-direction:column;justify-content:center;min-width:0}
+  .mb-kpi:last-of-type{border-right:none}
+  .mb-kpi .l{font-family:var(--sans);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .mb-kpi .v{font-family:var(--serif);font-size:20px;color:var(--ink);margin-top:4px;font-variant-numeric:tabular-nums lining-nums;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .mb-kpi .v small{font-size:12.5px;color:var(--body)}
+  /* The expand control is a BUTTON and must read as one (John, 24 August 2026): brass on the
+     cream strip, not a bare glyph that vanishes into the background. */
+  .mb-chev{flex:0 0 auto;display:flex;align-items:center;justify-content:center;align-self:center;margin:0 14px;width:34px;height:34px;background:var(--brass);color:var(--ink);border:1px solid var(--brass-deep);border-radius:var(--r);transition:background var(--dur-instant) var(--ease)}
+  .mb-strip:hover .mb-chev{background:var(--brass-deep);color:#fff}
+  .mb-chev svg{transition:transform var(--dur-read) var(--ease)}
+  .mb.open .mb-chev svg{transform:rotate(180deg)}
+  .mb-body{display:none;border-top:1px solid var(--line);padding:18px}
+  .mb.open .mb-body{display:block}
+  .mb-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+  .mb-cell{border:1px solid var(--line);background:#FBF9F4;border-radius:var(--r);padding:14px 16px;display:flex;flex-direction:column;min-width:0}
+  .mb-cell.wide{grid-column:span 2}
+  .mb-cell h4{font-family:var(--serif);font-weight:500;font-size:15px;color:var(--ink)}
+  .mb-cell .unit{font-family:var(--sans);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-top:2px}
+  .mb-cell .dl{margin-left:auto;font-family:var(--sans);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--brass-deep);font-weight:600;cursor:pointer;border:1px solid var(--line);border-radius:2px;padding:3px 8px;flex:0 0 auto}
+  .mb-cell .dl:hover{border-color:var(--brass)}
+  .mb-cell .cellhead{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px}
+  .mb-cell .mnote{font-family:var(--serif);font-size:13px;color:var(--body);font-style:italic;margin-top:10px}
+  .mb-cell .mprov{font-family:var(--sans);font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-top:auto;padding-top:9px;border-top:1px solid var(--line)}
+  table.mbsvc{width:100%;border-collapse:collapse;font-family:var(--serif);font-size:13px}
+  table.mbsvc th{font-family:var(--sans);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600;text-align:left;padding:5px 8px;border-bottom:1px solid var(--line)}
+  table.mbsvc td{padding:6px 8px;border-bottom:1px solid #EEE8D8;color:var(--body);font-variant-numeric:tabular-nums lining-nums}
+  table.mbsvc td:first-child{color:var(--ink);font-weight:500}
   .prov .val{font-family:var(--serif);text-transform:none;letter-spacing:0;font-size:12px;color:var(--body);font-style:normal}
   .prov .mono{font-family:var(--mono);text-transform:none;letter-spacing:0;font-size:11px;color:var(--body)}
 
@@ -282,6 +317,14 @@
                  Blank still means optimise. Quarter-hours, because that is the resolution the
                  optimiser refines to. -->
             <div class="fld" style="grid-column:span 2"><label>Departure (origin local)</label><select id="deptime" title="The outbound departure in the origin's local time. Left blank, Meridian chooses the time that wins the most connecting traffic for the airline named, at both ends of the route."></select></div>
+            <!-- RETURN ARRIVAL AND TURNAROUND (24 August 2026, John's ruling on Jarek's feedback).
+                 Blank arrival: the return lands one turnaround before the next outbound, and the
+                 turnaround is the type/sector standard unless the client sets one; the schedule
+                 line states that basis in words. A chosen arrival is the client's instruction and
+                 the return departure is derived to hit it; return timing moves no demand anywhere
+                 in the engine, so both inputs are schedule drawing, never forecasting. -->
+            <div class="fld" style="grid-column:span 2"><label>Return arrival (origin local)</label><select id="arrtime" title="When the aircraft should be back on stand at the origin, in the origin's local time. Left blank, the return is timed to land one turnaround before the next departure. A chosen time is honoured exactly and the return departure is derived from it; if the rotation cannot turn at the destination in the stated turnaround, the schedule line says so rather than moving your time."></select></div>
+            <div class="fld" style="grid-column:span 2"><label>Turnaround (min)</label><input id="turnmin" type="number" min="25" max="240" placeholder="blank = type standard" title="Minimum ground time between arrival and departure. Blank uses the standard for the aircraft type and sector length; a value here is the client's own figure and applies to the departure screening and the schedule draw alike."></div>
             <!-- CURFEWS ARE CHOSEN, NOT TYPED. Free text let "23:00 to 06:00" through on
                  14 August 2026: parse_windows splits on a hyphen, it raised, the optimiser fell
                  back to the 11:00 placeholder, and two runs came back unoptimised with the curfew
@@ -343,6 +386,22 @@
         </div>
       </div>
 
+      <!-- MARKET BACKGROUND (24 August 2026, from Jarek Zych's tester feedback; form agreed on
+           MOCKUP-market-background-24Aug2026.html). Measured market fact only, populated in the
+           background once both ends of the route resolve; no forecast content, so it can never
+           disagree with a run. Collapsed by default and remembered; hidden until data arrives. -->
+      <div class="mb hidden" id="mbPanel">
+        <div class="mb-strip" id="mbStrip">
+          <div class="mb-title">
+            <span class="s" id="mbState">Market background · auto</span>
+            <span class="t" id="mbRoute">–</span>
+          </div>
+          <span id="mbKpis" style="display:contents"></span>
+          <div class="mb-chev"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></div>
+        </div>
+        <div class="mb-body"><div class="mb-grid" id="mbGrid"></div></div>
+      </div>
+
       <div class="card hidden" id="expertPanel" style="margin-top:16px;border:1px solid var(--brass)">
         <!-- TWO KINDS OF NUMBER, SPLIT ON 15 AUGUST 2026. Judgement inputs are an analyst's to
              own on any engagement. Calibration constants are set by the back-test; a client who
@@ -383,6 +442,17 @@
         <div class="hidden" id="schedRow" style="margin:-8px 0 20px;padding:9px 0 0;border-top:1px solid var(--line)">
           <div style="font-family:var(--sans);font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);font-weight:600">Schedule assumed</div>
           <div id="schedLine" style="font-family:var(--mono);font-size:11.5px;color:var(--body);margin-top:6px;line-height:1.6"></div>
+          <!-- THE TAIL ROTATION (John, 24 August 2026). How many aircraft the route ties up and
+               why, drawn: the round trip with a proper turn at both ends either repeats inside
+               24 hours on one tail or it does not, and when it does not a second tail interleaves.
+               Arithmetic on the block and the stated turnaround, nothing modelled; exact for a
+               daily operation and said so, since frequency carries no day-of-week pattern yet. -->
+          <div id="tailRow" class="hidden" style="margin-top:14px;padding-top:10px;border-top:1px dotted var(--line)">
+            <div style="font-family:var(--sans);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:6px">Aircraft rotation · dedicated-tail view</div>
+            <div id="tailStmt" style="font-family:var(--serif);font-size:13.5px;color:var(--body);line-height:1.55;margin-bottom:8px"></div>
+            <div id="tailSvg"></div>
+            <div id="tailNote" style="font-family:var(--sans);font-size:10.5px;color:var(--muted);margin-top:6px;line-height:1.55"></div>
+          </div>
           <!-- WHAT THE CURFEW COSTS. optimise_departure has always computed the unrestricted optimum
                beside the permitted one and returned cost_pax with it, and nothing displayed either,
                so the figure was built on every run and thrown away at the last step. route_feed's own
@@ -655,14 +725,19 @@ function stopRun(){
 $("#stopRun").onclick=stopRun;
 function newForecast(){
   stopRun();                                    // never leave an old run computing behind a cleared form
-  ["origin","dest","airline","freq","deptime","curfewO1","curfewO2","curfewD1","curfewD2",
-   "partners","seats"].forEach(id=>{ const e=$("#"+id); if(e) e.value=""; });
+  ["origin","dest","airline","freq","deptime","arrtime","turnmin","curfewO1","curfewO2",
+   "curfewD1","curfewD2","partners","seats"].forEach(id=>{ const e=$("#"+id); if(e) e.value=""; });
   $("#ctype").value="FSC"; $("#season").value=""; $("#stimPosture").value=""; $("#sfloor").value="1";
   const _fy=$("#fyear"), _def=_fy&&_fy.querySelector("option[selected]"); if(_def) _fy.value=_def.value;
   filterAircraftByAirline().catch(()=>{});
   resetSeatHint();
   document.querySelectorAll("#expertPanel input").forEach(i=>i.value="");
   $("#routeFlag").classList.add("hidden"); $("#err").classList.add("hidden"); $("#results").classList.add("hidden");
+  // Market background: a cleared form must not keep the old route's brief above it. The panel
+  // hides and its key resets, so the next pair entered re-fires the fetch (served from the
+  // server cache if it is a pair already briefed this store vintage).
+  if(typeof MB!=="undefined"){ clearTimeout(MB.timer); MB.key=null; }
+  const _mbp=$("#mbPanel"); if(_mbp){ _mbp.classList.add("hidden"); $("#mbKpis").innerHTML=""; $("#mbGrid").innerHTML=""; }
   STATE.lastQ=null;
   setRunStatus("");
   $("#origin").focus();
@@ -870,6 +945,156 @@ renderRecent();
   if(o&&d){ $("#origin").value=o; $("#dest").value=d; const al=u.get('airline'); if(al)$("#airline").value=al;
     setTimeout(()=>{ try{ filterAircraftByAirline(); }catch(e){} run(); }, 250); } })();
 
+// ---- MARKET BACKGROUND (24 August 2026). Fires in the background once both ends are
+// entered; never blocks Run; server caches per route and store vintage so a repeat is free.
+// Measured fact only: everything below renders what /api/market_brief returns, and a section
+// the stores cannot answer says so rather than guessing (flag-rather-than-fill, house rule).
+const MB={key:null,timer:null};
+const mbFmt=n=>{ if(n==null)return "–"; n=+n;
+  if(n>=1e6)return (n/1e6).toFixed(1)+"m"; if(n>=1e3)return (n/1e3).toFixed(1)+"k"; return String(Math.round(n)); };
+const mbPct=x=>(x==null?"–":(100*x).toFixed(0)+"%");
+function mbOpenInit(){ try{ if(localStorage.getItem("mb_open")==="1") $("#mbPanel").classList.add("open"); }catch(e){} }
+$("#mbStrip").onclick=()=>{ const p=$("#mbPanel"); p.classList.toggle("open");
+  try{ localStorage.setItem("mb_open", p.classList.contains("open")?"1":"0"); }catch(e){} };
+function mbTrigger(){
+  const o=$("#origin").value.trim(), d=$("#dest").value.trim();
+  if(!o||!d) return;
+  const key=(o+"|"+d).toUpperCase();
+  if(key===MB.key) return;
+  clearTimeout(MB.timer);
+  MB.timer=setTimeout(()=>{ MB.key=key;
+    const p=$("#mbPanel"); p.classList.remove("hidden");
+    $("#mbRoute").textContent=o+" – "+d;
+    $("#mbState").textContent="Market background · assembling…";
+    $("#mbKpis").innerHTML=""; $("#mbGrid").innerHTML="";
+    fetch(`/api/market_brief?origin=${encodeURIComponent(o)}&dest=${encodeURIComponent(d)}`)
+      .then(r=>r.json()).then(b=>{ if(((o+"|"+d).toUpperCase())!==MB.key) return;   // stale reply
+        if(!b||!b.ok){ $("#mbState").textContent="Market background · unavailable";
+          $("#mbKpis").innerHTML=`<div class="mb-kpi"><span class="l">Note</span><span class="v"><small>${(b&&b.error)||"no data"}</small></span></div>`; return; }
+        mbRender(b); })
+      .catch(()=>{ $("#mbState").textContent="Market background · unavailable"; });
+  }, 900);
+}
+["origin","dest"].forEach(id=>{ const el=$("#"+id);
+  el.addEventListener("blur",mbTrigger); el.addEventListener("change",mbTrigger); });
+function mbCell(title,unit,inner,prov,opts){ const o=opts||{};
+  return `<div class="mb-cell${o.wide?" wide":""}"${o.id?` id="${o.id}"`:""}>
+    <div class="cellhead"><div><h4>${title}</h4><div class="unit">${unit}</div></div>
+    ${o.dl?`<span class="dl" data-dl="${o.dl}">${o.dltype||"SVG"}</span>`:""}</div>
+    ${inner}<div class="mprov">${prov}</div></div>`; }
+function mbBars(rows,cls){ return rows.map(r=>`<div class="barrow"><span class="nm" title="${r.nm}">${r.nm}</span>
+  <div class="track"><div class="fill ${r.home?"home":(cls||"")}" style="width:${Math.max(2,Math.round(100*r.w))}%"></div></div>
+  <span class="pc">${r.pc}</span></div>`).join(""); }
+function mbLine(series){
+  if(!series||!series.length) return `<div class="mnote">no yearly series in this store</div>`;
+  const W=640,H=150,L=44,R=20,T=14,B=32, ys=series.map(s=>s.pax), mx=Math.max(...ys)||1;
+  const x=i=>L+(W-L-R)*(series.length<2?0.5:i/(series.length-1)), y=v=>T+(H-T-B)*(1-v/mx);
+  const pts=series.map((s,i)=>`${x(i).toFixed(0)},${y(s.pax).toFixed(0)}`).join(" ");
+  const last=series[series.length-1];
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto">
+    <line x1="${L}" y1="${H-B}" x2="${W-R}" y2="${H-B}" stroke="#E2DCCC"/>
+    <line x1="${L}" y1="${y(mx/2).toFixed(0)}" x2="${W-R}" y2="${y(mx/2).toFixed(0)}" stroke="#EEE8D8"/>
+    <text x="${L-6}" y="${H-B+4}" font-family="IBM Plex Mono" font-size="9" fill="#6E6A5E" text-anchor="end">0</text>
+    <text x="${L-6}" y="${y(mx/2).toFixed(0)}" font-family="IBM Plex Mono" font-size="9" fill="#6E6A5E" text-anchor="end">${mbFmt(mx/2)}</text>
+    <polyline points="${pts}" fill="none" stroke="#D4A249" stroke-width="2"/>
+    ${series.map((s,i)=>`<text x="${x(i).toFixed(0)}" y="${H-B+16}" font-family="IBM Plex Mono" font-size="9" fill="#6E6A5E" text-anchor="middle">${s.year}</text>`).join("")}
+    <circle cx="${x(series.length-1).toFixed(0)}" cy="${y(last.pax).toFixed(0)}" r="3" fill="#D4A249"/>
+    <text x="${x(series.length-1).toFixed(0)}" y="${(y(last.pax)-8).toFixed(0)}" font-family="IBM Plex Mono" font-size="9.5" fill="#A97C33" text-anchor="end">${mbFmt(last.pax)}</text></svg>`;
+}
+function mbRender(b){
+  const yr=b.basis.sabre_year, wk=b.basis.oag_week, home=b.origin.iata;
+  $("#mbState").textContent="Market background · auto";
+  $("#mbRoute").textContent=b.origin.iata+" – "+b.dest.iata;
+  // ---- strip KPIs
+  const ser=Array.isArray(b.series)?b.series:[], latest=ser.length?ser[ser.length-1]:null;
+  const svc=Array.isArray(b.services)?b.services:[];
+  const homeSvc=svc.filter(s=>s.from===home), other=svc.filter(s=>s.from!==home);
+  const wsum=a=>a.reduce((t,s)=>t+(s.weekly||0),0);
+  const direct=homeSvc.length?`${wsum(homeSvc)}x/wk`:
+    (other.length?`None <small>· ${other[0].from} ${wsum(other)}x/wk</small>`:"None");
+  const lead=(b.carriers&&b.carriers.available&&b.carriers.carriers.length)?
+    `${b.carriers.carriers[0].carrier} <small>${mbPct(b.carriers.carriers[0].share)}</small>`:"–";
+  const cpop=(b.catchment&&b.catchment.total_pop)?mbFmt(b.catchment.total_pop):"–";
+  const conn=(b.connecting&&b.connecting.beyond_pax!=null)?
+    mbFmt((b.connecting.beyond_pax||0)+(b.connecting.behind_pax||0))+" <small>pax/yr</small>":"–";
+  $("#mbKpis").innerHTML=[
+    ["P2P O&D market, each way", latest?`${mbFmt(latest.pax)} <small>pax/yr ${latest.year}</small>`:"–"],
+    ["Direct service today", direct],
+    ["Leading carrier, O&D", lead],
+    ["Catchment population", cpop],
+    ["Connecting potential", conn]
+  ].map(([l,v])=>`<div class="mb-kpi"><span class="l">${l}</span><span class="v">${v}</span></div>`).join("");
+  // ---- cells
+  const cells=[];
+  const yrs=ser.length?`${ser[0].year}–${ser[ser.length-1].year}`:String(yr);
+  cells.push(mbCell(`P2P O&amp;D demand, ${b.origin.city} – ${b.dest.city}`,
+    `Each-way passengers per year · ${yrs} actual`, mbLine(ser),
+    `Source: Sabre O&amp;D ${yrs} · all actual, no forecast content`, {wide:true,dl:"svg",id:"mbCellSeries"}));
+  if(b.carriers&&b.carriers.available){
+    const mxs=Math.max(...b.carriers.carriers.map(c=>c.share),0.01);
+    const rows=b.carriers.carriers.map(c=>({nm:c.carrier,w:c.share/mxs,pc:mbPct(c.share)}));
+    if(b.carriers.other_share>0.005) rows.push({nm:"Others",w:b.carriers.other_share/mxs,pc:mbPct(b.carriers.other_share)});
+    cells.push(mbCell("Carrier share of the O&amp;D market",`Share of each-way passengers · ${yr}`,
+      mbBars(rows,"b2"),`Source: Sabre O&amp;D ${yr}`,{}));
+  } else {
+    cells.push(mbCell("Carrier share of the O&amp;D market",`Share of each-way passengers · ${yr}`,
+      `<div class="mnote">${(b.carriers&&b.carriers.note)||"not measurable from this store"}</div>`,
+      `Source: Sabre O&amp;D ${yr}`,{}));
+  }
+  if(b.travels&&b.travels.via){
+    const mxv=Math.max(...b.travels.via.map(v=>v.share),0.01);
+    const rows=b.travels.via.slice(0,5).map(v=>({nm:"via "+v.airport,w:v.share/mxv,pc:mbPct(v.share),home:v.airport===home}));
+    const leak=b.travels.home_share!=null?Math.round(100*(1-b.travels.home_share)):null;
+    cells.push(mbCell("How the market travels today",
+      `Share of each-way passengers by departure airport · ${yr}`, mbBars(rows,"b2")+
+      `<div class="mnote">${mbPct(b.travels.nonstop_share)} flies nonstop today${leak!=null?`; ${leak}% of the catchment's demand departs an airport other than ${home}`:""}.</div>`,
+      `Source: Sabre O&amp;D ${yr}`,{}));
+  }
+  if(b.cabin&&b.cabin.front_share!=null){
+    cells.push(mbCell("Cabin mix on this market",`Share of each-way passengers by cabin · ${yr}`,
+      mbBars([{nm:"Economy",w:1,pc:mbPct(b.cabin.back_share)},
+              {nm:"Business / First",w:Math.max(b.cabin.front_share/Math.max(b.cabin.back_share,0.01),0.02),pc:mbPct(b.cabin.front_share)}],"b3"),
+      `Source: Sabre O&amp;D ${yr} by cabin, business and first on the seat-count definition`,{}));
+  }
+  if(b.connecting&&b.connecting.beyond_pax!=null){
+    const mxc=Math.max(b.connecting.beyond_pax,b.connecting.behind_pax,1);
+    const tops=(b.connecting.beyond_top||[]).map(t=>t.market).slice(0,5).join(", ");
+    cells.push(mbCell(`Connecting potential over ${b.dest.iata}`,
+      `Each-way connecting demand reachable per year · ${yr} · ${b.connecting.circuity} circuity screen`,
+      mbBars([{nm:"Beyond "+b.dest.iata,w:b.connecting.beyond_pax/mxc,pc:mbFmt(b.connecting.beyond_pax)},
+              {nm:"Behind "+home,w:b.connecting.behind_pax/mxc,pc:mbFmt(b.connecting.behind_pax)}],"b2")+
+      `<div class="mnote">${tops?`Top beyond points: ${tops}. `:""}What a service actually wins depends on carrier and timing; that is the forecast's job, not this panel's.</div>`,
+      `Source: Sabre O&amp;D ${yr}, OAG week ${wk}`,{}));
+  }
+  if(svc.length||b.services){
+    const rows=svc.slice(0,12).map(s=>`<tr><td>${s.from}</td><td>${s.carrier}</td><td>${s.weekly!=null?s.weekly:"–"}</td><td>${s.aircraft||"–"}</td><td>${s.seats||"–"}</td><td>${s.dep_local||"–"}</td></tr>`).join("")
+      ||`<tr><td colspan="6" style="font-style:italic">no nonstop service from any catchment airport</td></tr>`;
+    cells.push(mbCell(`Nonstop ${b.dest.city} service from the catchment today`,
+      `OAG week ${wk} schedules · weekly departures, each way`,
+      `<table class="mbsvc" id="mbSvcTable"><tr><th>From</th><th>Carrier</th><th>Freq / wk</th><th>Aircraft</th><th>Seats</th><th>Dep (local)</th></tr>${rows}</table>`,
+      `Source: OAG week ${wk}`,{wide:true,dl:"csv",dltype:"CSV"}));
+  }
+  if(b.catchment&&b.catchment.total_pop){
+    cells.push(mbCell("Catchment",`Population within 220 km of ${home} · drive-time model`,
+      `<div class="mnote" style="font-style:normal;font-size:15px">${mbFmt(b.catchment.total_pop)} people total; ${mbFmt(b.catchment.reach_120_pop)} within 120 minutes' drive.</div>
+       <div class="mnote"><a href="/catchment?origin=${encodeURIComponent(home)}" target="_blank" style="color:var(--brass-deep)">Full map on the Catchment &amp; demand page →</a></div>`,
+      `Source: GeoNames, drive-time model`,{}));
+  }
+  $("#mbGrid").innerHTML=cells.join("");
+  // downloads: SVG serialises the cell's own chart; CSV rebuilds the service table
+  $("#mbGrid").querySelectorAll(".dl").forEach(el=>{ el.onclick=ev=>{ ev.stopPropagation();
+    const cell=el.closest(".mb-cell");
+    if(el.dataset.dl==="svg"){ const sv=cell.querySelector("svg"); if(!sv)return;
+      const blob=new Blob([new XMLSerializer().serializeToString(sv)],{type:"image/svg+xml"});
+      const a=document.createElement("a"); a.href=URL.createObjectURL(blob);
+      a.download=`market_${MB.key.replace(/[^A-Z]/g,"_")}_series.svg`; a.click(); }
+    else{ const t=cell.querySelector("table"); if(!t)return;
+      const csv=[...t.rows].map(r=>[...r.cells].map(c=>`"${c.textContent.trim()}"`).join(",")).join("\n");
+      const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));
+      a.download=`market_${MB.key.replace(/[^A-Z]/g,"_")}_service.csv`; a.click(); } }; });
+}
+mbOpenInit();
+
 $("#run").onclick=run;
 function run(){
   const o=$("#origin").value.trim(), d=$("#dest").value.trim(), al=$("#airline").value.trim();
@@ -898,18 +1123,29 @@ function doForecast(){
   if(_cur.o&&_cur.d) saveRecent(_cur);
   const btn=$("#run"); btn.disabled=true; btn.innerHTML='<span class="spinner"></span>Forecasting…';
   $("#err").classList.add("hidden"); $("#results").classList.add("hidden"); $("#routeFlag").classList.add("hidden");
+  // Market background collapses to its strip when a run starts (John, 24 August 2026): an
+  // expanded panel pushes the results below the fold and a first-time user cannot tell the
+  // forecast has landed. Contextual only - localStorage is NOT written, so the user's own
+  // open/closed preference survives, and clicking the strip reopens it over the results
+  // deliberately. The panel's content is untouched: it holds measured market fact keyed to
+  // the route and store vintage, and a run changes neither.
+  const _mbp=$("#mbPanel"); if(_mbp) _mbp.classList.remove("open");
   const q=new URLSearchParams({origin:$("#origin").value.trim(),dest:$("#dest").value.trim(),
     airline:$("#airline").value.trim(),carrier_type:$("#ctype").value,aircraft:$("#aircraft").value,
     freq:$("#freq").value||7,season:$("#season").value||"annual",econ:"true"});
   // Schedule constraints. A blank departure means optimise it; a blank curfew means no restriction,
   // which is the default everywhere: a curfew is a fact about an airport and is never assumed.
   const _dt=$("#deptime").value.trim(); if(_dt) q.set("dep_time",_dt);
+  const _at=$("#arrtime").value.trim(); if(_at) q.set("arr_time",_at);
+  const _tm=($("#turnmin").value||"").trim(); if(_tm) q.set("turnaround",_tm);
   const _cO=curfewVal("curfewO1","curfewO2"), _cD=curfewVal("curfewD1","curfewD2");
   if(_cO===null||_cD===null){
     btn.disabled=false; btn.textContent="Run assessment";
     showErr("a curfew needs both ends set, or neither. One end alone is not a restriction and the run will not guess the other.");
     return;
   }
+  const _cs=curfewSanity(_cO,"origin")||curfewSanity(_cD,"destination");
+  if(_cs){ btn.disabled=false; btn.textContent="Run assessment"; showErr(_cs); return; }
   if(_cO) q.set("curfew_origin",_cO);
   if(_cD) q.set("curfew_dest",_cD);
   const _pt=$("#partners").value.trim(); if(_pt) q.set("partners",_pt);
@@ -974,6 +1210,8 @@ fetch("/api/basis").then(r=>r.json()).then(b=>{
     q.push('<option value="'+s+'">'+s+'</option>');
   }
   const dt=$("#deptime"); if(dt) dt.innerHTML=q.join("");
+  // The return-arrival picker shares the quarter-hour grid; blank keeps the turnaround-based draw.
+  const at=$("#arrtime"); if(at) at.innerHTML=q.join("").replace("blank = optimise","blank = turnaround-based");
 })();
 // Returns "" for none, "HH:MM-HH:MM" for a window, or null when one end is set and the other is
 // not. The caller stops on null: a half-entered curfew is a mistake, not a default.
@@ -982,6 +1220,123 @@ function curfewVal(a,b){
   if(!x&&!y) return "";
   if(!x||!y) return null;
   return x+"-"+y;
+}
+// THE TAIL ROTATION CHART (John, 24 August 2026; rebuilt week-native the same day on his
+// ruling that day-of-week allocation is coming soon and the chart must not need a second
+// build when it does). Arithmetic on the block and the stated turnaround: a round trip with
+// a proper turn at both ends either repeats before the next departure on the same tail or a
+// second tail interleaves. A 10h sector at daily fits one aircraft (10+10+2+2 = 24h); a 12h
+// sector does not (28h) and needs two - unless the operating days avoid back-to-back, which
+// is exactly what the week view can show (12h on Mon/Wed/Fri: one tail).
+//
+// THE SEAM FOR DAY-OF-WEEK ALLOCATION IS tailPattern() AND NOTHING ELSE. Everything below it
+// - the circular tail count, the greedy row assignment, the drawing - takes an explicit list
+// of departure day-offsets and a stated basis. When the engine allocates real days, that
+// payload feeds tailPattern's one branch and the count, the rows and the wording all follow.
+function tailPattern(freq,d){
+  // Engine-allocated days, when they exist (the day-of-week work on the return list), arrive
+  // as day offsets 0-6 on the payload; nothing sends them yet, so the branch is dormant.
+  const eng=d&&d.schedule&&d.schedule.operating_days;
+  if(Array.isArray(eng)&&eng.length) return {days:eng.slice().sort((a,b)=>a-b),basis:"engine-allocated days"};
+  if(freq>=7) return {days:[0,1,2,3,4,5,6],basis:"daily"};
+  return {days:Array.from({length:freq},(_,k)=>k),
+          basis:`${freq}x weekly on consecutive days, a working assumption - day-of-week `+
+                `allocation is not yet modelled and the pattern is the airline's choice`};
+}
+function tailCountCirc(deps,cyc,period){
+  // Max rotations alive at any departure instant, on the circular week: wrap-correct, so a
+  // Sunday rotation spilling into Monday counts against Monday's departure.
+  let n=1;
+  for(const t of deps){ let busy=0;
+    for(const s of deps){ const g=((t-s)%period+period)%period; if(g<cyc) busy++; }
+    n=Math.max(n,busy); }
+  return n;
+}
+function assignTailRows(deps,cyc){
+  // Greedy: each departure takes the first tail already free. Rows are for DRAWING; the
+  // stated count comes from tailCountCirc, which handles the week wrap exactly.
+  const free=[],rows=[];
+  for(const t of deps.slice().sort((a,b)=>a-b)){
+    let i=free.findIndex(f=>t>=f);
+    if(i<0){ free.push(0); rows.push([]); i=free.length-1; }
+    free[i]=t+cyc; rows[i].push(t);
+  }
+  return rows;
+}
+function drawTail(sc,d){
+  const row=$("#tailRow"); if(!row) return;
+  const bh=((sc&&sc.block_min)||0)/60, tn=((sc&&sc.turn_min)||120)/60;
+  if(!bh){ row.classList.add("hidden"); return; }
+  const cyc=2*bh+2*tn, PERIOD=168;
+  const freq=(d&&(d.frequency||(d.capacity&&d.capacity.frequency)))||parseInt($("#freq").value)||7;
+  const pat=tailPattern(Math.max(1,Math.min(7,freq)),d);
+  const deps=pat.days.map(k=>k*24);
+  const n=tailCountCirc(deps,cyc,PERIOD);
+  const rows=assignTailRows(deps,cyc);
+  const nDraw=Math.max(n,rows.length);
+  const h1=x=>x.toFixed(1).replace(/\.0$/,"");
+  $("#tailStmt").textContent=
+    `This schedule needs ${n} aircraft (${pat.basis}): ${h1(bh)}h out + ${sc.turn_min} min turn + `+
+    `${h1(bh)}h back + ${sc.turn_min} min turn = ${h1(cyc)}h per round trip`+
+    (n>1?`, which overlaps the next departure, so ${n} tails interleave on a rota.`
+         :`, clear of the next departure, so one tail covers every rotation.`)+
+    ` Block time per tail: ${h1(2*bh*deps.length/n)}h per week.`;
+  const W=920, H=34*nDraw+36, L=8, R=8, T=6;
+  const x=h=>L+(W-L-R)*(h/PERIOD);
+  const seg=(t0,dur,y,color,label)=>{
+    // Split at the week boundary rather than overflow: the wrap is real flying, drawn at the
+    // start of the week where it lands, not clipped off the edge.
+    let out="";
+    for(const [a,b] of (t0+dur<=PERIOD?[[t0,t0+dur]]:[[t0,PERIOD],[0,t0+dur-PERIOD]])){
+      const w=Math.max(x(b)-x(a),2);
+      out+=`<rect x="${x(a).toFixed(1)}" y="${y}" width="${w.toFixed(1)}" height="16" fill="${color}" rx="1"/>`+
+        (w>40&&label?`<text x="${(x(a)+w/2).toFixed(1)}" y="${y+12}" font-family="Inter" font-size="9" fill="#FFFDF8" text-anchor="middle">${label}</text>`:"");
+    }
+    return out;
+  };
+  const parts=[];
+  for(let k=0;k<7;k++){
+    const gx=x(k*24).toFixed(1), op=pat.days.includes(k);
+    parts.push(`<line x1="${gx}" y1="${T}" x2="${gx}" y2="${H-16}" stroke="#E2DCCC"/>`);
+    parts.push(`<text x="${gx}" y="${H-4}" font-family="IBM Plex Mono" font-size="9" fill="${op?"#6E6A5E":"#C4BFB0"}">Day ${k+1}${op?` · ${(sc.outbound&&sc.outbound.dep)||""}`:""}</text>`);
+  }
+  const oc=(sc.outbound&&sc.outbound.sector)||"out", ic=(sc.inbound&&sc.inbound.sector)||"back";
+  rows.forEach((rDeps,i)=>{
+    const y=T+6+34*i;
+    parts.push(`<text x="${L}" y="${y-1}" font-family="Inter" font-size="8.5" fill="#6E6A5E">TAIL ${String.fromCharCode(65+i)}</text>`);
+    for(const s of rDeps){
+      parts.push(seg(s,bh,y,"#D4A249",oc));
+      parts.push(seg(s+bh,tn,y,"#8793A0",""));
+      parts.push(seg(s+bh+tn,bh,y,"#3D6A88",ic));
+      parts.push(seg(s+2*bh+tn,tn,y,"#8793A0",""));
+    }
+  });
+  $("#tailSvg").innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="100%" role="img">${parts.join("")}</svg>`;
+  $("#tailNote").textContent=
+    `One week, hours from the first departure; gold = outbound block, blue = return block, grey = `+
+    `${sc.turn_min} min turnaround (${sc.turn_basis||"type-standard"}); empty row space is time the `+
+    `tail is free for other flying. Pattern basis: ${pat.basis}.`;
+  row.classList.remove("hidden");
+}
+// THE INVERTED CURFEW (Jarek Zych, 24 August 2026, live). He entered "05:30 to 23:00", which
+// RESTRICTS the whole working day, when he meant the airport OPERATES 05:30-23:00 (curfew
+// 23:00-05:30). The run was lawful and baffling: the optimiser picked 04:59, the only kind of
+// time left permitted. The fields ask for restricted hours but a user thinking in opening
+// hours types them backwards, and the tool obeyed in silence. No airport on earth closes for
+// the whole daytime, so a restriction of 14 hours or more is treated as almost certainly
+// inverted and the run stops with the swap spelled out. Deliberately an error rather than a
+// silent auto-swap: a curfew is a fact somebody has to know, and the tool must not rewrite
+// facts on the user's behalf, only refuse to guess (same rule as the one-ended curfew above).
+function curfewSanity(win,label){
+  if(!win) return null;
+  const m=s=>{const p=s.split(":");return (+p[0])*60+(+p[1]||0);};
+  const [a,b]=win.split("-"); let dur=(m(b)-m(a)+1440)%1440; if(dur===0) dur=1440;
+  if(dur>=14*60){
+    const h=Math.round(dur/6)/10;
+    return `the ${label} curfew ${a}-${b} closes the airport for ${h} hours, most of the working `+
+      `day. If the airport OPERATES ${a}-${b}, the curfew is the other way round: enter ${b} to ${a}.`;
+  }
+  return null;
 }
 // THE SLIDER UNDER THE CURVE. Derives, never interpolates and never re-runs.
 //
@@ -1212,12 +1567,16 @@ function optimise(){
   const _ac=$("#aircraft").value; if(_ac) q.set("aircraft",_ac);          // honour a client-fixed gauge; blank = optimise it
   const _fq=($("#freq").value||"").trim(); if(_fq) q.set("freq",_fq);      // honour a client-fixed frequency; blank = optimise it
   const _dt=($("#deptime").value||"").trim(); if(_dt) q.set("dep_time",_dt); // honour a client-fixed departure; blank = optimise it
+  const _at2=($("#arrtime").value||"").trim(); if(_at2) q.set("arr_time",_at2);   // client-fixed return arrival rides the sweep
+  const _tm2=($("#turnmin").value||"").trim(); if(_tm2) q.set("turnaround",_tm2); // client turnaround screens departures too
   const _cO=curfewVal("curfewO1","curfewO2"), _cD=curfewVal("curfewD1","curfewD2");
   if(_cO===null||_cD===null){
     btn.disabled=false; btn.textContent="Optimise";
     showErr("a curfew needs both ends set, or neither. One end alone is not a restriction and the run will not guess the other.");
     return;
   }
+  const _cs2=curfewSanity(_cO,"origin")||curfewSanity(_cD,"destination");
+  if(_cs2){ btn.disabled=false; btn.textContent="Optimise"; showErr(_cs2); return; }
   if(_cO) q.set("curfew_origin",_cO);
   if(_cD) q.set("curfew_dest",_cD);
   const _pt=($("#partners").value||"").trim(); if(_pt) q.set("partners",_pt);
@@ -1571,13 +1930,17 @@ function render(d){
       // return is now timed to land a short turn before the next departure and this states the
       // result of that.
       (_sc.ground_origin_h?`  ·  ${_sc.ground_origin_h}h on the ground at ${(_sc.outbound.sector||"").split("-")[0]||"the origin"} between arrival and the next departure`:"")+
-      (_sc.indicative?"  ·  local times, indicative: not slot-, curfew- or connection-optimised":"")+
+      // The basis is STATED, not labelled "indicative" (John, 24 August 2026): close to launch,
+      // a number rests on a stated decision. The server says which decision this draw made -
+      // type-standard turnaround, client turnaround, or a caller-set arrival - in words.
+      (_sc.return_basis?`  ·  ${_sc.return_basis}`:(_sc.indicative?"  ·  local times, not slot- or connection-optimised":""))+
       // THE RETURN LEG SAYS WHEN IT COULD NOT BE TIMED LEGALLY. _schedule_times searches the 24
       // hours after the turn for a return that clears both airports' restricted hours, and when
       // none exists it falls back to the earliest turn and states why. Drawing that fallback
       // without the reason would put an illegal return on the page as though it were a schedule.
       (_sc.inbound_need?"  ·  RETURN NOT TIMED: "+_sc.inbound_need:""));
     const _el=$("#schedRow"); if(_el) _el.classList.remove("hidden");
+    drawTail(_sc, d);
   } else { const _el=$("#schedRow"); if(_el) _el.classList.add("hidden"); }
 
   // WHAT THE CURFEW COSTS, and on what basis. Added 14 August 2026.
