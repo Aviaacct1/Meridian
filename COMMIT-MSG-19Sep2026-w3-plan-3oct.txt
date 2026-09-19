@@ -1,0 +1,24 @@
+W3 status: the plan to 3 October, and the two pack formats ruled
+
+John pulled the pack, the PDF render and the imagery forward from 8 October to
+3 October, so all four W3 items reach Jol and Nick together. The dated plan is in
+the status file. The risk recorded with it is the review rather than the build:
+four artefacts read in one sitting leave one week to fix what comes back before
+the 10 October freeze, so what reaches them is staggered and the PDF is proven
+early. If a dependency slips, the HTML pitch page goes to review on 6 October
+rather than all four arriving half-finished on the 3rd, and the freeze does not
+move.
+
+John's ruling on the two formats is recorded and supersedes W3's earlier
+proposal. The PDF is the full researched pack. The HTML is a different artefact:
+a page that can be presented in a 20-minute airline meeting, the key information
+in slide-shaped sections, interactive charts rather than static images, two
+photographs, every figure carrying its source. Because the two now differ, the
+PDF renders off the long pack that already exists and does not wait for the HTML
+rebuild.
+
+Three dependencies are dated into the status file: the carrier for
+Bologna-New York by 23 September, the coverage probe run by 26 September, and
+the one-engine-or-two wording from the controller by 26 September. The probe
+carries a stated result on silence: W3 stops planning for airport photography and
+the Routes surfaces carry Observatory mood frames and charts.

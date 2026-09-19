@@ -253,6 +253,42 @@ Nothing exists, so this is a build from zero. Method, in W3's recommended order:
 Chrome present at `C:\Program Files\Google\Chrome\Application\chrome.exe`, `pikepdf` 10.10.0,
 `pillow` 12.3.0, `piexif` 1.1.3. The Playwright fallback is not needed and is not added.
 
+## The plan to 3 October (John's ruling, 19 Sep: all four items for the 3rd, not the 8th)
+
+John pulled the pack, the PDF and the imagery forward from 8 October to 3 October, so all four
+scope items reach Jol and Nick together. W3 works to that. The risk in it is the review, not
+the build: four artefacts read in one sitting leave a single week to fix whatever comes back
+before the 10 October freeze. So what reaches them is staggered, and the PDF is proven early.
+
+One consequence of John's own ruling helps here. The PDF is the full researched pack and the
+HTML is the short pitch, so they are two different outputs rather than one rendered twice. The
+PDF therefore renders off the long pack that already exists and does not wait for the HTML
+rebuild.
+
+| Dates | What W3 builds |
+|---|---|
+| 22-25 Sep | Stand deck slides 1-6 and 9-10. PDF render proven end to end off the existing pack: A4, print stylesheet, Avia Solutions metadata verified |
+| 25 Sep | The four messaging sentences swapped into slides 2, 3 and 10 when John and Jol settle them |
+| 25 Sep-1 Oct | The HTML pack rebuilt as a presentable 20-minute airline pitch. The largest item and the one with least slack: the route map, the time-of-day curve and the tail chart do not exist in the pack at all and are three new charts |
+| 29 Sep-1 Oct | Slides 7 and 8 from two real runs, SJC-TPE and Bologna-New York |
+| 2 Oct | The full sweep across all three: house style, en-GB, author metadata, rights records, a source on every figure |
+| 3 Oct | All of it to Jol and Nick |
+
+**If a dependency slips, the HTML pitch page goes to review on 6 October rather than all four
+arriving half-finished on the 3rd. The 10 October freeze does not move.**
+
+**Imagery is the one item W3 will not promise a number on.** The pipeline and the provenance are
+W3's to deliver and are built. What Wikimedia Commons holds is what it holds, and only the probe
+says.
+
+## John's ruling on the two pack formats, 19 September
+
+The PDF is the full researched pack: the visitor asked for their own numbers and the depth is
+the product. The HTML is a different artefact, a page that can be presented in a 20-minute
+airline meeting: the key information in slide-shaped sections, interactive charts rather than
+static images, two photographs, every figure carrying its source. W3's earlier proposal, a short
+read with the full pack one click below it, is superseded.
+
 ## What W3 needs from John
 
 1. CLOSED 19 Sep: pulled, HEAD confirmed.
@@ -265,17 +301,23 @@ Chrome present at `C:\Program Files\Google\Chrome\Application\chrome.exe`, `pike
    The probe is regenerated to measure that, three airport slots over 401 airports.
 6. CLOSED 19 Sep: the image-source accounts are held by The Aviation Observatory, and the three
    sign-ups wait until a mailbox on aviationobservatory.com works. Consequences below.
-7. **The coverage probe, run on the workstation.** Blocked twice this evening, on a missing
-   config and then on a byte-order mark, both now fixed. Third block issued. Nothing else on
-   imagery moves until it reports.
+7. **The coverage probe, run on the workstation, by 26 September.** Blocked twice on 19 Sep, on
+   a missing config and then on a byte-order mark, both fixed. If it has not run by the 26th,
+   W3 stops planning for airport photography and the Routes surfaces carry Observatory mood
+   frames and charts. Better decided than discovered.
+9. **The carrier for Bologna-New York, by 23 September.** It is named on slide 8 and it is an
+   input to the run that draws the slide's charts.
+10. **Two runs off the build for the worked routes, by 29 September**, so slides 7 and 8 carry
+   real charts rather than placeholders.
 8. The two July validation figures in Q1 item 3: W3 proposes they stay out. Silence to
    26 September, they stay out.
 
 ## For the controller
 
 1. **The one-engine-or-two wording** (Q1 item 1) is a stand answer, not a document tidy, and it
-   belongs with master list 2.4 and pre-mortem item 9. W3 needs the settled sentence before
-   slides 4 and 5 are final, which is before 3 October.
+   belongs with master list 2.4 and pre-mortem item 9. W3 needs the settled sentence **by
+   26 September**, because slides 4 and 5 cannot be final without it and everything now goes to
+   review on 3 October.
 2. **W3 now depends on W2.** John's ruling puts the three image-source accounts in The Aviation
    Observatory's name and holds them until a mailbox on that domain works. That mailbox depends
    on whether the domain sits on the Avia Microsoft 365 tenant, which is umbrella Waiting on
