@@ -23,7 +23,7 @@ confirmed by John's paste).
 |---|---|---|---|---|---|
 | W1 Speed and caches | Step 1 SHIPPED 19 Sep, acceptance MET | Commit 1012c29 live on the workstation: Run 35.4 to 9.8s (SJC-TPE), 42.5 to 9.0s (BRS-EWR, cold); Optimise 161 to 65s and 196 to 35s; payloads identical (probe diff PASS). TIMING-20260919-1907 (before) and -1937 (after) on the workstation | Step 2: persistence across a restart (pre-mortem 11) and the pre-warm script over the registered airports; then preagg wiring | Controller | 26 Sep |
 | W2 Stand flow | In progress (routes\W2-STATUS.md v6, 19 Sep 20:50) | Commit 2cab1b2: MCT master reports at startup, stand build refuses without it (14 checks); sender set up on Postmark, aviationobservatory.com DKIM and return-path verified, account in test mode pending Postmark approval; capture front end scoped, demonstrable 2 Oct | Stand mode build; DuckDB leads table and JSONL migration; John's items 20-24 | W2 chat / John | 2 Oct front end; 8 Oct laptop proof |
-| W3 Presentation | Not started | Old 2 July pptx only | Deck v1 after messaging settles | Controller, Jol, Nick | 3 Oct |
+| W3 Presentation | In progress (Opus chat; routes\W3-STATUS.md v1, 19 Sep) | Ten-slide outline agreed; provenance fix built and proven (rights record now survives JPEG re-encode, build check fails on a bare image); PDF path proven installable (Chrome, pikepdf present); library holds NO airport photography, Commons coverage probe written for 401 airports, runs on the workstation; the 2 July deck contradicts Nick's note in four places | John: accuracy sentence (item 25), carrier for BLQ-JFK (26); W3 runs the probe and builds slides 1-6, 9-10 | W3 chat / John | Deck v1 3 Oct |
 | W4 Host | Not started | Host's name and contact in no document | Manual v1; get host details from John | Controller / John | 10 Oct |
 | W5 Leads, feedback, order-ready | Blocked on John | Lead store and email sender undecided | Decisions batch (step C) | John | 25 Sep |
 | W6 Messaging, marketing, website, meetings | In progress | Four sentences drafted this session (step C) | John and Jol settle; invitations out | John, Jol | Final 25 Sep; invites 26-29 Sep |
@@ -83,6 +83,18 @@ confirmed by John's paste).
   that way is not knowable from the code. Fixed at 2cab1b2 (the server states rows loaded or
   the reason, stand mode refuses to start without the master); the NEXT RESTART after the
   workstation pulls 2cab1b2 answers the question. Pre-mortem item 16 added.
+- 19 Sep 2026 (John, in the W3 chat): airport-specific photography is required in the deck
+  and the packs, from more than one online source with paid stock held for the gaps, at
+  least three images per airport; the Observatory mood frames and charts stay. The
+  image-source accounts are held by The Aviation Observatory and wait for a mailbox on that
+  domain. Slide 8 is Bologna-New York (carrier still to name). W3-RULINGS item 4 widened.
+- 19 Sep 2026: W3 FINDINGS. (a) The delivered JPEG re-encode in deck/render_pptx.py dropped
+  every rights record; fixed and proven (commit 45a5210), and the build now fails on a bare
+  image. Every JPEG in the China Airlines TPE-SJC deck of 19 Aug (94 of them) carries no
+  record, most from C:\assets\engagement, which has no manifest at all; nothing from that
+  folder goes on a Routes surface. (b) The 2 July deck contradicts Nick's 23 Aug note in
+  four places (one engine or two; accuracy in words versus the ruled pair; two pre-fix
+  validation figures; naming). (c) master list 3.3b answered; 2.4 is now stand-critical.
 - 19 Sep 2026: DATE CORRECTION. Several entries above and the commit messages 6bbdc0b to
   1012c29 say "21 Sep"; the controller misdated them. Everything so dated happened on
   Saturday 19 September 2026 (the timing files and the workstation clock agree). File
@@ -221,7 +233,32 @@ confirmed by John's paste).
     the Cloudflare tunnel runs as a service.
 19. **Suzanna's practice runs**: they write to the lead store and use the one-pack quota. Give
     her a separate lead file (AVIA_DEMO_LEADS) on the stand build. Silence: separate file.
-20. **DMARC reporting route** (W2 watchpoint 3): Postmark's DMARC Digests now (no DNS move
+25. **WHAT THE 89% DESCRIBES, the stand sentence.** The 89/82 figures belong to the
+    calibrated launch model (BT2, 2,915 launches, memory qsi-bt2-programme, settled 5 Aug).
+    Meridian's on-screen forecast is the step-by-step QSI build; nothing in app imports
+    BT2 (estate index), and the QSI build's own calibrated band is the 0.40-2.15 interval.
+    Nick's note section 5 describes the launch model running alongside as a cross-check;
+    the app does not do that today. So a visitor who asks "is the forecast on this screen
+    89% within 20%?" cannot be told yes. Three honest routes: (a) wire the BT2 point and
+    band beside the QSI forecast before the freeze (Jess's Atlas team already runs
+    forecast_v12 live from the OAG reference week, so the code exists; a display-and-call
+    change, not demand logic; two days to scope); (b) the sentence: "Meridian builds the
+    forecast step by step from measured demand. The calibration record behind it, 2,915
+    real launches, is within 20% 89% of the time and within 10% 82% of the time; every
+    forecast carries its own calibrated range"; (c) both. Controller recommends (a) scoped
+    by 26 Sep, (b) as the fallback wording, and Nick signs whichever ships. W3 needs it by
+    3 Oct. Master list 2.4 and pre-mortem 9 close on this. Silence to 26 Sep: (b), with
+    Nick's sign-off.
+26. **Carrier for slide 8, Bologna-New York.** No default; W3 will not pick an airline.
+27. **Decks already sent without rights records** (the 94 JPEGs in the CI deck): the
+    controller's ruling is that nothing is re-sent; the exposure is an internal provenance
+    gap, not a client obligation, and it goes on the master list as a post-Routes review
+    of C:\assets\engagement against its sources. Say if you disagree.
+20. **DMARC reporting route** (W2 watchpoint 3): REVISED controller view after W3: move
+    aviationobservatory.com DNS to Cloudflare now (four Postmark records to recreate, a
+    ten-minute job, W2 does it), because Cloudflare Email Routing then gives the domain an
+    inbound mailbox, which W3's image-source sign-ups and the DMARC reports both need, and
+    the Avia estate already lives in Cloudflare. Silence to 26 Sep: Cloudflare now. (W2 watchpoint 3): Postmark's DMARC Digests now (no DNS move
     before the laptop proof; nothing to recreate), Cloudflare DNS and Email Routing after
     Routes. Controller's view; confirm. Silence to 26 Sep: Postmark digests.
 21. **Public pack URL controls** (W2 watchpoint 5): noindex header, an expiry, no personal

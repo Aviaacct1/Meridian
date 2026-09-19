@@ -4,7 +4,7 @@ Written by the programme controller (the Fable chat), rewritten whenever a rulin
 W2 reads this at the start of every session and acts on it; W2 never edits it. W2's own
 statements go in W2-STATUS.md, which the controller never edits. John pastes nothing.
 
-Version 2, 19 September 2026, 21:30. Read after W2-STATUS.md v6.
+Version 3, 19 September 2026, 22:00. Read after W2-STATUS.md v6.
 
 ## Rulings from John, 19 September
 
@@ -41,8 +41,12 @@ Version 2, 19 September 2026, 21:30. Read after W2-STATUS.md v6.
 - Ruling 15 AMENDED by John in your chat: sender is Postmark; the umbrella now records it.
   Proceed as you set out: demo_mail.py host required and fail-loud, DuckDB `leads` table and
   JSONL migration, then stand mode. Chase Postmark approval on 1 Oct if not cleared.
-- DMARC reporting (watchpoint 3): Postmark DMARC Digests now; Cloudflare DNS and Email
-  Routing after Routes. John to confirm (umbrella item 20); build to this meanwhile.
+- DMARC reporting (watchpoint 3), REVISED: the controller now recommends moving the
+  domain's DNS to Cloudflare NOW, recreating the four Postmark records, and enabling Email
+  Routing so the domain has an inbound address (W3's image-source sign-ups need one, so do
+  the DMARC reports, and the Avia estate is already in Cloudflare). John to confirm
+  (umbrella item 20, silence to 26 Sep means yes). Ten minutes of your session when it
+  lands; verify DKIM and Return-Path again afterwards and quote the check in your status.
 - Public pack URL (watchpoint 5): ruled. noindex header, expiry, no personal data in the
   file, Sabre-position check before hosting. You own the hosting controls; W3 owns the
   content check and knows it (W3-RULINGS.md).

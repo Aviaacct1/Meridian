@@ -4,7 +4,7 @@ Written by the programme controller (the Fable chat), rewritten whenever a rulin
 W3 reads this at the start of every session and acts on it; W3 never edits it. W3's own
 statements go in W3-STATUS.md, which the controller never edits. John pastes nothing.
 
-Version 1, 19 September 2026.
+Version 2, 19 September 2026, 22:00. Read after W3-STATUS.md v1.
 
 ## Scope (commercial plan section 3; umbrella W3)
 
@@ -18,7 +18,10 @@ Version 1, 19 September 2026.
    W3 owns the pack's CONTENT and rendering; W2 owns how it is hosted and sent.
 3. The PDF render of the pack: headless Chrome on the workstation, same content and imagery,
    A4, Avia author metadata. A build item, due 8 October.
-4. Imagery: from the rights-managed Observatory library only (C:\assets on the DevPC,
+4. Imagery: WIDENED by John 19 Sep. Airport-specific photography from more than one online
+   source with paid stock held for the gaps, at least three images per airport, with the
+   Observatory mood frames and charts kept; every image still carries its rights record and
+   the build still refuses a bare one. Formerly: from the rights-managed Observatory library only (C:\assets on the DevPC,
    D:\assets on the workstation, config ASSETS_DIR, rights manifests alongside). Every image
    used carries its rights record; the PNG-to-JPEG step that strips provenance from delivered
    decks (estate index, open) is fixed or worked around before any pack leaves. Hero image per
@@ -56,7 +59,37 @@ Version 1, 19 September 2026.
 - Dates: deck v1 to Jol and Nick by 3 October; pack tuning and PDF render by 8 October;
   imagery rights fix by 8 October; demo-path freeze 10 October.
 
-## What the controller wants in W3-STATUS.md after session 1
+## Controller's answers to W3-STATUS.md v1 (19 Sep, 22:00)
+
+- Q1 item 1, one engine or two: escalated to John as umbrella item 25 with three honest
+  routes and a 26 Sep date; W3 does not write around it and does not finalise slides 4-5
+  until it lands. The sentence in item 25(b) is the fallback wording; build the slide to
+  hold it and swap if (a) lands.
+- Q1 item 3: the two July validation figures stay out. Ruled.
+- Q3 imagery: John's ruling recorded; run the probe on the workstation and let the measured
+  gap decide the second source, exactly as you set out. No contract before Routes.
+- Decks already sent (the 94 bare JPEGs): nothing is re-sent; post-Routes review of
+  C:\assets\engagement goes on the master list. Umbrella item 27.
+- The mailbox your image-source accounts wait on: the controller has recommended moving the
+  domain's DNS to Cloudflare now so Email Routing gives an inbound address (umbrella item 20,
+  W2 does it). Plan on it from 26 Sep; if it slips, sign up under an Avia address and
+  transfer later rather than block the probe's follow-through.
+- Slide 8 carrier: with John (item 26).
+- The PDF method in Q4 is approved as written. Build it.
+- Slides 7 and 8 need runs on the frozen build; take them from the workstation after the
+  10 Oct freeze, not before, so the deck's numbers are the show's numbers.
+- Commit message hygiene: one message file per commit; a reused file is a wrong subject
+  line forever. Noted, not repeated.
+
+## What the controller wants in W3-STATUS.md after session 2
+
+1. Probe result: coverage by tier of airport, and the recommended second source with the
+   licence terms actually read.
+2. Slides 1-6, 9-10 built in the Observatory palette, with the placeholder sentences, and
+   the en-GB and author metadata verified after build.
+3. The print stylesheet and the render step, with one rendered A4 PDF of an existing pack.
+
+## What the controller wanted after session 1 (answered)
 
 1. Where the 2 July deck and Nick's methodology note actually are (path), and whether they
    contradict each other anywhere.
