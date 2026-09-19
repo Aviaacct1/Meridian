@@ -21,8 +21,8 @@ confirmed by John's paste).
 
 | WS | State | Evidence | Next action | Owner | Date |
 |---|---|---|---|---|---|
-| W1 Speed and caches | In progress | Step 1 CODED 21 Sep (shared boards, MCT memo, airport table memo; COMMIT-MSG-21Sep2026-w1-step1-shared-boards.txt); probe has --save-json and --diff | John: before-payloads, tests, commit, pull, restart, after-payloads, diff, paste | John / controller | 23 Sep |
-| W2 Stand flow | In progress (Opus chat; routes\W2-STATUS.md v1, 21 Sep) | Plan A proven on John's MateBook; MateBook is ARM64 so NOT the Plan B machine; request form and lead store already built 16 Aug (JSONL, M365 SMTP) and need extending; stand mode designed; MCT silent fallback found under laptop build | John's rulings 14-19 below; W2 builds stand mode and extends the lead flow | W2 chat / John | Hardware go/no-go 1 Oct; proof 8 Oct |
+| W1 Speed and caches | Step 1 SHIPPED 19 Sep, acceptance MET | Commit 1012c29 live on the workstation: Run 35.4 to 9.8s (SJC-TPE), 42.5 to 9.0s (BRS-EWR, cold); Optimise 161 to 65s and 196 to 35s; payloads identical (probe diff PASS). TIMING-20260919-1907 (before) and -1937 (after) on the workstation | Step 2: persistence across a restart (pre-mortem 11) and the pre-warm script over the registered airports; then preagg wiring | Controller | 26 Sep |
+| W2 Stand flow | In progress (Opus chat; routes\W2-STATUS.md v1, 19 Sep) | Plan A proven on John's MateBook; MateBook is ARM64 so NOT the Plan B machine; request form and lead store already built 16 Aug (JSONL, M365 SMTP) and need extending; stand mode designed; MCT silent fallback found under laptop build | John's rulings 14-19 below; W2 builds stand mode and extends the lead flow | W2 chat / John | Hardware go/no-go 1 Oct; proof 8 Oct |
 | W3 Presentation | Not started | Old 2 July pptx only | Deck v1 after messaging settles | Controller, Jol, Nick | 3 Oct |
 | W4 Host | Not started | Host's name and contact in no document | Manual v1; get host details from John | Controller / John | 10 Oct |
 | W5 Leads, feedback, order-ready | Blocked on John | Lead store and email sender undecided | Decisions batch (step C) | John | 25 Sep |
@@ -61,7 +61,18 @@ confirmed by John's paste).
   expiring launch discount; two milestones; messaging before invitations; no competitor
   approaches; Optimise demonstrated on the stand).
 - 19 Sep 2026: programme controller appointed; this Status block is the single truth.
-- 21 Sep 2026: John's rulings on the pack: TWO emails (plain thank-you plus PDF attached;
+- 19 Sep 2026: W1 STEP 1 SHIPPED and MEASURED on the workstation (commit 1012c29, server
+  restarted, before/after on the same two pairs, same day). Run: SJC-TPE 35.4s to 9.8s cold and
+  8.9s warm; BRS-EWR (cold, nothing warmed it) 42.5s to 9.0s. Optimise, narrowed default:
+  161s to 65s and 196s to 35s. Every saved Run payload identical before and after. The
+  handover's two acceptance tests are met by memoisation alone. The launcher trap bit once on
+  the way: a pull does not replace a running server, and Meridian-run.bat re-warms rather
+  than relaunches, so the process must be stopped first (Stop-Process, then relaunch).
+- 19 Sep 2026: DATE CORRECTION. Several entries above and the commit messages 6bbdc0b to
+  1012c29 say "21 Sep"; the controller misdated them. Everything so dated happened on
+  Saturday 19 September 2026 (the timing files and the workstation clock agree). File
+  contents corrected; commit messages left as they are.
+- 19 Sep 2026: John's rulings on the pack: TWO emails (plain thank-you plus PDF attached;
   HTML pack HOSTED on the launched site at a public unguessable URL, linked, with links back
   to the main pages, and the same page is how the UK analysts review live packs and send a
   correction); aviationobservatory.com is registered and unused, set it up as the sender from
@@ -70,13 +81,13 @@ confirmed by John's paste).
   Website launches as a "site lite" if the full site is not ready, with Q&A added after
   Routes from the questions asked. A voice note-taker for Suzanna is under consideration
   (needs a consent line on the stand).
-- 21 Sep 2026: preagg chain on the workstation: build DONE (od_p2p 1,157,577; od_single
+- 19 Sep 2026: preagg chain on the workstation: build DONE (od_p2p 1,157,577; od_single
   5,780,022; sector_adj 859,129 rows in 426s; E:\Avia\preagg.duckdb written). Run A (no
   preagg, 100 pinned routes, single-threaded) DONE in 618s, 85 routes scored, 3 errored for a
   missing GeoNames dump on the workstation, 12 dropped by the back-test's own rules. Identity
   check running. The back-test's own accuracy tables are the raw uncalibrated 2016 pin and
   are NOT the product claim; they are ignored here.
-- 21 Sep 2026 (John, answers to the decisions batch):
+- 19 Sep 2026 (John, answers to the decisions batch):
   1. Pricing: the structure exists (PRICING-HANDOVER-19Sep2026.md, from the Observatory site
      build of 2-3 Aug): £15,000 / £20,000 / £25,000 a year by airport size, three seats, 100
      presentations included, sales-led, published in full on the staging site. The soft
@@ -97,35 +108,35 @@ confirmed by John's paste).
      Stand F174. Lands Tuesday 20 Oct afternoon; works the stand Wed-Fri 9-5. Stefan Parry
      (summer intern) may join her.
   7. Website: LAUNCH before Routes; linked from the emails and the conference bio.
-- 21 Sep 2026: PREAGG IDENTITY CHECK PASSED on the workstation: 85 of 85 pinned routes
+- 19 Sep 2026: PREAGG IDENTITY CHECK PASSED on the workstation: 85 of 85 pinned routes
   identical across every column, no-preagg baseline against preagg, same code, single
   thread (E:\Avia\preagg_check\identity.log). Wiring preagg into the live path is therefore a
   pure performance change. MEASURED saving on the back-test path: 548s against 618s, 11%,
   circa 0.8s a route (baseline file cache warm, so this flatters the baseline). Preagg is not
   where most of the stand's 42-second Run goes; the in-process profile decides what is.
-- 21 Sep 2026 (John, rulings 14-17): Plan B hardware is a 1TB external NVMe SSD over USB-C on
+- 19 Sep 2026 (John, rulings 14-17): Plan B hardware is a 1TB external NVMe SSD over USB-C on
   John's core x86 laptop, ordered before 28 Sep. Lead flow: EXTEND the 16 Aug build, which was
   a holding draft; the store becomes a DuckDB `leads` table now (nightly Excel export to
   Egnyte), a CRM can sit on top after Routes; and the stand gets a professional, quick
   data-capture front end (60 seconds, tablet-friendly, consent, branded), a W2 build item.
   MCT master reports rather than defaults silently: yes. Laptop dates: 1 Oct hardware
   go/no-go, 8 Oct proof, show machine loaded by 10 Oct, hard stop 15 Oct.
-- 21 Sep 2026: MEETINGS are chosen by likelihood of buying, not by relationship (John);
+- 19 Sep 2026: MEETINGS are chosen by likelihood of buying, not by relationship (John);
   relationships come to the stand anyway. The direct competitor's 22 published client logos
   are cross-checked against the register (20 present) in the organisations file, section 8.
-- 21 Sep 2026: from W2's first status file (routes\W2-STATUS.md): Boeing 13 Oct is an Atlas
+- 19 Sep 2026: from W2's first status file (routes\W2-STATUS.md): Boeing 13 Oct is an Atlas
   meeting, so the Meridian dress rehearsal moves to two trials, 11-12 Oct and 16 Oct; the
   request form and lead store exist since 16 Aug (demo_leads.py JSONL store, demo_mail.py M365
   SMTP, /api/demo/*, 58 checks) and are extended rather than replaced (controller view,
   John to confirm); the narrowed sweep boundary is W2 the switch, W1 the measurement.
-- 21 Sep 2026: Routes World 2026 is in FRANKFURT (relocated; same dates). Registered
+- 19 Sep 2026: Routes World 2026 is in FRANKFURT (relocated; same dates). Registered
   organisations and the 90 exhibitors read from the matchmaking platform and recorded in
   ROUTES-ATTENDING-ORGANISATIONS-21Sep2026.md (organisations only, no delegate names): the
   pre-warm airport set (decision 5) and the controller's proposed five meetings (decision 2)
   are in that file, awaiting John's pick. An organisation-level master list of all delegates
   (company, type, country, count) is still to build; a person-level pull was blocked by the
   environment's privacy control and is not attempted again.
-- 21 Sep 2026: HOW CHATS ARE RUN (John). This chat, on Fable, is the controller: status,
+- 19 Sep 2026: HOW CHATS ARE RUN (John). This chat, on Fable, is the controller: status,
   decisions, W1 engineering judgement, the Friday note. Build workstreams run in dedicated
   chats on Opus. Every new chat is started from a complete paste-ready prompt written by the
   controller, model named, reading its files by path; John never copies text out of files.
@@ -156,7 +167,7 @@ confirmed by John's paste).
    pitches queued for the evening).
 4. **Stand host's name, contact and start date; the stand number.** In no document. Needed
    for W4 and for the Cloudflare Access policy (pre-mortem 7).
-5. CLOSED 21 Sep: six of seven answered (Decisions log). Open remainder below.
+5. CLOSED 19 Sep: six of seven answered (Decisions log). Open remainder below.
 6. **Launch offer numbers**: year-1 discount, number of places, expiry date, against the
    £15-25k grid. Silence to 3 Oct: the host says "on request, limited places" only.
 7. **Tier shape**: the commercial plan has Airport / Airline / Adviser tiers; the published
@@ -180,18 +191,18 @@ confirmed by John's paste).
     any material, and ahead of the final commercial sign-off the pricing note requires.
     Decision needed: launch with the comparison page withheld and the grid signed off, or
     revise the rulings. No default; this one needs an answer.
-12. CLOSED 21 Sep: delegate list read; organisations recorded.
-14. CLOSED 21 Sep: 1TB external NVMe SSD, USB-C, on the core x86 laptop; order before 28 Sep.
-15. CLOSED 21 Sep: extend; DuckDB `leads` table now; professional capture front end on the
+12. CLOSED 19 Sep: delegate list read; organisations recorded.
+14. CLOSED 19 Sep: 1TB external NVMe SSD, USB-C, on the core x86 laptop; order before 28 Sep.
+15. CLOSED 19 Sep: extend; DuckDB `leads` table now; professional capture front end on the
     stand (W2); CRM after Routes.
-16. CLOSED 21 Sep: yes, the MCT master reports and the stand build refuses to start without it.
-17. CLOSED 21 Sep: agreed (1 Oct go/no-go, 8 Oct proof, 10 Oct loaded, 15 Oct hard stop).
+16. CLOSED 19 Sep: yes, the MCT master reports and the stand build refuses to start without it.
+17. CLOSED 19 Sep: agreed (1 Oct go/no-go, 8 Oct proof, 10 Oct loaded, 15 Oct hard stop).
 18. **Boeing correction**: confirm the two Meridian trials (11-12 Oct full flow, timed, Plan A
     and B, a pack sent and received on a hotspot; 16 Oct with Suzanna, remote). Confirm who is
     at the workstation for the first.
 19. **Suzanna's practice runs**: they write to the lead store and use the one-pack quota. Give
     her a separate lead file (AVIA_DEMO_LEADS) on the stand build. Silence: separate file.
-13. **Pick the five meetings**: John agreed the buyer-test list 21 Sep (Birmingham, Dublin,
+13. **Pick the five meetings**: John agreed the buyer-test list 19 Sep (Birmingham, Dublin,
     Vienna, Dallas Fort Worth, Milan SEA; reserves in the organisations file, section 3).
     Open point: whether one competitor-client airport goes on the five as a deliberate test
     of budget-holders; controller view is no, the 19 Sep ruling stands until a paid client
@@ -330,9 +341,13 @@ Written as if it happened. Each has an owner and a mitigation already in the pla
 10. **John is not on the stand when the buyer is.** Answer: the host's brief includes when John
     is on the stand; the request form books a follow-up slot; the deck and pack carry John's
     contact; the five pre-arranged meetings are John's.
-11. **The workstation restarts and loses every pre-warmed route.** Answer: the persistent cache
-    (handover 3.3) is the whole point; proven across a restart before freeze.
-12. **The dress rehearsal does not happen.** Found 21 Sep: Boeing 13 Oct is an Atlas meeting
+11. **The workstation restarts and loses every pre-warmed route.** Answer: the persistent
+    cache (handover 3.3) is the whole point; proven across a restart before freeze. Status
+    19 Sep: OPEN. Step 1 holds boards, MCT and the airport table in process memory only; a
+    restart loses them and the first Run on each airport pays circa 30s again. Step 2 is
+    the on-disk copy of exactly those parsed boards under LOCAL_CACHE, keyed on the OAG
+    store's vintage, plus a warm-up over the registered airports at launch.
+12. **The dress rehearsal does not happen.** Found 19 Sep: Boeing 13 Oct is an Atlas meeting
     with a short Meridian slot, not the Routes flow. Answer: two Meridian trials, 11-12 Oct
     (full stand flow after the freeze, timed, Plan A and Plan B, a pack sent and received on
     a hotspot) and 16 Oct with Suzanna; anything Boeing wants beyond its slot is post-Routes.
@@ -344,7 +359,7 @@ Written as if it happened. Each has an owner and a mitigation already in the pla
     taken before order-ready is a support problem, not a sale.
 
 15. **A visitor's airport is typed as a city name and the workstation cannot resolve it.**
-    Found 21 Sep: three pinned routes errored in the back-test with "a GeoNames dump is
+    Found 19 Sep: three pinned routes errored in the back-test with "a GeoNames dump is
     required to resolve a city name"; the workstation has no GeoNames dump. Answer: confirm
     which entry paths on the dashboard need it (code entry should not); install the dump on
     the workstation or make the message a visible, honest refusal; test with a city-name

@@ -1,7 +1,7 @@
-# Routes World 2026 (Frankfurt, 21-23 October): who is registered, read 21 September 2026
+# Routes World 2026 (Frankfurt, 21-23 October): who is registered, read 19 September 2026
 
 Source: the Routes World 2026 matchmaking platform (Grip), read from John's signed-in account on
-21 September 2026, 1,853 registered delegates. Organisations only, with delegate headcount in
+19 September 2026, 1,853 registered delegates. Organisations only, with delegate headcount in
 brackets; no delegate names are recorded here by design. Registrations grow until the show:
 re-read in the week of 12 October and add to the pre-warm set. Avia stand: F174.
 
@@ -27,7 +27,7 @@ Registered: Bologna (3), Genova City Airport (2), Taoyuan (3), Tampa (5, exhibit
 (2), London City (3), Belfast City (1), Aberdeen Glasgow and Southampton Airports (5, so
 Southampton is present through AGS), Abu Dhabi Airports Company (4, exhibiting), Heathrow (5),
 Milan SEA (7 plus a second SEA entry), SACBO Bergamo (Milan Bergamo 2, S.a.c.b.o 1), China
-Airlines (3), STARLUX (2). Not registered on 21 Sep: San Jose Mineta (SJC), EVA Air, Vision
+Airlines (3), STARLUX (2). Not registered on 19 Sep: San Jose Mineta (SJC), EVA Air, Vision
 Invest.
 
 ## 3. Controller's proposal for the five pre-arranged meetings (John chooses)

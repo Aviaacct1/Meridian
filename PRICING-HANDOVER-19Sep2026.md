@@ -2,7 +2,7 @@
 
 Author: Avia Solutions. Decisions taken during The Aviation Observatory website
 build sessions of 2-3 August 2026, recorded here 19 September 2026. Copied into the
-Meridian repo 21 September 2026 by the Routes programme controller; the original and the
+Meridian repo 19 September 2026 by the Routes programme controller; the original and the
 decision trail live in the Observatory website repo (E:\Avia\Observatory Website, BUILD-NOTES.md).
 Status in one line: the pricing structure and headline figures were settled and are published
 on the staging site, but four commercial items were deliberately left unset and the whole grid
