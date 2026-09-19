@@ -1,0 +1,33 @@
+W6: pricing ruling, one way of working, and the state of the tao-website push
+
+Second W6 commit of 19 September. The first, 8afbe56, went in while the launch plan was still
+being written, so this carries the remainder and the two rulings John took after it.
+
+routes/W6-WEBSITE-LAUNCH-PLAN-19Sep2026.md (v4)
+  Section 2 is now a ruling rather than a recommendation: the price grid is held until
+  November, the host states the number in person in the published wording, and the follow-up
+  one-pager carries it in writing within 48 hours. W4's manual takes that wording in place of
+  "on request, limited places", and every price comes off the site as a certainty.
+  Section 5 adds an eighth place the price appears, named in no document: the Meridian page's
+  own description front matter, which is what a search result prints.
+  Section 7 is rewritten to John's ruling that the Observatory site works identically to the
+  Avia site, item by item with the cost of each: Cloudflare Pages and wrangler.toml, the
+  SITE_ENV and SITE_URL pattern in place of the hardcoded noindex tag, a preview environment,
+  the push script, the Sveltia editor on the same auth Worker and Access policy, the
+  normaliser and its round-trip test, and a Pages Function for the forms. Records that the
+  editor is cheaper here than assumed, because every Observatory page already carries title,
+  description, permalink and breadcrumbs in front matter, so a pages collection is
+  configuration rather than a rewrite; only body-text editing waits for November. Records the
+  two controls: every front-matter key declared, hidden where not editable, since Sveltia
+  drops what is not declared and permalink would change a page's URL; and the review branch
+  with a preview reinstated at cutover rather than after it.
+
+routes/W6-MESSAGING-VARIANTS-19Sep2026.md
+  Sentence 3's hold condition is now the ruling: not a published sentence before Routes, the
+  spoken form at the stand, the page wording in November.
+
+routes/W6-STATUS.md (v5)
+  Records commit 8afbe56; that the tao-website push did not land, because git refuses a
+  repository on E: until the path is added to safe.directory, so the site still has no remote;
+  and that the clean build passed on Eleventy 3.1.6, with the MODULE_TYPELESS_PACKAGE_JSON
+  warning to be fixed by one line once the repository has a remote.

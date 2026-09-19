@@ -52,40 +52,34 @@ wording.
 
 ---
 
-## 2. Pricing: W6's view, for John's ruling
+## 2. Pricing: ruled 19 September, hold until November
 
-John's question: publish the grid as planned, or hold it and let Suzanna give the number in
-person at Routes.
+John ruled on 19 September: the price grid is held until November. It does not go on the site
+before Routes, and Suzanna states the number in person when asked.
 
-**W6's view: hold it. Publish in November, with the order-ready milestone on the 7th.**
-
-The repository's own noindex comment says the names are not yet legally cleared, and the
-pricing note makes the grid conditional on the sign-off that clears them; a priced product
-page is the worst page to have public while that is open. The overage rate does not exist
-anywhere, by the pricing note's own admission, and presentation generation is the only
-metered item, so the question after "what does it cost" has no answer. The launch offer, the
-discount, the number of places and the expiry, is not set either, so publishing list price now
-removes the visible reason to sign early.
-
-The argument for publishing is John's own from 2 August and it is a good one: an institution
-whose proposition is that it publishes its error cannot hide its prices behind a call. That
-argument does not expire in October. It is honoured in November, when the sign-off, the
-overage rate and the offer all exist and the page can carry the whole position rather than a
-number with two holes in it.
-
-At the show, and it only works if all three hold:
+What that means in practice, and all three parts are binding:
 
 1. Suzanna says the number out loud when asked, in the published wording and no other:
    £15,000, £20,000 or £25,000 a year by airport size, three seats, 100 presentations
-   included, quoted and invoiced.
+   included, quoted and invoiced. Nobody is refused a number.
 2. She says nothing about the overage rate or any discount, because neither exists. If
    pressed: "the rate is stated in the licence, and the quotation confirms the size step."
 3. It goes to them in writing within 48 hours in the follow-up one-pager, so five
    conversations do not become five different numbers.
 
-This changes the host rule. The commercial plan section 4 says no price on the stand beyond
-"on request, limited places", and the host manual is being written to that. If John rules as
-above, W4 takes the wording verbatim from here.
+The grid goes on the site in November with the order-ready milestone on the 7th, once the
+commercial sign-off that clears the product names has landed, the presentation overage rate
+exists, and the launch offer is set. At that point the page carries the whole position rather
+than a number with two holes in it, and John's argument of 2 August is honoured in full: an
+institution that publishes its error does not hide its prices behind a call.
+
+Two consequences to carry:
+
+- **W4 changes.** The commercial plan section 4 says no price on the stand beyond "on request,
+  limited places", and the host manual is being written to that. The wording in point 1 above
+  replaces it, verbatim.
+- **The site takedown is now certain, not conditional.** Every price on the site comes out
+  before launch. The files are in section 5.
 
 ---
 
@@ -203,11 +197,12 @@ committed, so the rebuild is part of the takedown.
 **Pricing, if John rules as section 2 recommends.** Seven source files carry prices:
 `src/_data/site.json`, `src/pricing/index.njk`, `src/products/meridian/index.njk`,
 `src/products/index.njk`, `src/index.njk`, `src/products/observatory-global-forecast/index.njk`,
-and the comparison page, which is going anyway. The pricing note also names the
-SoftwareApplication JSON-LD offers on the Meridian page; that is the one that gets missed,
-because it is invisible on screen and visible to everything that reads the page. W6 recommends
-removing the pricing page from the navigation and the sitemap rather than leaving a pricing
-page with no prices on it.
+and the comparison page, which is going anyway. Two of those hide in places a reader does not
+see and a search engine does. The first is the SoftwareApplication JSON-LD offers on the
+Meridian page, which the pricing note names. The second is not in any document: the Meridian
+page's own `description` front matter ends "£15,000 to £25,000 a year by airport size", and a
+meta description is exactly what a search result prints. Both come out. The pricing page itself
+leaves the navigation and the sitemap rather than standing there with no prices on it.
 
 ---
 
@@ -219,9 +214,10 @@ page with no prices on it.
 | 22 Sep | Pricing ruled; W6 confirmed as the copy owner | John |
 | 23-26 Sep | Zone moved to Cloudflare, four Postmark records recreated and verified | W2, John approves |
 | 25 Sep | Four sentences settled, so the copy is written against them | John |
-| 26-30 Sep | Cloudflare Pages project created, building from the repo on push | W6 writes the steps, John runs them |
+| 26-30 Sep | Cloudflare Pages project created, building from the repo on push; `wrangler.toml` and the `SITE_ENV` pattern copied from the Avia site; push script added | W6 writes the steps, John runs them |
+| 30 Sep | Editor stood up: Sveltia config with title and description per page, other keys declared hidden, same auth Worker and Access policy, round-trip test passed | W6, John approves access |
 | 5 Oct | Copy final on home, products, insights, about, contact, track record | W6, John approves |
-| 8 Oct | Takedown applied and rebuilt; method notes checked by Nick; pricing implemented as ruled; pack hostname added to the tunnel | W6, W2, Nick |
+| 8 Oct | Takedown applied and rebuilt: competitor out of eight files, every price out of seven files plus the Meridian page's meta description; method notes checked by Nick; forms given a destination; pack hostname added to the tunnel | W6, W2, W5, Nick |
 | 12-14 Oct | Cutover: noindex out, site URL replaced, staging false, analytics on, custom domain attached | W6 writes it, John runs it |
 | 15 Oct | W6 checks from outside the network: pages live and indexable, no competitor anywhere including header and footer, pricing as ruled, forms writing to the lead store, accuracy line correct | W6, evidence in W6-STATUS.md |
 | 16 Oct | Pack hosting live and checked; the URL goes on the cards and in the packs | W2, W6 |
@@ -238,52 +234,56 @@ show.
 
 ---
 
-## 7. The editing tool, and Jol learning one way of working
+## 7. One way of working: the Observatory site built like the Avia site
 
-John's proposal on 19 September: use the editor built for the Avia site on the Observatory
-site too, so Jol learns one way. W6 agrees with the destination. The sequence matters.
+John ruled on 19 September that the Observatory site should work identically to the new Avia
+site, so that two sites do not become two ways of working. W6 agrees, and most of it is cheap.
+The list below is what "identically" contains, item by item, with what it costs.
 
-**What the tool is.** Sveltia CMS, configured at `src/admin/config.yml` in the Avia site
-repository, committing to GitHub as the signed-in user, behind two locks: Cloudflare Access on
-`/admin` under the reusable "meridian" policy, and GitHub write access to the repository. Its
-sign-in runs through the OAuth app "Avia Website CMS" and a Cloudflare Worker at
-`auth.aviacortex.com`, with the Worker's code vendored in the repository.
+**What the Avia site has that the Observatory site does not.**
 
-**Why it does not simply point at the Observatory site.** Sveltia edits declared fields in
-content files: markdown with front matter, JSON, YAML. The Avia site was built for it, with
-`src/about.md` and collections for services, answers, projects and team. The Observatory site
-has no content model at all: its prose lives inside 22 Nunjucks page templates, mixed with
-tables, schema markup and JSON-LD. The config file carries its own warning, that Sveltia writes
-back only the fields declared and drops the rest, so pointing it at undeclared templates does
-not merely fail to help, it removes content. This is the same shape as master list item 1.7 on
-the other site, where the editor's config and the templates disagreed.
+| Item | Avia site | Observatory site | Cost to match |
+|---|---|---|---|
+| Host | Cloudflare Pages, `wrangler.toml`, output `_site` | Nothing; no remote at all | Half a day, once the repo is on GitHub |
+| Staging switch | `SITE_ENV` and `SITE_URL` as Pages variables, read at build by `src/_data/site.js` | `noindex` hardcoded in `base.njk`, `siteUrl` hardcoded in `site.json` | An hour. Copy the pattern, and the rulings' "one switch" becomes true here too |
+| Preview | A preview environment with its own URL | None | Included with Pages |
+| Editor | Sveltia CMS at `/admin`, GitHub backend, auth Worker at auth.aviacortex.com, Cloudflare Access under the "meridian" policy | None | A day, reusing the same Worker and policy; see below |
+| Save safety | `tools/cms/normalise.mjs` and a save-without-change round-trip test | None | Copy both, run the test |
+| Forms | Pages Function writing to a D1 database | None | Half a day; the trial and contact forms need a destination, and W5 owns where it lands |
+| Push | `PUSH-WEBSITE.bat`, pull with rebase then push | None | Ten minutes |
+| Cutover record | `CUTOVER.md` | None | Written as we go |
 
-**W6's recommendation, in three steps.**
+**The editor is cheaper here than it looked, and Jol can have it from the start.** Sveltia
+edits declared fields in front matter and data files, and every Observatory page already
+carries front matter: `layout`, `title`, `description`, `permalink`, `breadcrumbs`. So a pages
+collection that exposes the title and the search-engine description, with the other keys
+declared hidden, is configuration rather than a rewrite. That is the same treatment the Avia
+config already gives its generated pages, which show their heading and search-engine fields
+only and have their bodies built by the site. Jol therefore learns one editor, one sign-in and
+one save, and the difference between the two sites is which pages let him edit the body text.
 
-1. **Before Routes, Jol proofs and does not edit.** He reads the staged site and sends
-   corrections; W6 makes them in the repository. Between now and 17 October the number of copy
-   changes is small, and an editor writing into templates it does not understand is not a risk
-   worth taking three weeks out.
-2. **Optional, cheap, now if John wants it.** A second `/admin` on the Observatory site,
-   pointed at `Aviaacct1/tao-website`, exposing only `src/_data/site.json`, which is already
-   structured: product names and summaries, navigation labels, the pricing values. Same tool,
-   same sign-in, nothing that can break a template. The auth Worker and the Access policy are
-   reused, so this is half a day, not a project.
-3. **After Routes, do it properly.** Lift the prose out of the 22 templates into markdown and
-   data files with declared fields, and the editor covers the Observatory site exactly as it
-   covers the Avia site. That is the same work the Avia site has already paid for, and
-   November is when it belongs.
+**The one thing that waits for November.** The Observatory pages hold their prose inside the
+templates, mixed with tables and JSON-LD, so body text is not editable until it is lifted out
+into markdown. That is 22 pages of careful work and it is not going next to the freeze, the
+host training and the pack pipeline. It is the November job, and after it the two sites are
+the same in every respect.
 
-**One control to put in place whichever route is taken.** The Avia editor commits to `main`
-today, which John decided on 1 September when the site was private, behind Access and noindex,
-with only two people editing. Once either site is public, one stray save republishes it,
-including during the show. The config file's own comment and the master task list both say to
-reinstate a review branch with a preview at launch. W6 asks that this happens at the
-Observatory cutover on 12-14 October rather than after it.
+**The control that makes this safe.** The Avia config states the rule in its own header:
+Sveltia writes back only the fields declared and drops the rest. Every front-matter key on
+every Observatory page must therefore be declared, hidden where it is not editable, and the
+round-trip test run before Jol touches it: open an entry, save it without changing anything,
+and `git diff` must be empty. `breadcrumbs` and `permalink` are the two that would be silently
+dropped, and losing a permalink changes a page's URL.
 
-**A document conflict for the master list, while W6 is in that repository.** `CMS-README.md`
-describes the editor as reading and writing the `review` branch with a preview at
-`review.avia-website.pages.dev`, and says editor changes do not reach the draft site until
-`review` is merged. `src/admin/config.yml` sets `branch: main` and records John's decision of
-1 September to change it. The README is out of date and describes a flow the tool no longer
-follows; anyone who reads it will expect a safety step that is not there.
+**And the branch.** The Avia editor commits to `main`, which John decided on 1 September when
+the site was private, behind Access and noindex, with two people editing. Once either site is
+public, one stray save republishes it, including during the show. The config's own comment and
+the master task list both say to reinstate a review branch with a preview at launch. W6 asks
+that this happens at the Observatory cutover on 12 to 14 October, and on the Avia site at its
+cutover, rather than after either.
+
+**A document conflict for the master list.** `CMS-README.md` in the Avia repo describes the
+editor as reading and writing the `review` branch with a preview, and says editor changes do
+not reach the draft site until `review` is merged. `src/admin/config.yml` sets `branch: main`
+and records John's decision of 1 September. The README describes a flow the tool no longer
+follows, so anyone reading it expects a safety step that is not there.
