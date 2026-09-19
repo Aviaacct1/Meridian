@@ -3,8 +3,9 @@
 Written by the programme controller (the Fable chat), rewritten whenever a ruling lands.
 W2 reads this at the start of every session and acts on it; W2 never edits it. W2's own
 statements go in W2-STATUS.md, which the controller never edits. John pastes nothing.
+Read routes/README.md first: it says who writes which file, who owns which code, and how conflicts are reported and resolved.
 
-Version 3, 19 September 2026, 22:00. Read after W2-STATUS.md v6.
+Version 4, 19 September 2026, 23:30. Read after W2-STATUS.md v6.
 
 ## Rulings from John, 19 September
 
@@ -70,6 +71,33 @@ Version 3, 19 September 2026, 22:00. Read after W2-STATUS.md v6.
 - Ruling 18 as you have it is right. Hand W4 the restart words when W4 exists.
 
 ## Boundaries and facts
+## Sweep of 19 September, 23:30: rulings that reach every workstream
+
+- THE PACK PROMISE: every outgoing word says the pack "follows the same day" until the sender
+  is out of test mode and one pack has been sent and received over a hotspot at the 11-12
+  October trial. "Within 30 minutes" only after that. Ruled by the controller.
+- WORKED ROUTES: John's standing rule for demo and marketing material is never to use an
+  airport Avia has worked for. The deck's routes, the host's rehearsed routes and the post-1
+  chart all currently do. Umbrella item 28 asks John to rule by 23 Sep; candidate pair
+  BRS-EWR plus a US origin. Do not build anything route-specific that is expensive to redo
+  until it lands; everything else proceeds.
+- PRICING, one position (umbrella item 29, proposed, silence to 26 Sep means yes): host says
+  the expected list range by airport size and "launch places this year on request" only if
+  asked; the one-pager and the deck's last slide carry the grid in writing; the website does
+  not publish prices until November.
+- TIER SHAPE: the published grid; airlines and advisers "quoted".
+- FEEDBACK QUESTIONS: W5's card wording is the only wording; W4's manual and any W2 screen
+  quote it with its version.
+- DNS: aviationobservatory.com moves to Cloudflare in the week of 22 Sep (W2); Email Routing
+  gives the domain an inbound address; W6's site deploys on Cloudflare Pages from the same
+  zone; Postmark records re-verified after the move.
+
+- W2 specifics from the sweep: the zone move is yours, week of 22 Sep, then the pack hostname
+  on the workstation tunnel and the URL controls by 8 Oct (W6 launch plan section 3 step 5
+  names you for the mechanics); the five feedback questions go behind the capture form as an
+  optional host-only screen only if it costs nothing before the freeze; the runbook words for
+  the restart go to W4 (they have them from your status already). Your status v7 is read.
+
 
 - Narrowed-sweep switch and defaults: W2. Measurement and caches: W1 (controller).
 - BRS-EWR:UA is already a default probe pair in diag_routes_timing.py; no second probe.

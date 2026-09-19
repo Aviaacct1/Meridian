@@ -3,8 +3,9 @@
 Written by the programme controller (the Fable chat), rewritten whenever a ruling lands.
 W4 reads this at the start of every session and acts on it; W4 never edits it. W4's own
 statements go in W4-STATUS.md, which the controller never edits. John pastes nothing.
+Read routes/README.md first: it says who writes which file, who owns which code, and how conflicts are reported and resolved.
 
-Version 1, 19 September 2026.
+Version 2, 19 September 2026, 23:30. Read after W4-STATUS.md v1.
 
 ## Scope (commercial plan section 4; umbrella W4)
 
@@ -83,6 +84,32 @@ Solutions as author, en-GB, later). Contents, in this order:
 - The accuracy sentence (item 25) lands by 26 September; the slot is marked.
 
 ## What the controller wants in W4-STATUS.md after session 1
+## Sweep of 19 September, 23:30: rulings that reach every workstream
+
+- THE PACK PROMISE: every outgoing word says the pack "follows the same day" until the sender
+  is out of test mode and one pack has been sent and received over a hotspot at the 11-12
+  October trial. "Within 30 minutes" only after that. Ruled by the controller.
+- WORKED ROUTES: John's standing rule for demo and marketing material is never to use an
+  airport Avia has worked for. The deck's routes, the host's rehearsed routes and the post-1
+  chart all currently do. Umbrella item 28 asks John to rule by 23 Sep; candidate pair
+  BRS-EWR plus a US origin. Do not build anything route-specific that is expensive to redo
+  until it lands; everything else proceeds.
+- PRICING, one position (umbrella item 29, proposed, silence to 26 Sep means yes): host says
+  the expected list range by airport size and "launch places this year on request" only if
+  asked; the one-pager and the deck's last slide carry the grid in writing; the website does
+  not publish prices until November.
+- TIER SHAPE: the published grid; airlines and advisers "quoted".
+- FEEDBACK QUESTIONS: W5's card wording is the only wording; W4's manual and any W2 screen
+  quote it with its version.
+- DNS: aviationobservatory.com moves to Cloudflare in the week of 22 Sep (W2); Email Routing
+  gives the domain an inbound address; W6's site deploys on Cloudflare Pages from the same
+  zone; Postmark records re-verified after the move.
+
+- W4 specifics: your three conflicts are resolved above (the pack promise as you proposed;
+  pricing per item 29; W5's feedback wording). Section 6.5's slot reads "follows the same
+  day". Your three questions to John are umbrella item 34. The rehearsed routes change if
+  item 28 changes the deck's; track W3-STATUS as you do. Manual v1 is read and is good.
+
 
 1. The manual's skeleton with sections 1, 2, 4, 7 and 8 drafted in full and 3, 5, 6 drafted to
    the design with marked gaps.

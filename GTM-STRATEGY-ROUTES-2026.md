@@ -23,10 +23,10 @@ confirmed by John's paste).
 |---|---|---|---|---|---|
 | W1 Speed and caches | Step 1 SHIPPED 19 Sep, acceptance MET | Commit 1012c29 live on the workstation: Run 35.4 to 9.8s (SJC-TPE), 42.5 to 9.0s (BRS-EWR, cold); Optimise 161 to 65s and 196 to 35s; payloads identical (probe diff PASS). TIMING-20260919-1907 (before) and -1937 (after) on the workstation | Step 2: persistence across a restart (pre-mortem 11) and the pre-warm script over the registered airports; then preagg wiring | Controller | 26 Sep |
 | W2 Stand flow | In progress (routes\W2-STATUS.md v6, 19 Sep 20:50) | Commit 2cab1b2: MCT master reports at startup, stand build refuses without it (14 checks); sender set up on Postmark, aviationobservatory.com DKIM and return-path verified, account in test mode pending Postmark approval; capture front end scoped, demonstrable 2 Oct | Stand mode build; DuckDB leads table and JSONL migration; John's items 20-24 | W2 chat / John | 2 Oct front end; 8 Oct laptop proof |
-| W3 Presentation | In progress (Opus chat; routes\W3-STATUS.md v1, 19 Sep) | Ten-slide outline agreed; provenance fix built and proven (rights record now survives JPEG re-encode, build check fails on a bare image); PDF path proven installable (Chrome, pikepdf present); library holds NO airport photography, Commons coverage probe written for 401 airports, runs on the workstation; the 2 July deck contradicts Nick's note in four places | John: accuracy sentence (item 25), carrier for BLQ-JFK (26); W3 runs the probe and builds slides 1-6, 9-10 | W3 chat / John | Deck v1 3 Oct |
-| W4 Host | Not started | Host's name and contact in no document | Manual v1; get host details from John | Controller / John | 10 Oct |
-| W5 Leads, feedback, order-ready | Blocked on John | Lead store and email sender undecided | Decisions batch (step C) | John | 25 Sep |
-| W6 Messaging, marketing, website, meetings | In progress | Four sentences drafted this session (step C) | John and Jol settle; invitations out | John, Jol | Final 25 Sep; invites 26-29 Sep |
+| W3 Presentation | In progress (routes\W3-STATUS.md, 19 Sep) | Slides 1-6, 9-10 built (3af5158); provenance fix proven; John pulled pack, PDF and imagery to 3 Oct; PDF = full researched pack, HTML = 20-minute pitch page; Commons coverage probe waits for one workstation run | John: carrier for BLQ-JFK (26), accuracy sentence (25), route ruling (28), run the probe; W3 builds the PDF render and the pitch page | W3 / John | All four to Jol and Nick 3 Oct |
+| W4 Host | In progress (routes\W4-STATUS.md, 19 Sep) | STAND-HOST-MANUAL.md v1, 648 lines, 27 marked slots, timed script to the second on step-1 timings; every host-facing pre-mortem item answered | John: second and third phone contacts, his stand hours, the competitor sentence; rulings 28-30 | W4 / John | v2 after Suzanna's answers and the 8 Oct screenshots |
+| W5 Order-ready documents | In progress (routes\W5-STATUS.md v2, 19 Sep) | Agreement v0.1 (15 slots, 8 lawyer flags) and launch-customer one-pager v0.1 as verified Word files; feedback card drafted; the code half (lead store, attribution, monitoring) is W2's | John: contracting entity (31), offer numbers (6), solicitor and date; W5 drafts invoice, onboarding script, known-issues list | W5 / John | Agreement to solicitor 3 Oct |
+| W6 Messaging, marketing, website, meetings | In progress (routes\W6-STATUS.md v3, 19 Sep) | Messaging variants, five invitations, calendar, post 1 and list email drafted; the site to launch is THE OBSERVATORY site (John), 22 pages, in a local folder with NO git remote; competitor named in its header and footer; plan to deploy on Cloudflare Pages | John: push the site repo to GitHub this week (32), pricing position (29), chart and worked-route ruling (28), five contacts by 25 Sep | W6 / John | Sentences 25 Sep; invitations 26-29 Sep |
 | W7 Rehearsal and freeze | Replanned | Boeing 13 Oct is an ATLAS meeting with 15 minutes of Meridian, not the Meridian dress rehearsal (John to W2, 19 Sep); the umbrella was wrong | Two Meridian trials: 11-12 Oct full stand flow timed, Plan A and B, a pack sent and received; 16 Oct with Suzanna | Controller / John | Freeze 10 Oct unchanged |
 
 **Found this session, not in any document:**
@@ -95,6 +95,25 @@ confirmed by John's paste).
   folder goes on a Routes surface. (b) The 2 July deck contradicts Nick's 23 Aug note in
   four places (one engine or two; accuracy in words versus the ruled pair; two pre-fix
   validation figures; naming). (c) master list 3.3b answered; 2.4 is now stand-critical.
+- 19 Sep 2026 (John, in the W3 chat): pack, PDF and imagery pulled forward from 8 Oct to
+  3 Oct so all four W3 items reach Jol and Nick together; the PDF is the FULL researched pack
+  and the HTML is a separate 20-minute airline pitch page with interactive charts.
+- 19 Sep 2026 (John, in the W6 chat): the site to launch before Routes is THE AVIATION
+  OBSERVATORY site, not the Avia Solutions site; domain aviationobservatory.com (the .aero
+  name in the repo dropped); Jol is not writing copy now, W6 prepares it and John approves;
+  the site is deployed by Avia itself on Cloudflare Pages from the repository, not from the
+  workstation; the Avia website editor is pointed at the Observatory site AFTER Routes. W6
+  findings: the Observatory site repo (E:\Avia\Observatory Website, 22 pages, last commit 3
+  Aug) has NO git remote, which breaks tool standard 1 and is fixed this week; the competitor
+  is named in the site's header and footer on every page (eight files) and comes out before
+  launch; prices sit in seven files; the site carries no accuracy claim yet.
+- 19 Sep 2026 (controller rulings at the sweep): (i) THE PACK PROMISE: every outgoing word
+  says the pack "follows the same day" until the sender is out of test mode and one pack has
+  been sent and received over a hotspot at the 11-12 Oct trial; "within 30 minutes" only
+  after that. (ii) TIER SHAPE: the published grid, airlines and advisers "quoted" (W5's
+  recommendation adopted; silence rule to 3 Oct unchanged). (iii) The five stand feedback
+  questions are W5's card wording everywhere; W2 adds them as an optional host-only screen
+  after the capture form only if it costs nothing before the freeze.
 - 19 Sep 2026: DATE CORRECTION. Several entries above and the commit messages 6bbdc0b to
   1012c29 say "21 Sep"; the controller misdated them. Everything so dated happened on
   Saturday 19 September 2026 (the timing files and the workstation clock agree). File
@@ -254,13 +273,41 @@ confirmed by John's paste).
     controller's ruling is that nothing is re-sent; the exposure is an internal provenance
     gap, not a client obligation, and it goes on the master list as a post-Routes review
     of C:\assets\engagement against its sources. Say if you disagree.
-20. **DMARC reporting route** (W2 watchpoint 3): REVISED controller view after W3: move
-    aviationobservatory.com DNS to Cloudflare now (four Postmark records to recreate, a
-    ten-minute job, W2 does it), because Cloudflare Email Routing then gives the domain an
-    inbound mailbox, which W3's image-source sign-ups and the DMARC reports both need, and
-    the Avia estate already lives in Cloudflare. Silence to 26 Sep: Cloudflare now. (W2 watchpoint 3): Postmark's DMARC Digests now (no DNS move
-    before the laptop proof; nothing to recreate), Cloudflare DNS and Email Routing after
-    Routes. Controller's view; confirm. Silence to 26 Sep: Postmark digests.
+28. **THE WORKED ROUTES, and a standing preference of yours.** Your rule for demo and
+    marketing material (Meridian and Observatory): never use an airport Avia has worked for,
+    because past clients gave targets in confidence; pick airports Avia has never worked
+    with, one European and one US. The deck's worked routes (SJC-TPE, Bologna-New York),
+    the host's two rehearsed routes and the chart for post 1 (SJC-TPE) all use Avia client
+    airports. W6 has raised it for the chart and proposes BRS-EWR (already run cold on the
+    build). Controller's view: the rule stands for everything that leaves the stand (deck,
+    posts, hosted packs, printed packs); the two pre-arranged meetings with Bologna and
+    Taoyuan may still see their own routes in the room. Candidate pair: BRS-EWR (European)
+    and a US origin you name. Decide by 23 Sep; W3, W4 and W6 all change on it. No default.
+29. **ONE PRICING POSITION for four documents** (W4, W5, W6 all flag it). Controller's
+    proposal, consistent with your 19 Sep decision 2: the host, if asked, says in one sentence
+    the expected list range by airport size and "launch places this year on request"; the
+    one-pager carries the grid in writing with the launch offer; the deck's last slide
+    carries the grid; the WEBSITE does not publish prices until November, after the reaction
+    (W6's recommendation), so nothing printed has to be visibly reversed in December. Silence
+    to 26 Sep: as proposed.
+30. CLOSED 19 Sep by the controller: the pack promise reads "follows the same day" everywhere
+    until proven at the 11-12 Oct trial.
+31. **Contracting entity** for the agreement and invoices: Avia Solutions Limited or The
+    Aviation Observatory Ltd, with registered number and office. No default; the solicitor
+    cannot start without it (W5 fact 1).
+32. **Push the Observatory site repository to GitHub this week** (W6 has the block; tool
+    standard 1). Also: may W6 edit that repository directly through blocks you run (silence
+    to 23 Sep: yes), and grant the W6 chat the C:\src\avia-website folder so it can read the
+    editor's configuration.
+33. **W3's coverage probe**: one unattended run on the workstation by 26 Sep (W3 has the
+    block); without it W3 drops airport photography and ships mood frames and charts.
+34. **W4's three**: a second and third phone contact who can reach the workstation; your
+    stand hours and meeting slots; approve or rewrite the competitor sentence in manual 4.4.
+20. **DMARC reporting and the domain's DNS**: move aviationobservatory.com DNS to Cloudflare
+    in the week of 22 Sep (W2 recreates the four Postmark records and re-verifies; Email
+    Routing then gives the domain an inbound mailbox, which W3's image-source sign-ups and the
+    DMARC reports need; W6's site launch on Cloudflare Pages uses the same zone). Silence to
+    26 Sep: yes.
 21. **Public pack URL controls** (W2 watchpoint 5): noindex header, an expiry, no personal
     data in the file, and every pack checked against the Sabre position (attribution
     constant, fares as bands, no single-route blind figure) before it is hosted. Controller
