@@ -1,0 +1,30 @@
+W4 session 1: stand host's manual v1 and W4 status
+
+New files, both in routes\:
+
+STAND-HOST-MANUAL.md, version 1, the eight sections W4-RULINGS.md v1 sets out.
+Sections 1, 2, 4, 7 and 8 drafted in full; 3, 5 and 6 drafted to W2's design with
+27 marked slots and no invented fact. The accuracy wording, the price wording and
+the restart words appear once each, verbatim from the rulings, and in no other
+form anywhere in the document. Nothing about any competitor beyond the single
+sentence in section 4, which is drafted and marked as awaiting John's approval of
+the wording.
+
+Section 3 carries the demo script timed to the second on both paths, built on W1
+step 1's measured stage times (commit 1012c29, workstation, 19 September,
+TIMING-20260919-1937): full demonstration circa 4 minutes 40 seconds, Run only
+circa 2 minutes 25 seconds. It is re-timed at the 11-12 October trial.
+
+Section 8.6 registers every open slot with its owner and date, so the printed copy
+has a single checklist rather than a reread.
+
+W4-STATUS.md, version 1: state per section, the pre-mortem item by item where it
+names the host, the timed script in summary for John to read against a real Run,
+the three questions the manual cannot answer without him, five watchpoints and the
+dates.
+
+No code touched. Nothing in app\ changed. No engine or demand logic near this
+commit.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01Sifs7TNyk1t4m8SdSdpgSm
