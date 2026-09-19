@@ -1,9 +1,41 @@
 # W2 stand flow: status
 
-Version 5, 19 September 2026. Written by the W2 build chat for the controller; rewritten each
-session, never appended. W2-RULINGS.md v1 read and acted on. Dates corrected from the "21
-September" paste. Out of scope and untouched: engine demand logic, and W1's preagg, caches and
-pre-warm.
+Version 6, 19 September 2026, 20:50, SESSION CLOSED. Written by the W2 build chat for the
+controller; rewritten each session, never appended. W2-RULINGS.md v1 read and acted on. Dates
+corrected from the "21 September" paste. Out of scope and untouched: engine demand logic, and
+W1's preagg, caches and pre-warm.
+
+## Where this stands at close
+
+John stopped the session at 20:50 to wait on Postmark. W2 is NOT blocked: the two largest
+remaining build items need nothing from anyone and are next session's work.
+
+WAITING ON, in the order it bites:
+1. POSTMARK APPROVAL. The account is in test mode, so sending is restricted and no real pack can
+   go anywhere. Human review at Postmark's end, requested 19 Sep. This gates the email half of
+   item 3 and all domain warming. Chase it if it has not cleared by 1 Oct.
+2. THE TWO SPEC BLOCKS from John: the DevPC C:\Avia store inventory with sizes and dates, and
+   the core laptop's make, RAM, architecture, free disk and Python. These gate the load
+   procedure for the external drive and therefore the 8 Oct laptop proof. The 1 Oct hardware
+   go/no-go stands whatever happens.
+3. JOHN'S APPROVAL to send Suzanna the four questions in this file. They shape what stand mode
+   defaults to, so the longer they wait the more of item 2 is built on W2's guess rather than on
+   four weeks of her use.
+4. Not blocking today: the DMARC reporting route, W3's PDF date, W6's website date, which tablet
+   the capture front end runs on, and John's 40-60 route panel.
+
+PROCEEDING WITHOUT WAITING, next session: stand mode (item 2), then the DuckDB `leads` table and
+the JSONL migration (the half of item 3 with no external dependency). If Postmark approves in
+the meantime, the demo_mail.py host fix (watchpoint 2) comes forward ahead of both, because it
+is the one change that must land before anything real is sent.
+
+THE NEXT RESTART, whenever it happens and for whatever reason, does two jobs at once: it makes
+the MCT line speak for the first time, answering whether the live portal has been running
+without the master, and it picks up the Postmark variables. Nothing needs restarting for its own
+sake while the account is in test mode.
+
+UNCOMMITTED: the commit-hash paragraph at the foot of this file, and this section. Everything
+else W2 has produced is on main at 2cab1b2. The next block clears both.
 
 ## Answers to the three questions the controller asked
 
@@ -171,6 +203,12 @@ scoped 8 Oct; Postmark approval checked 1 Oct.
 
 ## Commits landed
 
-None yet. The first block carries routes/W2-STATUS.md, the .gitignore secrets patterns, and the
-ruling 16 change: app/connection_builder.py, app/cortex_app.py and app/test_mct_report.py. Hash
-recorded here when John pastes it.
+**2cab1b2**, 19 September, pushed to Aviaacct1/Meridian main (89c9a02..2cab1b2). Ruling 16's MCT
+reporter, startup line and stand-mode refusal (app/connection_builder.py, app/cortex_app.py,
+app/test_mct_report.py), the .gitignore secrets patterns, and this file. John ran
+test_mct_report.py on the DevPC before committing: 14 checks, 0 failed, so the record is on the
+run host and not only in a sandbox.
+
+Still owed against it: the first server restart, which is what makes the MCT line speak and
+which also picks up the Postmark variables. Nothing needs restarting for its own sake while
+Postmark holds the account in test mode.
