@@ -9,9 +9,12 @@ ROUTES-CONTROLLER-QUEUE-19Sep2026.md section B; PRICING-HANDOVER-19Sep2026.md;
 ROUTES-ATTENDING-ORGANISATIONS-21Sep2026.md section 1; PROMPT-for-Fable-Routes-19Sep2026.txt;
 HANDOVER-23Aug2026.md sections 5 to 7; MASTER-TASK-LIST.md.
 
-Clone state read on the DevPC mount: working tree at `df3c7f3` (W2 status, 19 Sep 20:50),
-ahead of the `11a4c3f` in the umbrella. John has not yet run the pull, so HEAD is unconfirmed.
-No git command run by W3. Commit hashes landed this session: none.
+Clone: DevPC `C:\AviaDev`, pulled by John 19 Sep. HEAD `7be1470` (this file, v1), pushed,
+on `ad32627` (controller, W3 rulings v1). Workstation checked the same evening.
+No git command run by W3 against the mount.
+
+**Commit hashes landed this session:** `7be1470` (this file, v1). One commit owed, the
+provenance fix in `deck/render_pptx.py`, block issued to John.
 
 ## State per scope item
 
@@ -19,8 +22,33 @@ No git command run by W3. Commit hashes landed this session: none.
 |---|---|---|---|
 | 1. Ten-slide stand deck | Not started, outline below | Only the 2 July `Avia_Cortex_Process_and_Methodology.pptx` exists, 6 slides, and it is not reusable as it stands (see Q1) | Build slides 1-6 and 9-10 on the outline; slides 7-8 wait on two live runs |
 | 2. HTML pack tuned for the stand | Not started; the generator exists and three required sections do not | `app/pitch_html.py`, 399 lines, sections: opportunity, forecast, traffic table, market images, connecting markets, schedule and capacity, economics slider, why this route | Add the route map, the time-of-day curve and the tail chart; add a source line to every figure, not only the research cards |
-| 3. PDF render | Not started. Nothing in the repo renders a PDF | Repo-wide search for headless, Chrome, WeasyPrint, wkhtmltopdf, Playwright and print-to-pdf returns only `venv` noise | Method in Q4; needs one workstation check from John before it is built |
-| 4. Imagery with provenance | Blocked on John | The library holds no airport photography for any of the six airports, and the delivered-deck provenance loss is confirmed in code (Q3) | John's ruling on what the hero image is; then the EXIF fix in `render_pptx.py` |
+| 3. PDF render | Not started, and now unblocked | Nothing in the repo renders a PDF (repo-wide search returns only `venv` noise). Workstation check PASSED 19 Sep, John's transcript: Chrome present at Program Files, `pikepdf` 10.10.0, `pillow` 12.3.0. Nothing to install | Build the print stylesheet and the render step on the next pull |
+| 4. Imagery with provenance | Fix BUILT and PROVEN; hero image blocked on John | The library holds no airport photography for any of the six airports (Q3). The provenance loss is confirmed in code, and `piexif` 1.1.3 is present on the workstation (John's transcript, 19 Sep), so the EXIF fix runs where the decks are built | John's ruling on the hero image (Q3); commit the fix |
+
+## Built and proven this session: the provenance fix
+
+`deck/render_pptx.py`, uncommitted in the working tree, block below. Three changes, none of
+them on the engine run path and none in `cortex_app.py`.
+
+1. `Assets._record` reads the rights record out of the source file, from PNG text chunks or
+   from EXIF where the ingested file was already a JPEG.
+2. `Assets._photo` writes that record into the JPEG as EXIF at save time. Where it cannot be
+   written, the method keeps the source file rather than shipping a bare image, and reports
+   the refusal. A photograph carrying no record at all is reported, never silently dropped.
+3. `verify()` now reads the built file back and fails on any JPEG in `ppt/media` with no
+   rights record, so the check runs on every build rather than on request.
+
+Measured on `observatory_library/field/field-runway-sunrise.png`: 2,075 KB source to a 226 KB
+JPEG, so the compression that exists for a sendable deck is unchanged, and the record survives
+in full, author, copyright, the cleared line and the whole ingest record. An image with no
+record is reported. Source: W3 run on the DevPC, 19 September.
+
+**What the same check says about decks already sent.** `China Airlines TPE-SJC deck v2
+19Aug2026.pptx` holds 224 media files, 94 of them JPEG, and **all 94 carry no rights record**.
+Source: `_verify_provenance` run against that file, 19 September. Most of that imagery comes
+from `C:\assets\engagement`, which holds no record to carry in the first place (Q3), so
+re-rendering it will report rather than repair. Controller's call whether anything is owed on
+decks already out; W3's scope starts at the Routes surfaces, where the check now blocks it.
 
 ## Q1. The two methodology documents, and where they disagree
 
@@ -127,7 +155,7 @@ rights record. Two ways out. The existing `--no-compress` flag keeps the PNGs an
 and the Liguria deck at 20MB is why the compression exists, so that is not the answer for an
 emailed deck. The fix is eight lines: write the record into the JPEG as EXIF at save time with
 `piexif`, exactly as `deck/avia_library.py::write_file_metadata` already does for JPEG inputs.
-W3 owns this and will build it once John confirms `piexif` is installed on the workstation.
+`piexif` 1.1.3 is confirmed present on the workstation, so the fix runs where the decks are built. W3 owns it and writes it on the next pull.
 
 **What W3 needs from John on imagery.** With no cleared airport photography, there are three
 options and W3 recommends the first. (a) The deck and the packs use Observatory mood frames for
@@ -153,15 +181,14 @@ Nothing exists, so this is a build from zero. Method, in W3's recommended order:
 4. The render runs as a step in the pack job on the workstation, so the PDF and the hosted HTML
    come from one run and cannot differ. W2 owns what happens to the file after that.
 
-**What it needs installed on the workstation, and W3 cannot see that machine from here.** One
-check block for John, below. Chrome is the only real dependency; `pikepdf` installs from PyPI in
-one line. If Chrome is absent on the workstation, the fallback is Playwright's bundled Chromium,
-which is a heavier install and W3 would rather not add it eleven days before the freeze.
+**Nothing needs installing.** Checked on the workstation 19 September, John's pasted transcript:
+Chrome present at `C:\Program Files\Google\Chrome\Application\chrome.exe`, `pikepdf` 10.10.0,
+`pillow` 12.3.0, `piexif` 1.1.3. The Playwright fallback is not needed and is not added.
 
 ## What W3 needs from John
 
 1. The pull on the DevPC and the HEAD hash, so W3 builds on the same tree (block below).
-2. The workstation check block below: Chrome, `piexif`, `pikepdf`.
+2. CLOSED 19 Sep: workstation checked, Chrome and `pikepdf` and `piexif` and `pillow` all present.
 3. Slide 8: which European transatlantic route and which carrier, Bologna-New York or
    Genoa-New York. Both exist as cases; W3 leans to Bologna, because Bologna is registered at
    the show with three delegates and is a current Meridian tester, and Genoa is registered with

@@ -1,0 +1,31 @@
+W3: carry the rights record through the JPEG re-encode, and check it on every build
+
+The Observatory library writes its rights record into each frame on ingest, as PNG
+text chunks (avia_library.write_file_metadata). The deck renderer re-encoded that
+photography to JPEG to keep a deck sendable, and passed no EXIF, so the record was
+dropped in one call and every delivered deck carried images with no provenance on
+them. Measured: China Airlines TPE-SJC deck v2 19Aug2026.pptx holds 94 JPEG images
+and all 94 carry no rights record.
+
+deck/render_pptx.py:
+
+- Assets._record reads the record from the source file, PNG text chunks or EXIF.
+- Assets._exif builds the EXIF block: author, copyright, software, the description
+  with the cleared line appended, and the full ingest record in UserComment.
+- Assets._photo writes that EXIF at save time, then reads the written file back to
+  confirm the record took. Where it cannot be carried, the source file is kept and
+  the refusal is reported rather than a smaller file going out bare. A photograph
+  with no record at all is reported, never dropped in silence.
+- Assets.provenance_report and render(warnings=...) surface both at build time.
+- verify() reads the built file back and fails on any JPEG in ppt/media with no
+  rights record. Charts and maps are generated figures with no record to carry and
+  stay PNG, so the check is on photography only.
+
+Proven on observatory_library/field/field-runway-sunrise.png: 2,075 KB source to a
+226 KB JPEG, so the compression is unchanged, and the record survives in full.
+
+No change to the engine, to cortex_app.py, or to any run path.
+
+routes/W3-STATUS.md: session 1 state, the ten-slide outline, the methodology
+contradictions between the 2 July deck and Nick's note, what the imagery library
+actually holds, and the PDF render method.

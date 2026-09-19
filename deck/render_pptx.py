@@ -855,6 +855,8 @@ class Assets(object):
         self.max_px = max_px
         self._cache = {}
         self._tmp = None
+        self.kept_png = []      # record held, re-encode refused
+        self.unrecorded = []    # photography carrying no record at all
 
     def __call__(self, name, kind="mood", subjects=None, family=None,
                  prefer=None):
@@ -872,18 +874,104 @@ class Assets(object):
             return self._photo(p)
         return local if os.path.exists(local) else None
 
+    @staticmethod
+    def _record(path):
+        """Read the library's rights record out of the source file.
+
+        `avia_library.write_file_metadata` writes it into PNG text chunks on
+        ingest, and into EXIF where the ingested file was already a JPEG. Both
+        are read here, because what leaves in the deck must carry it too.
+        """
+        try:
+            from PIL import Image
+            with Image.open(path) as im:
+                text = dict(getattr(im, "text", {}) or {})
+                if text:
+                    return text
+                raw = im.info.get("exif")
+        except Exception:
+            return {}
+        if not raw:
+            return {}
+        try:
+            import piexif
+            z = piexif.load(raw)["0th"]
+            out = {}
+            for tag, key in ((piexif.ImageIFD.Artist, "Author"),
+                             (piexif.ImageIFD.Copyright, "Copyright"),
+                             (piexif.ImageIFD.ImageDescription, "Description"),
+                             (piexif.ImageIFD.Software, "Software")):
+                if z.get(tag):
+                    out[key] = z[tag].decode("utf-8", "replace")
+            return out
+        except Exception:
+            return {}
+
+    @staticmethod
+    def _exif(rec):
+        """Carry the record into EXIF, or return None if it cannot be carried.
+
+        None is not a licence to ship the image bare: the caller keeps the
+        source file instead, so the record travels with the deck either way.
+        """
+        if not rec:
+            return None
+        try:
+            import piexif
+        except ImportError:
+            return None
+        desc = rec.get("Description") or rec.get("Title") or ""
+        cleared = rec.get("Source") or rec.get("cleared") or ""
+        if cleared:
+            desc = ("%s Cleared: %s" % (desc, cleared)).strip()
+        zeroth = {}
+        for key, tag in (("Author", piexif.ImageIFD.Artist),
+                         ("Copyright", piexif.ImageIFD.Copyright),
+                         ("Software", piexif.ImageIFD.Software)):
+            if rec.get(key):
+                zeroth[tag] = rec[key].encode("utf-8")
+        if desc:
+            zeroth[piexif.ImageIFD.ImageDescription] = desc.encode("utf-8")
+        if not zeroth.get(piexif.ImageIFD.Artist):
+            return None
+        exif = {}
+        blob = rec.get("Comment")
+        if blob:
+            exif[piexif.ExifIFD.UserComment] = (
+                b"ASCII\x00\x00\x00" + blob.encode("utf-8", "replace"))
+        try:
+            return piexif.dump({"0th": zeroth, "Exif": exif, "GPS": {},
+                                "1st": {}, "thumbnail": None})
+        except Exception:
+            return None
+
     def _photo(self, path):
-        """Re-encode photography to JPEG. Charts and maps are left alone.
+        """Re-encode photography to JPEG, carrying the rights record across.
 
         The library frames are full-size PNG, which put the Liguria deck at
         20 MB, too big to send. A photograph loses nothing at JPEG 82 and the
         deck lands near a tenth of that. Line art would show the artefacts, so
         only the resolved photography goes through here.
+
+        The record is the reason this method is careful. It lives in the PNG
+        text chunks, and a plain JPEG re-encode drops it, which is how decks
+        went out with images carrying no rights record at all. So the record is
+        read first and written into the JPEG as EXIF. If it cannot be written,
+        the source file is kept instead and the refusal is reported: a smaller
+        file is never worth an image with no provenance on it.
         """
         if not self.compress:
             return path
         if path in self._cache:
             return self._cache[path]
+        rec = self._record(path)
+        if not rec:
+            self.unrecorded.append(path)
+        exif = self._exif(rec)
+        if rec and exif is None:
+            self.kept_png.append(path)
+            self._cache[path] = path
+            return path
         try:
             import tempfile
             from PIL import Image
@@ -896,16 +984,35 @@ class Assets(object):
                                 max(1, int(im.height * r))), Image.LANCZOS)
             dest = os.path.join(self._tmp, "%s.jpg"
                                 % os.path.splitext(os.path.basename(path))[0])
-            im.save(dest, "JPEG", quality=self.quality, optimize=True,
-                    progressive=True)
+            kw = {"quality": self.quality, "optimize": True,
+                  "progressive": True}
+            if exif is not None:
+                kw["exif"] = exif
+            im.save(dest, "JPEG", **kw)
+            if exif is not None and not self._record(dest).get("Author"):
+                # the record did not survive the write; keep the source
+                self.kept_png.append(path)
+                self._cache[path] = path
+                return path
             self._cache[path] = dest
             return dest
         except Exception:
             return path
 
+    def provenance_report(self):
+        """One line per image that left without a record, or kept its source."""
+        out = []
+        for p in self.unrecorded:
+            out.append("   PROVENANCE: %s carries no rights record"
+                       % os.path.basename(p))
+        for p in self.kept_png:
+            out.append("   PROVENANCE: %s kept as the source file, the record "
+                       "could not be written into a JPEG" % os.path.basename(p))
+        return out
+
 
 def render(spec, path, safe_fonts=False, credits=None, assets_dir="assets",
-           resolver=None, compress=True):
+           resolver=None, compress=True, warnings=None):
     assets = Assets(assets_dir, resolver, compress=compress)
     deck = Presentation()
     deck.slide_width = Emu(int(SLIDE_W_IN * 914400))
@@ -949,6 +1056,8 @@ def render(spec, path, safe_fonts=False, credits=None, assets_dir="assets",
     _metadata(deck, meta)
     deck.save(path)
     _language(path)
+    if warnings is not None:
+        warnings.extend(assets.provenance_report())
     return path
 
 
@@ -1057,6 +1166,37 @@ def verify(path):
         if ch in blob:
             problems.append("%s dash found in the deck text"
                             % ("em" if ch == "—" else "en"))
+    problems.extend(_verify_provenance(path))
+    return problems
+
+
+def _verify_provenance(path):
+    """Every photograph in the file carries its rights record, or this fails.
+
+    Photography reaches the deck as JPEG, through Assets._photo, and the record
+    travels in EXIF. Charts and maps are generated figures with no record to
+    carry, and they stay PNG, so the check is on the JPEGs only.
+    """
+    import zipfile
+    problems = []
+    try:
+        import piexif
+    except ImportError:
+        return ["provenance unchecked: piexif is not installed, so the deck "
+                "cannot be read back. Install piexif and build again."]
+    with zipfile.ZipFile(path) as z:
+        for n in z.namelist():
+            if not n.startswith("ppt/media/"):
+                continue
+            if not n.lower().endswith((".jpg", ".jpeg")):
+                continue
+            try:
+                tags = piexif.load(z.read(n))["0th"]
+            except Exception:
+                tags = {}
+            if not tags.get(piexif.ImageIFD.Artist):
+                problems.append("%s carries no rights record"
+                                % os.path.basename(n))
     return problems
 
 
@@ -1097,8 +1237,9 @@ def main():
             uploads_dir=a.uploads, subject_store=a.store,
             brand_library=a.library if os.path.isdir(a.library) else None,
             project=spec["meta"]["codename"], region=a.region, use=a.use)
+    notes = []
     render(spec, a.out, a.safe_fonts, assets_dir=a.assets, resolver=resolver,
-           compress=not a.full_size_images)
+           compress=not a.full_size_images, warnings=notes)
     if a.embed_fonts is not None:
         import avia_fonts
         store = avia_fonts.font_store(a.embed_fonts or None)
@@ -1114,10 +1255,13 @@ def main():
     if resolver:
         print(resolver.report())
     print("wrote %s (%d slides)" % (a.out, len(spec["slides"])))
+    for n in notes:
+        print(n)
     for p in problems:
         print("   PROBLEM: %s" % p)
     if not problems:
-        print("   checks passed: metadata, en-GB, no em or en dashes")
+        print("   checks passed: metadata, en-GB, no em or en dashes, "
+              "rights record on every photograph")
 
 
 if __name__ == "__main__":
