@@ -110,7 +110,7 @@ OD *.xlsx
 POS *.xlsx
 syd_per_sabre.csv
 
-# secrets: never commit (added 21 September 2026, W2, when Postmark became the sender)
+# secrets: never commit (added 19 September 2026, W2, when Postmark became the sender)
 # The Postmark Server API token is both the SMTP username and password, so a single
 # leaked line sends as the Observatory. Environment variables are the live mechanism
 # (setx on the workstation, the session environment on the laptop build); these patterns

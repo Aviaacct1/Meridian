@@ -58,7 +58,7 @@ FALLBACK = {"propensity": 0.0283, "natural": 92542, "current": 7036,
                                "TRN": 12476, "GOA": 7036, "BGY": 939}}
 DIST_NM, BLOCK_MIN = 3500, 540
 
-# REFERENCE TABLE LOADED ONCE (Routes W1 step 1, 21 September 2026). The profile of one Run
+# REFERENCE TABLE LOADED ONCE (Routes W1 step 1, 19 September 2026). The profile of one Run
 # showed airportsdata.load() called 32 times, 2.8s, from eight modules that each keep their
 # own copy or none. This memoises the package loader on its arguments for the life of the
 # process and hands each caller a shallow copy, so a caller that edits its copy cannot leak
@@ -298,6 +298,28 @@ def _load():
     S["served_index"] = _latest_served_index()
     print(f"[cortex] loaded {len(locs)} locales, propensity {propensity:.4f}, natural {natural:,.0f}")
     print(f"[cortex] served index: {S['served_index'] or 'none (run validate_task_one.py / build a served_*.json)'}")
+
+    # MCT MASTER, STATED RATHER THAN ASSUMED (John's ruling, 19 September 2026).
+    # connection_builder.load_mct_data returns an empty dict when the master is missing and
+    # lookup_mct then cascades every airport to the flat default, so a server without it
+    # answers multi-airport metros differently from one that has it and nothing says so.
+    # Z: is per logon and invisible in ssh sessions, so a server started that way is the
+    # case this catches. Stand mode refuses to start rather than demo a silent difference.
+    import connection_builder as _CB
+    _mct = _CB.mct_report()
+    _mct_path = _mct["path"] or "unresolved"
+    if _mct["exists"] and not _mct["error"] and _mct["rows"]:
+        print("[cortex] MCT master: %s rows from %s" % (format(_mct["rows"], ","), _mct_path))
+    else:
+        _why = _mct["error"] or ("file not found" if not _mct["exists"] else "no rows read")
+        print("[cortex] MCT MASTER NOT LOADED (%s) at %s" % (_why, _mct_path))
+        print("[cortex] connections will use the flat default minimum connect time; "
+              "multi-airport metro forecasts will differ from a server that has it")
+        if os.environ.get("AVIA_STAND_MODE", "").strip().lower() in ("1", "true", "yes", "on"):
+            raise RuntimeError(
+                "stand mode refuses to start without the MCT master (%s): %s. Set "
+                "AVIA_MCT_MASTER to the maintained 'MCT Master List.xlsx', or clear "
+                "AVIA_STAND_MODE to run without it deliberately." % (_mct_path, _why))
 
 
 @app.get("/", response_class=HTMLResponse)

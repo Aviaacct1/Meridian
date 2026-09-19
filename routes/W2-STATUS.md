@@ -1,147 +1,176 @@
 # W2 stand flow: status
 
-Version 3, 21 September 2026. Written by the W2 build chat for the programme controller.
-Rewritten each session, never appended. Scope: handover 4, plus the stand capture front end
-added by ruling 15. Out of scope and untouched: engine demand logic, and W1's preagg, caches
-and pre-warm. Boundary confirmed: W2 owns the narrowed-sweep switch and its defaults, W1 owns
-measurement and caches. BRS-EWR:UA is already a default pair in diag_routes_timing.py.
+Version 5, 19 September 2026. Written by the W2 build chat for the controller; rewritten each
+session, never appended. W2-RULINGS.md v1 read and acted on. Dates corrected from the "21
+September" paste. Out of scope and untouched: engine demand logic, and W1's preagg, caches and
+pre-warm.
 
-## The sender changed today, and ruling 15's route is closed
+## Answers to the three questions the controller asked
 
-John has no admin rights on the aviasolutions.com Microsoft 365 tenant; his IT firm holds them.
-Every step ruling 15 named (adding the domain, the mailbox, DKIM, the Entra app registration
-and admin consent for Mail.Send) needs that access, and so does the aviasolutions.com fallback
-W2 had proposed. Both routes therefore sat behind a queue John does not control, three weeks
-before the freeze. John ruled to set up aviationobservatory.com clean instead.
+**1. The four questions for Suzanna, ready to send as they stand.**
 
-DONE 21 Sep, and verified by Postmark rather than by reading a form:
+> Suzanna, four questions before I finish the stand version of the screen. Answer from how you
+> have actually been using it, not how you think it should work.
+> 1. On a route you have not run before, what do you open first, and in what order after that?
+> 2. What have you had to look up, or work out again, more than once?
+> 3. What would you not put in front of a visitor, and why?
+> 4. What did you expect to find and could not?
+> One line each is plenty. Anything that annoyed you is useful.
 
-    aviationobservatory.com
-      DKIM          Verified   20260919185744pm._domainkey   TXT
-      Return-Path   Verified   pm-bounces  CNAME  pm.mtasv.net
-      SPF           not required; Postmark aligns through the Return-Path
-      DMARC         v=DMARC1; p=none;   at _dmarc   (published, no reporting address yet)
+Ask about speed separately and only after her next session: W1 step 1 (1012c29) took Run from
+42s to 9s and Optimise from 196s to 35s, so anything she says about speed before that is out of
+date, and asking now would bank a stale complaint.
 
-Postmark account "TheAO", free trial, upgraded when it is proven. The domain was empty before
-this work: zero records of every type, so nothing was overwritten. Registrant on the domain is
-The Aviation Observatory Limited. Fasthosts warns DNS changes take up to 24 hours; these
-propagated in minutes.
+**2. Can aviationobservatory.com be verified on the Avia Microsoft 365 tenant, and what does
+John click? No, and he clicks nothing.** Verifying a domain needs Global Administrator on that
+tenant. John holds an ordinary user account; his IT firm holds the admin rights. The same is
+true of the mailbox, the DKIM toggle, and the Entra app registration with admin consent that
+Graph sending needs, so every step of ruling 15's sender route ran through a queue he does not
+control, three weeks before the freeze. The aviasolutions.com fallback failed for the same
+reason. John ruled to set the domain up clean instead, and it is DONE, verified by Postmark:
 
-WHY THIS IS BETTER THAN GRAPH, not merely quicker: Postmark's SMTP endpoint takes the Server
-API token as both username and password, so app/demo_mail.py needs a host, user and password
-change and nothing else. Its fail-loudly behaviour and the 58 fixture checks survive. The Graph
-rewrite, which was the largest piece of new code in ruling 15, leaves the critical path.
+    DKIM          Verified   20260919185744pm._domainkey   TXT
+    Return-Path   Verified   pm-bounces  CNAME  pm.mtasv.net
+    SPF           not required; Postmark aligns through the Return-Path
+    DMARC         v=DMARC1; p=none;  at _dmarc, no reporting address yet
+
+The domain held zero records of any type beforehand, so nothing was overwritten. Postmark's SMTP
+endpoint takes the Server API token as both username and password, so demo_mail.py needs a
+credentials change rather than the Graph rewrite, which was the largest piece of new code in
+ruling 15. Its fail-loudly behaviour and its 58 fixture checks survive. Workstation environment
+set and confirmed: host smtp.postmarkapp.com, port 587, both token variables 36 characters. No
+token is in the repo or in any transcript. If the controller still wants M365 mailboxes for the
+Observatory later, that is a separate request to the IT firm and it is not on the Routes path.
+
+**3. Stand capture front end: scope, and the day it is demonstrable.**
+One page in stand mode, reached from the run on screen, finished in 60 seconds on a tablet held
+by the host. Name, company, role, email, phone, plus route and airline pre-filled from the run
+just shown, and the run signature carried invisibly so the pack is provably the forecast the
+visitor watched. Airline and airport by pick list, never free text. Everything past email is
+optional and the form says so, because a host who must complete fields will stop using it by
+the second morning. Consent tick and privacy line on the page, Observatory branding, big touch
+targets, one screen with no scrolling, and a visible confirmation naming the person and the
+route so the host knows it landed. It writes to the `leads` table, so item 3 lands first.
+DEMONSTRABLE 2 OCTOBER on the portal, which leaves it a week before the freeze and a fortnight
+before the trial. OPEN, and it needs an answer before the 11-12 October trial: which tablet, and
+how it reaches the form under Plan B, where the laptop serves only itself and there is no venue
+network.
 
 ## Scope items
 
-**1. Laptop build. IN PROGRESS.** Ruling 14: a 1TB external NVMe over USB-C on John's core x86
-laptop, which is NOT the DevPC, ordered before 28 Sep.
-Evidence: DevPC 19 Sep, HEAD 6bbdc0b. AVIA_QSI_BUILD=laptop moves DATA_ROOT only and drops all
-nine reference paths; LOCAL_CACHE is independent of the build. Plan A CLOSED: Meridian runs
-through the portal on the Huawei MateBook. The MateBook is not the Plan B machine (HarmonyOS
-host, Windows 11 Pro ARM64 in a StratoVirt VM). Sabre store circa 91GB (qsi-duckdb-run-rules,
-24 Jul); OAG size still unmeasured.
-Next action: the two spec blocks, then the load procedure once the drive exists.
+**1. Laptop build. IN PROGRESS.** Ruling 14: 1TB external NVMe over USB-C on John's core x86
+laptop, not the DevPC, ordered before 28 Sep. Plan A CLOSED: Meridian runs through the portal on
+the MateBook. The MateBook is not the Plan B machine (HarmonyOS host, Windows 11 Pro ARM64 in a
+StratoVirt VM). AVIA_QSI_BUILD=laptop moves DATA_ROOT only and drops all nine reference paths;
+LOCAL_CACHE is independent of it. Sabre store circa 91GB (qsi-duckdb-run-rules, 24 Jul); OAG
+still unmeasured. Next: the two spec blocks, then the load procedure.
 
 **2. Stand mode. IN PROGRESS.** ?stand=1 with AVIA_STAND_MODE as the machine default, query flag
 winning, so Suzanna practises in it from her own browser. Season defaults to year-round, request
 form surfaced, panel one click away, Expert stays in the nav, and a visible marker names which
-build is answering.
-Correction to handover 3.4: the 9x narrowing assumes no airline is named; the stand flow names
-one at step 1, so the real saving is 3x from the season alone. Evidence: api_optimise _seasons /
-_freqs / cands; cortex_dashboard.html lines 314, 730, 1571.
-Next action: build, then a DevPC commit block.
+build is answering. Correction to handover 3.4: the 9x narrowing assumes no airline is named;
+the stand flow names one at step 1, so the real saving is 3x from the season alone. Evidence:
+api_optimise _seasons / _freqs / cands; cortex_dashboard.html lines 314, 730, 1571. W1 step 1
+has already met the speed targets warm, so this switch is now about what the host sees rather
+than about speed. Next: build, then a commit block.
 
-**3. Lead flow. IN PROGRESS.** Ruling 15 as amended above: extend 33c902f, migrate the JSONL to
-a DuckDB `leads` table under LOCAL_CACHE with section D's stand fields, nightly Excel export to
-Egnyte, sender on aviationobservatory.com through POSTMARK, and two emails per visitor.
-Next action: the DuckDB store and the migration, which have no external dependency, then the
-demo_mail.py credentials change. See the watchpoints below.
+**3. Lead flow. IN PROGRESS.** Ruling 15 as amended: extend 33c902f, migrate the JSONL to a
+DuckDB `leads` table under LOCAL_CACHE with section D's stand fields, nightly Excel export to
+Egnyte, sender through Postmark, two emails per visitor, the hosted pack linking back to the
+site's main pages. Next: the store and the migration, which have no external dependency, then
+demo_mail.py.
 
 **4. Queue view. IN PROGRESS.** /demo/leads exists as an approval page for quota-held requests.
 Postmark now also gives delivery, bounce and complaint data, which is what the stand needs to
-show a failed pack rather than guess at one.
-Next action: check against running / sent / failed, newest first, failure reason visible.
+show a failed pack rather than guess at one. Next: check against running / sent / failed,
+newest first, failure reason visible.
 
-**5. Progressive Optimise display. NOT STARTED.** /api/optimise/start and job_watch already give
-the background job and the cancel path. Display change only. After stand mode.
+**5. Progressive Optimise display. NOT STARTED.** Display change only; the background job and
+cancel path already exist. After stand mode.
 
-**6. Stand capture front end. NOT STARTED.** Ruling 15: 60 seconds, tablet-friendly, branded,
-consent tick, no typing the host can avoid. Route and airline pre-filled from the run on screen;
-pick lists, not free text; everything beyond email optional.
-Open question: what tablet, and how it reaches the form under Plan B with no venue network.
+**6. Stand capture front end. NOT STARTED.** Scoped above. Demonstrable 2 Oct.
+
+**7. Pre-mortem 15: a city name the workstation cannot resolve. NOT STARTED.** Newly W2's per
+W2-RULINGS.md. Confirm which dashboard entry paths need the GeoNames dump, then either install
+it on the workstation or make the failure a visible refusal naming what it could not resolve,
+never a silent empty result. Test on the 11-12 October trial. Next: trace the entry paths.
+
+## Done this session
+
+**Ruling 16, the MCT master, BUILT AND TESTED; it speaks at the next restart.**
+connection_builder.mct_report() resolves through config exactly as the live callers do and
+returns path, exists, rows and error. cortex_app's startup event prints "MCT master: N rows from
+<path>", or names the reason it did not load and states the consequence, and stand mode raises
+rather than start, so the stand never demonstrates a silent difference from the live tool.
+app/test_mct_report.py holds missing, unusable and loaded apart, because they are three
+different faults: 14 checks, 0 failed.
+THE QUESTION IT ANSWERS: Z: is per logon and invisible in ssh sessions, and
+config._resolve_egnyte_root falls back to the nominal Z: path when it finds no marker folder, so
+a server started over ssh resolves MCT_MASTER to a path that does not exist, load_mct_data
+returns an empty dict in silence, and every airport cascades to a flat 90 minutes through
+route_qsi into route_forecast.dest_metro_share, which moves the forecast on any multi-airport
+metro. Whether the live portal has ever been started that way is not knowable from a code read.
+The next restart answers it, and it is the same restart that picks up the Postmark variables.
+VERIFICATION AND ITS LIMIT: both modules compile and the 14 checks pass against a workbook
+written for the test. The four inline startup lines cannot run without the server's own
+dependencies, so they are proven by compile and by reading. The first restart is their real test.
+
+**The sender.** Set up and verified, as recorded under question 2 above.
 
 ## Watchpoints
 
 1. POSTMARK IS IN TEST MODE. Sending is restricted until Postmark approves the account by human
-   review. John requested approval 21 Sep. Domain warming cannot start until it clears, so this
-   is now the longest lead time in the mail chain. If approval has not cleared by 1 Oct, raise it
-   with Postmark rather than waiting.
-2. demo_mail.py DEFAULTS AVIA_SMTP_HOST TO smtp.office365.com. With Postmark as the sender that
-   default is now wrong, and an unset variable would send the server at Microsoft and fail with
-   an authentication error naming the wrong supplier. That is the silent-fallback shape this
-   project has been caught by four times. FIX FIRST in item 3: make the host required and fail
-   loudly naming AVIA_SMTP_HOST.
-3. DMARC HAS NO REPORTING ADDRESS. p=none is published, which states the policy and changes no
-   delivery, but reports need somewhere to land and aviationobservatory.com cannot receive mail.
-   Fasthosts routes inbound mail to a paid add-on, which W2 will not buy. Three ways to switch
-   reporting on, for John: buy Fasthosts email on the domain; move the domain's DNS to
-   Cloudflare and use Email Routing, which is free and would also solve pack hosting; or sign up
-   to Postmark's DMARC Digests. W2 recommends the Cloudflare move but NOT before the laptop
-   proof, because moving nameservers now would mean recreating the records just verified.
-   Tighten p=none to quarantine only after reports show clean alignment, which is after Routes.
-4. TWO EMAILS. W2 still recommends one, with the PDF attached and the pack link inside it. Two
-   messages minutes apart double the filter exposure for nothing the visitor notices. If the
-   ruling stands, the queue view must show both sends separately.
+   review; John requested approval 19 Sep. Domain warming cannot start until it clears, so this
+   is the longest lead time in the mail chain. Not cleared by 1 Oct, chase it.
+2. demo_mail.py DEFAULTS AVIA_SMTP_HOST TO smtp.office365.com. With Postmark as the sender an
+   unset variable would send the server at Microsoft and fail naming the wrong supplier. The
+   same silent-fallback shape. First fix in item 3: the host becomes required and fails loudly.
+3. DMARC HAS NO REPORTING ADDRESS. p=none is published and changes no delivery, but reports need
+   somewhere to land and the domain cannot receive mail. Fasthosts routes inbound to a paid
+   add-on, which W2 did not buy. Three routes for John: buy Fasthosts email on the domain; move
+   the domain's DNS to Cloudflare and use Email Routing, free, which would also answer the pack
+   hosting question; or Postmark's DMARC Digests. W2 favours Cloudflare, but not before the
+   laptop proof, because moving nameservers now means recreating records just verified. Tighten
+   past p=none only after reports show clean alignment, which is after Routes.
+4. TWO EMAILS. W2 still recommends one, PDF attached and the pack link inside it. If the ruling
+   stands, the queue view must show both sends separately or a half-delivered visitor reads as
+   delivered.
 5. THE PUBLIC PACK URL. An unguessable link is obscurity, not access control. Before a pack with
    a named airline's route economics sits on a public host it needs checking against the Sabre
-   compliance position (attribution constant, fares as bands only, no single-route blind
-   figures), plus an expiry, a noindex header, and no personal data in the file.
-6. TWO CROSS-WORKSTREAM DEPENDENCIES, both undated. The PDF is W3's build item and the email
-   cannot attach what does not exist. The pack host is the launched site, W6's decision 7, due
-   1 Oct. Both need a date before 10 Oct.
-7. MCT MASTER, ruling 16 approved, and it is more urgent than the laptop. Z: is per logon and
-   invisible in ssh sessions, and config._resolve_egnyte_root falls back to the nominal Z: path
-   when it finds no marker folder. So a server started over ssh resolves MCT_MASTER to a path
-   that does not exist, connection_builder.load_mct_data returns an empty dict in silence, and
-   every airport cascades to a flat 90 minutes through route_qsi into
-   route_forecast.dest_metro_share. If the live workstation portal has ever been started that
-   way it has been running without the MCT master. The startup line ruling 16 approves answers
-   this on the first restart.
-
-## Other findings
-
-- BOEING 13 OCT is an Atlas meeting: Atlas shown, outputs compared against Boeing CMO, advice
-  sought from the CMO lead, with 15 minutes of Meridian. The umbrella timeline row, pre-mortem
-  12 and W7 still need rewriting. W2 proposes two Meridian trials, 11-12 Oct and 16 Oct.
-- app/DEPLOY_DEMO.md still says to robocopy the app from the OneDrive project folder. Git is the
-  source of truth, so W2 corrects it with the laptop build proof.
-- Suzanna has used Meridian circa four weeks. Four questions drafted for John to send. Ruling 19
-  taken as yes: her own lead file, so her test records stay out of the Routes store.
-- .gitignore extended this session with secrets patterns, so a file holding the Postmark token
-  cannot be committed by accident. The token itself lives in the environment, which is what
-  demo_mail.py reads, and it has never been written to the repo or to any chat.
+   position (attribution constant, fares as bands only, no single-route blind figures), plus an
+   expiry, a noindex header, and no personal data in the file.
+6. TWO CROSS-WORKSTREAM DEPENDENCIES, both undated. The PDF is W3's and the email cannot attach
+   what does not exist. The pack host is W6's decision 7, due 1 Oct. Both need a date before
+   10 Oct.
+7. RULING 18, THE UNMANNED WORKSTATION. Taken and understood: remote desktop over Tailscale,
+   sign in, run both launchers, disconnect, never sign out, with Stop-Process first because
+   Meridian-run.bat re-warms a running server rather than replacing it. W2 will write it in
+   those words into the runbook and hand W4 the same words for the host manual, and rehearse one
+   deliberate restart in the 11-12 October trial. W2 agrees the scheduled-task answer is better
+   and will scope it for 8 October, including the check that the Cloudflare tunnel runs as a
+   service. Worth stating plainly: an unmanned box makes the MCT startup line above the only
+   thing that will ever tell anyone the master did not load.
 
 ## Needed from John
 
 1. The two spec blocks: DevPC C:\Avia store inventory with sizes and dates, and the core
    laptop's make, RAM, architecture, free disk and Python.
-2. The Postmark Server API token into the workstation environment as AVIA_SMTP_USER and
-   AVIA_SMTP_PASS, with AVIA_SMTP_HOST=smtp.postmarkapp.com and AVIA_SMTP_PORT=587, by setx.
-3. Which of the three DMARC reporting routes in watchpoint 3.
-4. A view on watchpoint 4 (one email rather than two) and watchpoint 5 (the public pack URL).
-5. Dates from W3 for the PDF render and from W6 for the website decision.
-6. Approval to send Suzanna the four questions.
-7. Still open with the controller: item 18, who is at the workstation for the 11-12 Oct trial.
-8. The 40-60 route panel, John's choice, not due until early October.
+2. Which of the three DMARC reporting routes in watchpoint 3.
+3. A view on watchpoint 4 (one email rather than two) and watchpoint 5 (the public pack URL).
+4. Dates from W3 for the PDF render and from W6 for the website decision.
+5. Approval to send Suzanna the four questions above.
+6. Which tablet for the capture front end, and how it reaches the form under Plan B.
+7. The 40-60 route panel, John's choice, not due until early October. The panel page reads a
+   list from a file and says plainly that it is empty until one exists.
 
 ## Dates
 
-Ruling 17 adopted: 1 Oct hardware go/no-go, 8 Oct laptop proof, show machine loaded by 10 Oct,
-hard stop 15 Oct, demo-path freeze 10 Oct unchanged. W2's 8 Oct sending-domain decision point is
-now a Postmark approval check rather than a domain fallback, since the domain is verified.
+Ruling 17: 1 Oct hardware go/no-go, 8 Oct laptop proof, show machine loaded by 10 Oct, hard stop
+15 Oct, freeze 10 Oct. W2 adds: capture front end demonstrable 2 Oct; scheduled-task restart
+scoped 8 Oct; Postmark approval checked 1 Oct.
 
 ## Commits landed
 
-None yet. This file, its version 1 and 2 predecessors and the .gitignore change go in the first
-commit block.
+None yet. The first block carries routes/W2-STATUS.md, the .gitignore secrets patterns, and the
+ruling 16 change: app/connection_builder.py, app/cortex_app.py and app/test_mct_report.py. Hash
+recorded here when John pastes it.

@@ -1014,5 +1014,43 @@ Examples:
     return valid, failed
 
 
+
+def mct_report(mct_file=None):
+    """What the MCT master resolved to on this machine, and how many rows it holds.
+
+    A missing MCT master is invisible today. load_mct_data returns an empty dict when
+    the file is not there, without a message, and lookup_mct then cascades every airport
+    to default_mct, so a server with no master builds every connection on a flat minimum
+    connect time. That changes which connections are feasible, which moves route_qsi's
+    scores, which moves route_forecast.dest_metro_share, which moves the forecast on any
+    multi-airport metro. Z: is per logon and invisible in ssh sessions, and config falls
+    back to the nominal Z: path when it finds no marker folder, so a server started over
+    ssh is exactly the case this catches.
+
+    Resolution matches the live callers: config.MCT_MASTER, which already honours
+    AVIA_MCT_MASTER. John's ruling, 19 September 2026.
+
+    Returns {"path": str, "exists": bool, "rows": int, "error": str or None}.
+    rows 0 with exists True means the file is there and gave up nothing, which is a
+    parse problem rather than a missing file, and the two are not the same fault.
+    """
+    path = mct_file
+    if path is None:
+        try:
+            from config import MCT_MASTER
+            path = str(MCT_MASTER)
+        except Exception as e:                                   # noqa: BLE001
+            return {"path": "", "exists": False, "rows": 0,
+                    "error": "config did not load: %s: %s" % (type(e).__name__, e)}
+    if not path or not os.path.exists(path):
+        return {"path": path or "", "exists": False, "rows": 0, "error": None}
+    try:
+        data = load_mct_data(path)
+    except Exception as e:                                       # noqa: BLE001
+        return {"path": path, "exists": True, "rows": 0,
+                "error": "%s: %s" % (type(e).__name__, e)}
+    return {"path": path, "exists": True, "rows": len(data), "error": None}
+
+
 if __name__ == '__main__':
     main()
