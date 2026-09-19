@@ -21,7 +21,7 @@ confirmed by John's paste).
 
 | WS | State | Evidence | Next action | Owner | Date |
 |---|---|---|---|---|---|
-| W1 Speed and caches | In progress | First timings 19 Sep 16:03 (TIMING-20260919-1603.md, taken DURING the sector_adj build, server not restarted): Run 43.5s cold, 41.9s warm, 42.4s fixed-departure; Optimise narrowed 212s; brief and catchment cached. Picker 42 costable (6.6 evidenced). Chain still running | Clean re-run on a restarted server after the chain, then `--profile SJC-TPE:CI` to attribute the 42s | John / controller | 27 Sep |
+| W1 Speed and caches | In progress | Identity PASS 21 Sep (85/85); preagg saves 11% on the back-test path; stand Run 42s cold and warm (19 Sep, contaminated); Optimise narrowed 212s | John runs `--profile SJC-TPE:CI` over ssh; then the W1 build list and the preagg wiring commit | John / controller | Profile by 23 Sep |
 | W2 Stand flow | Not started | Queue and email design not yet put to John | Design on one screen to John (step E); laptop build proof | Controller / John | Design 22 Sep; laptop 1 Oct |
 | W3 Presentation | Not started | Old 2 July pptx only | Deck v1 after messaging settles | Controller, Jol, Nick | 3 Oct |
 | W4 Host | Not started | Host's name and contact in no document | Manual v1; get host details from John | Controller / John | 10 Oct |
@@ -97,6 +97,12 @@ confirmed by John's paste).
      Stand F174. Lands Tuesday 20 Oct afternoon; works the stand Wed-Fri 9-5. Stefan Parry
      (summer intern) may join her.
   7. Website: LAUNCH before Routes; linked from the emails and the conference bio.
+- 21 Sep 2026: PREAGG IDENTITY CHECK PASSED on the workstation: 85 of 85 pinned routes
+  identical across every column, no-preagg baseline against preagg, same code, single
+  thread (E:\Avia\preagg_check\identity.log). Wiring preagg into the live path is therefore a
+  pure performance change. MEASURED saving on the back-test path: 548s against 618s, 11%,
+  circa 0.8s a route (baseline file cache warm, so this flatters the baseline). Preagg is not
+  where most of the stand's 42-second Run goes; the in-process profile decides what is.
 - 21 Sep 2026: Routes World 2026 is in FRANKFURT (relocated; same dates). Registered
   organisations and the 90 exhibitors read from the matchmaking platform and recorded in
   ROUTES-ATTENDING-ORGANISATIONS-21Sep2026.md (organisations only, no delegate names): the
