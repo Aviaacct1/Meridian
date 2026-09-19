@@ -21,13 +21,13 @@ confirmed by John's paste).
 
 | WS | State | Evidence | Next action | Owner | Date |
 |---|---|---|---|---|---|
-| W1 Speed and caches | In progress | Identity PASS 21 Sep (85/85); preagg saves 11% on the back-test path; stand Run 42s cold and warm (19 Sep, contaminated); Optimise narrowed 212s | John runs `--profile SJC-TPE:CI` over ssh; then the W1 build list and the preagg wiring commit | John / controller | Profile by 23 Sep |
-| W2 Stand flow | Not started | Queue and email design not yet put to John | Design on one screen to John (step E); laptop build proof | Controller / John | Design 22 Sep; laptop 1 Oct |
+| W1 Speed and caches | In progress | Step 1 CODED 21 Sep (shared boards, MCT memo, airport table memo; COMMIT-MSG-21Sep2026-w1-step1-shared-boards.txt); probe has --save-json and --diff | John: before-payloads, tests, commit, pull, restart, after-payloads, diff, paste | John / controller | 23 Sep |
+| W2 Stand flow | In progress (Opus chat; routes\W2-STATUS.md v1, 21 Sep) | Plan A proven on John's MateBook; MateBook is ARM64 so NOT the Plan B machine; request form and lead store already built 16 Aug (JSONL, M365 SMTP) and need extending; stand mode designed; MCT silent fallback found under laptop build | John's rulings 14-19 below; W2 builds stand mode and extends the lead flow | W2 chat / John | Hardware go/no-go 1 Oct; proof 8 Oct |
 | W3 Presentation | Not started | Old 2 July pptx only | Deck v1 after messaging settles | Controller, Jol, Nick | 3 Oct |
 | W4 Host | Not started | Host's name and contact in no document | Manual v1; get host details from John | Controller / John | 10 Oct |
 | W5 Leads, feedback, order-ready | Blocked on John | Lead store and email sender undecided | Decisions batch (step C) | John | 25 Sep |
 | W6 Messaging, marketing, website, meetings | In progress | Four sentences drafted this session (step C) | John and Jol settle; invitations out | John, Jol | Final 25 Sep; invites 26-29 Sep |
-| W7 Rehearsal and freeze | Not started | Freeze 10 Oct, Boeing 13 Oct in the calendar | Nothing until W1 and W2 exist | Controller | 10 Oct |
+| W7 Rehearsal and freeze | Replanned | Boeing 13 Oct is an ATLAS meeting with 15 minutes of Meridian, not the Meridian dress rehearsal (John to W2, 19 Sep); the umbrella was wrong | Two Meridian trials: 11-12 Oct full stand flow timed, Plan A and B, a pack sent and received; 16 Oct with Suzanna | Controller / John | Freeze 10 Oct unchanged |
 
 **Found this session, not in any document:**
 - The 29 August aircraft-economics CODE is uncommitted on the DevPC: `9cb5ed1` carries the CSV
@@ -103,6 +103,21 @@ confirmed by John's paste).
   pure performance change. MEASURED saving on the back-test path: 548s against 618s, 11%,
   circa 0.8s a route (baseline file cache warm, so this flatters the baseline). Preagg is not
   where most of the stand's 42-second Run goes; the in-process profile decides what is.
+- 21 Sep 2026 (John, rulings 14-17): Plan B hardware is a 1TB external NVMe SSD over USB-C on
+  John's core x86 laptop, ordered before 28 Sep. Lead flow: EXTEND the 16 Aug build, which was
+  a holding draft; the store becomes a DuckDB `leads` table now (nightly Excel export to
+  Egnyte), a CRM can sit on top after Routes; and the stand gets a professional, quick
+  data-capture front end (60 seconds, tablet-friendly, consent, branded), a W2 build item.
+  MCT master reports rather than defaults silently: yes. Laptop dates: 1 Oct hardware
+  go/no-go, 8 Oct proof, show machine loaded by 10 Oct, hard stop 15 Oct.
+- 21 Sep 2026: MEETINGS are chosen by likelihood of buying, not by relationship (John);
+  relationships come to the stand anyway. The direct competitor's 22 published client logos
+  are cross-checked against the register (20 present) in the organisations file, section 8.
+- 21 Sep 2026: from W2's first status file (routes\W2-STATUS.md): Boeing 13 Oct is an Atlas
+  meeting, so the Meridian dress rehearsal moves to two trials, 11-12 Oct and 16 Oct; the
+  request form and lead store exist since 16 Aug (demo_leads.py JSONL store, demo_mail.py M365
+  SMTP, /api/demo/*, 58 checks) and are extended rather than replaced (controller view,
+  John to confirm); the narrowed sweep boundary is W2 the switch, W1 the measurement.
 - 21 Sep 2026: Routes World 2026 is in FRANKFURT (relocated; same dates). Registered
   organisations and the 90 exhibitors read from the matchmaking platform and recorded in
   ROUTES-ATTENDING-ORGANISATIONS-21Sep2026.md (organisations only, no delegate names): the
@@ -166,9 +181,21 @@ confirmed by John's paste).
     Decision needed: launch with the comparison page withheld and the grid signed off, or
     revise the rulings. No default; this one needs an answer.
 12. CLOSED 21 Sep: delegate list read; organisations recorded.
-13. **Pick the five meetings** from section 4 of ROUTES-ATTENDING-ORGANISATIONS-21Sep2026.md
-    (proposal: Bologna, Tampa, Taoyuan, China Airlines, Birmingham). Silence to 26 Sep: no
-    invitations go.
+14. CLOSED 21 Sep: 1TB external NVMe SSD, USB-C, on the core x86 laptop; order before 28 Sep.
+15. CLOSED 21 Sep: extend; DuckDB `leads` table now; professional capture front end on the
+    stand (W2); CRM after Routes.
+16. CLOSED 21 Sep: yes, the MCT master reports and the stand build refuses to start without it.
+17. CLOSED 21 Sep: agreed (1 Oct go/no-go, 8 Oct proof, 10 Oct loaded, 15 Oct hard stop).
+18. **Boeing correction**: confirm the two Meridian trials (11-12 Oct full flow, timed, Plan A
+    and B, a pack sent and received on a hotspot; 16 Oct with Suzanna, remote). Confirm who is
+    at the workstation for the first.
+19. **Suzanna's practice runs**: they write to the lead store and use the one-pack quota. Give
+    her a separate lead file (AVIA_DEMO_LEADS) on the stand build. Silence: separate file.
+13. **Pick the five meetings**: John agreed the buyer-test list 21 Sep (Birmingham, Dublin,
+    Vienna, Dallas Fort Worth, Milan SEA; reserves in the organisations file, section 3).
+    Open point: whether one competitor-client airport goes on the five as a deliberate test
+    of budget-holders; controller view is no, the 19 Sep ruling stands until a paid client
+    exists, and those airports are Suzanna's priority walk-ups instead. Invitations 26-29 Sep.
 
 ---
 
@@ -305,8 +332,11 @@ Written as if it happened. Each has an owner and a mitigation already in the pla
     contact; the five pre-arranged meetings are John's.
 11. **The workstation restarts and loses every pre-warmed route.** Answer: the persistent cache
     (handover 3.3) is the whole point; proven across a restart before freeze.
-12. **Boeing on 13 October and Routes need different things.** Answer: they do not; Boeing runs
-    the Routes flow exactly, and anything Boeing wants beyond it is post-Routes.
+12. **The dress rehearsal does not happen.** Found 21 Sep: Boeing 13 Oct is an Atlas meeting
+    with a short Meridian slot, not the Routes flow. Answer: two Meridian trials, 11-12 Oct
+    (full stand flow after the freeze, timed, Plan A and Plan B, a pack sent and received on
+    a hotspot) and 16 Oct with Suzanna; anything Boeing wants beyond its slot is post-Routes.
+    Status: open until the 11-12 Oct trial is diaried with a named person at the workstation.
 13. **The licence letter has not arrived.** Answer: the verbal confirmations are recorded with
     date and participants on Egnyte; the show proceeds; the letter gates the first contract.
 14. **A visitor wants to sign on the stand.** Answer: take the details, thank them, and tell

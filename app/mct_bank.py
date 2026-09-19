@@ -22,8 +22,24 @@ MCT_CSV = os.path.join(HERE, "mct_master.csv")
 DEFAULT_MCT = 60
 
 
+_MCT_MEMO = {}   # (path, mtime, size) -> the parsed dict; the CSV was read ~445 times per Run
+
+
 def load_mct(path=MCT_CSV):
-    """{(airport, dom_int): minutes}. dom_int is DOMDOM/DOMINT/INTDOM/INTINT."""
+    """{(airport, dom_int): minutes}. dom_int is DOMDOM/DOMINT/INTDOM/INTINT.
+
+    Memoised on the file's path, mtime and size (Routes W1 step 1, 21 September 2026): the
+    same 2,040-row CSV was parsed hundreds of times inside one Run. An edited file is a new
+    key, so a refreshed master is picked up without a restart. Callers receive the SAME dict;
+    none of them writes to it (checked: mct_for reads only)."""
+    try:
+        st = os.stat(path)
+        key = (path, st.st_mtime_ns, st.st_size)
+    except OSError:
+        key = (path, None, None)
+    hit = _MCT_MEMO.get(key)
+    if hit is not None:
+        return hit
     d = {}
     try:
         with open(path, newline="") as fh:
@@ -34,6 +50,7 @@ def load_mct(path=MCT_CSV):
                     pass
     except Exception:
         pass
+    _MCT_MEMO[key] = d
     return d
 
 

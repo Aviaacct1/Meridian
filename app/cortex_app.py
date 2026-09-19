@@ -58,6 +58,27 @@ FALLBACK = {"propensity": 0.0283, "natural": 92542, "current": 7036,
                                "TRN": 12476, "GOA": 7036, "BGY": 939}}
 DIST_NM, BLOCK_MIN = 3500, 540
 
+# REFERENCE TABLE LOADED ONCE (Routes W1 step 1, 21 September 2026). The profile of one Run
+# showed airportsdata.load() called 32 times, 2.8s, from eight modules that each keep their
+# own copy or none. This memoises the package loader on its arguments for the life of the
+# process and hands each caller a shallow copy, so a caller that edits its copy cannot leak
+# into another's. Same data, loaded once. AVIA_APDATA_MEMO=0 restores the package behaviour.
+try:
+    import airportsdata as _APD
+    if os.environ.get("AVIA_APDATA_MEMO", "1").strip().lower() not in ("0", "false", "off", "no") \
+            and not getattr(_APD.load, "_avia_memo", False):
+        _APD_RAW, _APD_MEMO = _APD.load, {}
+
+        def _apd_load(*a, **k):
+            key = (a, tuple(sorted(k.items())))
+            if key not in _APD_MEMO:
+                _APD_MEMO[key] = _APD_RAW(*a, **k)
+            return dict(_APD_MEMO[key])
+        _apd_load._avia_memo = True
+        _APD.load = _apd_load
+except Exception as _e:                                          # noqa: BLE001
+    print("airportsdata memo not installed (%s: %s); package loader stands" % (type(_e).__name__, _e))
+
 app = FastAPI(title="Meridian - Route Forecasting")   # Avia Cortex was the development name (retired 18 Aug 2026)
 S = {}
 
@@ -1543,7 +1564,7 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
                 if _boards is None:
                     import wave_cache as _WC
                     _wcp = feed_cfg.get("wave_cache")
-                    _boards = _WC.CacheBoards(_wcp) if _wcp else _WC.OagBoards(ctx["oag_db"])
+                    _boards = _WC.CacheBoards(_wcp) if _wcp else _WC.shared(ctx["oag_db"])
                 _mct = feed_cfg.get("_mct_master") or _MB.load_mct()
                 _scfg = {"route_origin": home, "route_freq": freq,
                          "route_flying_mins": bmin,
@@ -2484,12 +2505,9 @@ def api_hubbank(origin: str = "", dest: str = "", airline: str = ""):
         return JSONResponse({"ok": False, "error": f"could not resolve '{dest}': {e}"})
     hub = dm["primary"]
     try:
-        from wave_cache import OagBoards
-        wb = OagBoards(ctx["oag_db"])
-        try:
-            deps = wb.dep_rows(ctx["week"], hub)
-        finally:
-            wb.close()
+        from wave_cache import shared as _wcshared
+        wb = _wcshared(ctx["oag_db"])          # process-wide boards; close() is a no-op on it
+        deps = wb.dep_rows(ctx["week"], hub)
     except Exception as e:
         return JSONResponse({"ok": False, "error": f"hub board query failed: {e}"})
     banks = [{"window": f"{b*2:02d}:00-{b*2+2:02d}:00", "hour": b * 2, "daily_deps": 0.0,

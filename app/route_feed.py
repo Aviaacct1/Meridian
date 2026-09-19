@@ -318,9 +318,9 @@ def feed_side(sabre_db, oag_db, week, origin_airports, hub, year, capture=DEFAUL
             import qsi_feed as QF
             boards = feed_cfg.get("_boards")
             if boards is None:
-                from wave_cache import CacheBoards, OagBoards
+                from wave_cache import CacheBoards, OagBoards, shared as _WCshared
                 wc = feed_cfg.get("wave_cache")
-                boards = CacheBoards(wc) if (wc and os.path.exists(wc)) else OagBoards(oag_db)
+                boards = CacheBoards(wc) if (wc and os.path.exists(wc)) else _WCshared(oag_db)
                 feed_cfg["_boards"] = boards
             mctm = feed_cfg.get("_mct_master")
             if mctm is None:
@@ -482,9 +482,9 @@ def behind_feed(sabre_db, oag_db, week, origin_airports, dest_airports, year, ca
             import qsi_feed as QF
             boards = feed_cfg.get("_boards")
             if boards is None:
-                from wave_cache import CacheBoards, OagBoards
+                from wave_cache import CacheBoards, OagBoards, shared as _WCshared
                 wc = feed_cfg.get("wave_cache")
-                boards = CacheBoards(wc) if (wc and os.path.exists(wc)) else OagBoards(oag_db)
+                boards = CacheBoards(wc) if (wc and os.path.exists(wc)) else _WCshared(oag_db)
                 feed_cfg["_boards"] = boards
             mctm = feed_cfg.get("_mct_master")
             if mctm is None:
@@ -766,9 +766,9 @@ def optimise_departure(sabre_db, oag_db, week, origin_airports, origin, hub, des
         return None, {"beyond": 0.0, "behind": 0.0, "score": 0.0, "tried": 0}
 
     import qsi_feed as QF
-    from wave_cache import CacheBoards, OagBoards
+    from wave_cache import CacheBoards, OagBoards, shared as _WCshared
     wc = cfg.get("wave_cache")
-    boards = cfg.get("_boards") or (CacheBoards(wc) if (wc and os.path.exists(wc)) else OagBoards(oag_db))
+    boards = cfg.get("_boards") or (CacheBoards(wc) if (wc and os.path.exists(wc)) else _WCshared(oag_db))
     cfg["_boards"] = boards                      # the board grouping memoises here, so hold it
     mctm = cfg.get("_mct_master")
     if mctm is None:

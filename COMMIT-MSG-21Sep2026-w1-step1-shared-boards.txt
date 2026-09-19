@@ -1,0 +1,22 @@
+Routes W1 step 1: boards, MCT master and airport table loaded once per process
+
+The profile of one 42.9s Run (TIMING-20260919-1741.md) put the time in Python,
+not Sabre: wave_cache._row_to_leg 836,930 calls (every Run built a fresh
+OagBoards at five call sites, so the per-board memo died with the Run),
+mct_bank.load_mct parsing the 2,040-row CSV hundreds of times, and
+airportsdata.load called 32 times. Three memoisations, output-identical by
+construction:
+
+- wave_cache.shared(oag_db): one OagBoards per store per process, RLock around
+  the query-and-dedupe, close() a no-op on it. AVIA_SHARED_BOARDS=0 is the A/B.
+  Used by route_feed (three sites) and cortex_app (two sites); CacheBoards path
+  unchanged.
+- mct_bank.load_mct memoised on (path, mtime_ns, size); readers only, checked.
+- airportsdata.load memoised at cortex_app import; each caller gets a shallow
+  copy. AVIA_APDATA_MEMO=0 restores the package loader.
+
+diag_routes_timing.py: --save-json DIR saves each pair's Run payload;
+--diff BEFORE AFTER compares them leaf by leaf (volatile keys ignored) and
+exits 1 on any difference. That diff is the acceptance for every W1 step.
+
+No engine demand logic touched. Demo-path change before the 10 Oct freeze.

@@ -107,16 +107,23 @@ class _Boards:
     _TABLE = "oag"
 
     def __init__(self, db):
-        import duckdb
+        import duckdb, threading
         self._con = duckdb.connect(db, read_only=True)
         try:
             from db_registry import apply_limits; apply_limits(self._con)   # memory cap + temp + threads
         except Exception:
             pass
         self._cache = {}
+        self._lock = threading.RLock()   # a SHARED instance (see shared()) serves several threads
 
     def _rows(self, week, airport, side):
         key = (week, airport, side)
+        if key in self._cache:
+            return self._cache[key]
+        with self._lock:
+            return self._rows_locked(key, week, airport, side)
+
+    def _rows_locked(self, key, week, airport, side):
         if key not in self._cache:
             col = "dep_airport" if side == "dep" else "arr_airport"
             rows = self._con.execute(
@@ -178,6 +185,46 @@ class _Boards:
 class OagBoards(_Boards):
     """Boards straight off the live OAG store (one-off forecasts / the portal)."""
     _TABLE = "oag"
+
+
+# ONE BOARDS OBJECT PER STORE PER PROCESS (Routes W1 step 1, 21 September 2026). The profile of
+# one 42.9s Run showed _row_to_leg called 836,930 times: every Run built a fresh OagBoards at
+# each of five call sites, so the (week, airport, side) memo above died with the Run and every
+# board was re-read and re-deduplicated from the store each time. shared() hands out one
+# instance per store path for the life of the process, so a board is parsed once and every
+# later Run on that airport, as origin, hub or feeder, reads it from memory. Parsing is
+# unchanged, so the legs are identical; only the number of times the work is done changes.
+# close() on a shared instance is a no-op by design: the store connection lives with the
+# process. AVIA_SHARED_BOARDS=0 restores one object per Run (the A/B switch).
+_SHARED = {}
+_SHARED_LOCK = None
+
+
+class _SharedOagBoards(OagBoards):
+    def close(self):
+        return None
+
+
+def shared(oag_db):
+    """The process-wide OagBoards for `oag_db` (or a fresh one when AVIA_SHARED_BOARDS=0)."""
+    import os, threading
+    global _SHARED_LOCK
+    if os.environ.get("AVIA_SHARED_BOARDS", "1").strip().lower() in ("0", "false", "off", "no"):
+        return OagBoards(oag_db)
+    if _SHARED_LOCK is None:
+        _SHARED_LOCK = threading.Lock()
+    key = os.path.normcase(os.path.abspath(str(oag_db)))
+    with _SHARED_LOCK:
+        b = _SHARED.get(key)
+        if b is None:
+            b = _SharedOagBoards(oag_db)
+            _SHARED[key] = b
+    return b
+
+
+def shared_stats():
+    """{store: boards held} for the /api/health style surfaces and the timing probe."""
+    return {k: len(v._cache) for k, v in _SHARED.items()}
 
 
 class CacheBoards(_Boards):

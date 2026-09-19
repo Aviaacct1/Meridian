@@ -20,6 +20,8 @@ sweep: airlines x frequencies x seasons). Every stage is wall clock in seconds.
         py -3.12 diag_routes_timing.py                     (server on 127.0.0.1:8010, the launcher's port)
         py -3.12 diag_routes_timing.py --pairs SJC-TPE:CI,BRS-EWR:UA --skip-full
         py -3.12 diag_routes_timing.py --profile SJC-TPE:CI      (in-process cProfile of one Run)
+        py -3.12 diag_routes_timing.py --skip-full --save-json E:\Avia\probe\before   (payloads saved)
+        py -3.12 diag_routes_timing.py --diff E:\Avia\probe\before E:\Avia\probe\after   (identity)
 
 Password: env QSI_PASSWORD, else app\access_password.txt, the same two places the server reads.
 Output: printed, and written to TIMING-<date>-<time>.md beside this script for the record.
@@ -98,7 +100,43 @@ def _optimise(op, base, q, timeout=1800):
         return round(time.perf_counter() - t0, 1), "ERR", str(e)[:80]
 
 
-def measure_pair(op, base, origin, dest, airline, skip_full):
+def _walk(a, b, path, out, limit=60):
+    """Every leaf that differs between two JSON values, as 'path: a -> b'."""
+    if len(out) >= limit:
+        return
+    if isinstance(a, dict) and isinstance(b, dict):
+        for k in sorted(set(a) | set(b)):
+            _walk(a.get(k, "<absent>"), b.get(k, "<absent>"), path + "/" + str(k), out, limit)
+    elif isinstance(a, list) and isinstance(b, list):
+        if len(a) != len(b):
+            out.append(f"{path}: list length {len(a)} -> {len(b)}")
+        for i, (x, y) in enumerate(zip(a, b)):
+            _walk(x, y, f"{path}[{i}]", out, limit)
+    elif a != b:
+        out.append(f"{path}: {str(a)[:60]} -> {str(b)[:60]}")
+
+
+VOLATILE = ("elapsed", "when", "started", "job_id", "run_id", "timestamp", "generated")
+
+
+def diff_json(path_a, path_b):
+    """Compare two saved forecast payloads; keys whose name contains a VOLATILE word are
+    ignored, everything else must match exactly. Returns (n_differences, lines)."""
+    a = json.load(open(path_a, encoding="utf-8"))
+    b = json.load(open(path_b, encoding="utf-8"))
+
+    def strip(x):
+        if isinstance(x, dict):
+            return {k: strip(v) for k, v in x.items() if not any(w in str(k).lower() for w in VOLATILE)}
+        if isinstance(x, list):
+            return [strip(v) for v in x]
+        return x
+    out = []
+    _walk(strip(a), strip(b), "", out)
+    return len(out), out
+
+
+def measure_pair(op, base, origin, dest, airline, skip_full, save_dir=None):
     rows = []
     q = {"origin": origin, "dest": dest}
     # Sanity row, not a timing: the picker after the 29 Aug aircraft-econ code (master list 6.6
@@ -113,7 +151,18 @@ def measure_pair(op, base, origin, dest, airline, skip_full):
         rows.append(("aircraft picker (/api/aircraft), types listed", 0.0, "ERR", str(e)[:80]))
     qa = dict(q, airline=airline, aircraft="", season="annual") if airline else dict(q, aircraft="", season="annual")
     rows.append(("market brief (route entry)", *_timed(op, base + "/api/market_brief?" + urllib.parse.urlencode(q))))
-    rows.append(("Run, cold (airline named, dep blank, AUTO gauge)", *_timed(op, base + "/api/forecast?" + urllib.parse.urlencode(qa))))
+    run_url = base + "/api/forecast?" + urllib.parse.urlencode(qa)
+    rows.append(("Run, cold (airline named, dep blank, AUTO gauge)", *_timed(op, run_url)))
+    if save_dir:
+        # The Run's payload, saved so a speed change can be proved output-identical (--diff).
+        try:
+            os.makedirs(save_dir, exist_ok=True)
+            _, body = _get(op, run_url)
+            fp = os.path.join(save_dir, f"run_{origin}-{dest}_{airline or 'NA'}.json")
+            open(fp, "w", encoding="utf-8", newline="\n").write(body)
+            rows.append(("Run payload saved for --diff", 0.0, 200, os.path.basename(fp)))
+        except Exception as e:                               # noqa: BLE001
+            rows.append(("Run payload saved for --diff", 0.0, "ERR", str(e)[:80]))
     rows.append(("Run, warm (same query again)", *_timed(op, base + "/api/forecast?" + urllib.parse.urlencode(qa))))
     rows.append(("Run, fixed departure 10:00 (no departure sweep)",
                  *_timed(op, base + "/api/forecast?" + urllib.parse.urlencode(dict(qa, dep_time="10:00")))))
@@ -166,7 +215,26 @@ def main():
                     help="comma list of ORIG-DEST:AIRLINE; airline may be blank (ORIG-DEST:)")
     ap.add_argument("--skip-full", action="store_true", help="skip the full nothing-fixed Optimise sweep")
     ap.add_argument("--profile", default="", help="ORIG-DEST:AIRLINE to cProfile one Run in-process (no server needed)")
+    ap.add_argument("--save-json", default="", help="directory to save each pair's Run payload (before/after a change)")
+    ap.add_argument("--diff", nargs=2, metavar=("BEFORE_DIR", "AFTER_DIR"),
+                    help="compare saved Run payloads pair by pair; exit 1 on any difference")
     a = ap.parse_args()
+    if a.diff:
+        before, after = a.diff
+        names = sorted(f for f in os.listdir(before) if f.startswith("run_") and f.endswith(".json"))
+        bad = 0
+        for f in names:
+            fb = os.path.join(after, f)
+            if not os.path.exists(fb):
+                print(f"{f}: MISSING in {after}"); bad += 1; continue
+            n, lines = diff_json(os.path.join(before, f), fb)
+            print(f"{f}: {'IDENTICAL' if n == 0 else str(n) + ' differences'}")
+            for ln in lines[:40]:
+                print("   ", ln)
+            bad += n
+        print("\nPASS: every saved Run payload identical (volatile keys ignored)." if bad == 0
+              else f"\nFAIL: {bad} differences; the change moved a number or a field.")
+        sys.exit(0 if bad == 0 else 1)
     stamp = datetime.now().strftime("%Y%m%d-%H%M")
     lines = [f"# Routes timing, {datetime.now().strftime('%d %B %Y %H:%M')}",
              f"Server {a.base}; machine {os.environ.get('COMPUTERNAME', '?')}; pairs {a.pairs}. "
@@ -186,7 +254,7 @@ def main():
             o, d = od.split("-")
             o, d, al = o.strip().upper(), d.strip().upper(), al.strip().upper()
             print(f"\n{o}-{d} {al or '(no airline)'} ...", flush=True)
-            rows = measure_pair(op, a.base, o, d, al, a.skip_full)
+            rows = measure_pair(op, a.base, o, d, al, a.skip_full, a.save_json or None)
             lines += [f"## {o}-{d} {al or '(no airline)'}", "", "| Stage | Seconds | HTTP | Error |", "|---|---|---|---|"]
             for name, secs, status, err in rows:
                 lines.append(f"| {name} | {secs} | {status} | {err} |")
