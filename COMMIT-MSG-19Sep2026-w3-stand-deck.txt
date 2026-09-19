@@ -1,0 +1,36 @@
+W3: the ten-slide stand deck, slides 1-6 and 9-10 built
+
+deck/spec_routes_stand.py, the stand deck as a renderer-agnostic spec. Ten slides,
+built and verified: metadata author and last-modified-by both The Aviation
+Observatory, en-GB the only proofing language on every run, no em or en dashes,
+and the cover photograph carrying its full rights record through the JPEG
+re-encode. 267 KB.
+
+What is on them. Cover. The problem in the buyer's words. The seven-step build in
+the client's language. The three classes of number, measured, calibrated and
+physics-capped, from Nick's note section 2. The calibration record. The connecting
+feed and why the named airline changes the answer. Two held slides for the worked
+routes. The product family. The published price grid.
+
+The four messaging sentences are carried verbatim as placeholders from
+ROUTES-CONTROLLER-QUEUE-19Sep2026.md section B and swap on 25 September. One of
+them runs four characters over the callout budget and is set as two lines rather
+than reworded: a placeholder is quoted, not edited.
+
+The accuracy line is on the slide verbatim and nowhere else in the deck. The
+controller's fallback wording from umbrella item 25(b) states the same figures in
+different words, so it is carried in the speaker notes rather than on the slide;
+two wordings of the same figures on one surface would breach "no other accuracy
+figure anywhere". Controller to rule which is the slide text.
+
+The two July validation figures are out, as ruled: the 48,115 within 1% and the
+2.6 times a Star carrier's feed both predate the 20 August each-way basis fix.
+
+Slides 7 and 8 are held for runs off the frozen build, per the controller, and
+carry their layout and their notes so Jol and Nick can judge them on 3 October.
+The carrier for Bologna-New York is with John, umbrella item 26.
+
+Conflicts reported, not resolved: the deck's author. W3-RULINGS scope item 1 says
+Avia Solutions; the naming ruling and render_pptx._metadata's own documented rule
+say a product deck is published by The Aviation Observatory, and the deck is
+branded that way throughout. Built as the Observatory; one line to change.

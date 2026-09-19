@@ -1,0 +1,263 @@
+"""Meridian at Routes World 2026: the ten-slide stand deck, as a renderer-agnostic spec.
+
+W3 scope item 1. The deck the host works from on stand F174 and the five pre-arranged
+meetings run on. It is about the product, not about one route: the two worked routes are
+evidence, not the subject.
+
+Register: a pitch, not a diligence report. The case is put in the affirmative. Nothing
+about any competitor appears, here or anywhere else (commercial plan, section 10).
+
+Build state, 19 September 2026. Slides 1-6 and 9-10 carry their final structure with the
+four messaging sentences as PLACEHOLDERS, taken verbatim from
+ROUTES-CONTROLLER-QUEUE-19Sep2026.md section B, to be swapped when John and Jol settle
+them on 25 September. Slides 7 and 8 are held for two real runs; the carrier for
+Bologna-New York is with John (umbrella item 26) and the controller has ruled the runs
+come off the frozen build.
+
+Run: python3 render_pptx.py spec_routes_stand -o Meridian_Routes_Stand_Deck.pptx
+
+Avia Solutions Limited. All rights reserved.
+"""
+
+import deck_spec as S
+
+CODENAME = "Meridian"
+
+# Every figure carries a source in the same place. These are the three the deck uses.
+SRC_PRICING = ("Source: Meridian pricing, The Aviation Observatory, published grid, "
+               "PRICING-HANDOVER-19Sep2026.")
+SRC_METHOD = ("Source: Meridian forecasting methodology, The Aviation Observatory, "
+              "23 August 2026.")
+SRC_CALIB = ("Source: Meridian calibration record, 2,915 real route launches, "
+             "2016-2019 and 2025; the pandemic years 2020-2023 are excluded. Outturn is "
+             "US DOT DB1B for United States domestic routes and Sabre Global Demand Data "
+             "elsewhere.")
+
+# --- PLACEHOLDERS, swapped on 25 September ---------------------------------
+# Verbatim from ROUTES-CONTROLLER-QUEUE-19Sep2026.md section B, marked DRAFT there.
+P_ONELINER = ("Run your route forecast on our stand, in seconds: 25 years of QSI "
+              "practice, built into a tool and calibrated against real route launches.")
+P_SUB_1 = "The best time of day to fly it, not just how many will fly it."
+P_SUB_2 = "A researched pack with your numbers in your inbox within 30 minutes."
+P_SUB_3 = "Independent and senior: no network to sell you, no house view."
+
+# The accuracy line, verbatim and only this (W3-RULINGS v2). Umbrella item 25 is open on
+# WHAT it describes; the controller's fallback wording in 25(b) is carried in the speaker
+# notes rather than on the slide, because two wordings of the same figures on one surface
+# would breach "no other accuracy figure anywhere". Controller to rule which is the slide.
+ACCURACY = ("Calibrated leads are within 20% of the outcome 89% of the time and within "
+            "10% 82% of the time, on 2,915 real launches. Blind results are reported as "
+            "portfolios, never as a single route.")
+
+NOTE_25B = ("Umbrella item 25, fallback wording (b), pending John by 26 September: "
+            "\"Meridian builds the forecast step by step from measured demand. The "
+            "calibration record behind it, 2,915 real launches, is within 20% 89% of the "
+            "time and within 10% 82% of the time; every forecast carries its own "
+            "calibrated range.\" If (b) lands, it replaces the slide text above.")
+
+
+def build():
+    spec = S.deck(
+        codename=CODENAME,
+        title="Route forecasting, made into a tool",
+        strap=P_ONELINER,
+        prepared_for="Routes World 2026, Frankfurt",
+        event="21-23 October 2026",
+        date="October 2026",
+        status="DRAFT v0.1. Slides 7 and 8 held for runs off the frozen build",
+        confidentiality="Commercial in Confidence",
+        author="The Aviation Observatory")
+
+    s = spec["slides"]
+
+    # 1 ---------------------------------------------------------------- cover
+    s.append(S.cover(
+        ["Meridian", "Route forecasting,", "made into a tool"],
+        image="cover.hero", family="globe",
+        subtitle="Published by The Aviation Observatory",
+        notes="Placeholder one-liner on the cover strap; swap 25 September."))
+
+    # 2 -------------------------------------------------------------- problem
+    s.append(S.prose(
+        section="The problem",
+        title="You are asked to prove a route before anyone will fly it",
+        paras=[
+            (None,
+             "A route development team pitches a route and is asked three questions in "
+             "the same meeting: how many passengers, at what load factor, and why the "
+             "airline should believe either number. Answering them properly has meant a "
+             "consultancy study, six figures of airline planning time, or a spreadsheet "
+             "nobody outside the team trusts."),
+            (None,
+             "The work itself is not the hard part. Measuring the market, scoring the "
+             "competing itineraries, adding the connecting feed and fitting the result "
+             "to an aircraft is a known method. Doing it in a week, for every route on "
+             "the list, and being able to show your working, is the hard part."),
+        ],
+        # The placeholder runs four characters over the callout budget, so it is set as
+        # two lines rather than reworded: a placeholder is quoted, not edited.
+        callouts=[S.callout(["Independent and senior:",
+                             "no network to sell you, no house view."])],
+        notes="Placeholder sub-message in the callout; swap 25 September."))
+
+    # 3 ----------------------------------------------------------- what it does
+    s.append(S.grid(
+        section="What Meridian does",
+        title="Two cities and an airline in, a defended forecast out",
+        rows=[
+            ("Two cities and an airline",
+             "You enter the origin, the destination and the airline you are pitching."),
+            ("Airports in play",
+             "Every airport travellers in the origin area could use, and every airport "
+             "serving the destination city."),
+            ("The real market",
+             "Passengers who actually flew between those areas, measured from booking "
+             "data and grown to the forecast year."),
+            ("Who uses which airport",
+             "Each town allocated by real road driving time, flight quality and airport "
+             "size, calibrated against observed origin splits."),
+            ("Local demand",
+             "The route's share of the local market, from the same choice-of-service "
+             "scoring airline network planners use."),
+            ("Connecting feed",
+             "Passengers connecting behind the origin and beyond the destination, scored "
+             "for the named airline and its partnerships."),
+            ("Total, aircraft and out",
+             "Local plus feed, capped by the aircraft at an achievable load factor, with "
+             "the schedule that demand supports."),
+        ],
+        source=SRC_METHOD,
+        notes="Structure from the 2 July methodology deck, slide 2, rewritten to Nick's "
+              "note of 23 August. The two July validation figures are out (ruled)."))
+
+    # 4 ------------------------------------------------- three classes of number
+    s.append(S.grid(
+        section="How to read a forecast",
+        title="Every number is one of three kinds",
+        rows=[
+            ("Measured",
+             "Read from data, not assumed: the addressable market, the schedules in the "
+             "choice set, the sector distance."),
+            ("Calibrated",
+             "Fitted to launched-route outcomes: the capture weighting, the coverage "
+             "correction, the stimulation uplift, the connecting-feed scoring."),
+            ("Physics",
+             "A hard constraint: the aircraft and frequency cap, the achievable load "
+             "factor, the runway and elevation check."),
+        ],
+        accent_rows=[1],
+        callout=S.callout(["Ask which kind a number is before you argue with it"]),
+        source=SRC_METHOD,
+        notes="Nick's methodology note, section 2. If a host cannot answer a method "
+              "question, the line is: John can take you through it, shall I set that up."))
+
+    # 5 ------------------------------------------------------------- accuracy
+    s.append(S.prose(
+        section="The calibration record",
+        title="We publish our error",
+        paras=[(None, ACCURACY),
+               (None,
+                "The record is out of sample. The model is trained on a set of launch "
+                "years and tested only on launches from a year it never trained on, "
+                "repeated so every launch is in turn unseen. A portfolio of candidate "
+                "routes is measured more accurately than any single one, which is why a "
+                "single route is never quoted as a promise.")],
+        source=SRC_CALIB,
+        notes=NOTE_25B))
+
+    # 6 ------------------------------------------------------ connecting feed
+    s.append(S.grid(
+        section="The connecting feed",
+        title="Who flies it changes the answer",
+        rows=[
+            ("Behind the origin",
+             "Towns feeding in and connecting onto the flight."),
+            ("The local market",
+             "Point to point between the two cities, the part most models stop at."),
+            ("Beyond the destination",
+             "Passengers carrying on past the hub to a city the airline serves."),
+            ("Why the airline matters",
+             "A route into a hub reaches the onward bank only if the carrier or its "
+             "partners fly those legs, and only where the connection clears minimum "
+             "connecting time and is not a detour. So the forecast is for a named "
+             "carrier."),
+            ("Why the departure time matters",
+             "The departure time decides which onward bank a passenger can legally "
+             "reach, so moving the schedule by a short margin moves the feed. That is "
+             "what Optimise searches."),
+        ],
+        accent_rows=[3],
+        source=SRC_METHOD,
+        notes="Structure from the 2 July deck, slide 3. The 48,115 and the 2.6 times "
+              "figures are removed: both predate the 20 August each-way basis fix."))
+
+    # 7, 8 --------------------------------------------- worked routes, held
+    s.append(S.figure(
+        section="Worked route 1",
+        title="San Jose to Taipei, pitched to China Airlines",
+        image=None,
+        bullets=["Charts held for a run off the frozen build (controller ruling).",
+                 "Passenger figures stated two way, per the standing convention.",
+                 "Every figure carries its source on the slide."],
+        notes="HELD. Build after the 10 October freeze so the deck's numbers are the "
+              "show's numbers. Layout goes to Jol and Nick on 3 October."))
+
+    s.append(S.figure(
+        section="Worked route 2",
+        title="Bologna to New York",
+        image=None,
+        bullets=["Carrier with John, umbrella item 26.",
+                 "Same layout as the previous slide, so the two read as one method.",
+                 "Charts held for a run off the frozen build."],
+        notes="HELD. Bologna chosen over Genoa: registered at the show with three "
+              "delegates against two, and a current Meridian tester."))
+
+    # 9 -------------------------------------------------------- product family
+    s.append(S.grid(
+        section="The product family",
+        title="Three tools, three questions",
+        rows=[
+            ("Meridian",
+             "Will this route work, for this airline, on this aircraft, at what time of "
+             "day? Forecast, schedule, economics and a researched pack."),
+            ("The Observatory Global Forecast",
+             "How much traffic will this airport see over the next 25 years, and where "
+             "does it come from?"),
+            ("The Design Day module",
+             "What does that traffic look like on the busiest day, gate by gate and hour "
+             "by hour? Quoted per airport as an addition to a Global Forecast licence."),
+        ],
+        callout=S.callout(["All three published by The Aviation Observatory"]),
+        source=SRC_PRICING))
+
+    # 10 ---------------------------------------------------------- the offer
+    s.append(S.table(
+        section="Licensing",
+        title="Published prices, because we publish our error",
+        table={"head": ["Airport size", "A year", "What is included"],
+               "rows": [["Small", "£15,000", "Three named seats, the full tool"],
+                        ["Medium", "£20,000", "Three named seats, the full tool"],
+                        ["Large", "£25,000", "Three named seats, the full tool"]],
+               "widths": [26, 20, 54],
+               "aligns": ["left", "right", "left"]},
+        bullets=["100 generated presentations a year, across the three seats. Forecasts, "
+                 "scenarios and exports are unlimited within fair use.",
+                 "Every tier is the whole tool. The price steps with airport size, never "
+                 "with features held back.",
+                 "Airlines, consultancies and multi-airport groups are quoted on their "
+                 "portfolio. All prices exclude VAT.",
+                 "Launch places this year on request."],
+        source=SRC_PRICING,
+        notes="No discount figure, no number of places, no expiry until John rules "
+              "(umbrella, Waiting on John, items 6 and 7). Placeholder sub-messages "
+              "'%s' and '%s' land here on 25 September." % (P_SUB_1, P_SUB_2)))
+
+    return spec
+
+
+if __name__ == "__main__":
+    sp = build()
+    S.paginate(sp)
+    for line in S.check(sp):
+        print(line)
+    print("%d slides" % len(sp["slides"]))
