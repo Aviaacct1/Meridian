@@ -21,7 +21,7 @@ confirmed by John's paste).
 
 | WS | State | Evidence | Next action | Owner | Date |
 |---|---|---|---|---|---|
-| W1 Speed and caches | In progress | No timing exists yet; probe `diag_routes_timing.py` written 19 Sep, commit block issued | John runs the timing block on the workstation and pastes it | John / controller | 23 Sep |
+| W1 Speed and caches | In progress | Probe committed; preagg build + identity chain issued 19 Sep for the unattended week; no timings yet | Timings pasted; chain log read on return | John / controller | Timings 23 Sep; chain by 27 Sep |
 | W2 Stand flow | Not started | Queue and email design not yet put to John | Design on one screen to John (step E); laptop build proof | Controller / John | Design 22 Sep; laptop 1 Oct |
 | W3 Presentation | Not started | Old 2 July pptx only | Deck v1 after messaging settles | Controller, Jol, Nick | 3 Oct |
 | W4 Host | Not started | Host's name and contact in no document | Manual v1; get host details from John | Controller / John | 10 Oct |
@@ -58,6 +58,10 @@ confirmed by John's paste).
   expiring launch discount; two milestones; messaging before invitations; no competitor
   approaches; Optimise demonstrated on the stand).
 - 19 Sep 2026: programme controller appointed; this Status block is the single truth.
+- 19 Sep 2026: John away 20-27 Sep; the preagg store build plus its identity check runs
+  unattended on the workstation over that week (block issued). Pre-warming routes is NOT
+  started: every app cache is in-process and dies at restart; the persistent cache (W1)
+  comes first.
 - 19 Sep 2026: the uncommitted 29 August aircraft-economics code is COMMITTED before the
   freeze (John: it was a fix that emerged after he left for holiday and was held back so it
   could not break anything while he was away). Commit block issued; one live check on the
