@@ -17,7 +17,7 @@ sweep: airlines x frequencies x seasons). Every stage is wall clock in seconds.
     Workstation Actual, server already running (Meridian-run.bat), in a second window:
 
         cd C:\src\meridian
-        py -3.12 diag_routes_timing.py
+        py -3.12 diag_routes_timing.py                     (server on 127.0.0.1:8010, the launcher's port)
         py -3.12 diag_routes_timing.py --pairs SJC-TPE:CI,BRS-EWR:UA --skip-full
         py -3.12 diag_routes_timing.py --profile SJC-TPE:CI      (in-process cProfile of one Run)
 
@@ -101,6 +101,16 @@ def _optimise(op, base, q, timeout=1800):
 def measure_pair(op, base, origin, dest, airline, skip_full):
     rows = []
     q = {"origin": origin, "dest": dest}
+    # Sanity row, not a timing: the picker after the 29 Aug aircraft-econ code (master list 6.6
+    # expects 42 costable types plus known_uncostable).
+    try:
+        _, body = _get(op, base + "/api/aircraft", 60)
+        j = json.loads(body)
+        rows.append(("aircraft picker (/api/aircraft), types listed", 0.0, 200,
+                     f"{len(j.get('aircraft', []))} costable, {len(j.get('known_uncostable', {}))} known uncostable"
+                     + (f"; error: {j['error'][:60]}" if j.get("error") else "")))
+    except Exception as e:                                   # noqa: BLE001
+        rows.append(("aircraft picker (/api/aircraft), types listed", 0.0, "ERR", str(e)[:80]))
     qa = dict(q, airline=airline, aircraft="", season="annual") if airline else dict(q, aircraft="", season="annual")
     rows.append(("market brief (route entry)", *_timed(op, base + "/api/market_brief?" + urllib.parse.urlencode(q))))
     rows.append(("Run, cold (airline named, dep blank, AUTO gauge)", *_timed(op, base + "/api/forecast?" + urllib.parse.urlencode(qa))))
@@ -150,7 +160,8 @@ def profile_run(origin, dest, airline):
 
 def main():
     ap = argparse.ArgumentParser(description="Time the stand's run types against a live Meridian server.")
-    ap.add_argument("--base", default="http://localhost:8000")
+    ap.add_argument("--base", default="http://127.0.0.1:8010",
+                    help="the launcher (warm_demo.py) serves on 127.0.0.1:8010")
     ap.add_argument("--pairs", default="SJC-TPE:CI,BRS-EWR:UA",
                     help="comma list of ORIG-DEST:AIRLINE; airline may be blank (ORIG-DEST:)")
     ap.add_argument("--skip-full", action="store_true", help="skip the full nothing-fixed Optimise sweep")
