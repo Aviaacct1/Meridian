@@ -6,8 +6,32 @@
   "GB"
  ],
  [
+  "lhr_airside",
+  "London Heathrow Airport aircraft apron",
+  6,
+  "GB"
+ ],
+ [
+  "lhr_aerial",
+  "London Heathrow Airport aerial view",
+  6,
+  "GB"
+ ],
+ [
   "dxb_terminal",
   "Dubai International Airport terminal",
+  6,
+  "AE"
+ ],
+ [
+  "dxb_airside",
+  "Dubai International Airport aircraft apron",
+  6,
+  "AE"
+ ],
+ [
+  "dxb_aerial",
+  "Dubai International Airport aerial view",
   6,
   "AE"
  ],
@@ -18,8 +42,32 @@
   "US"
  ],
  [
+  "atl_airside",
+  "Hartsfield Jackson Atlanta International Airport aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "atl_aerial",
+  "Hartsfield Jackson Atlanta International Airport aerial view",
+  6,
+  "US"
+ ],
+ [
   "ist_terminal",
   "Istanbul Airport terminal",
+  6,
+  "TR"
+ ],
+ [
+  "ist_airside",
+  "Istanbul Airport aircraft apron",
+  6,
+  "TR"
+ ],
+ [
+  "ist_aerial",
+  "Istanbul Airport aerial view",
   6,
   "TR"
  ],
@@ -30,8 +78,32 @@
   "US"
  ],
  [
+  "ord_airside",
+  "Chicago O'Hare International Airport aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "ord_aerial",
+  "Chicago O'Hare International Airport aerial view",
+  6,
+  "US"
+ ],
+ [
   "cdg_terminal",
   "Charles de Gaulle International Airport terminal",
+  6,
+  "FR"
+ ],
+ [
+  "cdg_airside",
+  "Charles de Gaulle International Airport aircraft apron",
+  6,
+  "FR"
+ ],
+ [
+  "cdg_aerial",
+  "Charles de Gaulle International Airport aerial view",
   6,
   "FR"
  ],
@@ -42,8 +114,32 @@
   "US"
  ],
  [
+  "dfw_airside",
+  "Dallas-Fort Worth International Airport aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "dfw_aerial",
+  "Dallas-Fort Worth International Airport aerial view",
+  6,
+  "US"
+ ],
+ [
   "hnd_terminal",
   "Tokyo International Airport terminal",
+  6,
+  "JP"
+ ],
+ [
+  "hnd_airside",
+  "Tokyo International Airport aircraft apron",
+  6,
+  "JP"
+ ],
+ [
+  "hnd_aerial",
+  "Tokyo International Airport aerial view",
   6,
   "JP"
  ],
@@ -54,8 +150,32 @@
   "US"
  ],
  [
+  "jfk_airside",
+  "John F Kennedy International Airport aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "jfk_aerial",
+  "John F Kennedy International Airport aerial view",
+  6,
+  "US"
+ ],
+ [
   "fra_terminal",
   "Frankfurt am Main International Airport terminal",
+  6,
+  "DE"
+ ],
+ [
+  "fra_airside",
+  "Frankfurt am Main International Airport aircraft apron",
+  6,
+  "DE"
+ ],
+ [
+  "fra_aerial",
+  "Frankfurt am Main International Airport aerial view",
   6,
   "DE"
  ],
@@ -66,8 +186,32 @@
   "US"
  ],
  [
+  "lax_airside",
+  "Los Angeles International Airport aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "lax_aerial",
+  "Los Angeles International Airport aerial view",
+  6,
+  "US"
+ ],
+ [
   "del_terminal",
   "Indira Gandhi International Airport terminal",
+  6,
+  "IN"
+ ],
+ [
+  "del_airside",
+  "Indira Gandhi International Airport aircraft apron",
+  6,
+  "IN"
+ ],
+ [
+  "del_aerial",
+  "Indira Gandhi International Airport aerial view",
   6,
   "IN"
  ],
@@ -78,8 +222,32 @@
   "US"
  ],
  [
+  "den_airside",
+  "Denver International Airport aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "den_aerial",
+  "Denver International Airport aerial view",
+  6,
+  "US"
+ ],
+ [
   "ams_terminal",
   "Amsterdam Airport Schiphol terminal",
+  6,
+  "NL"
+ ],
+ [
+  "ams_airside",
+  "Amsterdam Airport Schiphol aircraft apron",
+  6,
+  "NL"
+ ],
+ [
+  "ams_aerial",
+  "Amsterdam Airport Schiphol aerial view",
   6,
   "NL"
  ],
@@ -90,8 +258,32 @@
   "CN"
  ],
  [
+  "pvg_airside",
+  "Shanghai Pudong International Airport aircraft apron",
+  6,
+  "CN"
+ ],
+ [
+  "pvg_aerial",
+  "Shanghai Pudong International Airport aerial view",
+  6,
+  "CN"
+ ],
+ [
   "can_terminal",
   "Guangzhou Baiyun International Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "can_airside",
+  "Guangzhou Baiyun International Airport aircraft apron",
+  6,
+  "CN"
+ ],
+ [
+  "can_aerial",
+  "Guangzhou Baiyun International Airport aerial view",
   6,
   "CN"
  ],
@@ -102,8 +294,32 @@
   "ES"
  ],
  [
+  "mad_airside",
+  "Madrid Barajas International Airport aircraft apron",
+  6,
+  "ES"
+ ],
+ [
+  "mad_aerial",
+  "Madrid Barajas International Airport aerial view",
+  6,
+  "ES"
+ ],
+ [
   "icn_terminal",
   "Incheon International Airport terminal",
+  6,
+  "KR"
+ ],
+ [
+  "icn_airside",
+  "Incheon International Airport aircraft apron",
+  6,
+  "KR"
+ ],
+ [
+  "icn_aerial",
+  "Incheon International Airport aerial view",
   6,
   "KR"
  ],
@@ -114,8 +330,32 @@
   "SG"
  ],
  [
+  "sin_airside",
+  "Singapore Changi International Airport aircraft apron",
+  6,
+  "SG"
+ ],
+ [
+  "sin_aerial",
+  "Singapore Changi International Airport aerial view",
+  6,
+  "SG"
+ ],
+ [
   "pek_terminal",
   "Beijing Capital International Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "pek_airside",
+  "Beijing Capital International Airport aircraft apron",
+  6,
+  "CN"
+ ],
+ [
+  "pek_aerial",
+  "Beijing Capital International Airport aerial view",
   6,
   "CN"
  ],
@@ -126,8 +366,32 @@
   "US"
  ],
  [
+  "mia_airside",
+  "Miami International Airport aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "mia_aerial",
+  "Miami International Airport aerial view",
+  6,
+  "US"
+ ],
+ [
   "hkg_terminal",
   "Chek Lap Kok International Airport terminal",
+  6,
+  "HK"
+ ],
+ [
+  "hkg_airside",
+  "Chek Lap Kok International Airport aircraft apron",
+  6,
+  "HK"
+ ],
+ [
+  "hkg_aerial",
+  "Chek Lap Kok International Airport aerial view",
   6,
   "HK"
  ],
@@ -138,8 +402,32 @@
   "US"
  ],
  [
+  "sfo_airside",
+  "San Francisco International Airport aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "sfo_aerial",
+  "San Francisco International Airport aerial view",
+  6,
+  "US"
+ ],
+ [
   "bcn_terminal",
   "Barcelona International Airport terminal",
+  6,
+  "ES"
+ ],
+ [
+  "bcn_airside",
+  "Barcelona International Airport aircraft apron",
+  6,
+  "ES"
+ ],
+ [
+  "bcn_aerial",
+  "Barcelona International Airport aerial view",
   6,
   "ES"
  ],
@@ -150,8 +438,32 @@
   "MY"
  ],
  [
+  "kul_airside",
+  "Kuala Lumpur International Airport aircraft apron",
+  6,
+  "MY"
+ ],
+ [
+  "kul_aerial",
+  "Kuala Lumpur International Airport aerial view",
+  6,
+  "MY"
+ ],
+ [
   "fco_terminal",
   "Leonardo Da Vinci (Fiumicino) International Airport terminal",
+  6,
+  "IT"
+ ],
+ [
+  "fco_airside",
+  "Leonardo Da Vinci (Fiumicino) International Airport aircraft apron",
+  6,
+  "IT"
+ ],
+ [
+  "fco_aerial",
+  "Leonardo Da Vinci (Fiumicino) International Airport aerial view",
   6,
   "IT"
  ],
@@ -162,8 +474,32 @@
   "TH"
  ],
  [
+  "bkk_airside",
+  "Suvarnabhumi Airport aircraft apron",
+  6,
+  "TH"
+ ],
+ [
+  "bkk_aerial",
+  "Suvarnabhumi Airport aerial view",
+  6,
+  "TH"
+ ],
+ [
   "yyz_terminal",
   "Toronto Pearson International Airport terminal",
+  6,
+  "CA"
+ ],
+ [
+  "yyz_airside",
+  "Toronto Pearson International Airport aircraft apron",
+  6,
+  "CA"
+ ],
+ [
+  "yyz_aerial",
+  "Toronto Pearson International Airport aerial view",
   6,
   "CA"
  ],
@@ -174,8 +510,32 @@
   "QA"
  ],
  [
+  "doh_airside",
+  "Hamad International Airport aircraft apron",
+  6,
+  "QA"
+ ],
+ [
+  "doh_aerial",
+  "Hamad International Airport aerial view",
+  6,
+  "QA"
+ ],
+ [
   "szx_terminal",
   "Shenzhen Bao'an International Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "szx_airside",
+  "Shenzhen Bao'an International Airport aircraft apron",
+  6,
+  "CN"
+ ],
+ [
+  "szx_aerial",
+  "Shenzhen Bao'an International Airport aerial view",
   6,
   "CN"
  ],
@@ -186,8 +546,32 @@
   "US"
  ],
  [
+  "mco_airside",
+  "Orlando International Airport aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "mco_aerial",
+  "Orlando International Airport aerial view",
+  6,
+  "US"
+ ],
+ [
   "sea_terminal",
   "Seattle-Tacoma International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "sea_airside",
+  "Seattle-Tacoma International Airport aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "sea_aerial",
+  "Seattle-Tacoma International Airport aerial view",
   6,
   "US"
  ],
@@ -198,8 +582,32 @@
   "US"
  ],
  [
+  "iah_airside",
+  "George Bush Intcntl Houston Airport aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "iah_aerial",
+  "George Bush Intcntl Houston Airport aerial view",
+  6,
+  "US"
+ ],
+ [
   "bom_terminal",
   "Chhatrapati Shivaji International Airport terminal",
+  6,
+  "IN"
+ ],
+ [
+  "bom_airside",
+  "Chhatrapati Shivaji International Airport aircraft apron",
+  6,
+  "IN"
+ ],
+ [
+  "bom_aerial",
+  "Chhatrapati Shivaji International Airport aerial view",
   6,
   "IN"
  ],
@@ -210,8 +618,32 @@
   "US"
  ],
  [
+  "ewr_airside",
+  "Newark Liberty International Airport aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "ewr_aerial",
+  "Newark Liberty International Airport aerial view",
+  6,
+  "US"
+ ],
+ [
   "mnl_terminal",
   "Ninoy Aquino International Airport terminal",
+  6,
+  "PH"
+ ],
+ [
+  "mnl_airside",
+  "Ninoy Aquino International Airport aircraft apron",
+  6,
+  "PH"
+ ],
+ [
+  "mnl_aerial",
+  "Ninoy Aquino International Airport aerial view",
   6,
   "PH"
  ],
@@ -222,8 +654,32 @@
   "EG"
  ],
  [
+  "cai_airside",
+  "Cairo International Airport aircraft apron",
+  6,
+  "EG"
+ ],
+ [
+  "cai_aerial",
+  "Cairo International Airport aerial view",
+  6,
+  "EG"
+ ],
+ [
   "jed_terminal",
   "King Abdulaziz International Airport terminal",
+  6,
+  "SA"
+ ],
+ [
+  "jed_airside",
+  "King Abdulaziz International Airport aircraft apron",
+  6,
+  "SA"
+ ],
+ [
+  "jed_aerial",
+  "King Abdulaziz International Airport aerial view",
   6,
   "SA"
  ],
@@ -234,8 +690,32 @@
   "US"
  ],
  [
+  "clt_airside",
+  "Charlotte Douglas International Airport aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "clt_aerial",
+  "Charlotte Douglas International Airport aerial view",
+  6,
+  "US"
+ ],
+ [
   "cgk_terminal",
   "Soekarno-Hatta International Airport terminal",
+  6,
+  "ID"
+ ],
+ [
+  "cgk_airside",
+  "Soekarno-Hatta International Airport aircraft apron",
+  6,
+  "ID"
+ ],
+ [
+  "cgk_aerial",
+  "Soekarno-Hatta International Airport aerial view",
   6,
   "ID"
  ],
@@ -246,8 +726,32 @@
   "US"
  ],
  [
+  "bos_airside",
+  "General Edward Lawrence Logan International Airport aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "bos_aerial",
+  "General Edward Lawrence Logan International Airport aerial view",
+  6,
+  "US"
+ ],
+ [
   "mex_terminal",
   "Licenciado Benito Juarez International Airport terminal",
+  6,
+  "MX"
+ ],
+ [
+  "mex_airside",
+  "Licenciado Benito Juarez International Airport aircraft apron",
+  6,
+  "MX"
+ ],
+ [
+  "mex_aerial",
+  "Licenciado Benito Juarez International Airport aerial view",
   6,
   "MX"
  ],
@@ -258,8 +762,32 @@
   "TW"
  ],
  [
+  "tpe_airside",
+  "Taiwan Taoyuan International Airport aircraft apron",
+  6,
+  "TW"
+ ],
+ [
+  "tpe_aerial",
+  "Taiwan Taoyuan International Airport aerial view",
+  6,
+  "TW"
+ ],
+ [
   "muc_terminal",
   "Munich International Airport terminal",
+  6,
+  "DE"
+ ],
+ [
+  "muc_airside",
+  "Munich International Airport aircraft apron",
+  6,
+  "DE"
+ ],
+ [
+  "muc_aerial",
+  "Munich International Airport aerial view",
   6,
   "DE"
  ],
@@ -270,8 +798,32 @@
   "TR"
  ],
  [
+  "saw_airside",
+  "Sabiha Gokcen International Airport aircraft apron",
+  6,
+  "TR"
+ ],
+ [
+  "saw_aerial",
+  "Sabiha Gokcen International Airport aerial view",
+  6,
+  "TR"
+ ],
+ [
   "phx_terminal",
   "Phoenix Sky Harbor International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "phx_airside",
+  "Phoenix Sky Harbor International Airport aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "phx_aerial",
+  "Phoenix Sky Harbor International Airport aerial view",
   6,
   "US"
  ],
@@ -282,8 +834,32 @@
   "US"
  ],
  [
+  "las_airside",
+  "Harry Reid International Airport aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "las_aerial",
+  "Harry Reid International Airport aerial view",
+  6,
+  "US"
+ ],
+ [
   "gru_terminal",
   "Guarulhos - Governador Andre Franco Montoro International Airport terminal",
+  6,
+  "BR"
+ ],
+ [
+  "gru_airside",
+  "Guarulhos - Governador Andre Franco Montoro International Airport aircraft apron",
+  6,
+  "BR"
+ ],
+ [
+  "gru_aerial",
+  "Guarulhos - Governador Andre Franco Montoro International Airport aerial view",
   6,
   "BR"
  ],
@@ -294,8 +870,32 @@
   "CO"
  ],
  [
+  "bog_airside",
+  "El Dorado International Airport aircraft apron",
+  6,
+  "CO"
+ ],
+ [
+  "bog_aerial",
+  "El Dorado International Airport aerial view",
+  6,
+  "CO"
+ ],
+ [
   "syd_terminal",
   "Sydney Kingsford Smith International Airport terminal",
+  6,
+  "AU"
+ ],
+ [
+  "syd_airside",
+  "Sydney Kingsford Smith International Airport aircraft apron",
+  6,
+  "AU"
+ ],
+ [
+  "syd_aerial",
+  "Sydney Kingsford Smith International Airport aerial view",
   6,
   "AU"
  ],
@@ -306,8 +906,32 @@
   "CN"
  ],
  [
+  "pkx_airside",
+  "Beijing Daxing International Airport aircraft apron",
+  6,
+  "CN"
+ ],
+ [
+  "pkx_aerial",
+  "Beijing Daxing International Airport aerial view",
+  6,
+  "CN"
+ ],
+ [
   "ruh_terminal",
   "King Khaled International Airport terminal",
+  6,
+  "SA"
+ ],
+ [
+  "ruh_airside",
+  "King Khaled International Airport aircraft apron",
+  6,
+  "SA"
+ ],
+ [
+  "ruh_aerial",
+  "King Khaled International Airport aerial view",
   6,
   "SA"
  ],
@@ -318,8 +942,32 @@
   "GB"
  ],
  [
+  "lgw_airside",
+  "London Gatwick Airport aircraft apron",
+  6,
+  "GB"
+ ],
+ [
+  "lgw_aerial",
+  "London Gatwick Airport aerial view",
+  6,
+  "GB"
+ ],
+ [
   "sha_terminal",
   "Shanghai Hongqiao International Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "sha_airside",
+  "Shanghai Hongqiao International Airport aircraft apron",
+  6,
+  "CN"
+ ],
+ [
+  "sha_aerial",
+  "Shanghai Hongqiao International Airport aerial view",
   6,
   "CN"
  ],
@@ -330,8 +978,32 @@
   "RU"
  ],
  [
+  "svo_airside",
+  "Sheremetyevo International Airport aircraft apron",
+  6,
+  "RU"
+ ],
+ [
+  "svo_aerial",
+  "Sheremetyevo International Airport aerial view",
+  6,
+  "RU"
+ ],
+ [
   "tfu_terminal",
   "Chengdu Tianfu Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "tfu_airside",
+  "Chengdu Tianfu Airport aircraft apron",
+  6,
+  "CN"
+ ],
+ [
+  "tfu_aerial",
+  "Chengdu Tianfu Airport aerial view",
   6,
   "CN"
  ],
@@ -342,8 +1014,32 @@
   "IE"
  ],
  [
+  "dub_airside",
+  "Dublin Airport aircraft apron",
+  6,
+  "IE"
+ ],
+ [
+  "dub_aerial",
+  "Dublin Airport aerial view",
+  6,
+  "IE"
+ ],
+ [
   "nrt_terminal",
   "Narita International Airport terminal",
+  6,
+  "JP"
+ ],
+ [
+  "nrt_airside",
+  "Narita International Airport aircraft apron",
+  6,
+  "JP"
+ ],
+ [
+  "nrt_aerial",
+  "Narita International Airport aerial view",
   6,
   "JP"
  ],
@@ -354,8 +1050,32 @@
   "IN"
  ],
  [
+  "blr_airside",
+  "Bengaluru International Airport aircraft apron",
+  6,
+  "IN"
+ ],
+ [
+  "blr_aerial",
+  "Bengaluru International Airport aerial view",
+  6,
+  "IN"
+ ],
+ [
   "hgh_terminal",
   "Hangzhou Xiaoshan International Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "hgh_airside",
+  "Hangzhou Xiaoshan International Airport aircraft apron",
+  6,
+  "CN"
+ ],
+ [
+  "hgh_aerial",
+  "Hangzhou Xiaoshan International Airport aerial view",
   6,
   "CN"
  ],
@@ -366,8 +1086,32 @@
   "GR"
  ],
  [
+  "ath_airside",
+  "Eleftherios Venizelos International Airport aircraft apron",
+  6,
+  "GR"
+ ],
+ [
+  "ath_aerial",
+  "Eleftherios Venizelos International Airport aerial view",
+  6,
+  "GR"
+ ],
+ [
   "ory_terminal",
   "Paris-Orly Airport terminal",
+  6,
+  "FR"
+ ],
+ [
+  "ory_airside",
+  "Paris-Orly Airport aircraft apron",
+  6,
+  "FR"
+ ],
+ [
+  "ory_aerial",
+  "Paris-Orly Airport aerial view",
   6,
   "FR"
  ],
@@ -378,8 +1122,32 @@
   "AE"
  ],
  [
+  "auh_airside",
+  "Abu Dhabi International Airport aircraft apron",
+  6,
+  "AE"
+ ],
+ [
+  "auh_aerial",
+  "Abu Dhabi International Airport aerial view",
+  6,
+  "AE"
+ ],
+ [
   "lis_terminal",
   "Lisbon Portela Airport terminal",
+  6,
+  "PT"
+ ],
+ [
+  "lis_airside",
+  "Lisbon Portela Airport aircraft apron",
+  6,
+  "PT"
+ ],
+ [
+  "lis_aerial",
+  "Lisbon Portela Airport aerial view",
   6,
   "PT"
  ],
@@ -390,8 +1158,32 @@
   "ES"
  ],
  [
+  "pmi_airside",
+  "Palma De Mallorca Airport aircraft apron",
+  6,
+  "ES"
+ ],
+ [
+  "pmi_aerial",
+  "Palma De Mallorca Airport aerial view",
+  6,
+  "ES"
+ ],
+ [
   "iad_terminal",
   "Washington Dulles International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "iad_airside",
+  "Washington Dulles International Airport aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "iad_aerial",
+  "Washington Dulles International Airport aerial view",
   6,
   "US"
  ],
@@ -402,8 +1194,32 @@
   "IT"
  ],
  [
+  "mxp_airside",
+  "Malpensa International Airport aircraft apron",
+  6,
+  "IT"
+ ],
+ [
+  "mxp_aerial",
+  "Malpensa International Airport aerial view",
+  6,
+  "IT"
+ ],
+ [
   "cph_terminal",
   "Copenhagen Kastrup Airport terminal",
+  6,
+  "DK"
+ ],
+ [
+  "cph_airside",
+  "Copenhagen Kastrup Airport aircraft apron",
+  6,
+  "DK"
+ ],
+ [
+  "cph_aerial",
+  "Copenhagen Kastrup Airport aerial view",
   6,
   "DK"
  ],
@@ -414,8 +1230,32 @@
   "CN"
  ],
  [
+  "ckg_airside",
+  "Chongqing Jiangbei International Airport aircraft apron",
+  6,
+  "CN"
+ ],
+ [
+  "ckg_aerial",
+  "Chongqing Jiangbei International Airport aerial view",
+  6,
+  "CN"
+ ],
+ [
   "sgn_terminal",
   "Tan Son Nhat International Airport terminal",
+  6,
+  "VN"
+ ],
+ [
+  "sgn_airside",
+  "Tan Son Nhat International Airport aircraft apron",
+  6,
+  "VN"
+ ],
+ [
+  "sgn_aerial",
+  "Tan Son Nhat International Airport aerial view",
   6,
   "VN"
  ],
@@ -426,8 +1266,32 @@
   "CH"
  ],
  [
+  "zrh_airside",
+  "Zurich Airport aircraft apron",
+  6,
+  "CH"
+ ],
+ [
+  "zrh_aerial",
+  "Zurich Airport aerial view",
+  6,
+  "CH"
+ ],
+ [
   "xiy_terminal",
   "Xi'an Xianyang International Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "xiy_airside",
+  "Xi'an Xianyang International Airport aircraft apron",
+  6,
+  "CN"
+ ],
+ [
+  "xiy_aerial",
+  "Xi'an Xianyang International Airport aerial view",
   6,
   "CN"
  ],
@@ -438,8 +1302,32 @@
   "AU"
  ],
  [
+  "mel_airside",
+  "Melbourne International Airport aircraft apron",
+  6,
+  "AU"
+ ],
+ [
+  "mel_aerial",
+  "Melbourne International Airport aerial view",
+  6,
+  "AU"
+ ],
+ [
   "phl_terminal",
   "Philadelphia International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "phl_airside",
+  "Philadelphia International Airport aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "phl_aerial",
+  "Philadelphia International Airport aerial view",
   6,
   "US"
  ],
@@ -450,8 +1338,32 @@
   "TR"
  ],
  [
+  "ayt_airside",
+  "Antalya International Airport aircraft apron",
+  6,
+  "TR"
+ ],
+ [
+  "ayt_aerial",
+  "Antalya International Airport aerial view",
+  6,
+  "TR"
+ ],
+ [
   "kmg_terminal",
   "Kunming Wujiaba International Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "kmg_airside",
+  "Kunming Wujiaba International Airport aircraft apron",
+  6,
+  "CN"
+ ],
+ [
+  "kmg_aerial",
+  "Kunming Wujiaba International Airport aerial view",
   6,
   "CN"
  ],
@@ -462,8 +1374,32 @@
   "US"
  ],
  [
+  "msp_airside",
+  "Minneapolis-St Paul International Wold-Chamberlain Airport aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "msp_aerial",
+  "Minneapolis-St Paul International Wold-Chamberlain Airport aerial view",
+  6,
+  "US"
+ ],
+ [
   "vie_terminal",
   "Vienna International Airport terminal",
+  6,
+  "AT"
+ ],
+ [
+  "vie_airside",
+  "Vienna International Airport aircraft apron",
+  6,
+  "AT"
+ ],
+ [
+  "vie_aerial",
+  "Vienna International Airport aerial view",
   6,
   "AT"
  ],
@@ -474,8 +1410,32 @@
   "MX"
  ],
  [
+  "cun_airside",
+  "Cancun International Airport aircraft apron",
+  6,
+  "MX"
+ ],
+ [
+  "cun_aerial",
+  "Cancun International Airport aerial view",
+  6,
+  "MX"
+ ],
+ [
   "man_terminal",
   "Manchester Airport terminal",
+  6,
+  "GB"
+ ],
+ [
+  "man_airside",
+  "Manchester Airport aircraft apron",
+  6,
+  "GB"
+ ],
+ [
+  "man_aerial",
+  "Manchester Airport aerial view",
   6,
   "GB"
  ],
@@ -486,8 +1446,32 @@
   "US"
  ],
  [
+  "dtw_airside",
+  "Detroit Metro Wayne County Airport aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "dtw_aerial",
+  "Detroit Metro Wayne County Airport aerial view",
+  6,
+  "US"
+ ],
+ [
   "han_terminal",
   "Noi Bai International Airport terminal",
+  6,
+  "VN"
+ ],
+ [
+  "han_airside",
+  "Noi Bai International Airport aircraft apron",
+  6,
+  "VN"
+ ],
+ [
+  "han_aerial",
+  "Noi Bai International Airport aerial view",
   6,
   "VN"
  ],
@@ -498,8 +1482,32 @@
   "CA"
  ],
  [
+  "yvr_airside",
+  "Vancouver International Airport aircraft apron",
+  6,
+  "CA"
+ ],
+ [
+  "yvr_aerial",
+  "Vancouver International Airport aerial view",
+  6,
+  "CA"
+ ],
+ [
   "lga_terminal",
   "Laguardia Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "lga_airside",
+  "Laguardia Airport aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "lga_aerial",
+  "Laguardia Airport aerial view",
   6,
   "US"
  ],
@@ -510,8 +1518,32 @@
   "IL"
  ],
  [
+  "tlv_airside",
+  "Ben Gurion International Airport aircraft apron",
+  6,
+  "IL"
+ ],
+ [
+  "tlv_aerial",
+  "Ben Gurion International Airport aerial view",
+  6,
+  "IL"
+ ],
+ [
   "stn_terminal",
   "London Stansted Airport terminal",
+  6,
+  "GB"
+ ],
+ [
+  "stn_airside",
+  "London Stansted Airport aircraft apron",
+  6,
+  "GB"
+ ],
+ [
+  "stn_aerial",
+  "London Stansted Airport aerial view",
   6,
   "GB"
  ],
@@ -522,8 +1554,32 @@
   "CA"
  ],
  [
+  "yul_airside",
+  "Montr\u00e9al-Pierre Elliott Trudeau International Airport aircraft apron",
+  6,
+  "CA"
+ ],
+ [
+  "yul_aerial",
+  "Montr\u00e9al-Pierre Elliott Trudeau International Airport aerial view",
+  6,
+  "CA"
+ ],
+ [
   "hyd_terminal",
   "Rajiv Gandhi International Airport Shamshabad terminal",
+  6,
+  "IN"
+ ],
+ [
+  "hyd_airside",
+  "Rajiv Gandhi International Airport Shamshabad aircraft apron",
+  6,
+  "IN"
+ ],
+ [
+  "hyd_aerial",
+  "Rajiv Gandhi International Airport Shamshabad aerial view",
   6,
   "IN"
  ],
@@ -534,8 +1590,32 @@
   "BE"
  ],
  [
+  "bru_airside",
+  "Brussels Airport aircraft apron",
+  6,
+  "BE"
+ ],
+ [
+  "bru_aerial",
+  "Brussels Airport aerial view",
+  6,
+  "BE"
+ ],
+ [
   "osl_terminal",
   "Oslo Gardermoen Airport terminal",
+  6,
+  "NO"
+ ],
+ [
+  "osl_airside",
+  "Oslo Gardermoen Airport aircraft apron",
+  6,
+  "NO"
+ ],
+ [
+  "osl_aerial",
+  "Oslo Gardermoen Airport aerial view",
   6,
   "NO"
  ],
@@ -546,8 +1626,32 @@
   "CN"
  ],
  [
+  "urc_airside",
+  "Urumqi Diwopu International Airport aircraft apron",
+  6,
+  "CN"
+ ],
+ [
+  "urc_aerial",
+  "Urumqi Diwopu International Airport aerial view",
+  6,
+  "CN"
+ ],
+ [
   "ctu_terminal",
   "Chengdu Shuangliu International Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "ctu_airside",
+  "Chengdu Shuangliu International Airport aircraft apron",
+  6,
+  "CN"
+ ],
+ [
+  "ctu_aerial",
+  "Chengdu Shuangliu International Airport aerial view",
   6,
   "CN"
  ],
@@ -558,8 +1662,32 @@
   "US"
  ],
  [
+  "bna_airside",
+  "Nashville International Airport aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "bna_aerial",
+  "Nashville International Airport aerial view",
+  6,
+  "US"
+ ],
+ [
   "san_terminal",
   "San Diego International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "san_airside",
+  "San Diego International Airport aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "san_aerial",
+  "San Diego International Airport aerial view",
   6,
   "US"
  ],
@@ -570,8 +1698,32 @@
   "JP"
  ],
  [
+  "kix_airside",
+  "Kansai International Airport aircraft apron",
+  6,
+  "JP"
+ ],
+ [
+  "kix_aerial",
+  "Kansai International Airport aerial view",
+  6,
+  "JP"
+ ],
+ [
   "agp_terminal",
   "Malaga Airport terminal",
+  6,
+  "ES"
+ ],
+ [
+  "agp_airside",
+  "Malaga Airport aircraft apron",
+  6,
+  "ES"
+ ],
+ [
+  "agp_aerial",
+  "Malaga Airport aerial view",
   6,
   "ES"
  ],
@@ -582,8 +1734,32 @@
   "PE"
  ],
  [
+  "lim_airside",
+  "Jorge Chavez International Airport aircraft apron",
+  6,
+  "PE"
+ ],
+ [
+  "lim_aerial",
+  "Jorge Chavez International Airport aerial view",
+  6,
+  "PE"
+ ],
+ [
   "fll_terminal",
   "Fort Lauderdale Hollywood International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "fll_airside",
+  "Fort Lauderdale Hollywood International Airport aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "fll_aerial",
+  "Fort Lauderdale Hollywood International Airport aerial view",
   6,
   "US"
  ],
@@ -594,8 +1770,32 @@
   "US"
  ],
  [
+  "slc_airside",
+  "Salt Lake City International Airport aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "slc_aerial",
+  "Salt Lake City International Airport aerial view",
+  6,
+  "US"
+ ],
+ [
   "add_terminal",
   "Bole International Airport terminal",
+  6,
+  "ET"
+ ],
+ [
+  "add_airside",
+  "Bole International Airport aircraft apron",
+  6,
+  "ET"
+ ],
+ [
+  "add_aerial",
+  "Bole International Airport aerial view",
   6,
   "ET"
  ],
@@ -606,8 +1806,32 @@
   "DE"
  ],
  [
+  "ber_airside",
+  "Berlin Brandenburg Airport aircraft apron",
+  6,
+  "DE"
+ ],
+ [
+  "ber_aerial",
+  "Berlin Brandenburg Airport aerial view",
+  6,
+  "DE"
+ ],
+ [
   "arn_terminal",
   "Stockholm-Arlanda Airport terminal",
+  6,
+  "SE"
+ ],
+ [
+  "arn_airside",
+  "Stockholm-Arlanda Airport aircraft apron",
+  6,
+  "SE"
+ ],
+ [
+  "arn_aerial",
+  "Stockholm-Arlanda Airport aerial view",
   6,
   "SE"
  ],
@@ -618,8 +1842,32 @@
   "US"
  ],
  [
+  "bwi_airside",
+  "Baltimore Washington International Thurgood Marshall Airport aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "bwi_aerial",
+  "Baltimore Washington International Thurgood Marshall Airport aerial view",
+  6,
+  "US"
+ ],
+ [
   "dps_terminal",
   "Ngurah Rai (Bali) International Airport terminal",
+  6,
+  "ID"
+ ],
+ [
+  "dps_airside",
+  "Ngurah Rai (Bali) International Airport aircraft apron",
+  6,
+  "ID"
+ ],
+ [
+  "dps_aerial",
+  "Ngurah Rai (Bali) International Airport aerial view",
   6,
   "ID"
  ],
@@ -630,8 +1878,32 @@
   "JP"
  ],
  [
+  "fuk_airside",
+  "Fukuoka Airport aircraft apron",
+  6,
+  "JP"
+ ],
+ [
+  "fuk_aerial",
+  "Fukuoka Airport aerial view",
+  6,
+  "JP"
+ ],
+ [
   "bne_terminal",
   "Brisbane International Airport terminal",
+  6,
+  "AU"
+ ],
+ [
+  "bne_airside",
+  "Brisbane International Airport aircraft apron",
+  6,
+  "AU"
+ ],
+ [
+  "bne_aerial",
+  "Brisbane International Airport aerial view",
   6,
   "AU"
  ],
@@ -642,8 +1914,32 @@
   "PA"
  ],
  [
+  "pty_airside",
+  "Tocumen International Airport aircraft apron",
+  6,
+  "PA"
+ ],
+ [
+  "pty_aerial",
+  "Tocumen International Airport aerial view",
+  6,
+  "PA"
+ ],
+ [
   "wuh_terminal",
   "Wuhan Tianhe International Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "wuh_airside",
+  "Wuhan Tianhe International Airport aircraft apron",
+  6,
+  "CN"
+ ],
+ [
+  "wuh_aerial",
+  "Wuhan Tianhe International Airport aerial view",
   6,
   "CN"
  ],
@@ -654,8 +1950,32 @@
   "US"
  ],
  [
+  "dca_airside",
+  "Ronald Reagan Washington Ntl Airport aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "dca_aerial",
+  "Ronald Reagan Washington Ntl Airport aerial view",
+  6,
+  "US"
+ ],
+ [
   "dmk_terminal",
   "Don Mueang International Airport terminal",
+  6,
+  "TH"
+ ],
+ [
+  "dmk_airside",
+  "Don Mueang International Airport aircraft apron",
+  6,
+  "TH"
+ ],
+ [
+  "dmk_aerial",
+  "Don Mueang International Airport aerial view",
   6,
   "TH"
  ],
@@ -666,8 +1986,32 @@
   "CN"
  ],
  [
+  "nkg_airside",
+  "Nanjing Lukou Airport aircraft apron",
+  6,
+  "CN"
+ ],
+ [
+  "nkg_aerial",
+  "Nanjing Lukou Airport aerial view",
+  6,
+  "CN"
+ ],
+ [
   "xmn_terminal",
   "Xiamen Gaoqi International Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "xmn_airside",
+  "Xiamen Gaoqi International Airport aircraft apron",
+  6,
+  "CN"
+ ],
+ [
+  "xmn_aerial",
+  "Xiamen Gaoqi International Airport aerial view",
   6,
   "CN"
  ],
@@ -678,8 +2022,32 @@
   "US"
  ],
  [
+  "tpa_airside",
+  "Tampa International Airport aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "tpa_aerial",
+  "Tampa International Airport aerial view",
+  6,
+  "US"
+ ],
+ [
   "waw_terminal",
   "Warsaw Chopin Airport terminal",
+  6,
+  "PL"
+ ],
+ [
+  "waw_airside",
+  "Warsaw Chopin Airport aircraft apron",
+  6,
+  "PL"
+ ],
+ [
+  "waw_aerial",
+  "Warsaw Chopin Airport aerial view",
   6,
   "PL"
  ],
@@ -690,8 +2058,32 @@
   "US"
  ],
  [
+  "aus_airside",
+  "Austin-Bergstrom International Airport aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "aus_aerial",
+  "Austin-Bergstrom International Airport aerial view",
+  6,
+  "US"
+ ],
+ [
   "scl_terminal",
   "Comodoro Arturo Merino Benitez International Airport terminal",
+  6,
+  "CL"
+ ],
+ [
+  "scl_airside",
+  "Comodoro Arturo Merino Benitez International Airport aircraft apron",
+  6,
+  "CL"
+ ],
+ [
+  "scl_aerial",
+  "Comodoro Arturo Merino Benitez International Airport aerial view",
   6,
   "CL"
  ],
@@ -702,8 +2094,32 @@
   "CN"
  ],
  [
+  "tao_airside",
+  "Qingdao Jiaodong Airport aircraft apron",
+  6,
+  "CN"
+ ],
+ [
+  "tao_aerial",
+  "Qingdao Jiaodong Airport aerial view",
+  6,
+  "CN"
+ ],
+ [
   "csx_terminal",
   "Changsha Huanghua Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "csx_airside",
+  "Changsha Huanghua Airport aircraft apron",
+  6,
+  "CN"
+ ],
+ [
+  "csx_aerial",
+  "Changsha Huanghua Airport aerial view",
   6,
   "CN"
  ],
@@ -714,8 +2130,32 @@
   "HU"
  ],
  [
+  "bud_airside",
+  "Budapest Ferenc Liszt International Airport aircraft apron",
+  6,
+  "HU"
+ ],
+ [
+  "bud_aerial",
+  "Budapest Ferenc Liszt International Airport aerial view",
+  6,
+  "HU"
+ ],
+ [
   "cgh_terminal",
   "Congonhas Airport terminal",
+  6,
+  "BR"
+ ],
+ [
+  "cgh_airside",
+  "Congonhas Airport aircraft apron",
+  6,
+  "BR"
+ ],
+ [
+  "cgh_aerial",
+  "Congonhas Airport aerial view",
   6,
   "BR"
  ],
@@ -726,8 +2166,32 @@
   "US"
  ],
  [
+  "hnl_airside",
+  "Daniel K Inouye International Airport aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "hnl_aerial",
+  "Daniel K Inouye International Airport aerial view",
+  6,
+  "US"
+ ],
+ [
   "jnb_terminal",
   "O. R. Tambo International Airport terminal",
+  6,
+  "ZA"
+ ],
+ [
+  "jnb_airside",
+  "O. R. Tambo International Airport aircraft apron",
+  6,
+  "ZA"
+ ],
+ [
+  "jnb_aerial",
+  "O. R. Tambo International Airport aerial view",
   6,
   "ZA"
  ],
@@ -738,8 +2202,32 @@
   "DE"
  ],
  [
+  "dus_airside",
+  "Dusseldorf International Airport aircraft apron",
+  6,
+  "DE"
+ ],
+ [
+  "dus_aerial",
+  "Dusseldorf International Airport aerial view",
+  6,
+  "DE"
+ ],
+ [
   "maa_terminal",
   "Chennai International Airport terminal",
+  6,
+  "IN"
+ ],
+ [
+  "maa_airside",
+  "Chennai International Airport aircraft apron",
+  6,
+  "IN"
+ ],
+ [
+  "maa_aerial",
+  "Chennai International Airport aerial view",
   6,
   "IN"
  ],
@@ -750,8 +2238,32 @@
   "CN"
  ],
  [
+  "cgo_airside",
+  "Xinzheng Airport aircraft apron",
+  6,
+  "CN"
+ ],
+ [
+  "cgo_aerial",
+  "Xinzheng Airport aerial view",
+  6,
+  "CN"
+ ],
+ [
   "cts_terminal",
   "New Chitose Airport terminal",
+  6,
+  "JP"
+ ],
+ [
+  "cts_airside",
+  "New Chitose Airport aircraft apron",
+  6,
+  "JP"
+ ],
+ [
+  "cts_aerial",
+  "New Chitose Airport aerial view",
   6,
   "JP"
  ],
@@ -762,8 +2274,32 @@
   "MX"
  ],
  [
+  "gdl_airside",
+  "Don Miguel Hidalgo Y Costilla International Airport aircraft apron",
+  6,
+  "MX"
+ ],
+ [
+  "gdl_aerial",
+  "Don Miguel Hidalgo Y Costilla International Airport aerial view",
+  6,
+  "MX"
+ ],
+ [
   "sju_terminal",
   "Luis Munoz Marin International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "sju_airside",
+  "Luis Munoz Marin International Airport aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "sju_aerial",
+  "Luis Munoz Marin International Airport aerial view",
   6,
   "US"
  ],
@@ -774,8 +2310,32 @@
   "CA"
  ],
  [
+  "yyc_airside",
+  "Calgary International Airport aircraft apron",
+  6,
+  "CA"
+ ],
+ [
+  "yyc_aerial",
+  "Calgary International Airport aerial view",
+  6,
+  "CA"
+ ],
+ [
   "alc_terminal",
   "Alicante International Airport terminal",
+  6,
+  "ES"
+ ],
+ [
+  "alc_airside",
+  "Alicante International Airport aircraft apron",
+  6,
+  "ES"
+ ],
+ [
+  "alc_aerial",
+  "Alicante International Airport aerial view",
   6,
   "ES"
  ],
@@ -786,8 +2346,32 @@
   "KR"
  ],
  [
+  "cju_airside",
+  "Jeju International Airport aircraft apron",
+  6,
+  "KR"
+ ],
+ [
+  "cju_aerial",
+  "Jeju International Airport aerial view",
+  6,
+  "KR"
+ ],
+ [
   "oka_terminal",
   "Naha Airport terminal",
+  6,
+  "JP"
+ ],
+ [
+  "oka_airside",
+  "Naha Airport aircraft apron",
+  6,
+  "JP"
+ ],
+ [
+  "oka_aerial",
+  "Naha Airport aerial view",
   6,
   "JP"
  ],
@@ -798,8 +2382,32 @@
   "FI"
  ],
  [
+  "hel_airside",
+  "Helsinki Vantaa Airport aircraft apron",
+  6,
+  "FI"
+ ],
+ [
+  "hel_aerial",
+  "Helsinki Vantaa Airport aerial view",
+  6,
+  "FI"
+ ],
+ [
   "led_terminal",
   "Pulkovo Airport terminal",
+  6,
+  "RU"
+ ],
+ [
+  "led_airside",
+  "Pulkovo Airport aircraft apron",
+  6,
+  "RU"
+ ],
+ [
+  "led_aerial",
+  "Pulkovo Airport aerial view",
   6,
   "RU"
  ],
@@ -810,8 +2418,32 @@
   "US"
  ],
  [
+  "mdw_airside",
+  "Chicago Midway International Airport aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "mdw_aerial",
+  "Chicago Midway International Airport aerial view",
+  6,
+  "US"
+ ],
+ [
   "ltn_terminal",
   "London Luton Airport terminal",
+  6,
+  "GB"
+ ],
+ [
+  "ltn_airside",
+  "London Luton Airport aircraft apron",
+  6,
+  "GB"
+ ],
+ [
+  "ltn_aerial",
+  "London Luton Airport aerial view",
   6,
   "GB"
  ],
@@ -822,8 +2454,32 @@
   "GB"
  ],
  [
+  "edi_airside",
+  "Edinburgh Airport aircraft apron",
+  6,
+  "GB"
+ ],
+ [
+  "edi_aerial",
+  "Edinburgh Airport aerial view",
+  6,
+  "GB"
+ ],
+ [
   "ccu_terminal",
   "Netaji Subhash Chandra Bose International Airport terminal",
+  6,
+  "IN"
+ ],
+ [
+  "ccu_airside",
+  "Netaji Subhash Chandra Bose International Airport aircraft apron",
+  6,
+  "IN"
+ ],
+ [
+  "ccu_aerial",
+  "Netaji Subhash Chandra Bose International Airport aerial view",
   6,
   "IN"
  ],
@@ -834,8 +2490,32 @@
   "FR"
  ],
  [
+  "nce_airside",
+  "Nice-Cote d'Azur Airport aircraft apron",
+  6,
+  "FR"
+ ],
+ [
+  "nce_aerial",
+  "Nice-Cote d'Azur Airport aerial view",
+  6,
+  "FR"
+ ],
+ [
   "pdx_terminal",
   "Portland International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "pdx_airside",
+  "Portland International Airport aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "pdx_aerial",
+  "Portland International Airport aerial view",
   6,
   "US"
  ],
@@ -846,8 +2526,32 @@
   "MA"
  ],
  [
+  "rak_airside",
+  "Menara Airport aircraft apron",
+  6,
+  "MA"
+ ],
+ [
+  "rak_aerial",
+  "Menara Airport aerial view",
+  6,
+  "MA"
+ ],
+ [
   "cmn_terminal",
   "Mohammed V International Airport terminal",
+  6,
+  "MA"
+ ],
+ [
+  "cmn_airside",
+  "Mohammed V International Airport aircraft apron",
+  6,
+  "MA"
+ ],
+ [
+  "cmn_aerial",
+  "Mohammed V International Airport aerial view",
   6,
   "MA"
  ],
@@ -858,8 +2562,32 @@
   "AE"
  ],
  [
+  "shj_airside",
+  "Sharjah International Airport aircraft apron",
+  6,
+  "AE"
+ ],
+ [
+  "shj_aerial",
+  "Sharjah International Airport aerial view",
+  6,
+  "AE"
+ ],
+ [
   "prg_terminal",
   "V\u00e1clav Havel Airport terminal",
+  6,
+  "CZ"
+ ],
+ [
+  "prg_airside",
+  "V\u00e1clav Havel Airport aircraft apron",
+  6,
+  "CZ"
+ ],
+ [
+  "prg_aerial",
+  "V\u00e1clav Havel Airport aerial view",
   6,
   "CZ"
  ],
@@ -870,8 +2598,32 @@
   "PT"
  ],
  [
+  "opo_airside",
+  "Francisco de S\u00e1 Carneiro Airport aircraft apron",
+  6,
+  "PT"
+ ],
+ [
+  "opo_aerial",
+  "Francisco de S\u00e1 Carneiro Airport aerial view",
+  6,
+  "PT"
+ ],
+ [
   "per_terminal",
   "Perth International Airport terminal",
+  6,
+  "AU"
+ ],
+ [
+  "per_airside",
+  "Perth International Airport aircraft apron",
+  6,
+  "AU"
+ ],
+ [
+  "per_aerial",
+  "Perth International Airport aerial view",
   6,
   "AU"
  ],
@@ -882,8 +2634,32 @@
   "CN"
  ],
  [
+  "hak_airside",
+  "Haikou Meilan International Airport aircraft apron",
+  6,
+  "CN"
+ ],
+ [
+  "hak_aerial",
+  "Haikou Meilan International Airport aerial view",
+  6,
+  "CN"
+ ],
+ [
   "akl_terminal",
   "Auckland International Airport terminal",
+  6,
+  "NZ"
+ ],
+ [
+  "akl_airside",
+  "Auckland International Airport aircraft apron",
+  6,
+  "NZ"
+ ],
+ [
+  "akl_aerial",
+  "Auckland International Airport aerial view",
   6,
   "NZ"
  ],
@@ -894,8 +2670,32 @@
   "CH"
  ],
  [
+  "gva_airside",
+  "Geneva Cointrin International Airport aircraft apron",
+  6,
+  "CH"
+ ],
+ [
+  "gva_aerial",
+  "Geneva Cointrin International Airport aerial view",
+  6,
+  "CH"
+ ],
+ [
   "dal_terminal",
   "Dallas Love Field terminal",
+  6,
+  "US"
+ ],
+ [
+  "dal_airside",
+  "Dallas Love Field aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "dal_aerial",
+  "Dallas Love Field aerial view",
   6,
   "US"
  ],
@@ -906,8 +2706,32 @@
   "CN"
  ],
  [
+  "she_airside",
+  "Taoxian Airport aircraft apron",
+  6,
+  "CN"
+ ],
+ [
+  "she_aerial",
+  "Taoxian Airport aerial view",
+  6,
+  "CN"
+ ],
+ [
   "kwe_terminal",
   "Longdongbao Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "kwe_airside",
+  "Longdongbao Airport aircraft apron",
+  6,
+  "CN"
+ ],
+ [
+  "kwe_aerial",
+  "Longdongbao Airport aerial view",
   6,
   "CN"
  ],
@@ -918,8 +2742,32 @@
   "US"
  ],
  [
+  "rdu_airside",
+  "Raleigh-Durham International Airport aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "rdu_aerial",
+  "Raleigh-Durham International Airport aerial view",
+  6,
+  "US"
+ ],
+ [
   "gig_terminal",
   "Galeao - Antonio Carlos Jobim International Airport terminal",
+  6,
+  "BR"
+ ],
+ [
+  "gig_airside",
+  "Galeao - Antonio Carlos Jobim International Airport aircraft apron",
+  6,
+  "BR"
+ ],
+ [
+  "gig_aerial",
+  "Galeao - Antonio Carlos Jobim International Airport aerial view",
   6,
   "BR"
  ],
@@ -930,8 +2778,32 @@
   "MX"
  ],
  [
+  "mty_airside",
+  "General Mariano Escobedo International Airport aircraft apron",
+  6,
+  "MX"
+ ],
+ [
+  "mty_aerial",
+  "General Mariano Escobedo International Airport aerial view",
+  6,
+  "MX"
+ ],
+ [
   "bgy_terminal",
   "Bergamo Orio Al Serio Airport terminal",
+  6,
+  "IT"
+ ],
+ [
+  "bgy_airside",
+  "Bergamo Orio Al Serio Airport aircraft apron",
+  6,
+  "IT"
+ ],
+ [
+  "bgy_aerial",
+  "Bergamo Orio Al Serio Airport aerial view",
   6,
   "IT"
  ],
@@ -942,8 +2814,32 @@
   "RU"
  ],
  [
+  "dme_airside",
+  "Domodedovo International Airport aircraft apron",
+  6,
+  "RU"
+ ],
+ [
+  "dme_aerial",
+  "Domodedovo International Airport aerial view",
+  6,
+  "RU"
+ ],
+ [
   "tna_terminal",
   "Yaoqiang Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "tna_airside",
+  "Yaoqiang Airport aircraft apron",
+  6,
+  "CN"
+ ],
+ [
+  "tna_aerial",
+  "Yaoqiang Airport aerial view",
   6,
   "CN"
  ],
@@ -954,8 +2850,32 @@
   "BD"
  ],
  [
+  "dac_airside",
+  "Dhaka Hazrat Shahjalal International Airport aircraft apron",
+  6,
+  "BD"
+ ],
+ [
+  "dac_aerial",
+  "Dhaka Hazrat Shahjalal International Airport aerial view",
+  6,
+  "BD"
+ ],
+ [
   "stl_terminal",
   "St Louis Lambert International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "stl_airside",
+  "St Louis Lambert International Airport aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "stl_aerial",
+  "St Louis Lambert International Airport aerial view",
   6,
   "US"
  ],
@@ -966,8 +2886,32 @@
   "RO"
  ],
  [
+  "otp_airside",
+  "Henri Coanda International Airport aircraft apron",
+  6,
+  "RO"
+ ],
+ [
+  "otp_aerial",
+  "Henri Coanda International Airport aerial view",
+  6,
+  "RO"
+ ],
+ [
   "dlc_terminal",
   "Zhoushuizi Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "dlc_airside",
+  "Zhoushuizi Airport aircraft apron",
+  6,
+  "CN"
+ ],
+ [
+  "dlc_aerial",
+  "Zhoushuizi Airport aerial view",
   6,
   "CN"
  ],
@@ -978,8 +2922,32 @@
   "IT"
  ],
  [
+  "nap_airside",
+  "Napoli Capodichino International Airport aircraft apron",
+  6,
+  "IT"
+ ],
+ [
+  "nap_aerial",
+  "Napoli Capodichino International Airport aerial view",
+  6,
+  "IT"
+ ],
+ [
   "gmp_terminal",
   "Gimpo International Airport terminal",
+  6,
+  "KR"
+ ],
+ [
+  "gmp_airside",
+  "Gimpo International Airport aircraft apron",
+  6,
+  "KR"
+ ],
+ [
+  "gmp_aerial",
+  "Gimpo International Airport aerial view",
   6,
   "KR"
  ],
@@ -990,8 +2958,32 @@
   "DO"
  ],
  [
+  "puj_airside",
+  "Punta Cana International Airport aircraft apron",
+  6,
+  "DO"
+ ],
+ [
+  "puj_aerial",
+  "Punta Cana International Airport aerial view",
+  6,
+  "DO"
+ ],
+ [
   "bsb_terminal",
   "Presidente Juscelino Kubistschek International Airport terminal",
+  6,
+  "BR"
+ ],
+ [
+  "bsb_airside",
+  "Presidente Juscelino Kubistschek International Airport aircraft apron",
+  6,
+  "BR"
+ ],
+ [
+  "bsb_aerial",
+  "Presidente Juscelino Kubistschek International Airport aerial view",
   6,
   "BR"
  ],
@@ -1002,8 +2994,32 @@
   "ID"
  ],
  [
+  "upg_airside",
+  "Hasanuddin International Airport aircraft apron",
+  6,
+  "ID"
+ ],
+ [
+  "upg_aerial",
+  "Hasanuddin International Airport aerial view",
+  6,
+  "ID"
+ ],
+ [
   "syx_terminal",
   "Sanya Phoenix International Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "syx_airside",
+  "Sanya Phoenix International Airport aircraft apron",
+  6,
+  "CN"
+ ],
+ [
+  "syx_aerial",
+  "Sanya Phoenix International Airport aerial view",
   6,
   "CN"
  ],
@@ -1014,8 +3030,32 @@
   "AR"
  ],
  [
+  "aep_airside",
+  "Jorge Newbery Airpark aircraft apron",
+  6,
+  "AR"
+ ],
+ [
+  "aep_aerial",
+  "Jorge Newbery Airpark aerial view",
+  6,
+  "AR"
+ ],
+ [
   "mct_terminal",
   "Muscat International Airport terminal",
+  6,
+  "OM"
+ ],
+ [
+  "mct_airside",
+  "Muscat International Airport aircraft apron",
+  6,
+  "OM"
+ ],
+ [
+  "mct_aerial",
+  "Muscat International Airport aerial view",
   6,
   "OM"
  ],
@@ -1026,8 +3066,32 @@
   "VN"
  ],
  [
+  "dad_airside",
+  "Da Nang International Airport aircraft apron",
+  6,
+  "VN"
+ ],
+ [
+  "dad_aerial",
+  "Da Nang International Airport aerial view",
+  6,
+  "VN"
+ ],
+ [
   "ham_terminal",
   "Hamburg Airport terminal",
+  6,
+  "DE"
+ ],
+ [
+  "ham_airside",
+  "Hamburg Airport aircraft apron",
+  6,
+  "DE"
+ ],
+ [
+  "ham_aerial",
+  "Hamburg Airport aerial view",
   6,
   "DE"
  ],
@@ -1038,8 +3102,32 @@
   "SA"
  ],
  [
+  "dmm_airside",
+  "King Fahd International Airport aircraft apron",
+  6,
+  "SA"
+ ],
+ [
+  "dmm_aerial",
+  "King Fahd International Airport aerial view",
+  6,
+  "SA"
+ ],
+ [
   "hrb_terminal",
   "Taiping Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "hrb_airside",
+  "Taiping Airport aircraft apron",
+  6,
+  "CN"
+ ],
+ [
+  "hrb_aerial",
+  "Taiping Airport aerial view",
   6,
   "CN"
  ],
@@ -1050,8 +3138,32 @@
   "UZ"
  ],
  [
+  "tas_airside",
+  "Tashkent International Airport aircraft apron",
+  6,
+  "UZ"
+ ],
+ [
+  "tas_aerial",
+  "Tashkent International Airport aerial view",
+  6,
+  "UZ"
+ ],
+ [
   "lhw_terminal",
   "Lanzhou Zhongchuan Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "lhw_airside",
+  "Lanzhou Zhongchuan Airport aircraft apron",
+  6,
+  "CN"
+ ],
+ [
+  "lhw_aerial",
+  "Lanzhou Zhongchuan Airport aerial view",
   6,
   "CN"
  ],
@@ -1062,8 +3174,32 @@
   "IT"
  ],
  [
+  "vce_airside",
+  "Venezia Tessera - Marco Polo Airport aircraft apron",
+  6,
+  "IT"
+ ],
+ [
+  "vce_aerial",
+  "Venezia Tessera - Marco Polo Airport aerial view",
+  6,
+  "IT"
+ ],
+ [
   "mrs_terminal",
   "Marseille Provence Airport terminal",
+  6,
+  "FR"
+ ],
+ [
+  "mrs_airside",
+  "Marseille Provence Airport aircraft apron",
+  6,
+  "FR"
+ ],
+ [
+  "mrs_aerial",
+  "Marseille Provence Airport aerial view",
   6,
   "FR"
  ],
@@ -1074,8 +3210,32 @@
   "DZ"
  ],
  [
+  "alg_airside",
+  "Houari Boumediene Airport aircraft apron",
+  6,
+  "DZ"
+ ],
+ [
+  "alg_aerial",
+  "Houari Boumediene Airport aerial view",
+  6,
+  "DZ"
+ ],
+ [
   "bhx_terminal",
   "Birmingham International Airport terminal",
+  6,
+  "GB"
+ ],
+ [
+  "bhx_airside",
+  "Birmingham International Airport aircraft apron",
+  6,
+  "GB"
+ ],
+ [
+  "bhx_aerial",
+  "Birmingham International Airport aerial view",
   6,
   "GB"
  ],
@@ -1086,8 +3246,32 @@
   "US"
  ],
  [
+  "hou_airside",
+  "William P Hobby Airport aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "hou_aerial",
+  "William P Hobby Airport aerial view",
+  6,
+  "US"
+ ],
+ [
   "itm_terminal",
   "Osaka International Airport terminal",
+  6,
+  "JP"
+ ],
+ [
+  "itm_airside",
+  "Osaka International Airport aircraft apron",
+  6,
+  "JP"
+ ],
+ [
+  "itm_aerial",
+  "Osaka International Airport aerial view",
   6,
   "JP"
  ],
@@ -1098,8 +3282,32 @@
   "RU"
  ],
  [
+  "vko_airside",
+  "Vnukovo International Airport aircraft apron",
+  6,
+  "RU"
+ ],
+ [
+  "vko_aerial",
+  "Vnukovo International Airport aerial view",
+  6,
+  "RU"
+ ],
+ [
   "smf_terminal",
   "Sacramento International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "smf_airside",
+  "Sacramento International Airport aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "smf_aerial",
+  "Sacramento International Airport aerial view",
   6,
   "US"
  ],
@@ -1110,8 +3318,32 @@
   "PL"
  ],
  [
+  "krk_airside",
+  "John Paul II International Airport Krak\u00f3w-Balice Airport aircraft apron",
+  6,
+  "PL"
+ ],
+ [
+  "krk_aerial",
+  "John Paul II International Airport Krak\u00f3w-Balice Airport aerial view",
+  6,
+  "PL"
+ ],
+ [
   "mde_terminal",
   "Jose Maria Cordova International Airport terminal",
+  6,
+  "CO"
+ ],
+ [
+  "mde_airside",
+  "Jose Maria Cordova International Airport aircraft apron",
+  6,
+  "CO"
+ ],
+ [
+  "mde_aerial",
+  "Jose Maria Cordova International Airport aerial view",
   6,
   "CO"
  ],
@@ -1122,8 +3354,32 @@
   "CN"
  ],
  [
+  "tsn_airside",
+  "Tianjin Binhai International Airport aircraft apron",
+  6,
+  "CN"
+ ],
+ [
+  "tsn_aerial",
+  "Tianjin Binhai International Airport aerial view",
+  6,
+  "CN"
+ ],
+ [
   "hkt_terminal",
   "Phuket International Airport terminal",
+  6,
+  "TH"
+ ],
+ [
+  "hkt_airside",
+  "Phuket International Airport aircraft apron",
+  6,
+  "TH"
+ ],
+ [
+  "hkt_aerial",
+  "Phuket International Airport aerial view",
   6,
   "TH"
  ],
@@ -1134,8 +3390,32 @@
   "AL"
  ],
  [
+  "tia_airside",
+  "Tirana International Airport Mother Teresa aircraft apron",
+  6,
+  "AL"
+ ],
+ [
+  "tia_aerial",
+  "Tirana International Airport Mother Teresa aerial view",
+  6,
+  "AL"
+ ],
+ [
   "sub_terminal",
   "Juanda International Airport terminal",
+  6,
+  "ID"
+ ],
+ [
+  "sub_airside",
+  "Juanda International Airport aircraft apron",
+  6,
+  "ID"
+ ],
+ [
+  "sub_aerial",
+  "Juanda International Airport aerial view",
   6,
   "ID"
  ],
@@ -1146,8 +3426,32 @@
   "IN"
  ],
  [
+  "amd_airside",
+  "Sardar Vallabhbhai Patel International Airport aircraft apron",
+  6,
+  "IN"
+ ],
+ [
+  "amd_aerial",
+  "Sardar Vallabhbhai Patel International Airport aerial view",
+  6,
+  "IN"
+ ],
+ [
   "cta_terminal",
   "Catania Fontanarossa Airport terminal",
+  6,
+  "IT"
+ ],
+ [
+  "cta_airside",
+  "Catania Fontanarossa Airport aircraft apron",
+  6,
+  "IT"
+ ],
+ [
+  "cta_aerial",
+  "Catania Fontanarossa Airport aerial view",
   6,
   "IT"
  ],
@@ -1158,8 +3462,32 @@
   "TR"
  ],
  [
+  "esb_airside",
+  "Esenboga International Airport aircraft apron",
+  6,
+  "TR"
+ ],
+ [
+  "esb_aerial",
+  "Esenboga International Airport aerial view",
+  6,
+  "TR"
+ ],
+ [
   "amm_terminal",
   "Queen Alia International Airport terminal",
+  6,
+  "JO"
+ ],
+ [
+  "amm_airside",
+  "Queen Alia International Airport aircraft apron",
+  6,
+  "JO"
+ ],
+ [
+  "amm_aerial",
+  "Queen Alia International Airport aerial view",
   6,
   "JO"
  ],
@@ -1170,8 +3498,32 @@
   "CN"
  ],
  [
+  "ngb_airside",
+  "Ningbo Lishe International Airport aircraft apron",
+  6,
+  "CN"
+ ],
+ [
+  "ngb_aerial",
+  "Ningbo Lishe International Airport aerial view",
+  6,
+  "CN"
+ ],
+ [
   "adb_terminal",
   "Adnan Menderes International Airport terminal",
+  6,
+  "TR"
+ ],
+ [
+  "adb_airside",
+  "Adnan Menderes International Airport aircraft apron",
+  6,
+  "TR"
+ ],
+ [
+  "adb_aerial",
+  "Adnan Menderes International Airport aerial view",
   6,
   "TR"
  ],
@@ -1182,8 +3534,32 @@
   "PT"
  ],
  [
+  "fao_airside",
+  "Faro Airport aircraft apron",
+  6,
+  "PT"
+ ],
+ [
+  "fao_aerial",
+  "Faro Airport aerial view",
+  6,
+  "PT"
+ ],
+ [
   "ala_terminal",
   "Almaty International Airport terminal",
+  6,
+  "KZ"
+ ],
+ [
+  "ala_airside",
+  "Almaty International Airport aircraft apron",
+  6,
+  "KZ"
+ ],
+ [
+  "ala_aerial",
+  "Almaty International Airport aerial view",
   6,
   "KZ"
  ],
@@ -1194,8 +3570,32 @@
   "ES"
  ],
  [
+  "vlc_airside",
+  "Valencia Airport aircraft apron",
+  6,
+  "ES"
+ ],
+ [
+  "vlc_aerial",
+  "Valencia Airport aerial view",
+  6,
+  "ES"
+ ],
+ [
   "cnf_terminal",
   "Tancredo Neves International Airport terminal",
+  6,
+  "BR"
+ ],
+ [
+  "cnf_airside",
+  "Tancredo Neves International Airport aircraft apron",
+  6,
+  "BR"
+ ],
+ [
+  "cnf_aerial",
+  "Tancredo Neves International Airport aerial view",
   6,
   "BR"
  ],
@@ -1206,8 +3606,32 @@
   "KR"
  ],
  [
+  "pus_airside",
+  "Gimhae International Airport aircraft apron",
+  6,
+  "KR"
+ ],
+ [
+  "pus_aerial",
+  "Gimhae International Airport aerial view",
+  6,
+  "KR"
+ ],
+ [
   "crl_terminal",
   "Brussels South Charleroi Airport terminal",
+  6,
+  "BE"
+ ],
+ [
+  "crl_airside",
+  "Brussels South Charleroi Airport aircraft apron",
+  6,
+  "BE"
+ ],
+ [
+  "crl_aerial",
+  "Brussels South Charleroi Airport aerial view",
   6,
   "BE"
  ],
@@ -1218,8 +3642,32 @@
   "FR"
  ],
  [
+  "lys_airside",
+  "Lyon Saint-Exupery Airport aircraft apron",
+  6,
+  "FR"
+ ],
+ [
+  "lys_aerial",
+  "Lyon Saint-Exupery Airport aerial view",
+  6,
+  "FR"
+ ],
+ [
   "hrg_terminal",
   "Hurghada International Airport terminal",
+  6,
+  "EG"
+ ],
+ [
+  "hrg_airside",
+  "Hurghada International Airport aircraft apron",
+  6,
+  "EG"
+ ],
+ [
+  "hrg_aerial",
+  "Hurghada International Airport aerial view",
   6,
   "EG"
  ],
@@ -1230,8 +3678,32 @@
   "CN"
  ],
  [
+  "foc_airside",
+  "Fuzhou Changle International Airport aircraft apron",
+  6,
+  "CN"
+ ],
+ [
+  "foc_aerial",
+  "Fuzhou Changle International Airport aerial view",
+  6,
+  "CN"
+ ],
+ [
   "tun_terminal",
   "Tunis Carthage International Airport terminal",
+  6,
+  "TN"
+ ],
+ [
+  "tun_airside",
+  "Tunis Carthage International Airport aircraft apron",
+  6,
+  "TN"
+ ],
+ [
+  "tun_aerial",
+  "Tunis Carthage International Airport aerial view",
   6,
   "TN"
  ],
@@ -1242,8 +3714,32 @@
   "IT"
  ],
  [
+  "blq_airside",
+  "Bologna Borgo Panigale Airport aircraft apron",
+  6,
+  "IT"
+ ],
+ [
+  "blq_aerial",
+  "Bologna Borgo Panigale Airport aerial view",
+  6,
+  "IT"
+ ],
+ [
   "cok_terminal",
   "Cochin International Airport terminal",
+  6,
+  "IN"
+ ],
+ [
+  "cok_airside",
+  "Cochin International Airport aircraft apron",
+  6,
+  "IN"
+ ],
+ [
+  "cok_aerial",
+  "Cochin International Airport aerial view",
   6,
   "IN"
  ],
@@ -1254,8 +3750,32 @@
   "BR"
  ],
  [
+  "vcp_airside",
+  "Viracopos International Airport aircraft apron",
+  6,
+  "BR"
+ ],
+ [
+  "vcp_aerial",
+  "Viracopos International Airport aerial view",
+  6,
+  "BR"
+ ],
+ [
   "msy_terminal",
   "Louis Armstrong New Orleans International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "msy_airside",
+  "Louis Armstrong New Orleans International Airport aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "msy_aerial",
+  "Louis Armstrong New Orleans International Airport aerial view",
   6,
   "US"
  ],
@@ -1266,8 +3786,32 @@
   "GR"
  ],
  [
+  "her_airside",
+  "Heraklion International Nikos Kazantzakis Airport aircraft apron",
+  6,
+  "GR"
+ ],
+ [
+  "her_aerial",
+  "Heraklion International Nikos Kazantzakis Airport aerial view",
+  6,
+  "GR"
+ ],
+ [
   "mci_terminal",
   "Kansas City International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "mci_airside",
+  "Kansas City International Airport aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "mci_aerial",
+  "Kansas City International Airport aerial view",
   6,
   "US"
  ],
@@ -1278,8 +3822,32 @@
   "ES"
  ],
  [
+  "lpa_airside",
+  "Gran Canaria Airport aircraft apron",
+  6,
+  "ES"
+ ],
+ [
+  "lpa_aerial",
+  "Gran Canaria Airport aerial view",
+  6,
+  "ES"
+ ],
+ [
   "ceb_terminal",
   "Mactan Cebu International Airport terminal",
+  6,
+  "PH"
+ ],
+ [
+  "ceb_airside",
+  "Mactan Cebu International Airport aircraft apron",
+  6,
+  "PH"
+ ],
+ [
+  "ceb_aerial",
+  "Mactan Cebu International Airport aerial view",
   6,
   "PH"
  ],
@@ -1290,8 +3858,32 @@
   "IT"
  ],
  [
+  "lin_airside",
+  "Linate Airport aircraft apron",
+  6,
+  "IT"
+ ],
+ [
+  "lin_aerial",
+  "Linate Airport aerial view",
+  6,
+  "IT"
+ ],
+ [
   "eze_terminal",
   "Ministro Pistarini International Airport terminal",
+  6,
+  "AR"
+ ],
+ [
+  "eze_airside",
+  "Ministro Pistarini International Airport aircraft apron",
+  6,
+  "AR"
+ ],
+ [
+  "eze_aerial",
+  "Ministro Pistarini International Airport aerial view",
   6,
   "AR"
  ],
@@ -1302,8 +3894,32 @@
   "RU"
  ],
  [
+  "ovb_airside",
+  "Tolmachevo Airport aircraft apron",
+  6,
+  "RU"
+ ],
+ [
+  "ovb_aerial",
+  "Tolmachevo Airport aerial view",
+  6,
+  "RU"
+ ],
+ [
   "svx_terminal",
   "Koltsovo Airport terminal",
+  6,
+  "RU"
+ ],
+ [
+  "svx_airside",
+  "Koltsovo Airport aircraft apron",
+  6,
+  "RU"
+ ],
+ [
+  "svx_aerial",
+  "Koltsovo Airport aerial view",
   6,
   "RU"
  ],
@@ -1314,8 +3930,32 @@
   "GB"
  ],
  [
+  "brs_airside",
+  "Bristol International Airport aircraft apron",
+  6,
+  "GB"
+ ],
+ [
+  "brs_aerial",
+  "Bristol International Airport aerial view",
+  6,
+  "GB"
+ ],
+ [
   "ibz_terminal",
   "Ibiza Airport terminal",
+  6,
+  "ES"
+ ],
+ [
+  "ibz_airside",
+  "Ibiza Airport aircraft apron",
+  6,
+  "ES"
+ ],
+ [
+  "ibz_aerial",
+  "Ibiza Airport aerial view",
   6,
   "ES"
  ],
@@ -1326,8 +3966,32 @@
   "MT"
  ],
  [
+  "mla_airside",
+  "Luqa Airport aircraft apron",
+  6,
+  "MT"
+ ],
+ [
+  "mla_aerial",
+  "Luqa Airport aerial view",
+  6,
+  "MT"
+ ],
+ [
   "cgq_terminal",
   "Longjia Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "cgq_airside",
+  "Longjia Airport aircraft apron",
+  6,
+  "CN"
+ ],
+ [
+  "cgq_aerial",
+  "Longjia Airport aerial view",
   6,
   "CN"
  ],
@@ -1338,8 +4002,32 @@
   "LK"
  ],
  [
+  "cmb_airside",
+  "Bandaranaike International Apt Colombo Airport aircraft apron",
+  6,
+  "LK"
+ ],
+ [
+  "cmb_aerial",
+  "Bandaranaike International Apt Colombo Airport aerial view",
+  6,
+  "LK"
+ ],
+ [
   "cle_terminal",
   "Cleveland-Hopkins International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "cle_airside",
+  "Cleveland-Hopkins International Airport aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "cle_aerial",
+  "Cleveland-Hopkins International Airport aerial view",
   6,
   "US"
  ],
@@ -1350,8 +4038,32 @@
   "CN"
  ],
  [
+  "nng_airside",
+  "Nanning Wuxu Airport aircraft apron",
+  6,
+  "CN"
+ ],
+ [
+  "nng_aerial",
+  "Nanning Wuxu Airport aerial view",
+  6,
+  "CN"
+ ],
+ [
   "ssh_terminal",
   "Sharm El Sheikh International Airport terminal",
+  6,
+  "EG"
+ ],
+ [
+  "ssh_airside",
+  "Sharm El Sheikh International Airport aircraft apron",
+  6,
+  "EG"
+ ],
+ [
+  "ssh_aerial",
+  "Sharm El Sheikh International Airport aerial view",
   6,
   "EG"
  ],
@@ -1362,8 +4074,32 @@
   "KE"
  ],
  [
+  "nbo_airside",
+  "Jomo Kenyatta International Airport aircraft apron",
+  6,
+  "KE"
+ ],
+ [
+  "nbo_aerial",
+  "Jomo Kenyatta International Airport aerial view",
+  6,
+  "KE"
+ ],
+ [
   "sat_terminal",
   "San Antonio International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "sat_airside",
+  "San Antonio International Airport aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "sat_aerial",
+  "San Antonio International Airport aerial view",
   6,
   "US"
  ],
@@ -1374,8 +4110,32 @@
   "US"
  ],
  [
+  "ind_airside",
+  "Indianapolis International Airport aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "ind_aerial",
+  "Indianapolis International Airport aerial view",
+  6,
+  "US"
+ ],
+ [
   "tyn_terminal",
   "Taiyuan Wusu Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "tyn_airside",
+  "Taiyuan Wusu Airport aircraft apron",
+  6,
+  "CN"
+ ],
+ [
+  "tyn_aerial",
+  "Taiyuan Wusu Airport aerial view",
   6,
   "CN"
  ],
@@ -1386,8 +4146,32 @@
   "PK"
  ],
  [
+  "isb_airside",
+  "Islamabad International Airport aircraft apron",
+  6,
+  "PK"
+ ],
+ [
+  "isb_aerial",
+  "Islamabad International Airport aerial view",
+  6,
+  "PK"
+ ],
+ [
   "sjc_terminal",
   "Norman Y Mineta San Jose International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "sjc_airside",
+  "Norman Y Mineta San Jose International Airport aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "sjc_aerial",
+  "Norman Y Mineta San Jose International Airport aerial view",
   6,
   "US"
  ],
@@ -1398,8 +4182,32 @@
   "ZA"
  ],
  [
+  "cpt_airside",
+  "Cape Town International Airport aircraft apron",
+  6,
+  "ZA"
+ ],
+ [
+  "cpt_aerial",
+  "Cape Town International Airport aerial view",
+  6,
+  "ZA"
+ ],
+ [
   "sna_terminal",
   "John Wayne Orange County Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "sna_airside",
+  "John Wayne Orange County Airport aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "sna_aerial",
+  "John Wayne Orange County Airport aerial view",
   6,
   "US"
  ],
@@ -1410,8 +4218,32 @@
   "NP"
  ],
  [
+  "ktm_airside",
+  "Tribhuvan International Airport aircraft apron",
+  6,
+  "NP"
+ ],
+ [
+  "ktm_aerial",
+  "Tribhuvan International Airport aerial view",
+  6,
+  "NP"
+ ],
+ [
   "tij_terminal",
   "General Abelardo L. Rodriguez International Airport terminal",
+  6,
+  "MX"
+ ],
+ [
+  "tij_airside",
+  "General Abelardo L. Rodriguez International Airport aircraft apron",
+  6,
+  "MX"
+ ],
+ [
+  "tij_aerial",
+  "General Abelardo L. Rodriguez International Airport aerial view",
   6,
   "MX"
  ],
@@ -1422,8 +4254,32 @@
   "CY"
  ],
  [
+  "lca_airside",
+  "Larnaca International Airport aircraft apron",
+  6,
+  "CY"
+ ],
+ [
+  "lca_aerial",
+  "Larnaca International Airport aerial view",
+  6,
+  "CY"
+ ],
+ [
   "sjw_terminal",
   "Shijiazhuang Daguocun International Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "sjw_airside",
+  "Shijiazhuang Daguocun International Airport aircraft apron",
+  6,
+  "CN"
+ ],
+ [
+  "sjw_aerial",
+  "Shijiazhuang Daguocun International Airport aerial view",
   6,
   "CN"
  ],
@@ -1434,8 +4290,32 @@
   "IN"
  ],
  [
+  "pnq_airside",
+  "Pune Airport aircraft apron",
+  6,
+  "IN"
+ ],
+ [
+  "pnq_aerial",
+  "Pune Airport aerial view",
+  6,
+  "IN"
+ ],
+ [
   "ngo_terminal",
   "Chubu Centrair International Airport terminal",
+  6,
+  "JP"
+ ],
+ [
+  "ngo_airside",
+  "Chubu Centrair International Airport aircraft apron",
+  6,
+  "JP"
+ ],
+ [
+  "ngo_aerial",
+  "Chubu Centrair International Airport aerial view",
   6,
   "JP"
  ],
@@ -1446,8 +4326,32 @@
   "KW"
  ],
  [
+  "kwi_airside",
+  "Kuwait International Airport aircraft apron",
+  6,
+  "KW"
+ ],
+ [
+  "kwi_aerial",
+  "Kuwait International Airport aerial view",
+  6,
+  "KW"
+ ],
+ [
   "pit_terminal",
   "Pittsburgh International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "pit_airside",
+  "Pittsburgh International Airport aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "pit_aerial",
+  "Pittsburgh International Airport aerial view",
   6,
   "US"
  ],
@@ -1458,8 +4362,32 @@
   "DE"
  ],
  [
+  "str_airside",
+  "Stuttgart Airport aircraft apron",
+  6,
+  "DE"
+ ],
+ [
+  "str_aerial",
+  "Stuttgart Airport aerial view",
+  6,
+  "DE"
+ ],
+ [
   "kef_terminal",
   "Keflavik International Airport terminal",
+  6,
+  "IS"
+ ],
+ [
+  "kef_airside",
+  "Keflavik International Airport aircraft apron",
+  6,
+  "IS"
+ ],
+ [
+  "kef_aerial",
+  "Keflavik International Airport aerial view",
   6,
   "IS"
  ],
@@ -1470,8 +4398,32 @@
   "CN"
  ],
  [
+  "het_airside",
+  "Baita International Airport aircraft apron",
+  6,
+  "CN"
+ ],
+ [
+  "het_aerial",
+  "Baita International Airport aerial view",
+  6,
+  "CN"
+ ],
+ [
   "pmo_terminal",
   "Palermo Punta Raisi Airport terminal",
+  6,
+  "IT"
+ ],
+ [
+  "pmo_airside",
+  "Palermo Punta Raisi Airport aircraft apron",
+  6,
+  "IT"
+ ],
+ [
+  "pmo_aerial",
+  "Palermo Punta Raisi Airport aerial view",
   6,
   "IT"
  ],
@@ -1482,8 +4434,32 @@
   "CN"
  ],
  [
+  "wux_airside",
+  "Sunan Shuofang International Airport aircraft apron",
+  6,
+  "CN"
+ ],
+ [
+  "wux_aerial",
+  "Sunan Shuofang International Airport aerial view",
+  6,
+  "CN"
+ ],
+ [
   "hfe_terminal",
   "Hefei Xinqiao International Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "hfe_airside",
+  "Hefei Xinqiao International Airport aircraft apron",
+  6,
+  "CN"
+ ],
+ [
+  "hfe_aerial",
+  "Hefei Xinqiao International Airport aerial view",
   6,
   "CN"
  ],
@@ -1494,8 +4470,32 @@
   "DE"
  ],
  [
+  "cgn_airside",
+  "Cologne Bonn Airport aircraft apron",
+  6,
+  "DE"
+ ],
+ [
+  "cgn_aerial",
+  "Cologne Bonn Airport aerial view",
+  6,
+  "DE"
+ ],
+ [
   "bah_terminal",
   "Bahrain International Airport terminal",
+  6,
+  "BH"
+ ],
+ [
+  "bah_airside",
+  "Bahrain International Airport aircraft apron",
+  6,
+  "BH"
+ ],
+ [
+  "bah_aerial",
+  "Bahrain International Airport aerial view",
   6,
   "BH"
  ],
@@ -1506,8 +4506,32 @@
   "CN"
  ],
  [
+  "zuh_airside",
+  "Zhuhai Airport aircraft apron",
+  6,
+  "CN"
+ ],
+ [
+  "zuh_aerial",
+  "Zhuhai Airport aerial view",
+  6,
+  "CN"
+ ],
+ [
   "los_terminal",
   "Murtala Muhammed International Airport terminal",
+  6,
+  "NG"
+ ],
+ [
+  "los_airside",
+  "Murtala Muhammed International Airport aircraft apron",
+  6,
+  "NG"
+ ],
+ [
+  "los_aerial",
+  "Murtala Muhammed International Airport aerial view",
   6,
   "NG"
  ],
@@ -1518,8 +4542,32 @@
   "US"
  ],
  [
+  "cvg_airside",
+  "Cincinnati Northern Kentucky International Airport aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "cvg_aerial",
+  "Cincinnati Northern Kentucky International Airport aerial view",
+  6,
+  "US"
+ ],
+ [
   "sjd_terminal",
   "Los Cabos International Airport terminal",
+  6,
+  "MX"
+ ],
+ [
+  "sjd_airside",
+  "Los Cabos International Airport aircraft apron",
+  6,
+  "MX"
+ ],
+ [
+  "sjd_aerial",
+  "Los Cabos International Airport aerial view",
   6,
   "MX"
  ],
@@ -1530,8 +4578,32 @@
   "ES"
  ],
  [
+  "svq_airside",
+  "Sevilla Airport aircraft apron",
+  6,
+  "ES"
+ ],
+ [
+  "svq_aerial",
+  "Sevilla Airport aerial view",
+  6,
+  "ES"
+ ],
+ [
   "beg_terminal",
   "Belgrade Nikola Tesla Airport terminal",
+  6,
+  "RS"
+ ],
+ [
+  "beg_airside",
+  "Belgrade Nikola Tesla Airport aircraft apron",
+  6,
+  "RS"
+ ],
+ [
+  "beg_aerial",
+  "Belgrade Nikola Tesla Airport aerial view",
   6,
   "RS"
  ],
@@ -1542,8 +4614,32 @@
   "PK"
  ],
  [
+  "lhe_airside",
+  "Alama Iqbal International Airport aircraft apron",
+  6,
+  "PK"
+ ],
+ [
+  "lhe_aerial",
+  "Alama Iqbal International Airport aerial view",
+  6,
+  "PK"
+ ],
+ [
   "wnz_terminal",
   "Wenzhou Yongqiang Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "wnz_airside",
+  "Wenzhou Yongqiang Airport aircraft apron",
+  6,
+  "CN"
+ ],
+ [
+  "wnz_aerial",
+  "Wenzhou Yongqiang Airport aerial view",
   6,
   "CN"
  ],
@@ -1554,8 +4650,32 @@
   "SV"
  ],
  [
+  "sal_airside",
+  "El Salvador International Airport aircraft apron",
+  6,
+  "SV"
+ ],
+ [
+  "sal_aerial",
+  "El Salvador International Airport aerial view",
+  6,
+  "SV"
+ ],
+ [
   "cmh_terminal",
   "John Glenn Columbus International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "cmh_airside",
+  "John Glenn Columbus International Airport aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "cmh_aerial",
+  "John Glenn Columbus International Airport aerial view",
   6,
   "US"
  ],
@@ -1566,8 +4686,32 @@
   "FR"
  ],
  [
+  "bsl_airside",
+  "EuroAirport Basel-Mulhouse-Freiburg Airport aircraft apron",
+  6,
+  "FR"
+ ],
+ [
+  "bsl_aerial",
+  "EuroAirport Basel-Mulhouse-Freiburg Airport aerial view",
+  6,
+  "FR"
+ ],
+ [
   "gla_terminal",
   "Glasgow International Airport terminal",
+  6,
+  "GB"
+ ],
+ [
+  "gla_airside",
+  "Glasgow International Airport aircraft apron",
+  6,
+  "GB"
+ ],
+ [
+  "gla_aerial",
+  "Glasgow International Airport aerial view",
   6,
   "GB"
  ],
@@ -1578,8 +4722,32 @@
   "FR"
  ],
  [
+  "tls_airside",
+  "Toulouse-Blagnac Airport aircraft apron",
+  6,
+  "FR"
+ ],
+ [
+  "tls_aerial",
+  "Toulouse-Blagnac Airport aerial view",
+  6,
+  "FR"
+ ],
+ [
   "khi_terminal",
   "Jinnah International Airport terminal",
+  6,
+  "PK"
+ ],
+ [
+  "khi_airside",
+  "Jinnah International Airport aircraft apron",
+  6,
+  "PK"
+ ],
+ [
+  "khi_aerial",
+  "Jinnah International Airport aerial view",
   6,
   "PK"
  ],
@@ -1590,8 +4758,32 @@
   "IT"
  ],
  [
+  "bri_airside",
+  "Bari Palese International Airport aircraft apron",
+  6,
+  "IT"
+ ],
+ [
+  "bri_aerial",
+  "Bari Palese International Airport aerial view",
+  6,
+  "IT"
+ ],
+ [
   "khn_terminal",
   "Nanchang Changbei International Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "khn_airside",
+  "Nanchang Changbei International Airport aircraft apron",
+  6,
+  "CN"
+ ],
+ [
+  "khn_aerial",
+  "Nanchang Changbei International Airport aerial view",
   6,
   "CN"
  ],
@@ -1602,8 +4794,32 @@
   "ES"
  ],
  [
+  "tfs_airside",
+  "Tenerife South Airport aircraft apron",
+  6,
+  "ES"
+ ],
+ [
+  "tfs_aerial",
+  "Tenerife South Airport aerial view",
+  6,
+  "ES"
+ ],
+ [
   "sjo_terminal",
   "Juan Santamaria International Airport terminal",
+  6,
+  "CR"
+ ],
+ [
+  "sjo_airside",
+  "Juan Santamaria International Airport aircraft apron",
+  6,
+  "CR"
+ ],
+ [
+  "sjo_aerial",
+  "Juan Santamaria International Airport aerial view",
   6,
   "CR"
  ],
@@ -1614,8 +4830,32 @@
   "KZ"
  ],
  [
+  "nqz_airside",
+  "Nursultan Nazarbayev International Airport aircraft apron",
+  6,
+  "KZ"
+ ],
+ [
+  "nqz_aerial",
+  "Nursultan Nazarbayev International Airport aerial view",
+  6,
+  "KZ"
+ ],
+ [
   "oak_terminal",
   "Oakland San Francisco Bay Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "oak_airside",
+  "Oakland San Francisco Bay Airport aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "oak_aerial",
+  "Oakland San Francisco Bay Airport aerial view",
   6,
   "US"
  ],
@@ -1626,8 +4866,32 @@
   "FR"
  ],
  [
+  "nte_airside",
+  "Nantes Atlantique Airport aircraft apron",
+  6,
+  "FR"
+ ],
+ [
+  "nte_aerial",
+  "Nantes Atlantique Airport aerial view",
+  6,
+  "FR"
+ ],
+ [
   "sof_terminal",
   "Sofia Airport terminal",
+  6,
+  "BG"
+ ],
+ [
+  "sof_airside",
+  "Sofia Airport aircraft apron",
+  6,
+  "BG"
+ ],
+ [
+  "sof_aerial",
+  "Sofia Airport aerial view",
   6,
   "BG"
  ],
@@ -1638,8 +4902,32 @@
   "US"
  ],
  [
+  "rsw_airside",
+  "Southwest Florida International Airport aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "rsw_aerial",
+  "Southwest Florida International Airport aerial view",
+  6,
+  "US"
+ ],
+ [
   "ont_terminal",
   "Ontario International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "ont_airside",
+  "Ontario International Airport aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "ont_aerial",
+  "Ontario International Airport aerial view",
   6,
   "US"
  ],
@@ -1650,8 +4938,32 @@
   "BS"
  ],
  [
+  "nas_airside",
+  "Lynden Pindling International Airport aircraft apron",
+  6,
+  "BS"
+ ],
+ [
+  "nas_aerial",
+  "Lynden Pindling International Airport aerial view",
+  6,
+  "BS"
+ ],
+ [
   "skg_terminal",
   "Thessaloniki Macedonia International Airport terminal",
+  6,
+  "GR"
+ ],
+ [
+  "skg_airside",
+  "Thessaloniki Macedonia International Airport aircraft apron",
+  6,
+  "GR"
+ ],
+ [
+  "skg_aerial",
+  "Thessaloniki Macedonia International Airport aerial view",
   6,
   "GR"
  ],
@@ -1662,8 +4974,32 @@
   "BR"
  ],
  [
+  "rec_airside",
+  "Guararapes - Gilberto Freyre International Airport aircraft apron",
+  6,
+  "BR"
+ ],
+ [
+  "rec_aerial",
+  "Guararapes - Gilberto Freyre International Airport aerial view",
+  6,
+  "BR"
+ ],
+ [
   "gyd_terminal",
   "Heydar Aliyev International Airport terminal",
+  6,
+  "AZ"
+ ],
+ [
+  "gyd_airside",
+  "Heydar Aliyev International Airport aircraft apron",
+  6,
+  "AZ"
+ ],
+ [
+  "gyd_aerial",
+  "Heydar Aliyev International Airport aerial view",
   6,
   "AZ"
  ],
@@ -1674,8 +5010,32 @@
   "DO"
  ],
  [
+  "sdq_airside",
+  "Las Americas International Airport aircraft apron",
+  6,
+  "DO"
+ ],
+ [
+  "sdq_aerial",
+  "Las Americas International Airport aerial view",
+  6,
+  "DO"
+ ],
+ [
   "aer_terminal",
   "Sochi International Airport terminal",
+  6,
+  "RU"
+ ],
+ [
+  "aer_airside",
+  "Sochi International Airport aircraft apron",
+  6,
+  "RU"
+ ],
+ [
+  "aer_aerial",
+  "Sochi International Airport aerial view",
   6,
   "RU"
  ],
@@ -1686,8 +5046,32 @@
   "AU"
  ],
  [
+  "adl_airside",
+  "Adelaide International Airport aircraft apron",
+  6,
+  "AU"
+ ],
+ [
+  "adl_aerial",
+  "Adelaide International Airport aerial view",
+  6,
+  "AU"
+ ],
+ [
   "jax_terminal",
   "Jacksonville International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "jax_airside",
+  "Jacksonville International Airport aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "jax_aerial",
+  "Jacksonville International Airport aerial view",
   6,
   "US"
  ],
@@ -1698,8 +5082,32 @@
   "ES"
  ],
  [
+  "bio_airside",
+  "Bilbao Airport aircraft apron",
+  6,
+  "ES"
+ ],
+ [
+  "bio_aerial",
+  "Bilbao Airport aerial view",
+  6,
+  "ES"
+ ],
+ [
   "pen_terminal",
   "Penang International Airport terminal",
+  6,
+  "MY"
+ ],
+ [
+  "pen_airside",
+  "Penang International Airport aircraft apron",
+  6,
+  "MY"
+ ],
+ [
+  "pen_aerial",
+  "Penang International Airport aerial view",
   6,
   "MY"
  ],
@@ -1710,8 +5118,32 @@
   "NO"
  ],
  [
+  "bgo_airside",
+  "Bergen Airport Flesland aircraft apron",
+  6,
+  "NO"
+ ],
+ [
+  "bgo_aerial",
+  "Bergen Airport Flesland aerial view",
+  6,
+  "NO"
+ ],
+ [
   "swa_terminal",
   "Shantou Waisha Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "swa_airside",
+  "Shantou Waisha Airport aircraft apron",
+  6,
+  "CN"
+ ],
+ [
+  "swa_aerial",
+  "Shantou Waisha Airport aerial view",
   6,
   "CN"
  ],
@@ -1722,8 +5154,32 @@
   "BR"
  ],
  [
+  "poa_airside",
+  "Salgado Filho Airport aircraft apron",
+  6,
+  "BR"
+ ],
+ [
+  "poa_aerial",
+  "Salgado Filho Airport aerial view",
+  6,
+  "BR"
+ ],
+ [
   "inc_terminal",
   "Yinchuan Hedong International Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "inc_airside",
+  "Yinchuan Hedong International Airport aircraft apron",
+  6,
+  "CN"
+ ],
+ [
+  "inc_aerial",
+  "Yinchuan Hedong International Airport aerial view",
   6,
   "CN"
  ],
@@ -1734,8 +5190,32 @@
   "AM"
  ],
  [
+  "evn_airside",
+  "Zvartnots International Airport aircraft apron",
+  6,
+  "AM"
+ ],
+ [
+  "evn_aerial",
+  "Zvartnots International Airport aerial view",
+  6,
+  "AM"
+ ],
+ [
   "med_terminal",
   "Prince Mohammad Bin Abdulaziz Airport terminal",
+  6,
+  "SA"
+ ],
+ [
+  "med_airside",
+  "Prince Mohammad Bin Abdulaziz Airport aircraft apron",
+  6,
+  "SA"
+ ],
+ [
+  "med_aerial",
+  "Prince Mohammad Bin Abdulaziz Airport aerial view",
   6,
   "SA"
  ],
@@ -1746,8 +5226,32 @@
   "MX"
  ],
  [
+  "nlu_airside",
+  "Santa Lucia Air Force Base aircraft apron",
+  6,
+  "MX"
+ ],
+ [
+  "nlu_aerial",
+  "Santa Lucia Air Force Base aerial view",
+  6,
+  "MX"
+ ],
+ [
   "rho_terminal",
   "Diagoras Airport terminal",
+  6,
+  "GR"
+ ],
+ [
+  "rho_airside",
+  "Diagoras Airport aircraft apron",
+  6,
+  "GR"
+ ],
+ [
+  "rho_aerial",
+  "Diagoras Airport aerial view",
   6,
   "GR"
  ],
@@ -1758,8 +5262,32 @@
   "TW"
  ],
  [
+  "khh_airside",
+  "Kaohsiung International Airport aircraft apron",
+  6,
+  "TW"
+ ],
+ [
+  "khh_aerial",
+  "Kaohsiung International Airport aerial view",
+  6,
+  "TW"
+ ],
+ [
   "mle_terminal",
   "Velana International Airport terminal",
+  6,
+  "MV"
+ ],
+ [
+  "mle_airside",
+  "Velana International Airport aircraft apron",
+  6,
+  "MV"
+ ],
+ [
+  "mle_aerial",
+  "Velana International Airport aerial view",
   6,
   "MV"
  ],
@@ -1770,8 +5298,32 @@
   "MY"
  ],
  [
+  "bki_airside",
+  "Kota Kinabalu International Airport aircraft apron",
+  6,
+  "MY"
+ ],
+ [
+  "bki_aerial",
+  "Kota Kinabalu International Airport aerial view",
+  6,
+  "MY"
+ ],
+ [
   "gdn_terminal",
   "Gda\u0144sk Lech Wa\u0142\u0119sa Airport terminal",
+  6,
+  "PL"
+ ],
+ [
+  "gdn_airside",
+  "Gda\u0144sk Lech Wa\u0142\u0119sa Airport aircraft apron",
+  6,
+  "PL"
+ ],
+ [
+  "gdn_aerial",
+  "Gda\u0144sk Lech Wa\u0142\u0119sa Airport aerial view",
   6,
   "PL"
  ],
@@ -1782,8 +5334,32 @@
   "US"
  ],
  [
+  "anc_airside",
+  "Ted Stevens Anchorage International Airport aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "anc_aerial",
+  "Ted Stevens Anchorage International Airport aerial view",
+  6,
+  "US"
+ ],
+ [
   "pbi_terminal",
   "Palm Beach International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "pbi_airside",
+  "Palm Beach International Airport aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "pbi_aerial",
+  "Palm Beach International Airport aerial view",
   6,
   "US"
  ],
@@ -1794,8 +5370,32 @@
   "GE"
  ],
  [
+  "tbs_airside",
+  "Tbilisi International Airport aircraft apron",
+  6,
+  "GE"
+ ],
+ [
+  "tbs_aerial",
+  "Tbilisi International Airport aerial view",
+  6,
+  "GE"
+ ],
+ [
   "ein_terminal",
   "Eindhoven Airport terminal",
+  6,
+  "NL"
+ ],
+ [
+  "ein_airside",
+  "Eindhoven Airport aircraft apron",
+  6,
+  "NL"
+ ],
+ [
+  "ein_aerial",
+  "Eindhoven Airport aerial view",
   6,
   "NL"
  ],
@@ -1806,8 +5406,32 @@
   "IN"
  ],
  [
+  "nmi_airside",
+  "Navi Mumbai International Airport aircraft apron",
+  6,
+  "IN"
+ ],
+ [
+  "nmi_aerial",
+  "Navi Mumbai International Airport aerial view",
+  6,
+  "IN"
+ ],
+ [
   "lko_terminal",
   "Chaudhary Charan Singh International Airport terminal",
+  6,
+  "IN"
+ ],
+ [
+  "lko_airside",
+  "Chaudhary Charan Singh International Airport aircraft apron",
+  6,
+  "IN"
+ ],
+ [
+  "lko_aerial",
+  "Chaudhary Charan Singh International Airport aerial view",
   6,
   "IN"
  ],
@@ -1818,8 +5442,32 @@
   "CO"
  ],
  [
+  "ctg_airside",
+  "Rafael Nunez International Airport aircraft apron",
+  6,
+  "CO"
+ ],
+ [
+  "ctg_aerial",
+  "Rafael Nunez International Airport aerial view",
+  6,
+  "CO"
+ ],
+ [
   "bod_terminal",
   "Bordeaux-Merignac (BA 106) Airport terminal",
+  6,
+  "FR"
+ ],
+ [
+  "bod_airside",
+  "Bordeaux-Merignac (BA 106) Airport aircraft apron",
+  6,
+  "FR"
+ ],
+ [
+  "bod_aerial",
+  "Bordeaux-Merignac (BA 106) Airport aerial view",
   6,
   "FR"
  ],
@@ -1830,8 +5478,32 @@
   "US"
  ],
  [
+  "chs_airside",
+  "Charleston Afb International Airport aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "chs_aerial",
+  "Charleston Afb International Airport aerial view",
+  6,
+  "US"
+ ],
+ [
   "ogg_terminal",
   "Kahului Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "ogg_airside",
+  "Kahului Airport aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "ogg_aerial",
+  "Kahului Airport aerial view",
   6,
   "US"
  ],
@@ -1842,8 +5514,32 @@
   "FR"
  ],
  [
+  "bva_airside",
+  "Paris Beauvais Tille Airport aircraft apron",
+  6,
+  "FR"
+ ],
+ [
+  "bva_aerial",
+  "Paris Beauvais Tille Airport aerial view",
+  6,
+  "FR"
+ ],
+ [
   "yeg_terminal",
   "Edmonton International Airport terminal",
+  6,
+  "CA"
+ ],
+ [
+  "yeg_airside",
+  "Edmonton International Airport aircraft apron",
+  6,
+  "CA"
+ ],
+ [
+  "yeg_aerial",
+  "Edmonton International Airport aerial view",
   6,
   "CA"
  ],
@@ -1854,8 +5550,32 @@
   "ES"
  ],
  [
+  "tfn_airside",
+  "Tenerife Norte Airport aircraft apron",
+  6,
+  "ES"
+ ],
+ [
+  "tfn_aerial",
+  "Tenerife Norte Airport aerial view",
+  6,
+  "ES"
+ ],
+ [
   "rix_terminal",
   "Riga International Airport terminal",
+  6,
+  "LV"
+ ],
+ [
+  "rix_airside",
+  "Riga International Airport aircraft apron",
+  6,
+  "LV"
+ ],
+ [
+  "rix_aerial",
+  "Riga International Airport aerial view",
   6,
   "LV"
  ],
@@ -1866,8 +5586,32 @@
   "TH"
  ],
  [
+  "cnx_airside",
+  "Chiang Mai International Airport aircraft apron",
+  6,
+  "TH"
+ ],
+ [
+  "cnx_aerial",
+  "Chiang Mai International Airport aerial view",
+  6,
+  "TH"
+ ],
+ [
   "ssa_terminal",
   "Deputado Luiz Eduardo Magalhaes International Airport terminal",
+  6,
+  "BR"
+ ],
+ [
+  "ssa_airside",
+  "Deputado Luiz Eduardo Magalhaes International Airport aircraft apron",
+  6,
+  "BR"
+ ],
+ [
+  "ssa_aerial",
+  "Deputado Luiz Eduardo Magalhaes International Airport aerial view",
   6,
   "BR"
  ],
@@ -1878,8 +5622,32 @@
   "LB"
  ],
  [
+  "bey_airside",
+  "Beirut Rafic Hariri International Airport aircraft apron",
+  6,
+  "LB"
+ ],
+ [
+  "bey_aerial",
+  "Beirut Rafic Hariri International Airport aerial view",
+  6,
+  "LB"
+ ],
+ [
   "clo_terminal",
   "Alfonso Bonilla Aragon International Airport terminal",
+  6,
+  "CO"
+ ],
+ [
+  "clo_airside",
+  "Alfonso Bonilla Aragon International Airport aircraft apron",
+  6,
+  "CO"
+ ],
+ [
+  "clo_aerial",
+  "Alfonso Bonilla Aragon International Airport aerial view",
   6,
   "CO"
  ],
@@ -1890,8 +5658,32 @@
   "TR"
  ],
  [
+  "dlm_airside",
+  "Dalaman International Airport aircraft apron",
+  6,
+  "TR"
+ ],
+ [
+  "dlm_aerial",
+  "Dalaman International Airport aerial view",
+  6,
+  "TR"
+ ],
+ [
   "bfs_terminal",
   "Belfast International Airport terminal",
+  6,
+  "GB"
+ ],
+ [
+  "bfs_airside",
+  "Belfast International Airport aircraft apron",
+  6,
+  "GB"
+ ],
+ [
+  "bfs_aerial",
+  "Belfast International Airport aerial view",
   6,
   "GB"
  ],
@@ -1902,8 +5694,32 @@
   "ES"
  ],
  [
+  "ace_airside",
+  "Lanzarote Airport aircraft apron",
+  6,
+  "ES"
+ ],
+ [
+  "ace_aerial",
+  "Lanzarote Airport aerial view",
+  6,
+  "ES"
+ ],
+ [
   "bdl_terminal",
   "Bradley International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "bdl_airside",
+  "Bradley International Airport aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "bdl_aerial",
+  "Bradley International Airport aerial view",
   6,
   "US"
  ],
@@ -1914,8 +5730,32 @@
   "IT"
  ],
  [
+  "psa_airside",
+  "Pisa San Giusto - Galileo Galilei International Airport aircraft apron",
+  6,
+  "IT"
+ ],
+ [
+  "psa_aerial",
+  "Pisa San Giusto - Galileo Galilei International Airport aerial view",
+  6,
+  "IT"
+ ],
+ [
   "kno_terminal",
   "Polonia International Airport terminal",
+  6,
+  "ID"
+ ],
+ [
+  "kno_airside",
+  "Polonia International Airport aircraft apron",
+  6,
+  "ID"
+ ],
+ [
+  "kno_aerial",
+  "Polonia International Airport aerial view",
   6,
   "ID"
  ],
@@ -1926,8 +5766,32 @@
   "US"
  ],
  [
+  "bur_airside",
+  "Bob Hope Airport aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "bur_aerial",
+  "Bob Hope Airport aerial view",
+  6,
+  "US"
+ ],
+ [
   "ljg_terminal",
   "Lijiang Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "ljg_airside",
+  "Lijiang Airport aircraft apron",
+  6,
+  "CN"
+ ],
+ [
+  "ljg_aerial",
+  "Lijiang Airport aerial view",
   6,
   "CN"
  ],
@@ -1938,8 +5802,32 @@
   "IN"
  ],
  [
+  "gau_airside",
+  "Lokpriya Gopinath Bordoloi International Airport aircraft apron",
+  6,
+  "IN"
+ ],
+ [
+  "gau_aerial",
+  "Lokpriya Gopinath Bordoloi International Airport aerial view",
+  6,
+  "IN"
+ ],
+ [
   "sdu_terminal",
   "Santos Dumont Airport terminal",
+  6,
+  "BR"
+ ],
+ [
+  "sdu_airside",
+  "Santos Dumont Airport aircraft apron",
+  6,
+  "BR"
+ ],
+ [
+  "sdu_aerial",
+  "Santos Dumont Airport aerial view",
   6,
   "BR"
  ],
@@ -1950,8 +5838,32 @@
   "CN"
  ],
  [
+  "xnn_airside",
+  "Xining Caojiabu Airport aircraft apron",
+  6,
+  "CN"
+ ],
+ [
+  "xnn_aerial",
+  "Xining Caojiabu Airport aerial view",
+  6,
+  "CN"
+ ],
+ [
   "pqc_terminal",
   "Phu Quoc Airport terminal",
+  6,
+  "VN"
+ ],
+ [
+  "pqc_airside",
+  "Phu Quoc Airport aircraft apron",
+  6,
+  "VN"
+ ],
+ [
+  "pqc_aerial",
+  "Phu Quoc Airport aerial view",
   6,
   "VN"
  ],
@@ -1962,8 +5874,32 @@
   "GB"
  ],
  [
+  "lpl_airside",
+  "Liverpool John Lennon Airport aircraft apron",
+  6,
+  "GB"
+ ],
+ [
+  "lpl_aerial",
+  "Liverpool John Lennon Airport aerial view",
+  6,
+  "GB"
+ ],
+ [
   "gua_terminal",
   "La Aurora Airport terminal",
+  6,
+  "GT"
+ ],
+ [
+  "gua_airside",
+  "La Aurora Airport aircraft apron",
+  6,
+  "GT"
+ ],
+ [
+  "gua_aerial",
+  "La Aurora Airport aerial view",
   6,
   "GT"
  ],
@@ -1974,8 +5910,32 @@
   "CN"
  ],
  [
+  "jjn_airside",
+  "Quanzhou Airport aircraft apron",
+  6,
+  "CN"
+ ],
+ [
+  "jjn_aerial",
+  "Quanzhou Airport aerial view",
+  6,
+  "CN"
+ ],
+ [
   "lux_terminal",
   "Luxembourg-Findel International Airport terminal",
+  6,
+  "LU"
+ ],
+ [
+  "lux_airside",
+  "Luxembourg-Findel International Airport aircraft apron",
+  6,
+  "LU"
+ ],
+ [
+  "lux_aerial",
+  "Luxembourg-Findel International Airport aerial view",
   6,
   "LU"
  ],
@@ -1986,8 +5946,32 @@
   "CY"
  ],
  [
+  "ecn_airside",
+  "Ercan International Airport aircraft apron",
+  6,
+  "CY"
+ ],
+ [
+  "ecn_aerial",
+  "Ercan International Airport aerial view",
+  6,
+  "CY"
+ ],
+ [
   "abv_terminal",
   "Nnamdi Azikiwe International Airport terminal",
+  6,
+  "NG"
+ ],
+ [
+  "abv_airside",
+  "Nnamdi Azikiwe International Airport aircraft apron",
+  6,
+  "NG"
+ ],
+ [
+  "abv_aerial",
+  "Nnamdi Azikiwe International Airport aerial view",
   6,
   "NG"
  ],
@@ -1998,8 +5982,32 @@
   "EC"
  ],
  [
+  "uio_airside",
+  "Nuevo Aeropuerto Internacional Mariscal Sucre aircraft apron",
+  6,
+  "EC"
+ ],
+ [
+  "uio_aerial",
+  "Nuevo Aeropuerto Internacional Mariscal Sucre aerial view",
+  6,
+  "EC"
+ ],
+ [
   "thr_terminal",
   "Mehrabad International Airport terminal",
+  6,
+  "IR"
+ ],
+ [
+  "thr_airside",
+  "Mehrabad International Airport aircraft apron",
+  6,
+  "IR"
+ ],
+ [
+  "thr_aerial",
+  "Mehrabad International Airport aerial view",
   6,
   "IR"
  ],
@@ -2010,8 +6018,32 @@
   "US"
  ],
  [
+  "mke_airside",
+  "General Mitchell International Airport aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "mke_aerial",
+  "General Mitchell International Airport aerial view",
+  6,
+  "US"
+ ],
+ [
   "haj_terminal",
   "Hannover Airport terminal",
+  6,
+  "DE"
+ ],
+ [
+  "haj_airside",
+  "Hannover Airport aircraft apron",
+  6,
+  "DE"
+ ],
+ [
+  "haj_aerial",
+  "Hannover Airport aerial view",
   6,
   "DE"
  ],
@@ -2022,8 +6054,32 @@
   "JM"
  ],
  [
+  "mbj_airside",
+  "Sangster International Airport aircraft apron",
+  6,
+  "JM"
+ ],
+ [
+  "mbj_aerial",
+  "Sangster International Airport aerial view",
+  6,
+  "JM"
+ ],
+ [
   "ynt_terminal",
   "Penglai Intl terminal",
+  6,
+  "CN"
+ ],
+ [
+  "ynt_airside",
+  "Penglai Intl aircraft apron",
+  6,
+  "CN"
+ ],
+ [
+  "ynt_aerial",
+  "Penglai Intl aerial view",
   6,
   "CN"
  ],
@@ -2034,8 +6090,32 @@
   "IT"
  ],
  [
+  "cag_airside",
+  "Cagliari Elmas Airport aircraft apron",
+  6,
+  "IT"
+ ],
+ [
+  "cag_aerial",
+  "Cagliari Elmas Airport aerial view",
+  6,
+  "IT"
+ ],
+ [
   "cxr_terminal",
   "Cam Ranh Airport terminal",
+  6,
+  "VN"
+ ],
+ [
+  "cxr_airside",
+  "Cam Ranh Airport aircraft apron",
+  6,
+  "VN"
+ ],
+ [
+  "cxr_aerial",
+  "Cam Ranh Airport aerial view",
   6,
   "VN"
  ],
@@ -2046,8 +6126,32 @@
   "GB"
  ],
  [
+  "ncl_airside",
+  "Newcastle Airport aircraft apron",
+  6,
+  "GB"
+ ],
+ [
+  "ncl_aerial",
+  "Newcastle Airport aerial view",
+  6,
+  "GB"
+ ],
+ [
   "yow_terminal",
   "Ottawa Macdonald-Cartier International Airport terminal",
+  6,
+  "CA"
+ ],
+ [
+  "yow_airside",
+  "Ottawa Macdonald-Cartier International Airport aircraft apron",
+  6,
+  "CA"
+ ],
+ [
+  "yow_aerial",
+  "Ottawa Macdonald-Cartier International Airport aerial view",
   6,
   "CA"
  ],
@@ -2058,8 +6162,32 @@
   "NZ"
  ],
  [
+  "chc_airside",
+  "Christchurch International Airport aircraft apron",
+  6,
+  "NZ"
+ ],
+ [
+  "chc_aerial",
+  "Christchurch International Airport aerial view",
+  6,
+  "NZ"
+ ],
+ [
   "cwb_terminal",
   "Afonso Pena Airport terminal",
+  6,
+  "BR"
+ ],
+ [
+  "cwb_airside",
+  "Afonso Pena Airport aircraft apron",
+  6,
+  "BR"
+ ],
+ [
+  "cwb_aerial",
+  "Afonso Pena Airport aerial view",
   6,
   "BR"
  ],
@@ -2070,8 +6198,32 @@
   "MX"
  ],
  [
+  "pvr_airside",
+  "Licenciado Gustavo Diaz Ordaz International Airport aircraft apron",
+  6,
+  "MX"
+ ],
+ [
+  "pvr_aerial",
+  "Licenciado Gustavo Diaz Ordaz International Airport aerial view",
+  6,
+  "MX"
+ ],
+ [
   "rmo_terminal",
   "Chi\u0219in\u0103u International Airport terminal",
+  6,
+  "MD"
+ ],
+ [
+  "rmo_airside",
+  "Chi\u0219in\u0103u International Airport aircraft apron",
+  6,
+  "MD"
+ ],
+ [
+  "rmo_aerial",
+  "Chi\u0219in\u0103u International Airport aerial view",
   6,
   "MD"
  ],
@@ -2082,8 +6234,32 @@
   "CA"
  ],
  [
+  "yhz_airside",
+  "Halifax Robert L. Stanfield International Airport aircraft apron",
+  6,
+  "CA"
+ ],
+ [
+  "yhz_aerial",
+  "Halifax Robert L. Stanfield International Airport aerial view",
+  6,
+  "CA"
+ ],
+ [
   "mfm_terminal",
   "Macau International Airport terminal",
+  6,
+  "MO"
+ ],
+ [
+  "mfm_airside",
+  "Macau International Airport aircraft apron",
+  6,
+  "MO"
+ ],
+ [
+  "mfm_aerial",
+  "Macau International Airport aerial view",
   6,
   "MO"
  ],
@@ -2094,8 +6270,32 @@
   "US"
  ],
  [
+  "oma_airside",
+  "Eppley Airfield aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "oma_aerial",
+  "Eppley Airfield aerial view",
+  6,
+  "US"
+ ],
+ [
   "kzn_terminal",
   "Kazan International Airport terminal",
+  6,
+  "RU"
+ ],
+ [
+  "kzn_airside",
+  "Kazan International Airport aircraft apron",
+  6,
+  "RU"
+ ],
+ [
+  "kzn_aerial",
+  "Kazan International Airport aerial view",
   6,
   "RU"
  ],
@@ -2106,8 +6306,32 @@
   "IN"
  ],
  [
+  "trv_airside",
+  "Trivandrum International Airport aircraft apron",
+  6,
+  "IN"
+ ],
+ [
+  "trv_aerial",
+  "Trivandrum International Airport aerial view",
+  6,
+  "IN"
+ ],
+ [
   "tsa_terminal",
   "Taipei Songshan Airport terminal",
+  6,
+  "TW"
+ ],
+ [
+  "tsa_airside",
+  "Taipei Songshan Airport aircraft apron",
+  6,
+  "TW"
+ ],
+ [
+  "tsa_aerial",
+  "Taipei Songshan Airport aerial view",
   6,
   "TW"
  ],
@@ -2118,8 +6342,32 @@
   "CN"
  ],
  [
+  "lxa_airside",
+  "Lhasa Gonggar Airport aircraft apron",
+  6,
+  "CN"
+ ],
+ [
+  "lxa_aerial",
+  "Lhasa Gonggar Airport aerial view",
+  6,
+  "CN"
+ ],
+ [
   "buf_terminal",
   "Buffalo Niagara International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "buf_airside",
+  "Buffalo Niagara International Airport aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "buf_aerial",
+  "Buffalo Niagara International Airport aerial view",
   6,
   "US"
  ],
@@ -2130,8 +6378,32 @@
   "GB"
  ],
  [
+  "lba_airside",
+  "Leeds Bradford Airport aircraft apron",
+  6,
+  "GB"
+ ],
+ [
+  "lba_aerial",
+  "Leeds Bradford Airport aerial view",
+  6,
+  "GB"
+ ],
+ [
   "aua_terminal",
   "Queen Beatrix International Airport terminal",
+  6,
+  "AW"
+ ],
+ [
+  "aua_airside",
+  "Queen Beatrix International Airport aircraft apron",
+  6,
+  "AW"
+ ],
+ [
+  "aua_aerial",
+  "Queen Beatrix International Airport aerial view",
   6,
   "AW"
  ],
@@ -2142,8 +6414,32 @@
   "IN"
  ],
  [
+  "goi_airside",
+  "Dabolim Airport aircraft apron",
+  6,
+  "IN"
+ ],
+ [
+  "goi_aerial",
+  "Dabolim Airport aerial view",
+  6,
+  "IN"
+ ],
+ [
   "abq_terminal",
   "Albuquerque International Sunport Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "abq_airside",
+  "Albuquerque International Sunport Airport aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "abq_aerial",
+  "Albuquerque International Sunport Airport aerial view",
   6,
   "US"
  ],
@@ -2154,8 +6450,32 @@
   "US"
  ],
  [
+  "orf_airside",
+  "Norfolk International Airport aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "orf_aerial",
+  "Norfolk International Airport aerial view",
+  6,
+  "US"
+ ],
+ [
   "koj_terminal",
   "Kagoshima Airport terminal",
+  6,
+  "JP"
+ ],
+ [
+  "koj_airside",
+  "Kagoshima Airport aircraft apron",
+  6,
+  "JP"
+ ],
+ [
+  "koj_aerial",
+  "Kagoshima Airport aerial view",
   6,
   "JP"
  ],
@@ -2166,8 +6486,32 @@
   "MA"
  ],
  [
+  "aga_airside",
+  "Al Massira Airport aircraft apron",
+  6,
+  "MA"
+ ],
+ [
+  "aga_aerial",
+  "Al Massira Airport aerial view",
+  6,
+  "MA"
+ ],
+ [
   "olb_terminal",
   "Olbia Costa Smeralda Airport terminal",
+  6,
+  "IT"
+ ],
+ [
+  "olb_airside",
+  "Olbia Costa Smeralda Airport aircraft apron",
+  6,
+  "IT"
+ ],
+ [
+  "olb_aerial",
+  "Olbia Costa Smeralda Airport aerial view",
   6,
   "IT"
  ],
@@ -2178,8 +6522,32 @@
   "BR"
  ],
  [
+  "for_airside",
+  "Pinto Martins International Airport aircraft apron",
+  6,
+  "BR"
+ ],
+ [
+  "for_aerial",
+  "Pinto Martins International Airport aerial view",
+  6,
+  "BR"
+ ],
+ [
   "cfu_terminal",
   "Ioannis Kapodistrias International Airport terminal",
+  6,
+  "GR"
+ ],
+ [
+  "cfu_airside",
+  "Ioannis Kapodistrias International Airport aircraft apron",
+  6,
+  "GR"
+ ],
+ [
+  "cfu_aerial",
+  "Ioannis Kapodistrias International Airport aerial view",
   6,
   "GR"
  ],
@@ -2190,8 +6558,32 @@
   "IT"
  ],
  [
+  "trn_airside",
+  "Torino Caselle International Airport aircraft apron",
+  6,
+  "IT"
+ ],
+ [
+  "trn_aerial",
+  "Torino Caselle International Airport aerial view",
+  6,
+  "IT"
+ ],
+ [
   "acc_terminal",
   "Kotoka International Airport terminal",
+  6,
+  "GH"
+ ],
+ [
+  "acc_airside",
+  "Kotoka International Airport aircraft apron",
+  6,
+  "GH"
+ ],
+ [
+  "acc_aerial",
+  "Kotoka International Airport aerial view",
   6,
   "GH"
  ],
@@ -2202,8 +6594,32 @@
   "EC"
  ],
  [
+  "gye_airside",
+  "Simon Bolivar International Airport aircraft apron",
+  6,
+  "EC"
+ ],
+ [
+  "gye_aerial",
+  "Simon Bolivar International Airport aerial view",
+  6,
+  "EC"
+ ],
+ [
   "zag_terminal",
   "Zagreb Airport terminal",
+  6,
+  "HR"
+ ],
+ [
+  "zag_airside",
+  "Zagreb Airport aircraft apron",
+  6,
+  "HR"
+ ],
+ [
+  "zag_aerial",
+  "Zagreb Airport aerial view",
   6,
   "HR"
  ],
@@ -2214,8 +6630,32 @@
   "MA"
  ],
  [
+  "tng_airside",
+  "Ibn Batouta Airport aircraft apron",
+  6,
+  "MA"
+ ],
+ [
+  "tng_aerial",
+  "Ibn Batouta Airport aerial view",
+  6,
+  "MA"
+ ],
+ [
   "ric_terminal",
   "Richmond International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "ric_airside",
+  "Richmond International Airport aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "ric_aerial",
+  "Richmond International Airport aerial view",
   6,
   "US"
  ],
@@ -2226,8 +6666,32 @@
   "MU"
  ],
  [
+  "mru_airside",
+  "Sir Seewoosagur Ramgoolam International Airport aircraft apron",
+  6,
+  "MU"
+ ],
+ [
+  "mru_aerial",
+  "Sir Seewoosagur Ramgoolam International Airport aerial view",
+  6,
+  "MU"
+ ],
+ [
   "ccs_terminal",
   "Maiquetia (Simon Bolivar Internacional) Airport terminal",
+  6,
+  "VE"
+ ],
+ [
+  "ccs_airside",
+  "Maiquetia (Simon Bolivar Internacional) Airport aircraft apron",
+  6,
+  "VE"
+ ],
+ [
+  "ccs_aerial",
+  "Maiquetia (Simon Bolivar Internacional) Airport aerial view",
   6,
   "VE"
  ],
@@ -2238,8 +6702,32 @@
   "SE"
  ],
  [
+  "got_airside",
+  "Gothenburg-Landvetter Airport aircraft apron",
+  6,
+  "SE"
+ ],
+ [
+  "got_aerial",
+  "Gothenburg-Landvetter Airport aerial view",
+  6,
+  "SE"
+ ],
+ [
   "cov_terminal",
   "\u00c7ukurova International Airport terminal",
+  6,
+  "TR"
+ ],
+ [
+  "cov_airside",
+  "\u00c7ukurova International Airport aircraft apron",
+  6,
+  "TR"
+ ],
+ [
+  "cov_aerial",
+  "\u00c7ukurova International Airport aerial view",
   6,
   "TR"
  ],
@@ -2250,8 +6738,32 @@
   "ID"
  ],
  [
+  "bpn_airside",
+  "Sepinggan International Airport aircraft apron",
+  6,
+  "ID"
+ ],
+ [
+  "bpn_aerial",
+  "Sepinggan International Airport aerial view",
+  6,
+  "ID"
+ ],
+ [
   "khg_terminal",
   "Kashgar Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "khg_airside",
+  "Kashgar Airport aircraft apron",
+  6,
+  "CN"
+ ],
+ [
+  "khg_aerial",
+  "Kashgar Airport aerial view",
   6,
   "CN"
  ],
@@ -2262,8 +6774,32 @@
   "PT"
  ],
  [
+  "fnc_airside",
+  "Madeira Airport aircraft apron",
+  6,
+  "PT"
+ ],
+ [
+  "fnc_aerial",
+  "Madeira Airport aerial view",
+  6,
+  "PT"
+ ],
+ [
   "bjv_terminal",
   "Milas Bodrum International Airport terminal",
+  6,
+  "TR"
+ ],
+ [
+  "bjv_airside",
+  "Milas Bodrum International Airport aircraft apron",
+  6,
+  "TR"
+ ],
+ [
+  "bjv_aerial",
+  "Milas Bodrum International Airport aerial view",
   6,
   "TR"
  ],
@@ -2274,8 +6810,32 @@
   "US"
  ],
  [
+  "boi_airside",
+  "Boise Air Trml Gowen Field aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "boi_aerial",
+  "Boise Air Trml Gowen Field aerial view",
+  6,
+  "US"
+ ],
+ [
   "tzx_terminal",
   "Trabzon International Airport terminal",
+  6,
+  "TR"
+ ],
+ [
+  "tzx_airside",
+  "Trabzon International Airport aircraft apron",
+  6,
+  "TR"
+ ],
+ [
+  "tzx_aerial",
+  "Trabzon International Airport aerial view",
   6,
   "TR"
  ],
@@ -2286,8 +6846,32 @@
   "IN"
  ],
  [
+  "jai_airside",
+  "Jaipur International Airport aircraft apron",
+  6,
+  "IN"
+ ],
+ [
+  "jai_aerial",
+  "Jaipur International Airport aerial view",
+  6,
+  "IN"
+ ],
+ [
   "vno_terminal",
   "Vilnius International Airport terminal",
+  6,
+  "LT"
+ ],
+ [
+  "vno_airside",
+  "Vilnius International Airport aircraft apron",
+  6,
+  "LT"
+ ],
+ [
+  "vno_aerial",
+  "Vilnius International Airport aerial view",
   6,
   "LT"
  ],
@@ -2298,8 +6882,32 @@
   "US"
  ],
  [
+  "okc_airside",
+  "Okc Will Rogers International Airport aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "okc_aerial",
+  "Okc Will Rogers International Airport aerial view",
+  6,
+  "US"
+ ],
+ [
   "ahb_terminal",
   "Abha Regional Airport terminal",
+  6,
+  "SA"
+ ],
+ [
+  "ahb_airside",
+  "Abha Regional Airport aircraft apron",
+  6,
+  "SA"
+ ],
+ [
+  "ahb_aerial",
+  "Abha Regional Airport aerial view",
   6,
   "SA"
  ],
@@ -2310,8 +6918,32 @@
   "ES"
  ],
  [
+  "fue_airside",
+  "Fuerteventura Airport aircraft apron",
+  6,
+  "ES"
+ ],
+ [
+  "fue_aerial",
+  "Fuerteventura Airport aerial view",
+  6,
+  "ES"
+ ],
+ [
   "spu_terminal",
   "Split Airport terminal",
+  6,
+  "HR"
+ ],
+ [
+  "spu_airside",
+  "Split Airport aircraft apron",
+  6,
+  "HR"
+ ],
+ [
+  "spu_aerial",
+  "Split Airport aerial view",
   6,
   "HR"
  ],
@@ -2322,8 +6954,32 @@
   "RU"
  ],
  [
+  "kja_airside",
+  "Yemelyanovo Airport aircraft apron",
+  6,
+  "RU"
+ ],
+ [
+  "kja_aerial",
+  "Yemelyanovo Airport aerial view",
+  6,
+  "RU"
+ ],
+ [
   "dbv_terminal",
   "Dubrovnik Airport terminal",
+  6,
+  "HR"
+ ],
+ [
+  "dbv_airside",
+  "Dubrovnik Airport aircraft apron",
+  6,
+  "HR"
+ ],
+ [
+  "dbv_aerial",
+  "Dubrovnik Airport aerial view",
   6,
   "HR"
  ],
@@ -2334,8 +6990,32 @@
   "KG"
  ],
  [
+  "bsz_airside",
+  "Manas International Airport aircraft apron",
+  6,
+  "KG"
+ ],
+ [
+  "bsz_aerial",
+  "Manas International Airport aerial view",
+  6,
+  "KG"
+ ],
+ [
   "sdf_terminal",
   "Louisville Muhammad Ali International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "sdf_airside",
+  "Louisville Muhammad Ali International Airport aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "sdf_aerial",
+  "Louisville Muhammad Ali International Airport aerial view",
   6,
   "US"
  ],
@@ -2346,8 +7026,32 @@
   "US"
  ],
  [
+  "mem_airside",
+  "Frederick W Smith International Airport aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "mem_aerial",
+  "Frederick W Smith International Airport aerial view",
+  6,
+  "US"
+ ],
+ [
   "kch_terminal",
   "Kuching International Airport terminal",
+  6,
+  "MY"
+ ],
+ [
+  "kch_airside",
+  "Kuching International Airport aircraft apron",
+  6,
+  "MY"
+ ],
+ [
+  "kch_aerial",
+  "Kuching International Airport aerial view",
   6,
   "MY"
  ],
@@ -2358,8 +7062,32 @@
   "AU"
  ],
  [
+  "ool_airside",
+  "Gold Coast Airport aircraft apron",
+  6,
+  "AU"
+ ],
+ [
+  "ool_aerial",
+  "Gold Coast Airport aerial view",
+  6,
+  "AU"
+ ],
+ [
   "mah_terminal",
   "Menorca Airport terminal",
+  6,
+  "ES"
+ ],
+ [
+  "mah_airside",
+  "Menorca Airport aircraft apron",
+  6,
+  "ES"
+ ],
+ [
+  "mah_aerial",
+  "Menorca Airport aerial view",
   6,
   "ES"
  ],
@@ -2370,8 +7098,32 @@
   "IN"
  ],
  [
+  "ccj_airside",
+  "Calicut International Airport aircraft apron",
+  6,
+  "IN"
+ ],
+ [
+  "ccj_aerial",
+  "Calicut International Airport aerial view",
+  6,
+  "IN"
+ ],
+ [
   "rno_terminal",
   "Reno Tahoe International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "rno_airside",
+  "Reno Tahoe International Airport aircraft apron",
+  6,
+  "US"
+ ],
+ [
+  "rno_aerial",
+  "Reno Tahoe International Airport aerial view",
   6,
   "US"
  ],
@@ -2382,8 +7134,32 @@
   "PL"
  ],
  [
+  "wro_airside",
+  "Copernicus Wroc\u0142aw Airport aircraft apron",
+  6,
+  "PL"
+ ],
+ [
+  "wro_aerial",
+  "Copernicus Wroc\u0142aw Airport aerial view",
+  6,
+  "PL"
+ ],
+ [
   "kti_terminal",
   "Techo International Airport terminal",
+  6,
+  "KH"
+ ],
+ [
+  "kti_airside",
+  "Techo International Airport aircraft apron",
+  6,
+  "KH"
+ ],
+ [
+  "kti_aerial",
+  "Techo International Airport aerial view",
   6,
   "KH"
  ],
@@ -2394,14 +7170,50 @@
   "DE"
  ],
  [
+  "nue_airside",
+  "Nuremberg Airport aircraft apron",
+  6,
+  "DE"
+ ],
+ [
+  "nue_aerial",
+  "Nuremberg Airport aerial view",
+  6,
+  "DE"
+ ],
+ [
   "dvo_terminal",
   "Francisco Bangoy International Airport terminal",
   6,
   "PH"
  ],
  [
+  "dvo_airside",
+  "Francisco Bangoy International Airport aircraft apron",
+  6,
+  "PH"
+ ],
+ [
+  "dvo_aerial",
+  "Francisco Bangoy International Airport aerial view",
+  6,
+  "PH"
+ ],
+ [
   "goa_terminal",
   "Genova Sestri Cristoforo Colombo Airport terminal",
+  6,
+  "IT"
+ ],
+ [
+  "goa_airside",
+  "Genova Sestri Cristoforo Colombo Airport aircraft apron",
+  6,
+  "IT"
+ ],
+ [
+  "goa_aerial",
+  "Genova Sestri Cristoforo Colombo Airport aerial view",
   6,
   "IT"
  ]

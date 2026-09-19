@@ -1,0 +1,19 @@
+W3: three airport images per airport, and the probe measured against that
+
+John's acceptance, 19 September: one photograph per airport looks thin, so a deck
+and a pack carry at least three images of the airport itself. The probe now
+measures that rather than mere presence.
+
+deck/build_image_set.py: an aerial slot added, so the three airport slots are
+terminal, aircraft apron and aerial view, with the city skyline and city centre
+slots kept for the route slides. --airport-only selects the three airport slots,
+which is what the acceptance is measured on.
+
+deck/routes2026_probe.json: regenerated, 401 airports, three airport slots each,
+1,203 rows. Still a dry run: it searches and scores and downloads nothing.
+
+The first attempt on the workstation failed before it started, because
+deck/avia_config.json does not exist there and is gitignored by design, config
+being machine-specific. Creating it is a workstation block, not a commit.
+
+No change to the engine, to cortex_app.py, or to any run path.

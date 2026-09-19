@@ -17,7 +17,7 @@ workstation, never in this repo.
 
 Usage
 -----
-    python3 build_image_set.py --top 400 --slots terminal \\
+    python3 build_image_set.py --top 400 --airport-only \\
         --out routes2026_probe.json
     python3 build_image_set.py --top 400 --out routes2026_set.json
 
@@ -41,9 +41,15 @@ ATTRS = os.path.join(HERE, "..", "app", "airport_attributes.json")
 ALWAYS = ["SJC", "TPE", "BLQ", "GOA", "JFK", "EWR",
           "BHX", "DUB", "VIE", "DFW", "MXP", "LIN"]
 
+# Three of these are the airport itself and two are its city. A deck carrying one
+# photograph of an airport looks thin, so the acceptance is three usable airport
+# images per airport, which is what the airport slots below are measured against.
+AIRPORT_SLOTS = ("terminal", "airside", "aerial")
+
 SLOTS = {
     "terminal": "%(airport)s terminal",
     "airside":  "%(airport)s aircraft apron",
+    "aerial":   "%(airport)s aerial view",
     "skyline":  "%(city)s skyline aerial",
     "city":     "%(city)s city centre",
 }
@@ -88,15 +94,19 @@ def main():
           formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--top", type=int, default=400,
                     help="how many airports, by size, from the engine table")
-    ap.add_argument("--slots", default="terminal,airside,skyline,city",
+    ap.add_argument("--slots", default="terminal,airside,aerial,skyline,city",
                     help="comma-separated: %s" % ", ".join(sorted(SLOTS)))
+    ap.add_argument("--airport-only", action="store_true",
+                    help="the three airport slots only, which is what the "
+                         "three-images-per-airport acceptance is measured on")
     ap.add_argument("--limit", type=int, default=6,
                     help="candidates to take per slot")
     ap.add_argument("--attrs", default=ATTRS)
     ap.add_argument("--out", required=True)
     a = ap.parse_args()
 
-    slots = [s.strip() for s in a.slots.split(",") if s.strip()]
+    slots = (list(AIRPORT_SLOTS) if a.airport_only
+             else [s.strip() for s in a.slots.split(",") if s.strip()])
     bad = [s for s in slots if s not in SLOTS]
     if bad:
         raise SystemExit("unknown slot(s): %s" % ", ".join(bad))
