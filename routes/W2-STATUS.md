@@ -1,7 +1,9 @@
 # W2 stand flow: status
 
-Version 6, 19 September 2026, 20:50, SESSION CLOSED. Written by the W2 build chat for the
-controller; rewritten each session, never appended. W2-RULINGS.md v1 read and acted on. Dates
+Version 7, 19 September 2026, 21:05. Written by the W2 build chat for the controller; rewritten
+each session, never appended. routes/README.md v1 read and followed: facts about other
+workstreams below are taken from their STATUS files and quoted with the version, never from
+memory of a chat. W2-RULINGS.md v1 read and acted on. Dates
 corrected from the "21 September" paste. Out of scope and untouched: engine demand logic, and
 W1's preagg, caches and pre-warm.
 
@@ -171,9 +173,15 @@ dependencies, so they are proven by compile and by reading. The first restart is
    a named airline's route economics sits on a public host it needs checking against the Sabre
    position (attribution constant, fares as bands only, no single-route blind figures), plus an
    expiry, a noindex header, and no personal data in the file.
-6. TWO CROSS-WORKSTREAM DEPENDENCIES, both undated. The PDF is W3's and the email cannot attach
-   what does not exist. The pack host is W6's decision 7, due 1 Oct. Both need a date before
-   10 Oct.
+6. CROSS-WORKSTREAM DEPENDENCIES, now dated from the sibling files rather than assumed.
+   W3-STATUS.md (session 1, 19 Sep): the PDF render is "Not started, and now unblocked"; the
+   workstation check passed 19 Sep with Chrome, pikepdf 10.10.0 and pillow 12.3.0 present, so
+   nothing needs installing; proven end to end 22-25 Sep; and John pulled the pack, the PDF and
+   the imagery forward from 8 October to 3 October. The email therefore has a PDF to attach well
+   before the freeze, and W2's watchpoint on it is closed.
+   W6-STATUS.md (v2, 19 Sep 22:10) asks W2 for two things: "the pack URL rule and hosting
+   controls so W6 can place the files by 16 Oct", and "the mail records on the launch domain,
+   which the web cutover must not disturb". Both are now W2 deliverables and are dated below.
 7. RULING 18, THE UNMANNED WORKSTATION. Taken and understood: remote desktop over Tailscale,
    sign in, run both launchers, disconnect, never sign out, with Stop-Process first because
    Meridian-run.bat re-warms a running server rather than replacing it. W2 will write it in
@@ -182,6 +190,47 @@ dependencies, so they are proven by compile and by reading. The first restart is
    and will scope it for 8 October, including the check that the Cloudflare tunnel runs as a
    service. Worth stating plainly: an unmanned box makes the MCT startup line above the only
    thing that will ever tell anyone the master did not load.
+
+## Conflicts seen
+
+Raised here for the controller's sweep to resolve, per README.md. W2 has changed nothing on
+either account.
+
+1. **The hosted pack may have nowhere to live.** Ruling 15 requires two emails, the second
+   carrying a link to the HTML pack "hosted on the launched site". W6-STATUS.md v2 records that
+   the domain is still owed from John by 22 September and that "silence past 29 Sep and the
+   14 Oct cutover is not holdable, so the fallback landing page becomes the plan". A landing
+   page has no place to put per-visitor packs. So on W6's own stated fallback, half of ruling
+   15's email design has no delivery path, and nobody has yet designed how a pack travels from
+   the workstation to a public host in any case. W2's view, offered rather than taken: the
+   single email with the PDF attached, which W2 has recommended twice on deliverability grounds,
+   also removes this dependency entirely. If the controller holds the two-email design, the
+   pack host needs an owner and a date that does not sit behind the domain decision.
+2. **The web cutover could break the mail records.** W6 names "the mail records on the launch
+   domain, which the web cutover must not disturb" as a W2 dependency. Stated precisely so it is
+   not lost: aviationobservatory.com now carries a DKIM TXT at 20260919185744pm._domainkey, a
+   CNAME pm-bounces to pm.mtasv.net, and a DMARC TXT at _dmarc. If the launch domain turns out
+   to be this one, then a nameserver move, a host migration, or the "Restore Default DNS
+   Records" control in the Fasthosts panel would remove all three and sending would stop
+   silently, with the first symptom being packs not arriving at Routes. W2 asks that no
+   nameserver or DNS change is made on aviationobservatory.com without W2 reproducing those
+   three records at the new host first and verifying them in Postmark afterwards.
+
+## What other workstreams are waiting on from W2
+
+- **W6, by 16 October**: the pack URL rule and the hosting controls. W2 will deliver the rule by
+  3 October, to sit alongside W3's pack and PDF which John pulled to the same date. It will
+  cover the unguessable path, an expiry, a noindex header, no personal data in the file, and the
+  Sabre position (attribution constant, fares as bands only, no single-route blind figures).
+  W3-STATUS.md draws the same line from the other side: a public URL is a published use while
+  the emailed PDF is confidential, so the same photograph can be right in one and wrong in the
+  other. The rule has to be written once and used by both.
+- **W4**: the restart words verbatim for the host manual, which W2 will lift unchanged from
+  ruling 18 (remote desktop over Tailscale, sign in, run both launchers, disconnect, never sign
+  out, with Stop-Process first because Meridian-run.bat re-warms a running server rather than
+  replacing it); the request form and queue view design, which W4 has already written sections
+  3.5, 5.5 and 6.1 against; the tablet answer; and the Postmark approval date, which W2 chases
+  on 1 October. W4-STATUS.md confirms it has read this file at v6.
 
 ## Needed from John
 
