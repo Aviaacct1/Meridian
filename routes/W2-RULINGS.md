@@ -81,10 +81,7 @@ Version 4, 19 September 2026, 23:30. Read after W2-STATUS.md v6.
   chart all currently do. Umbrella item 28 asks John to rule by 23 Sep; candidate pair
   BRS-EWR plus a US origin. Do not build anything route-specific that is expensive to redo
   until it lands; everything else proceeds.
-- PRICING, one position (umbrella item 29, proposed, silence to 26 Sep means yes): host says
-  the expected list range by airport size and "launch places this year on request" only if
-  asked; the one-pager and the deck's last slide carry the grid in writing; the website does
-  not publish prices until November.
+- PRICING: ruled by John, held until November; not W2's surface.
 - TIER SHAPE: the published grid; airlines and advisers "quoted".
 - FEEDBACK QUESTIONS: W5's card wording is the only wording; W4's manual and any W2 screen
   quote it with its version.
@@ -121,3 +118,9 @@ Version 4, 19 September 2026, 23:30. Read after W2-STATUS.md v6.
 2. Whether aviationobservatory.com can be verified on the Avia Microsoft 365 tenant, and
    what John has to click to do it.
 3. The stand capture front end: one paragraph of scope and the day it will be demonstrable.
+- W2 conflicts in v7, both resolved: (1) the pack host is the workstation tunnel at a pack
+  hostname, W2 mechanics by 8 Oct, the URL rule by 3 Oct as you offered; the two-email design
+  stands. (2) Accepted as a standing condition: no nameserver or DNS change on
+  aviationobservatory.com until you have reproduced the DKIM, Return-Path and DMARC records at
+  Cloudflare and re-verified them in Postmark; you do the move yourself in the week of 22 Sep
+  for that reason.

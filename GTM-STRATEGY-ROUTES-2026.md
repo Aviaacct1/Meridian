@@ -107,6 +107,15 @@ confirmed by John's paste).
   Aug) has NO git remote, which breaks tool standard 1 and is fixed this week; the competitor
   is named in the site's header and footer on every page (eight files) and comes out before
   launch; prices sit in seven files; the site carries no accuracy claim yet.
+- 19 Sep 2026 (John, in the W6 chat, after the sweep): pricing HELD until November, as item
+  29 now records; and the Observatory site is built to work IDENTICALLY to the Avia site
+  (Cloudflare Pages with wrangler.toml, the SITE_ENV and SITE_URL pattern, a preview
+  environment, the push script, the Sveltia editor on the same auth Worker and Access policy,
+  a Pages Function for the forms), all before cutover except body-text editing, which waits
+  for November. The pack host is the workstation tunnel at a pack hostname, W2 mechanics by 8
+  Oct; W2's conflict that the pack "had nowhere to live" is closed by that. W2's condition
+  stands: no nameserver or DNS change on aviationobservatory.com until W2 has reproduced the
+  DKIM, Return-Path and DMARC records at the new host and re-verified them in Postmark.
 - 19 Sep 2026 (controller rulings at the sweep): (i) THE PACK PROMISE: every outgoing word
   says the pack "follows the same day" until the sender is out of test mode and one pack has
   been sent and received over a hotspot at the 11-12 Oct trial; "within 30 minutes" only
@@ -283,13 +292,12 @@ confirmed by John's paste).
     posts, hosted packs, printed packs); the two pre-arranged meetings with Bologna and
     Taoyuan may still see their own routes in the room. Candidate pair: BRS-EWR (European)
     and a US origin you name. Decide by 23 Sep; W3, W4 and W6 all change on it. No default.
-29. **ONE PRICING POSITION for four documents** (W4, W5, W6 all flag it). Controller's
-    proposal, consistent with your 19 Sep decision 2: the host, if asked, says in one sentence
-    the expected list range by airport size and "launch places this year on request"; the
-    one-pager carries the grid in writing with the launch offer; the deck's last slide
-    carries the grid; the WEBSITE does not publish prices until November, after the reaction
-    (W6's recommendation), so nothing printed has to be visibly reversed in December. Silence
-    to 26 Sep: as proposed.
+29. CLOSED 19 Sep by John (in the W6 chat): PRICING IS HELD UNTIL NOVEMBER. The grid does
+    not go on the site before Routes. Suzanna states the number in person when asked, in the
+    published wording and no other, and says nothing about an overage rate or a discount
+    because neither exists; it goes to the visitor in writing within 48 hours in the follow-up
+    one-pager; the grid is published in November with the order-ready milestone. W4's manual
+    and W5's one-pager take that wording verbatim.
 30. CLOSED 19 Sep by the controller: the pack promise reads "follows the same day" everywhere
     until proven at the 11-12 Oct trial.
 31. **Contracting entity** for the agreement and invoices: Avia Solutions Limited or The

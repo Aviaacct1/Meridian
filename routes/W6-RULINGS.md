@@ -96,10 +96,9 @@ Version 2, 19 September 2026, 23:30. Read after W6-STATUS.md v3; scope item 4 re
   chart all currently do. Umbrella item 28 asks John to rule by 23 Sep; candidate pair
   BRS-EWR plus a US origin. Do not build anything route-specific that is expensive to redo
   until it lands; everything else proceeds.
-- PRICING, one position (umbrella item 29, proposed, silence to 26 Sep means yes): host says
-  the expected list range by airport size and "launch places this year on request" only if
-  asked; the one-pager and the deck's last slide carry the grid in writing; the website does
-  not publish prices until November.
+- PRICING: RULED by John in your chat, held until November; the umbrella records it as item 29
+  and the other workstreams have the wording. Your status v5 is read; the remaining item for
+  you is the deck's last slide, which carries the grid (W3) and is unaffected.
 - TIER SHAPE: the published grid; airlines and advisers "quoted".
 - FEEDBACK QUESTIONS: W5's card wording is the only wording; W4's manual and any W2 screen
   quote it with its version.

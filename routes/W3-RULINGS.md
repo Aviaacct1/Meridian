@@ -93,10 +93,7 @@ Version 3, 19 September 2026, 23:30. Read after W3-STATUS.md v1.
   chart all currently do. Umbrella item 28 asks John to rule by 23 Sep; candidate pair
   BRS-EWR plus a US origin. Do not build anything route-specific that is expensive to redo
   until it lands; everything else proceeds.
-- PRICING, one position (umbrella item 29, proposed, silence to 26 Sep means yes): host says
-  the expected list range by airport size and "launch places this year on request" only if
-  asked; the one-pager and the deck's last slide carry the grid in writing; the website does
-  not publish prices until November.
+- PRICING: RULED by John, see the section below; item 29 is closed.
 - TIER SHAPE: the published grid; airlines and advisers "quoted".
 - FEEDBACK QUESTIONS: W5's card wording is the only wording; W4's manual and any W2 screen
   quote it with its version.
@@ -125,3 +122,12 @@ Version 3, 19 September 2026, 23:30. Read after W3-STATUS.md v1.
 2. The slide-by-slide outline of the ten slides, one line each, before any slide is built.
 3. Which imagery the library holds for SJC, TPE, BLQ, GOA, JFK and EWR, with rights status.
 4. How the PDF render will be produced and what it needs installed on the workstation.
+
+## Pricing, ruled by John 19 September (supersedes item 29's proposal)
+
+Held until November. The grid does not go on the site before Routes. The host states the
+number in person when asked, in the published wording and no other (£15,000, £20,000 or
+£25,000 a year by airport size, three seats, 100 presentations included), and says nothing
+about an overage rate or a discount because neither exists; it goes to the visitor in writing
+within 48 hours in the follow-up one-pager; the grid is published in November with the
+order-ready milestone. This wording replaces "on request, limited places".

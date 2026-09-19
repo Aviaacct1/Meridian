@@ -75,10 +75,7 @@ store, monitoring and the restart alert) is W2's and is not yours.
   chart all currently do. Umbrella item 28 asks John to rule by 23 Sep; candidate pair
   BRS-EWR plus a US origin. Do not build anything route-specific that is expensive to redo
   until it lands; everything else proceeds.
-- PRICING, one position (umbrella item 29, proposed, silence to 26 Sep means yes): host says
-  the expected list range by airport size and "launch places this year on request" only if
-  asked; the one-pager and the deck's last slide carry the grid in writing; the website does
-  not publish prices until November.
+- PRICING: RULED by John, see the section below; item 29 is closed.
 - TIER SHAPE: the published grid; airlines and advisers "quoted".
 - FEEDBACK QUESTIONS: W5's card wording is the only wording; W4's manual and any W2 screen
   quote it with its version.
@@ -98,3 +95,12 @@ store, monitoring and the restart alert) is W2's and is not yours.
 2. The one-pager draft and the question of tier shape put crisply for John.
 3. The feedback card and the pack-email line.
 4. The list of facts only John can supply, numbered.
+
+## Pricing, ruled by John 19 September (supersedes item 29's proposal)
+
+Held until November. The grid does not go on the site before Routes. The host states the
+number in person when asked, in the published wording and no other (£15,000, £20,000 or
+£25,000 a year by airport size, three seats, 100 presentations included), and says nothing
+about an overage rate or a discount because neither exists; it goes to the visitor in writing
+within 48 hours in the follow-up one-pager; the grid is published in November with the
+order-ready milestone. This wording replaces "on request, limited places".
