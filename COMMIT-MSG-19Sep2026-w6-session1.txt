@@ -1,0 +1,33 @@
+W6 session 1: messaging variants, five invitations, marketing calendar, website launch plan
+
+Adds the four W6 drafts under routes/ and the first W6-STATUS.md. Nothing published, sent or
+posted; every piece is a draft for Jol's copy pass and John's approval.
+
+routes/W6-MESSAGING-VARIANTS-19Sep2026.md
+  Three variants of the one-liner, three per sub-message, two of the offer sentence with the
+  unset numbers marked as slots. The accuracy line is carried verbatim and is not a variant.
+  Records that the measured evidence supports "in seconds" for Run and not for Optimise
+  (9.8s SJC-TPE, 9.0s BRS-EWR cold at 1012c29; Optimise 35 to 65s).
+
+routes/W6-INVITATIONS-AND-MEETINGS-19Sep2026.md
+  Five invitation paragraphs in John's voice for Birmingham, Dublin, Vienna, Dallas Fort
+  Worth and Milan SEA, each naming a proposed pre-run route with its basis stated and the
+  check owed. Dallas Fort Worth is marked NONE FOUND rather than filled. Adds the meetings
+  logistics: slots, per-meeting owners and dates, and the pack list.
+
+routes/W6-MARKETING-CALENDAR-19Sep2026.md
+  The calendar from the week of 22 September to the show, with owner, approval and
+  dependency per piece. Post 1 and the contact-list email drafted in full. Flags the chart
+  conflict: the ruling names SJC-TPE, a client route, against the standing rule that demo
+  and marketing material never uses an airport Avia has worked for; proposes BRS-EWR.
+
+routes/W6-WEBSITE-LAUNCH-PLAN-19Sep2026.md
+  Pages, owners and dates for the site lite; what Jol must finish by 5 October; the two
+  takedowns (the comparison page, and the price grid in all four places including the
+  JSON-LD offers) and the IT firm's cutover paragraph. Raises two blocking questions: which
+  repository launches, and which public domain, given that aviacortex.com is not allowed on
+  a client surface.
+
+routes/W6-STATUS.md
+  First W6 status: state per scope item, what W6 needs from John and Jol, dependencies on
+  W1, W2 and W3, and the three risks W6 is carrying.
