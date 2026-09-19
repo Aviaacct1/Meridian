@@ -21,7 +21,7 @@ confirmed by John's paste).
 
 | WS | State | Evidence | Next action | Owner | Date |
 |---|---|---|---|---|---|
-| W1 Speed and caches | In progress | Probe committed; preagg build + identity chain issued 19 Sep for the unattended week; no timings yet | Timings pasted; chain log read on return | John / controller | Timings 23 Sep; chain by 27 Sep |
+| W1 Speed and caches | In progress | First timings 19 Sep 16:03 (TIMING-20260919-1603.md, taken DURING the sector_adj build, server not restarted): Run 43.5s cold, 41.9s warm, 42.4s fixed-departure; Optimise narrowed 212s; brief and catchment cached. Picker 42 costable (6.6 evidenced). Chain still running | Clean re-run on a restarted server after the chain, then `--profile SJC-TPE:CI` to attribute the 42s | John / controller | 27 Sep |
 | W2 Stand flow | Not started | Queue and email design not yet put to John | Design on one screen to John (step E); laptop build proof | Controller / John | Design 22 Sep; laptop 1 Oct |
 | W3 Presentation | Not started | Old 2 July pptx only | Deck v1 after messaging settles | Controller, Jol, Nick | 3 Oct |
 | W4 Host | Not started | Host's name and contact in no document | Manual v1; get host details from John | Controller / John | 10 Oct |
@@ -41,6 +41,9 @@ confirmed by John's paste).
 - Estate index v11 (8 Aug) still says "World Routes early October"; the umbrella governs.
 - Master list 2.4 (does the 89/82 claim describe the engine the client sees) is still open;
   the standing accuracy wording is fixed regardless, and pre-mortem 9 depends on it.
+- `C:\src\meridian\app\access_password.txt` does not exist: the workstation server takes its
+  password from `QSI_PASSWORD` in the launching account's environment. Any probe run over
+  ssh must set `$env:QSI_PASSWORD` first (single quotes).
 - Working tree also carries an uncommitted +58 lines on HANDOVER-23Aug2026.md and three
   binary test outputs (master list 5.10).
 - The preagg store is NOT reachable from the live app: `cortex_app.py` and `config.py` carry no
@@ -58,6 +61,54 @@ confirmed by John's paste).
   expiring launch discount; two milestones; messaging before invitations; no competitor
   approaches; Optimise demonstrated on the stand).
 - 19 Sep 2026: programme controller appointed; this Status block is the single truth.
+- 21 Sep 2026: John's rulings on the pack: TWO emails (plain thank-you plus PDF attached;
+  HTML pack HOSTED on the launched site at a public unguessable URL, linked, with links back
+  to the main pages, and the same page is how the UK analysts review live packs and send a
+  correction); aviationobservatory.com is registered and unused, set it up as the sender from
+  scratch; a branded HTML email where it renders, plain text fallback. Host training is
+  remote (video sessions on the frozen build); Suzanna and Stefan have both used the tool.
+  Website launches as a "site lite" if the full site is not ready, with Q&A added after
+  Routes from the questions asked. A voice note-taker for Suzanna is under consideration
+  (needs a consent line on the stand).
+- 21 Sep 2026: preagg chain on the workstation: build DONE (od_p2p 1,157,577; od_single
+  5,780,022; sector_adj 859,129 rows in 426s; E:\Avia\preagg.duckdb written). Run A (no
+  preagg, 100 pinned routes, single-threaded) DONE in 618s, 85 routes scored, 3 errored for a
+  missing GeoNames dump on the workstation, 12 dropped by the back-test's own rules. Identity
+  check running. The back-test's own accuracy tables are the raw uncalibrated 2016 pin and
+  are NOT the product claim; they are ignored here.
+- 21 Sep 2026 (John, answers to the decisions batch):
+  1. Pricing: the structure exists (PRICING-HANDOVER-19Sep2026.md, from the Observatory site
+     build of 2-3 Aug): £15,000 / £20,000 / £25,000 a year by airport size, three seats, 100
+     presentations included, sales-led, published in full on the staging site. The soft
+     expected list for the offer sentence is therefore that grid. STILL OPEN: launch-customer
+     discount, number of places, expiry; the overage rate; the airline and adviser tiers of
+     the commercial plan, which the grid does not carry.
+  2. Meetings: John can sign in to the Routes site; the delegate list is read in a browser
+     session with the controller and the five targets chosen from it. Same session yields
+     the attending-airport list (5).
+  3. Email sender: the domain is aviationobservatory.com, set up to send. John's pattern
+     under consideration: a plain thank-you email first, then the PDF and the HTML in
+     separate emails so one blocked type does not lose the other, with a line to come back
+     to the stand if they have not arrived within the hour. Controller view in Waiting on
+     John 8.
+  4. Lead store: DuckDB. A basic CRM on top of that table is a post-Routes item.
+  5. Attending airports: from the delegate list (see 2).
+  6. Stand host: Suzanna McIntosh, suzanna.mcintosh@gmail.com, already in Cloudflare Access.
+     Stand F174. Lands Tuesday 20 Oct afternoon; works the stand Wed-Fri 9-5. Stefan Parry
+     (summer intern) may join her.
+  7. Website: LAUNCH before Routes; linked from the emails and the conference bio.
+- 21 Sep 2026: Routes World 2026 is in FRANKFURT (relocated; same dates). Registered
+  organisations and the 90 exhibitors read from the matchmaking platform and recorded in
+  ROUTES-ATTENDING-ORGANISATIONS-21Sep2026.md (organisations only, no delegate names): the
+  pre-warm airport set (decision 5) and the controller's proposed five meetings (decision 2)
+  are in that file, awaiting John's pick. An organisation-level master list of all delegates
+  (company, type, country, count) is still to build; a person-level pull was blocked by the
+  environment's privacy control and is not attempted again.
+- 21 Sep 2026: HOW CHATS ARE RUN (John). This chat, on Fable, is the controller: status,
+  decisions, W1 engineering judgement, the Friday note. Build workstreams run in dedicated
+  chats on Opus. Every new chat is started from a complete paste-ready prompt written by the
+  controller, model named, reading its files by path; John never copies text out of files.
+  Each build chat ends with a five-line report John pastes into the controller.
 - 19 Sep 2026: John away 20-27 Sep; the preagg store build plus its identity check runs
   unattended on the workstation over that week (block issued). Pre-warming routes is NOT
   started: every app cache is in-process and dies at restart; the persistent cache (W1)
@@ -84,8 +135,34 @@ confirmed by John's paste).
    pitches queued for the evening).
 4. **Stand host's name, contact and start date; the stand number.** In no document. Needed
    for W4 and for the Cloudflare Access policy (pre-mortem 7).
-5. Decisions batch of this week (pricing numbers, meeting targets, email sender, lead store,
-   attending-airport list source): sent separately as step C.
+5. CLOSED 21 Sep: six of seven answered (Decisions log). Open remainder below.
+6. **Launch offer numbers**: year-1 discount, number of places, expiry date, against the
+   £15-25k grid. Silence to 3 Oct: the host says "on request, limited places" only.
+7. **Tier shape**: the commercial plan has Airport / Airline / Adviser tiers; the published
+   grid prices by airport size only and quotes consultancies on portfolio. Which shape goes
+   in the offer sentence and the one-pager? Silence to 3 Oct: the published grid, airlines
+   and advisers "quoted".
+8. **Pack email pattern**: controller view is two emails, not three: a plain thank-you with
+   the PDF attached, and the HTML pack hosted at an unguessable public URL on the launched
+   site (no login) linked from that email, because HTML attachments are stripped far more
+   often than PDFs and a hosted page is also what a visitor forwards. Three emails triples
+   the spam-filter exposure. Your call. Silence to 26 Sep: two emails as described.
+9. **Sending domain**: aviationobservatory.com. Is it on the Avia Microsoft 365 tenant, or
+   elsewhere? Decides Graph versus a transactional sender, and who sets SPF/DKIM/DMARC.
+   Silence to 26 Sep: assumed on the tenant; W2 checks and reports.
+10. **Host training**: the plan says 14-16 Oct in person; Suzanna lands 20 Oct afternoon.
+    Proposal: two remote sessions 14-16 Oct on the frozen build over video, and an in-person
+    run-through on the stand or hotel on the evening of 20 Oct. Silence to 1 Oct: as proposed.
+11. **Site launch and the competitor page**: the staging site carries a competitor
+    comparison page and the full price grid under a "provisional" banner. Launching before
+    Routes puts both public, against the 19 Sep ruling of nothing about any competitor in
+    any material, and ahead of the final commercial sign-off the pricing note requires.
+    Decision needed: launch with the comparison page withheld and the grid signed off, or
+    revise the rulings. No default; this one needs an answer.
+12. CLOSED 21 Sep: delegate list read; organisations recorded.
+13. **Pick the five meetings** from section 4 of ROUTES-ATTENDING-ORGANISATIONS-21Sep2026.md
+    (proposal: Bologna, Tampa, Taoyuan, China Airlines, Birmingham). Silence to 26 Sep: no
+    invitations go.
 
 ---
 
@@ -230,6 +307,12 @@ Written as if it happened. Each has an owner and a mitigation already in the pla
     them the truth: onboarding opens 7 November and they are first in the queue. A signature
     taken before order-ready is a support problem, not a sale.
 
+15. **A visitor's airport is typed as a city name and the workstation cannot resolve it.**
+    Found 21 Sep: three pinned routes errored in the back-test with "a GeoNames dump is
+    required to resolve a city name"; the workstation has no GeoNames dump. Answer: confirm
+    which entry paths on the dashboard need it (code entry should not); install the dump on
+    the workstation or make the message a visible, honest refusal; test with a city-name
+    entry on 13 October. Owner: W2. Status: open.
 ---
 
 ## 7. Who owns what, in one line each
