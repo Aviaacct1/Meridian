@@ -30,6 +30,7 @@ Avia Solutions Limited. All rights reserved.
 import argparse
 import glob
 import json
+import sys
 import os
 import re
 import shutil
@@ -64,9 +65,16 @@ def font_store(explicit=None):
     cfg = os.environ.get("AVIA_CONFIG") or os.path.join(here, "avia_config.json")
     if os.path.exists(cfg):
         try:
-            with open(cfg) as f:
+            # utf-8-sig: a config written by PowerShell carries a byte-order
+            # mark and utf-8 alone chokes on it.
+            with open(cfg, encoding="utf-8-sig") as f:
                 conf = json.load(f)
-        except ValueError:
+        except ValueError as err:
+            # Not silent: a broken config used to fall through to "no font
+            # store set", which reads as a missing setting rather than a file
+            # that cannot be parsed.
+            sys.stderr.write("%s is not valid JSON (%s), so no font store was "
+                             "read from it.\n" % (cfg, err))
             conf = {}
         if conf.get("font_store"):
             return conf["font_store"]

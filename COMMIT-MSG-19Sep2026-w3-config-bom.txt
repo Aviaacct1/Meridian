@@ -1,0 +1,21 @@
+W3: read config files past a byte-order mark, and stop one silent fallback
+
+The workstation could not start the image probe. PowerShell's Set-Content with
+-Encoding UTF8 writes a byte-order mark, Python's open() on Windows reads the
+mark as text, and avia_images reported the config as invalid JSON at line 1
+column 1. A config hand-made on a Windows box is the normal case for this tool,
+so the tool reads past the mark rather than the person remembering not to write
+one. Second time a byte-order mark has cost this project a run.
+
+deck/avia_images.py: _config reads with utf-8-sig, as do the manifest and the
+fetch-set input, so a hand-edited set file cannot fail the same way.
+
+deck/avia_fonts.py: the same encoding fix, and a broken config now says so on
+stderr instead of returning an empty dict. The empty dict surfaced later as "no
+font store set", which reads as a missing setting rather than a file that could
+not be parsed: the silent-fallback shape this project has been caught by four
+times.
+
+Proven: a config written with a byte-order mark now reads correctly.
+
+No change to the engine, to cortex_app.py, or to any run path.

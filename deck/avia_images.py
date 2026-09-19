@@ -210,7 +210,10 @@ def _config(path=None):
         sys.exit("No config at %s.\n"
                  "Copy avia_config.example.json to avia_config.json and set "
                  "image_store." % cfg)
-    with open(cfg) as f:
+    # utf-8-sig, not utf-8: PowerShell's Set-Content -Encoding UTF8 writes a
+    # byte-order mark, and a config hand-made on a Windows box is the normal
+    # case here. The mark is stripped if present and nothing changes if not.
+    with open(cfg, encoding="utf-8-sig") as f:
         raw = f.read()
     try:
         conf = json.loads(raw)
@@ -378,7 +381,8 @@ def fetch(subject, tag, store, limit=8, dry_run=False, country=None):
     """Search, download and record. Returns the manifest entries written."""
     os.makedirs(os.path.join(store, tag), exist_ok=True)
     manifest_path = os.path.join(store, "manifest.json")
-    manifest = json.load(open(manifest_path)) if os.path.exists(manifest_path) else {}
+    manifest = json.load(open(manifest_path, encoding="utf-8-sig")) \
+        if os.path.exists(manifest_path) else {}
     entries = manifest.setdefault(tag, [])
     have = {e["title"] for e in entries}
     written = []
@@ -588,7 +592,8 @@ def _classify_fop(text):
 
 def credits(store, tags):
     """Attribution block for the deck's credits slide. Required for every CC BY file."""
-    manifest = json.load(open(os.path.join(store, "manifest.json")))
+    manifest = json.load(open(os.path.join(store, "manifest.json"),
+                               encoding="utf-8-sig"))
     lines = []
     for tag in tags:
         for e in manifest.get(tag, []):
@@ -663,14 +668,15 @@ def main():
         n = fetch(a.subject, a.tag, store, a.limit, a.dry_run, a.country)
         print("%s %d file(s)" % ("would take" if a.dry_run else "took", len(n)))
     elif a.cmd == "fetch-set":
-        for row in json.load(open(a.path)):
+        for row in json.load(open(a.path, encoding="utf-8-sig")):
             tag, subject = row[0], row[1]
             limit = row[2] if len(row) > 2 else 8
             country = row[3] if len(row) > 3 else a.country
             print("%s -> %s" % (subject, tag))
             fetch(subject, tag, store, limit, a.dry_run, country)
     elif a.cmd == "list":
-        manifest = json.load(open(os.path.join(store, "manifest.json")))
+        manifest = json.load(open(os.path.join(store, "manifest.json"),
+                               encoding="utf-8-sig"))
         for tag, entries in sorted(manifest.items()):
             if a.tag and tag != a.tag:
                 continue
