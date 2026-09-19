@@ -7,7 +7,8 @@ routes/W6-MESSAGING-VARIANTS-19Sep2026.md
   Three variants of the one-liner, three per sub-message, two of the offer sentence with the
   unset numbers marked as slots. The accuracy line is carried verbatim and is not a variant.
   Records that the measured evidence supports "in seconds" for Run and not for Optimise
-  (9.8s SJC-TPE, 9.0s BRS-EWR cold at 1012c29; Optimise 35 to 65s).
+  (9.8s SJC-TPE, 9.0s BRS-EWR cold at 1012c29; Optimise 35 to 65s). Sentence 3's hold
+  condition revised after John's question on publishing the price.
 
 routes/W6-INVITATIONS-AND-MEETINGS-19Sep2026.md
   Five invitation paragraphs in John's voice for Birmingham, Dublin, Vienna, Dallas Fort
@@ -21,13 +22,32 @@ routes/W6-MARKETING-CALENDAR-19Sep2026.md
   conflict: the ruling names SJC-TPE, a client route, against the standing rule that demo
   and marketing material never uses an airport Avia has worked for; proposes BRS-EWR.
 
-routes/W6-WEBSITE-LAUNCH-PLAN-19Sep2026.md
-  Pages, owners and dates for the site lite; what Jol must finish by 5 October; the two
-  takedowns (the comparison page, and the price grid in all four places including the
-  JSON-LD offers) and the IT firm's cutover paragraph. Raises two blocking questions: which
-  repository launches, and which public domain, given that aviacortex.com is not allowed on
-  a client surface.
+routes/W6-WEBSITE-LAUNCH-PLAN-19Sep2026.md (v3)
+  Rewritten twice after John's rulings of 19 September: the site is The Aviation Observatory
+  site, the domain is aviationobservatory.com, and Jol is not writing copy at present, so W6
+  prepares the pages and Jol proofs later. Read at E:\Avia\Observatory Website.
 
-routes/W6-STATUS.md
-  First W6 status: state per scope item, what W6 needs from John and Jol, dependencies on
-  W1, W2 and W3, and the three risks W6 is carrying.
+  Findings the plan did not hold: the repository has NO git remote, one copy on E:, last
+  commit 3 August; there is no SITE_ENV switch here, noindex is hardcoded in base.njk, so
+  launch is an edit and a rebuild; the build is 22 pages, not a site lite; the competitor is
+  named in the header and footer and so appears on every page, across eight source files; the
+  prices are in seven source files, not four; the site carries no accuracy claim, so the ruled
+  line has to be added; and the Eleventy config uses ESM while package.json does not declare
+  it, so a clean-clone build must be proven before any hosted build.
+
+  Carries three recommendations for John: hold the price grid until November and have the host
+  state it verbally with the follow-up carrying it in writing; deploy the site ourselves on
+  Cloudflare Pages from the repository, not from the workstation, with the packs staying on
+  the workstation tunnel and the zone moving to Cloudflare in the week of 22 September; and
+  bring the Observatory site into the Sveltia editor after Routes, once its prose is lifted
+  out of the templates, with only site.json exposed before then. Also records that the Avia
+  site already runs on Cloudflare Pages, so none of this is a new pattern, and that
+  CMS-README.md describes a review-branch flow the config no longer follows.
+
+  Includes the page review by name, the exact takedown list, and the dates. The IT firm is off
+  the W6 path and the paragraph drafted for them is withdrawn.
+
+routes/W6-STATUS.md (v3)
+  State per scope item, John's rulings this session, five conflicts seen for the controller's
+  resolution, six findings, what W6 needs from John, dependencies on W1, W2, W3 and W4, and
+  the six risks W6 is carrying.

@@ -76,11 +76,19 @@ seats, 100 presentations included, quoted and invoiced; [N] launch places this y
 seats, 100 presentations included. [N] launch places this year carry [Y]% off year one, in
 writing, until [DATE].
 
-Hold condition, binding until John rules: no discount, no number of places and no expiry
-appears on any surface, and the grid itself appears on no public surface, until item 6 is
-answered and the commercial sign-off in PRICING-HANDOVER-19Sep2026.md section 3 item 5
-lands. Until both, the host says "on request, limited places" and nothing else, and
-sentence 3 stays out of the posts, the listing, the invitations and the site.
+Hold condition, revised 19 September after John's question on publishing the price. W6's
+view, set out in W6-WEBSITE-LAUNCH-PLAN-19Sep2026.md section 2, is that the grid is not
+published before Routes and goes on the site in November with the order-ready milestone.
+On that ruling, sentence 3 is not a published sentence at all: it is what Suzanna says out
+loud when asked, in the published wording and no other, and what the follow-up one-pager
+then carries in writing within 48 hours. It appears on no post, no listing, no invitation
+and no page before November. She says nothing about an overage rate or a discount, because
+neither exists yet. Variant 3A is the spoken form; 3B becomes the page wording in November,
+once the sign-off, the overage rate and the launch offer all exist.
+
+If John rules the other way and the grid goes on the site before the show, sentence 3 still
+waits on umbrella items 6 and 7 for [N], [Y] and [DATE], and the commercial sign-off in
+PRICING-HANDOVER-19Sep2026.md section 3 item 5 still has to land first.
 
 ---
 
