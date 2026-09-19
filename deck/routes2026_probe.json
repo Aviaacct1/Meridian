@@ -1,0 +1,2408 @@
+[
+ [
+  "lhr_terminal",
+  "London Heathrow Airport terminal",
+  6,
+  "GB"
+ ],
+ [
+  "dxb_terminal",
+  "Dubai International Airport terminal",
+  6,
+  "AE"
+ ],
+ [
+  "atl_terminal",
+  "Hartsfield Jackson Atlanta International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "ist_terminal",
+  "Istanbul Airport terminal",
+  6,
+  "TR"
+ ],
+ [
+  "ord_terminal",
+  "Chicago O'Hare International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "cdg_terminal",
+  "Charles de Gaulle International Airport terminal",
+  6,
+  "FR"
+ ],
+ [
+  "dfw_terminal",
+  "Dallas-Fort Worth International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "hnd_terminal",
+  "Tokyo International Airport terminal",
+  6,
+  "JP"
+ ],
+ [
+  "jfk_terminal",
+  "John F Kennedy International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "fra_terminal",
+  "Frankfurt am Main International Airport terminal",
+  6,
+  "DE"
+ ],
+ [
+  "lax_terminal",
+  "Los Angeles International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "del_terminal",
+  "Indira Gandhi International Airport terminal",
+  6,
+  "IN"
+ ],
+ [
+  "den_terminal",
+  "Denver International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "ams_terminal",
+  "Amsterdam Airport Schiphol terminal",
+  6,
+  "NL"
+ ],
+ [
+  "pvg_terminal",
+  "Shanghai Pudong International Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "can_terminal",
+  "Guangzhou Baiyun International Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "mad_terminal",
+  "Madrid Barajas International Airport terminal",
+  6,
+  "ES"
+ ],
+ [
+  "icn_terminal",
+  "Incheon International Airport terminal",
+  6,
+  "KR"
+ ],
+ [
+  "sin_terminal",
+  "Singapore Changi International Airport terminal",
+  6,
+  "SG"
+ ],
+ [
+  "pek_terminal",
+  "Beijing Capital International Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "mia_terminal",
+  "Miami International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "hkg_terminal",
+  "Chek Lap Kok International Airport terminal",
+  6,
+  "HK"
+ ],
+ [
+  "sfo_terminal",
+  "San Francisco International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "bcn_terminal",
+  "Barcelona International Airport terminal",
+  6,
+  "ES"
+ ],
+ [
+  "kul_terminal",
+  "Kuala Lumpur International Airport terminal",
+  6,
+  "MY"
+ ],
+ [
+  "fco_terminal",
+  "Leonardo Da Vinci (Fiumicino) International Airport terminal",
+  6,
+  "IT"
+ ],
+ [
+  "bkk_terminal",
+  "Suvarnabhumi Airport terminal",
+  6,
+  "TH"
+ ],
+ [
+  "yyz_terminal",
+  "Toronto Pearson International Airport terminal",
+  6,
+  "CA"
+ ],
+ [
+  "doh_terminal",
+  "Hamad International Airport terminal",
+  6,
+  "QA"
+ ],
+ [
+  "szx_terminal",
+  "Shenzhen Bao'an International Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "mco_terminal",
+  "Orlando International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "sea_terminal",
+  "Seattle-Tacoma International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "iah_terminal",
+  "George Bush Intcntl Houston Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "bom_terminal",
+  "Chhatrapati Shivaji International Airport terminal",
+  6,
+  "IN"
+ ],
+ [
+  "ewr_terminal",
+  "Newark Liberty International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "mnl_terminal",
+  "Ninoy Aquino International Airport terminal",
+  6,
+  "PH"
+ ],
+ [
+  "cai_terminal",
+  "Cairo International Airport terminal",
+  6,
+  "EG"
+ ],
+ [
+  "jed_terminal",
+  "King Abdulaziz International Airport terminal",
+  6,
+  "SA"
+ ],
+ [
+  "clt_terminal",
+  "Charlotte Douglas International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "cgk_terminal",
+  "Soekarno-Hatta International Airport terminal",
+  6,
+  "ID"
+ ],
+ [
+  "bos_terminal",
+  "General Edward Lawrence Logan International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "mex_terminal",
+  "Licenciado Benito Juarez International Airport terminal",
+  6,
+  "MX"
+ ],
+ [
+  "tpe_terminal",
+  "Taiwan Taoyuan International Airport terminal",
+  6,
+  "TW"
+ ],
+ [
+  "muc_terminal",
+  "Munich International Airport terminal",
+  6,
+  "DE"
+ ],
+ [
+  "saw_terminal",
+  "Sabiha Gokcen International Airport terminal",
+  6,
+  "TR"
+ ],
+ [
+  "phx_terminal",
+  "Phoenix Sky Harbor International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "las_terminal",
+  "Harry Reid International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "gru_terminal",
+  "Guarulhos - Governador Andre Franco Montoro International Airport terminal",
+  6,
+  "BR"
+ ],
+ [
+  "bog_terminal",
+  "El Dorado International Airport terminal",
+  6,
+  "CO"
+ ],
+ [
+  "syd_terminal",
+  "Sydney Kingsford Smith International Airport terminal",
+  6,
+  "AU"
+ ],
+ [
+  "pkx_terminal",
+  "Beijing Daxing International Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "ruh_terminal",
+  "King Khaled International Airport terminal",
+  6,
+  "SA"
+ ],
+ [
+  "lgw_terminal",
+  "London Gatwick Airport terminal",
+  6,
+  "GB"
+ ],
+ [
+  "sha_terminal",
+  "Shanghai Hongqiao International Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "svo_terminal",
+  "Sheremetyevo International Airport terminal",
+  6,
+  "RU"
+ ],
+ [
+  "tfu_terminal",
+  "Chengdu Tianfu Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "dub_terminal",
+  "Dublin Airport terminal",
+  6,
+  "IE"
+ ],
+ [
+  "nrt_terminal",
+  "Narita International Airport terminal",
+  6,
+  "JP"
+ ],
+ [
+  "blr_terminal",
+  "Bengaluru International Airport terminal",
+  6,
+  "IN"
+ ],
+ [
+  "hgh_terminal",
+  "Hangzhou Xiaoshan International Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "ath_terminal",
+  "Eleftherios Venizelos International Airport terminal",
+  6,
+  "GR"
+ ],
+ [
+  "ory_terminal",
+  "Paris-Orly Airport terminal",
+  6,
+  "FR"
+ ],
+ [
+  "auh_terminal",
+  "Abu Dhabi International Airport terminal",
+  6,
+  "AE"
+ ],
+ [
+  "lis_terminal",
+  "Lisbon Portela Airport terminal",
+  6,
+  "PT"
+ ],
+ [
+  "pmi_terminal",
+  "Palma De Mallorca Airport terminal",
+  6,
+  "ES"
+ ],
+ [
+  "iad_terminal",
+  "Washington Dulles International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "mxp_terminal",
+  "Malpensa International Airport terminal",
+  6,
+  "IT"
+ ],
+ [
+  "cph_terminal",
+  "Copenhagen Kastrup Airport terminal",
+  6,
+  "DK"
+ ],
+ [
+  "ckg_terminal",
+  "Chongqing Jiangbei International Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "sgn_terminal",
+  "Tan Son Nhat International Airport terminal",
+  6,
+  "VN"
+ ],
+ [
+  "zrh_terminal",
+  "Zurich Airport terminal",
+  6,
+  "CH"
+ ],
+ [
+  "xiy_terminal",
+  "Xi'an Xianyang International Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "mel_terminal",
+  "Melbourne International Airport terminal",
+  6,
+  "AU"
+ ],
+ [
+  "phl_terminal",
+  "Philadelphia International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "ayt_terminal",
+  "Antalya International Airport terminal",
+  6,
+  "TR"
+ ],
+ [
+  "kmg_terminal",
+  "Kunming Wujiaba International Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "msp_terminal",
+  "Minneapolis-St Paul International Wold-Chamberlain Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "vie_terminal",
+  "Vienna International Airport terminal",
+  6,
+  "AT"
+ ],
+ [
+  "cun_terminal",
+  "Cancun International Airport terminal",
+  6,
+  "MX"
+ ],
+ [
+  "man_terminal",
+  "Manchester Airport terminal",
+  6,
+  "GB"
+ ],
+ [
+  "dtw_terminal",
+  "Detroit Metro Wayne County Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "han_terminal",
+  "Noi Bai International Airport terminal",
+  6,
+  "VN"
+ ],
+ [
+  "yvr_terminal",
+  "Vancouver International Airport terminal",
+  6,
+  "CA"
+ ],
+ [
+  "lga_terminal",
+  "Laguardia Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "tlv_terminal",
+  "Ben Gurion International Airport terminal",
+  6,
+  "IL"
+ ],
+ [
+  "stn_terminal",
+  "London Stansted Airport terminal",
+  6,
+  "GB"
+ ],
+ [
+  "yul_terminal",
+  "Montr\u00e9al-Pierre Elliott Trudeau International Airport terminal",
+  6,
+  "CA"
+ ],
+ [
+  "hyd_terminal",
+  "Rajiv Gandhi International Airport Shamshabad terminal",
+  6,
+  "IN"
+ ],
+ [
+  "bru_terminal",
+  "Brussels Airport terminal",
+  6,
+  "BE"
+ ],
+ [
+  "osl_terminal",
+  "Oslo Gardermoen Airport terminal",
+  6,
+  "NO"
+ ],
+ [
+  "urc_terminal",
+  "Urumqi Diwopu International Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "ctu_terminal",
+  "Chengdu Shuangliu International Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "bna_terminal",
+  "Nashville International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "san_terminal",
+  "San Diego International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "kix_terminal",
+  "Kansai International Airport terminal",
+  6,
+  "JP"
+ ],
+ [
+  "agp_terminal",
+  "Malaga Airport terminal",
+  6,
+  "ES"
+ ],
+ [
+  "lim_terminal",
+  "Jorge Chavez International Airport terminal",
+  6,
+  "PE"
+ ],
+ [
+  "fll_terminal",
+  "Fort Lauderdale Hollywood International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "slc_terminal",
+  "Salt Lake City International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "add_terminal",
+  "Bole International Airport terminal",
+  6,
+  "ET"
+ ],
+ [
+  "ber_terminal",
+  "Berlin Brandenburg Airport terminal",
+  6,
+  "DE"
+ ],
+ [
+  "arn_terminal",
+  "Stockholm-Arlanda Airport terminal",
+  6,
+  "SE"
+ ],
+ [
+  "bwi_terminal",
+  "Baltimore Washington International Thurgood Marshall Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "dps_terminal",
+  "Ngurah Rai (Bali) International Airport terminal",
+  6,
+  "ID"
+ ],
+ [
+  "fuk_terminal",
+  "Fukuoka Airport terminal",
+  6,
+  "JP"
+ ],
+ [
+  "bne_terminal",
+  "Brisbane International Airport terminal",
+  6,
+  "AU"
+ ],
+ [
+  "pty_terminal",
+  "Tocumen International Airport terminal",
+  6,
+  "PA"
+ ],
+ [
+  "wuh_terminal",
+  "Wuhan Tianhe International Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "dca_terminal",
+  "Ronald Reagan Washington Ntl Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "dmk_terminal",
+  "Don Mueang International Airport terminal",
+  6,
+  "TH"
+ ],
+ [
+  "nkg_terminal",
+  "Nanjing Lukou Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "xmn_terminal",
+  "Xiamen Gaoqi International Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "tpa_terminal",
+  "Tampa International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "waw_terminal",
+  "Warsaw Chopin Airport terminal",
+  6,
+  "PL"
+ ],
+ [
+  "aus_terminal",
+  "Austin-Bergstrom International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "scl_terminal",
+  "Comodoro Arturo Merino Benitez International Airport terminal",
+  6,
+  "CL"
+ ],
+ [
+  "tao_terminal",
+  "Qingdao Jiaodong Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "csx_terminal",
+  "Changsha Huanghua Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "bud_terminal",
+  "Budapest Ferenc Liszt International Airport terminal",
+  6,
+  "HU"
+ ],
+ [
+  "cgh_terminal",
+  "Congonhas Airport terminal",
+  6,
+  "BR"
+ ],
+ [
+  "hnl_terminal",
+  "Daniel K Inouye International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "jnb_terminal",
+  "O. R. Tambo International Airport terminal",
+  6,
+  "ZA"
+ ],
+ [
+  "dus_terminal",
+  "Dusseldorf International Airport terminal",
+  6,
+  "DE"
+ ],
+ [
+  "maa_terminal",
+  "Chennai International Airport terminal",
+  6,
+  "IN"
+ ],
+ [
+  "cgo_terminal",
+  "Xinzheng Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "cts_terminal",
+  "New Chitose Airport terminal",
+  6,
+  "JP"
+ ],
+ [
+  "gdl_terminal",
+  "Don Miguel Hidalgo Y Costilla International Airport terminal",
+  6,
+  "MX"
+ ],
+ [
+  "sju_terminal",
+  "Luis Munoz Marin International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "yyc_terminal",
+  "Calgary International Airport terminal",
+  6,
+  "CA"
+ ],
+ [
+  "alc_terminal",
+  "Alicante International Airport terminal",
+  6,
+  "ES"
+ ],
+ [
+  "cju_terminal",
+  "Jeju International Airport terminal",
+  6,
+  "KR"
+ ],
+ [
+  "oka_terminal",
+  "Naha Airport terminal",
+  6,
+  "JP"
+ ],
+ [
+  "hel_terminal",
+  "Helsinki Vantaa Airport terminal",
+  6,
+  "FI"
+ ],
+ [
+  "led_terminal",
+  "Pulkovo Airport terminal",
+  6,
+  "RU"
+ ],
+ [
+  "mdw_terminal",
+  "Chicago Midway International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "ltn_terminal",
+  "London Luton Airport terminal",
+  6,
+  "GB"
+ ],
+ [
+  "edi_terminal",
+  "Edinburgh Airport terminal",
+  6,
+  "GB"
+ ],
+ [
+  "ccu_terminal",
+  "Netaji Subhash Chandra Bose International Airport terminal",
+  6,
+  "IN"
+ ],
+ [
+  "nce_terminal",
+  "Nice-Cote d'Azur Airport terminal",
+  6,
+  "FR"
+ ],
+ [
+  "pdx_terminal",
+  "Portland International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "rak_terminal",
+  "Menara Airport terminal",
+  6,
+  "MA"
+ ],
+ [
+  "cmn_terminal",
+  "Mohammed V International Airport terminal",
+  6,
+  "MA"
+ ],
+ [
+  "shj_terminal",
+  "Sharjah International Airport terminal",
+  6,
+  "AE"
+ ],
+ [
+  "prg_terminal",
+  "V\u00e1clav Havel Airport terminal",
+  6,
+  "CZ"
+ ],
+ [
+  "opo_terminal",
+  "Francisco de S\u00e1 Carneiro Airport terminal",
+  6,
+  "PT"
+ ],
+ [
+  "per_terminal",
+  "Perth International Airport terminal",
+  6,
+  "AU"
+ ],
+ [
+  "hak_terminal",
+  "Haikou Meilan International Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "akl_terminal",
+  "Auckland International Airport terminal",
+  6,
+  "NZ"
+ ],
+ [
+  "gva_terminal",
+  "Geneva Cointrin International Airport terminal",
+  6,
+  "CH"
+ ],
+ [
+  "dal_terminal",
+  "Dallas Love Field terminal",
+  6,
+  "US"
+ ],
+ [
+  "she_terminal",
+  "Taoxian Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "kwe_terminal",
+  "Longdongbao Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "rdu_terminal",
+  "Raleigh-Durham International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "gig_terminal",
+  "Galeao - Antonio Carlos Jobim International Airport terminal",
+  6,
+  "BR"
+ ],
+ [
+  "mty_terminal",
+  "General Mariano Escobedo International Airport terminal",
+  6,
+  "MX"
+ ],
+ [
+  "bgy_terminal",
+  "Bergamo Orio Al Serio Airport terminal",
+  6,
+  "IT"
+ ],
+ [
+  "dme_terminal",
+  "Domodedovo International Airport terminal",
+  6,
+  "RU"
+ ],
+ [
+  "tna_terminal",
+  "Yaoqiang Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "dac_terminal",
+  "Dhaka Hazrat Shahjalal International Airport terminal",
+  6,
+  "BD"
+ ],
+ [
+  "stl_terminal",
+  "St Louis Lambert International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "otp_terminal",
+  "Henri Coanda International Airport terminal",
+  6,
+  "RO"
+ ],
+ [
+  "dlc_terminal",
+  "Zhoushuizi Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "nap_terminal",
+  "Napoli Capodichino International Airport terminal",
+  6,
+  "IT"
+ ],
+ [
+  "gmp_terminal",
+  "Gimpo International Airport terminal",
+  6,
+  "KR"
+ ],
+ [
+  "puj_terminal",
+  "Punta Cana International Airport terminal",
+  6,
+  "DO"
+ ],
+ [
+  "bsb_terminal",
+  "Presidente Juscelino Kubistschek International Airport terminal",
+  6,
+  "BR"
+ ],
+ [
+  "upg_terminal",
+  "Hasanuddin International Airport terminal",
+  6,
+  "ID"
+ ],
+ [
+  "syx_terminal",
+  "Sanya Phoenix International Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "aep_terminal",
+  "Jorge Newbery Airpark terminal",
+  6,
+  "AR"
+ ],
+ [
+  "mct_terminal",
+  "Muscat International Airport terminal",
+  6,
+  "OM"
+ ],
+ [
+  "dad_terminal",
+  "Da Nang International Airport terminal",
+  6,
+  "VN"
+ ],
+ [
+  "ham_terminal",
+  "Hamburg Airport terminal",
+  6,
+  "DE"
+ ],
+ [
+  "dmm_terminal",
+  "King Fahd International Airport terminal",
+  6,
+  "SA"
+ ],
+ [
+  "hrb_terminal",
+  "Taiping Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "tas_terminal",
+  "Tashkent International Airport terminal",
+  6,
+  "UZ"
+ ],
+ [
+  "lhw_terminal",
+  "Lanzhou Zhongchuan Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "vce_terminal",
+  "Venezia Tessera - Marco Polo Airport terminal",
+  6,
+  "IT"
+ ],
+ [
+  "mrs_terminal",
+  "Marseille Provence Airport terminal",
+  6,
+  "FR"
+ ],
+ [
+  "alg_terminal",
+  "Houari Boumediene Airport terminal",
+  6,
+  "DZ"
+ ],
+ [
+  "bhx_terminal",
+  "Birmingham International Airport terminal",
+  6,
+  "GB"
+ ],
+ [
+  "hou_terminal",
+  "William P Hobby Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "itm_terminal",
+  "Osaka International Airport terminal",
+  6,
+  "JP"
+ ],
+ [
+  "vko_terminal",
+  "Vnukovo International Airport terminal",
+  6,
+  "RU"
+ ],
+ [
+  "smf_terminal",
+  "Sacramento International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "krk_terminal",
+  "John Paul II International Airport Krak\u00f3w-Balice Airport terminal",
+  6,
+  "PL"
+ ],
+ [
+  "mde_terminal",
+  "Jose Maria Cordova International Airport terminal",
+  6,
+  "CO"
+ ],
+ [
+  "tsn_terminal",
+  "Tianjin Binhai International Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "hkt_terminal",
+  "Phuket International Airport terminal",
+  6,
+  "TH"
+ ],
+ [
+  "tia_terminal",
+  "Tirana International Airport Mother Teresa terminal",
+  6,
+  "AL"
+ ],
+ [
+  "sub_terminal",
+  "Juanda International Airport terminal",
+  6,
+  "ID"
+ ],
+ [
+  "amd_terminal",
+  "Sardar Vallabhbhai Patel International Airport terminal",
+  6,
+  "IN"
+ ],
+ [
+  "cta_terminal",
+  "Catania Fontanarossa Airport terminal",
+  6,
+  "IT"
+ ],
+ [
+  "esb_terminal",
+  "Esenboga International Airport terminal",
+  6,
+  "TR"
+ ],
+ [
+  "amm_terminal",
+  "Queen Alia International Airport terminal",
+  6,
+  "JO"
+ ],
+ [
+  "ngb_terminal",
+  "Ningbo Lishe International Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "adb_terminal",
+  "Adnan Menderes International Airport terminal",
+  6,
+  "TR"
+ ],
+ [
+  "fao_terminal",
+  "Faro Airport terminal",
+  6,
+  "PT"
+ ],
+ [
+  "ala_terminal",
+  "Almaty International Airport terminal",
+  6,
+  "KZ"
+ ],
+ [
+  "vlc_terminal",
+  "Valencia Airport terminal",
+  6,
+  "ES"
+ ],
+ [
+  "cnf_terminal",
+  "Tancredo Neves International Airport terminal",
+  6,
+  "BR"
+ ],
+ [
+  "pus_terminal",
+  "Gimhae International Airport terminal",
+  6,
+  "KR"
+ ],
+ [
+  "crl_terminal",
+  "Brussels South Charleroi Airport terminal",
+  6,
+  "BE"
+ ],
+ [
+  "lys_terminal",
+  "Lyon Saint-Exupery Airport terminal",
+  6,
+  "FR"
+ ],
+ [
+  "hrg_terminal",
+  "Hurghada International Airport terminal",
+  6,
+  "EG"
+ ],
+ [
+  "foc_terminal",
+  "Fuzhou Changle International Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "tun_terminal",
+  "Tunis Carthage International Airport terminal",
+  6,
+  "TN"
+ ],
+ [
+  "blq_terminal",
+  "Bologna Borgo Panigale Airport terminal",
+  6,
+  "IT"
+ ],
+ [
+  "cok_terminal",
+  "Cochin International Airport terminal",
+  6,
+  "IN"
+ ],
+ [
+  "vcp_terminal",
+  "Viracopos International Airport terminal",
+  6,
+  "BR"
+ ],
+ [
+  "msy_terminal",
+  "Louis Armstrong New Orleans International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "her_terminal",
+  "Heraklion International Nikos Kazantzakis Airport terminal",
+  6,
+  "GR"
+ ],
+ [
+  "mci_terminal",
+  "Kansas City International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "lpa_terminal",
+  "Gran Canaria Airport terminal",
+  6,
+  "ES"
+ ],
+ [
+  "ceb_terminal",
+  "Mactan Cebu International Airport terminal",
+  6,
+  "PH"
+ ],
+ [
+  "lin_terminal",
+  "Linate Airport terminal",
+  6,
+  "IT"
+ ],
+ [
+  "eze_terminal",
+  "Ministro Pistarini International Airport terminal",
+  6,
+  "AR"
+ ],
+ [
+  "ovb_terminal",
+  "Tolmachevo Airport terminal",
+  6,
+  "RU"
+ ],
+ [
+  "svx_terminal",
+  "Koltsovo Airport terminal",
+  6,
+  "RU"
+ ],
+ [
+  "brs_terminal",
+  "Bristol International Airport terminal",
+  6,
+  "GB"
+ ],
+ [
+  "ibz_terminal",
+  "Ibiza Airport terminal",
+  6,
+  "ES"
+ ],
+ [
+  "mla_terminal",
+  "Luqa Airport terminal",
+  6,
+  "MT"
+ ],
+ [
+  "cgq_terminal",
+  "Longjia Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "cmb_terminal",
+  "Bandaranaike International Apt Colombo Airport terminal",
+  6,
+  "LK"
+ ],
+ [
+  "cle_terminal",
+  "Cleveland-Hopkins International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "nng_terminal",
+  "Nanning Wuxu Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "ssh_terminal",
+  "Sharm El Sheikh International Airport terminal",
+  6,
+  "EG"
+ ],
+ [
+  "nbo_terminal",
+  "Jomo Kenyatta International Airport terminal",
+  6,
+  "KE"
+ ],
+ [
+  "sat_terminal",
+  "San Antonio International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "ind_terminal",
+  "Indianapolis International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "tyn_terminal",
+  "Taiyuan Wusu Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "isb_terminal",
+  "Islamabad International Airport terminal",
+  6,
+  "PK"
+ ],
+ [
+  "sjc_terminal",
+  "Norman Y Mineta San Jose International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "cpt_terminal",
+  "Cape Town International Airport terminal",
+  6,
+  "ZA"
+ ],
+ [
+  "sna_terminal",
+  "John Wayne Orange County Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "ktm_terminal",
+  "Tribhuvan International Airport terminal",
+  6,
+  "NP"
+ ],
+ [
+  "tij_terminal",
+  "General Abelardo L. Rodriguez International Airport terminal",
+  6,
+  "MX"
+ ],
+ [
+  "lca_terminal",
+  "Larnaca International Airport terminal",
+  6,
+  "CY"
+ ],
+ [
+  "sjw_terminal",
+  "Shijiazhuang Daguocun International Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "pnq_terminal",
+  "Pune Airport terminal",
+  6,
+  "IN"
+ ],
+ [
+  "ngo_terminal",
+  "Chubu Centrair International Airport terminal",
+  6,
+  "JP"
+ ],
+ [
+  "kwi_terminal",
+  "Kuwait International Airport terminal",
+  6,
+  "KW"
+ ],
+ [
+  "pit_terminal",
+  "Pittsburgh International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "str_terminal",
+  "Stuttgart Airport terminal",
+  6,
+  "DE"
+ ],
+ [
+  "kef_terminal",
+  "Keflavik International Airport terminal",
+  6,
+  "IS"
+ ],
+ [
+  "het_terminal",
+  "Baita International Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "pmo_terminal",
+  "Palermo Punta Raisi Airport terminal",
+  6,
+  "IT"
+ ],
+ [
+  "wux_terminal",
+  "Sunan Shuofang International Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "hfe_terminal",
+  "Hefei Xinqiao International Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "cgn_terminal",
+  "Cologne Bonn Airport terminal",
+  6,
+  "DE"
+ ],
+ [
+  "bah_terminal",
+  "Bahrain International Airport terminal",
+  6,
+  "BH"
+ ],
+ [
+  "zuh_terminal",
+  "Zhuhai Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "los_terminal",
+  "Murtala Muhammed International Airport terminal",
+  6,
+  "NG"
+ ],
+ [
+  "cvg_terminal",
+  "Cincinnati Northern Kentucky International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "sjd_terminal",
+  "Los Cabos International Airport terminal",
+  6,
+  "MX"
+ ],
+ [
+  "svq_terminal",
+  "Sevilla Airport terminal",
+  6,
+  "ES"
+ ],
+ [
+  "beg_terminal",
+  "Belgrade Nikola Tesla Airport terminal",
+  6,
+  "RS"
+ ],
+ [
+  "lhe_terminal",
+  "Alama Iqbal International Airport terminal",
+  6,
+  "PK"
+ ],
+ [
+  "wnz_terminal",
+  "Wenzhou Yongqiang Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "sal_terminal",
+  "El Salvador International Airport terminal",
+  6,
+  "SV"
+ ],
+ [
+  "cmh_terminal",
+  "John Glenn Columbus International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "bsl_terminal",
+  "EuroAirport Basel-Mulhouse-Freiburg Airport terminal",
+  6,
+  "FR"
+ ],
+ [
+  "gla_terminal",
+  "Glasgow International Airport terminal",
+  6,
+  "GB"
+ ],
+ [
+  "tls_terminal",
+  "Toulouse-Blagnac Airport terminal",
+  6,
+  "FR"
+ ],
+ [
+  "khi_terminal",
+  "Jinnah International Airport terminal",
+  6,
+  "PK"
+ ],
+ [
+  "bri_terminal",
+  "Bari Palese International Airport terminal",
+  6,
+  "IT"
+ ],
+ [
+  "khn_terminal",
+  "Nanchang Changbei International Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "tfs_terminal",
+  "Tenerife South Airport terminal",
+  6,
+  "ES"
+ ],
+ [
+  "sjo_terminal",
+  "Juan Santamaria International Airport terminal",
+  6,
+  "CR"
+ ],
+ [
+  "nqz_terminal",
+  "Nursultan Nazarbayev International Airport terminal",
+  6,
+  "KZ"
+ ],
+ [
+  "oak_terminal",
+  "Oakland San Francisco Bay Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "nte_terminal",
+  "Nantes Atlantique Airport terminal",
+  6,
+  "FR"
+ ],
+ [
+  "sof_terminal",
+  "Sofia Airport terminal",
+  6,
+  "BG"
+ ],
+ [
+  "rsw_terminal",
+  "Southwest Florida International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "ont_terminal",
+  "Ontario International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "nas_terminal",
+  "Lynden Pindling International Airport terminal",
+  6,
+  "BS"
+ ],
+ [
+  "skg_terminal",
+  "Thessaloniki Macedonia International Airport terminal",
+  6,
+  "GR"
+ ],
+ [
+  "rec_terminal",
+  "Guararapes - Gilberto Freyre International Airport terminal",
+  6,
+  "BR"
+ ],
+ [
+  "gyd_terminal",
+  "Heydar Aliyev International Airport terminal",
+  6,
+  "AZ"
+ ],
+ [
+  "sdq_terminal",
+  "Las Americas International Airport terminal",
+  6,
+  "DO"
+ ],
+ [
+  "aer_terminal",
+  "Sochi International Airport terminal",
+  6,
+  "RU"
+ ],
+ [
+  "adl_terminal",
+  "Adelaide International Airport terminal",
+  6,
+  "AU"
+ ],
+ [
+  "jax_terminal",
+  "Jacksonville International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "bio_terminal",
+  "Bilbao Airport terminal",
+  6,
+  "ES"
+ ],
+ [
+  "pen_terminal",
+  "Penang International Airport terminal",
+  6,
+  "MY"
+ ],
+ [
+  "bgo_terminal",
+  "Bergen Airport Flesland terminal",
+  6,
+  "NO"
+ ],
+ [
+  "swa_terminal",
+  "Shantou Waisha Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "poa_terminal",
+  "Salgado Filho Airport terminal",
+  6,
+  "BR"
+ ],
+ [
+  "inc_terminal",
+  "Yinchuan Hedong International Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "evn_terminal",
+  "Zvartnots International Airport terminal",
+  6,
+  "AM"
+ ],
+ [
+  "med_terminal",
+  "Prince Mohammad Bin Abdulaziz Airport terminal",
+  6,
+  "SA"
+ ],
+ [
+  "nlu_terminal",
+  "Santa Lucia Air Force Base terminal",
+  6,
+  "MX"
+ ],
+ [
+  "rho_terminal",
+  "Diagoras Airport terminal",
+  6,
+  "GR"
+ ],
+ [
+  "khh_terminal",
+  "Kaohsiung International Airport terminal",
+  6,
+  "TW"
+ ],
+ [
+  "mle_terminal",
+  "Velana International Airport terminal",
+  6,
+  "MV"
+ ],
+ [
+  "bki_terminal",
+  "Kota Kinabalu International Airport terminal",
+  6,
+  "MY"
+ ],
+ [
+  "gdn_terminal",
+  "Gda\u0144sk Lech Wa\u0142\u0119sa Airport terminal",
+  6,
+  "PL"
+ ],
+ [
+  "anc_terminal",
+  "Ted Stevens Anchorage International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "pbi_terminal",
+  "Palm Beach International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "tbs_terminal",
+  "Tbilisi International Airport terminal",
+  6,
+  "GE"
+ ],
+ [
+  "ein_terminal",
+  "Eindhoven Airport terminal",
+  6,
+  "NL"
+ ],
+ [
+  "nmi_terminal",
+  "Navi Mumbai International Airport terminal",
+  6,
+  "IN"
+ ],
+ [
+  "lko_terminal",
+  "Chaudhary Charan Singh International Airport terminal",
+  6,
+  "IN"
+ ],
+ [
+  "ctg_terminal",
+  "Rafael Nunez International Airport terminal",
+  6,
+  "CO"
+ ],
+ [
+  "bod_terminal",
+  "Bordeaux-Merignac (BA 106) Airport terminal",
+  6,
+  "FR"
+ ],
+ [
+  "chs_terminal",
+  "Charleston Afb International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "ogg_terminal",
+  "Kahului Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "bva_terminal",
+  "Paris Beauvais Tille Airport terminal",
+  6,
+  "FR"
+ ],
+ [
+  "yeg_terminal",
+  "Edmonton International Airport terminal",
+  6,
+  "CA"
+ ],
+ [
+  "tfn_terminal",
+  "Tenerife Norte Airport terminal",
+  6,
+  "ES"
+ ],
+ [
+  "rix_terminal",
+  "Riga International Airport terminal",
+  6,
+  "LV"
+ ],
+ [
+  "cnx_terminal",
+  "Chiang Mai International Airport terminal",
+  6,
+  "TH"
+ ],
+ [
+  "ssa_terminal",
+  "Deputado Luiz Eduardo Magalhaes International Airport terminal",
+  6,
+  "BR"
+ ],
+ [
+  "bey_terminal",
+  "Beirut Rafic Hariri International Airport terminal",
+  6,
+  "LB"
+ ],
+ [
+  "clo_terminal",
+  "Alfonso Bonilla Aragon International Airport terminal",
+  6,
+  "CO"
+ ],
+ [
+  "dlm_terminal",
+  "Dalaman International Airport terminal",
+  6,
+  "TR"
+ ],
+ [
+  "bfs_terminal",
+  "Belfast International Airport terminal",
+  6,
+  "GB"
+ ],
+ [
+  "ace_terminal",
+  "Lanzarote Airport terminal",
+  6,
+  "ES"
+ ],
+ [
+  "bdl_terminal",
+  "Bradley International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "psa_terminal",
+  "Pisa San Giusto - Galileo Galilei International Airport terminal",
+  6,
+  "IT"
+ ],
+ [
+  "kno_terminal",
+  "Polonia International Airport terminal",
+  6,
+  "ID"
+ ],
+ [
+  "bur_terminal",
+  "Bob Hope Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "ljg_terminal",
+  "Lijiang Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "gau_terminal",
+  "Lokpriya Gopinath Bordoloi International Airport terminal",
+  6,
+  "IN"
+ ],
+ [
+  "sdu_terminal",
+  "Santos Dumont Airport terminal",
+  6,
+  "BR"
+ ],
+ [
+  "xnn_terminal",
+  "Xining Caojiabu Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "pqc_terminal",
+  "Phu Quoc Airport terminal",
+  6,
+  "VN"
+ ],
+ [
+  "lpl_terminal",
+  "Liverpool John Lennon Airport terminal",
+  6,
+  "GB"
+ ],
+ [
+  "gua_terminal",
+  "La Aurora Airport terminal",
+  6,
+  "GT"
+ ],
+ [
+  "jjn_terminal",
+  "Quanzhou Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "lux_terminal",
+  "Luxembourg-Findel International Airport terminal",
+  6,
+  "LU"
+ ],
+ [
+  "ecn_terminal",
+  "Ercan International Airport terminal",
+  6,
+  "CY"
+ ],
+ [
+  "abv_terminal",
+  "Nnamdi Azikiwe International Airport terminal",
+  6,
+  "NG"
+ ],
+ [
+  "uio_terminal",
+  "Nuevo Aeropuerto Internacional Mariscal Sucre terminal",
+  6,
+  "EC"
+ ],
+ [
+  "thr_terminal",
+  "Mehrabad International Airport terminal",
+  6,
+  "IR"
+ ],
+ [
+  "mke_terminal",
+  "General Mitchell International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "haj_terminal",
+  "Hannover Airport terminal",
+  6,
+  "DE"
+ ],
+ [
+  "mbj_terminal",
+  "Sangster International Airport terminal",
+  6,
+  "JM"
+ ],
+ [
+  "ynt_terminal",
+  "Penglai Intl terminal",
+  6,
+  "CN"
+ ],
+ [
+  "cag_terminal",
+  "Cagliari Elmas Airport terminal",
+  6,
+  "IT"
+ ],
+ [
+  "cxr_terminal",
+  "Cam Ranh Airport terminal",
+  6,
+  "VN"
+ ],
+ [
+  "ncl_terminal",
+  "Newcastle Airport terminal",
+  6,
+  "GB"
+ ],
+ [
+  "yow_terminal",
+  "Ottawa Macdonald-Cartier International Airport terminal",
+  6,
+  "CA"
+ ],
+ [
+  "chc_terminal",
+  "Christchurch International Airport terminal",
+  6,
+  "NZ"
+ ],
+ [
+  "cwb_terminal",
+  "Afonso Pena Airport terminal",
+  6,
+  "BR"
+ ],
+ [
+  "pvr_terminal",
+  "Licenciado Gustavo Diaz Ordaz International Airport terminal",
+  6,
+  "MX"
+ ],
+ [
+  "rmo_terminal",
+  "Chi\u0219in\u0103u International Airport terminal",
+  6,
+  "MD"
+ ],
+ [
+  "yhz_terminal",
+  "Halifax Robert L. Stanfield International Airport terminal",
+  6,
+  "CA"
+ ],
+ [
+  "mfm_terminal",
+  "Macau International Airport terminal",
+  6,
+  "MO"
+ ],
+ [
+  "oma_terminal",
+  "Eppley Airfield terminal",
+  6,
+  "US"
+ ],
+ [
+  "kzn_terminal",
+  "Kazan International Airport terminal",
+  6,
+  "RU"
+ ],
+ [
+  "trv_terminal",
+  "Trivandrum International Airport terminal",
+  6,
+  "IN"
+ ],
+ [
+  "tsa_terminal",
+  "Taipei Songshan Airport terminal",
+  6,
+  "TW"
+ ],
+ [
+  "lxa_terminal",
+  "Lhasa Gonggar Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "buf_terminal",
+  "Buffalo Niagara International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "lba_terminal",
+  "Leeds Bradford Airport terminal",
+  6,
+  "GB"
+ ],
+ [
+  "aua_terminal",
+  "Queen Beatrix International Airport terminal",
+  6,
+  "AW"
+ ],
+ [
+  "goi_terminal",
+  "Dabolim Airport terminal",
+  6,
+  "IN"
+ ],
+ [
+  "abq_terminal",
+  "Albuquerque International Sunport Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "orf_terminal",
+  "Norfolk International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "koj_terminal",
+  "Kagoshima Airport terminal",
+  6,
+  "JP"
+ ],
+ [
+  "aga_terminal",
+  "Al Massira Airport terminal",
+  6,
+  "MA"
+ ],
+ [
+  "olb_terminal",
+  "Olbia Costa Smeralda Airport terminal",
+  6,
+  "IT"
+ ],
+ [
+  "for_terminal",
+  "Pinto Martins International Airport terminal",
+  6,
+  "BR"
+ ],
+ [
+  "cfu_terminal",
+  "Ioannis Kapodistrias International Airport terminal",
+  6,
+  "GR"
+ ],
+ [
+  "trn_terminal",
+  "Torino Caselle International Airport terminal",
+  6,
+  "IT"
+ ],
+ [
+  "acc_terminal",
+  "Kotoka International Airport terminal",
+  6,
+  "GH"
+ ],
+ [
+  "gye_terminal",
+  "Simon Bolivar International Airport terminal",
+  6,
+  "EC"
+ ],
+ [
+  "zag_terminal",
+  "Zagreb Airport terminal",
+  6,
+  "HR"
+ ],
+ [
+  "tng_terminal",
+  "Ibn Batouta Airport terminal",
+  6,
+  "MA"
+ ],
+ [
+  "ric_terminal",
+  "Richmond International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "mru_terminal",
+  "Sir Seewoosagur Ramgoolam International Airport terminal",
+  6,
+  "MU"
+ ],
+ [
+  "ccs_terminal",
+  "Maiquetia (Simon Bolivar Internacional) Airport terminal",
+  6,
+  "VE"
+ ],
+ [
+  "got_terminal",
+  "Gothenburg-Landvetter Airport terminal",
+  6,
+  "SE"
+ ],
+ [
+  "cov_terminal",
+  "\u00c7ukurova International Airport terminal",
+  6,
+  "TR"
+ ],
+ [
+  "bpn_terminal",
+  "Sepinggan International Airport terminal",
+  6,
+  "ID"
+ ],
+ [
+  "khg_terminal",
+  "Kashgar Airport terminal",
+  6,
+  "CN"
+ ],
+ [
+  "fnc_terminal",
+  "Madeira Airport terminal",
+  6,
+  "PT"
+ ],
+ [
+  "bjv_terminal",
+  "Milas Bodrum International Airport terminal",
+  6,
+  "TR"
+ ],
+ [
+  "boi_terminal",
+  "Boise Air Trml Gowen Field terminal",
+  6,
+  "US"
+ ],
+ [
+  "tzx_terminal",
+  "Trabzon International Airport terminal",
+  6,
+  "TR"
+ ],
+ [
+  "jai_terminal",
+  "Jaipur International Airport terminal",
+  6,
+  "IN"
+ ],
+ [
+  "vno_terminal",
+  "Vilnius International Airport terminal",
+  6,
+  "LT"
+ ],
+ [
+  "okc_terminal",
+  "Okc Will Rogers International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "ahb_terminal",
+  "Abha Regional Airport terminal",
+  6,
+  "SA"
+ ],
+ [
+  "fue_terminal",
+  "Fuerteventura Airport terminal",
+  6,
+  "ES"
+ ],
+ [
+  "spu_terminal",
+  "Split Airport terminal",
+  6,
+  "HR"
+ ],
+ [
+  "kja_terminal",
+  "Yemelyanovo Airport terminal",
+  6,
+  "RU"
+ ],
+ [
+  "dbv_terminal",
+  "Dubrovnik Airport terminal",
+  6,
+  "HR"
+ ],
+ [
+  "bsz_terminal",
+  "Manas International Airport terminal",
+  6,
+  "KG"
+ ],
+ [
+  "sdf_terminal",
+  "Louisville Muhammad Ali International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "mem_terminal",
+  "Frederick W Smith International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "kch_terminal",
+  "Kuching International Airport terminal",
+  6,
+  "MY"
+ ],
+ [
+  "ool_terminal",
+  "Gold Coast Airport terminal",
+  6,
+  "AU"
+ ],
+ [
+  "mah_terminal",
+  "Menorca Airport terminal",
+  6,
+  "ES"
+ ],
+ [
+  "ccj_terminal",
+  "Calicut International Airport terminal",
+  6,
+  "IN"
+ ],
+ [
+  "rno_terminal",
+  "Reno Tahoe International Airport terminal",
+  6,
+  "US"
+ ],
+ [
+  "wro_terminal",
+  "Copernicus Wroc\u0142aw Airport terminal",
+  6,
+  "PL"
+ ],
+ [
+  "kti_terminal",
+  "Techo International Airport terminal",
+  6,
+  "KH"
+ ],
+ [
+  "nue_terminal",
+  "Nuremberg Airport terminal",
+  6,
+  "DE"
+ ],
+ [
+  "dvo_terminal",
+  "Francisco Bangoy International Airport terminal",
+  6,
+  "PH"
+ ],
+ [
+  "goa_terminal",
+  "Genova Sestri Cristoforo Colombo Airport terminal",
+  6,
+  "IT"
+ ]
+]

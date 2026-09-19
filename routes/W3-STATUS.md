@@ -23,7 +23,7 @@ provenance fix in `deck/render_pptx.py`, block issued to John.
 | 1. Ten-slide stand deck | Not started, outline below | Only the 2 July `Avia_Cortex_Process_and_Methodology.pptx` exists, 6 slides, and it is not reusable as it stands (see Q1) | Build slides 1-6 and 9-10 on the outline; slides 7-8 wait on two live runs |
 | 2. HTML pack tuned for the stand | Not started; the generator exists and three required sections do not | `app/pitch_html.py`, 399 lines, sections: opportunity, forecast, traffic table, market images, connecting markets, schedule and capacity, economics slider, why this route | Add the route map, the time-of-day curve and the tail chart; add a source line to every figure, not only the research cards |
 | 3. PDF render | Not started, and now unblocked | Nothing in the repo renders a PDF (repo-wide search returns only `venv` noise). Workstation check PASSED 19 Sep, John's transcript: Chrome present at Program Files, `pikepdf` 10.10.0, `pillow` 12.3.0. Nothing to install | Build the print stylesheet and the render step on the next pull |
-| 4. Imagery with provenance | Fix BUILT and PROVEN; hero image blocked on John | The library holds no airport photography for any of the six airports (Q3). The provenance loss is confirmed in code, and `piexif` 1.1.3 is present on the workstation (John's transcript, 19 Sep), so the EXIF fix runs where the decks are built | John's ruling on the hero image (Q3); commit the fix |
+| 4. Imagery, provenance and airport photography | Provenance fix BUILT and PROVEN. Airport photography: scope widened by John 19 Sep, probe built, needs one workstation run | The library holds no airport photography for any of the six airports (Q3). The provenance loss is confirmed in code, and `piexif` 1.1.3 is present on the workstation (John's transcript, 19 Sep), so the EXIF fix runs where the decks are built | Commit the fix; run the coverage probe on the workstation; second source only if the measured gap justifies one |
 
 ## Built and proven this session: the provenance fix
 
@@ -49,6 +49,65 @@ Source: `_verify_provenance` run against that file, 19 September. Most of that i
 from `C:\assets\engagement`, which holds no record to carry in the first place (Q3), so
 re-rendering it will report rather than repair. Controller's call whether anything is owed on
 decks already out; W3's scope starts at the Routes surfaces, where the check now blocks it.
+
+## Airport photography: John's ruling of 19 September, and what W3 is doing about it
+
+**Ruling (John, 19 Sep).** Mood frames and charts are essential and stay, but an airport sales
+deck carries airport-specific photography. Draw on online sources, more than one, with paid
+stock held for the airports a search cannot cover, so a photograph exists for most of the 300
+plus airports in the room, in the deck and in the HTML pack. An airport uploading its own
+library is the eventual answer and is a later build. **This widens W3-RULINGS scope item 4,
+which reads "from the rights-managed Observatory library only". Controller to note.**
+
+**The design point that decides the build, and it is already in the code.** `avia_images.auto_ok`
+splits a confidential use from a published one. A photograph whose subject is a building, in a
+country with no freedom-of-panorama exception, is ordinary practice in a pitch deck sent to a
+named recipient and is refused on a public web page. John's 19 September ruling puts the HTML
+pack on a public unguessable URL, which is a published use, while the emailed PDF is
+confidential. So the same terminal photograph can be right in the PDF and wrong on the hosted
+page, and the pack must resolve its images per use, not once per airport. This costs nothing:
+`render_pptx.py` already takes `--use`, and the pack build must take it too.
+
+**What already exists, and has never been run.** `deck/avia_images.py` does this job against
+Wikimedia Commons and records the full licence block per file: ShareAlike files may be placed
+but never cropped or graded, a country panorama table refreshed off Commons, no more than two
+images from one photographer, a 1600 by 900 minimum, and non-free and fair-use templates
+rejected outright. `C:\assets\engagement` holds **no `manifest.json`**, so the fetcher has
+never written into it and every image in that folder was placed by hand. That is why the 94
+JPEGs in the China Airlines deck carry nothing.
+
+**W3's view: measure the coverage before signing up to anything.** Nobody knows what share of
+400 airports Commons already covers at a usable size and licence, and that number decides
+whether a second source is worth building and whether stock is worth buying. Signing contracts
+first, then finding Commons covered most of it, wastes money and a fortnight W3 does not have
+before the 10 October freeze.
+
+**Built this session, ready to run:** `deck/build_image_set.py` generates the fetch-set input
+from the engine's own airport table, ranked by size, joined to the airport reference for the
+name and city each search needs. `deck/routes2026_probe.json` is the generated probe, 401
+airports, one terminal slot each, including Genoa at 1.85m passengers precisely because a small
+airport is the case worth measuring. It is committed generated, so the workstation installs
+nothing to run it. The probe is a dry run: it searches and scores, downloads nothing.
+
+The run must happen on the workstation. Commons is unreachable from the DevPC mount's shell,
+which the egress proxy refuses with a 403, and `avia_images.py` says on its own first page that
+it runs on the workstation and not in a sandbox. Block issued. It runs unattended while John is
+away, alongside the preagg job.
+
+**Sequence after the probe reports.** Where Commons covers an airport, that is the photograph
+and it arrives with its record. Where it does not, W3 proposes one second source rather than
+several, chosen on what its terms actually say when read, with Flickr's Creative Commons filter
+the first candidate to read because aviation photography there is deep on named secondary
+airports. Paid stock is a contract, not a build: W3 recommends signing nothing before Routes
+and letting the measured gap decide it, because a gap airport still produces a good pack from
+mood frames and charts, which is what the Observatory library was made for. The airport's own
+uploaded library is the right long-term answer and already has its slot in
+`avia_slots.SlotResolver(uploads_dir=...)`; it is a post-Routes build.
+
+**The risk W3 will not trade away.** A photograph of the wrong airport, or one with no clearance,
+handed to that airport's own route development team, is worse than no photograph. So the
+pipeline refuses rather than guesses: no record, no placement, and the build check added this
+session fails the deck rather than shipping it.
 
 ## Q1. The two methodology documents, and where they disagree
 
@@ -189,12 +248,12 @@ Chrome present at `C:\Program Files\Google\Chrome\Application\chrome.exe`, `pike
 
 1. The pull on the DevPC and the HEAD hash, so W3 builds on the same tree (block below).
 2. CLOSED 19 Sep: workstation checked, Chrome and `pikepdf` and `piexif` and `pillow` all present.
-3. Slide 8: which European transatlantic route and which carrier, Bologna-New York or
-   Genoa-New York. Both exist as cases; W3 leans to Bologna, because Bologna is registered at
-   the show with three delegates and is a current Meridian tester, and Genoa is registered with
-   two.
-4. Imagery: option (a), (b) or (c) in Q3. Silence to 26 September, W3 proceeds on (a).
-5. The two July validation figures in Q1 item 3: W3 proposes they stay out. Silence to
+3. CLOSED 19 Sep: slide 8 is Bologna-New York. Carrier still to name.
+4. CLOSED 19 Sep: mood frames and charts stay, and airport photography is added from
+   multiple online sources with stock held for the gaps. Section above.
+5. The coverage probe block, run on the workstation. It answers whether a second source and
+   paid stock are needed at all, and nothing else should be bought until it reports.
+6. The two July validation figures in Q1 item 3: W3 proposes they stay out. Silence to
    26 September, they stay out.
 
 ## For the controller

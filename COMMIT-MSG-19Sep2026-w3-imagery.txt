@@ -1,0 +1,36 @@
+W3: the fetch-set builder and the Commons coverage probe for airport photography
+
+John's ruling of 19 September widens W3's imagery scope: mood frames and charts
+stay, and airport-specific photography is added from online sources, with paid
+stock held for the airports a search cannot cover, so a photograph exists for most
+of the 300 plus airports at Routes in both the deck and the HTML pack.
+
+Nobody knows what share of those airports Wikimedia Commons already covers at a
+usable size and licence, and that number decides whether a second source is worth
+building and whether stock is worth buying. So this is the measurement, not the
+pipeline.
+
+deck/build_image_set.py: generates the avia_images.py fetch-set input. The airports
+come from the engine's own airport table ranked by size, because that is the
+population a visitor at a route development show names; the airport name and city
+come from the airport reference, because a subject built from an IATA code alone
+finds nothing on Commons. Four slot types, terminal, airside, city skyline and city
+centre, selectable. The six worked-route airports and the five meeting airports are
+always included, Genoa among them at 1.85m passengers, because a small airport is
+the case worth measuring. Codes absent from the reference are reported and left
+out rather than guessed at.
+
+deck/routes2026_probe.json: the generated probe, 401 airports, one terminal slot
+each. Committed generated so the workstation installs nothing to run it.
+
+Run on the workstation, dry-run, which searches and scores and downloads nothing.
+Commons is unreachable from the DevPC mount's shell (the egress proxy refuses with
+a 403), and avia_images.py states on its own first page that it runs on the
+workstation and not in a sandbox.
+
+No change to the engine, to cortex_app.py, or to any run path.
+
+routes/W3-STATUS.md: the widened imagery scope logged for the controller, the
+confidential-against-published split that decides how the pack resolves images,
+the finding that C:\assets\engagement holds no manifest.json so the fetcher has
+never written into it, and what happens after the probe reports.
