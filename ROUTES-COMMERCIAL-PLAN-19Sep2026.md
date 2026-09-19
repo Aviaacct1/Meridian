@@ -105,9 +105,13 @@ recording as reference; a timed dry run on the 16th with Jol playing a sceptical
 
 Structure only; the numbers are John's, after the licence gate (handover, section 7).
 
-- **Gate first**: Sabre and OAG licence position on selling derived outputs, in writing. If
-  restrictive, Meridian is priced as a service Avia delivers (routes per month, packs, review
-  calls), not as tool access. Both structures below survive that; the pitch wording changes.
+- **Licence, 19 September**: OAG and Sabre have confirmed on witnessed calls that the tool may
+  be used at Routes and its outputs shared; letters chased. Not a gate for the show; a gate for
+  the first paid contract (GTM umbrella, sections 1 and 3).
+- **Approach decided (John, 19 September): say a soft number.** Expected list stated as soft,
+  plus a written year-1 launch-customer discount that visibly expires, for a stated number of
+  places. The numbers come from the pricing chat; they travel in the follow-up one-pager, never
+  on the stand unprompted.
 - **Three tiers, no more**: Airport (route development team, N users, N routes per month,
   packs, one review call per quarter); Airline (network planning, same shape, more routes);
   Adviser (consultancies and lessors; per-seat, higher route volume, no packs branded Avia).
@@ -237,10 +241,11 @@ Nothing about any competitor goes in the deck, the pack, the website, or any pos
 
 | Item | Owner | By |
 |---|---|---|
-| Licence position in writing | JOHN | 26 Sep |
+| Licence letters (verbal confirmations recorded on Egnyte meanwhile) | JOHN | before first contract |
+| Messaging: the four sentences (GTM umbrella, section 4) | JOHN, Jol | 25 Sep |
 | Pricing structure and beta numbers | JOHN | 3 Oct |
 | Website launch-or-landing decision | JOHN, Jol | 1 Oct |
-| Meeting targets chosen; requests sent | JOHN | 22 Sep onward |
+| Meeting targets chosen; requests sent | JOHN | 26-29 Sep |
 | Stand deck v1 | Fable chat, Jol reviews, Nick checks method | 3 Oct |
 | HTML pack tuned for the stand; PDF render | Fable chat | 8 Oct |
 | Imagery: rights fix, hero-by-route | Fable chat | 8 Oct |

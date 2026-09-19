@@ -1,6 +1,7 @@
 # Meridian master task list
 
-**19 September 2026: World Routes (21-23 October) now governs sequencing.** The launch-readiness
+**19 September 2026: World Routes (21-23 October) now governs sequencing.** The umbrella is
+`GTM-STRATEGY-ROUTES-2026.md` (decisions, two milestones, integrated timeline, pre-mortem). The launch-readiness
 strategy, calendar and workstreams are in `HANDOVER-ROUTES-19Sep2026.md`, with a kickoff prompt in
 `PROMPT-for-Fable-Routes-19Sep2026.txt`; the commercial side (sales, pack and imagery, host
 manual, pricing, leads and feedback, website, marketing, meetings, competitors) is in

@@ -3,6 +3,8 @@ with the Boeing demo on 13 October as the dress rehearsal. John Carter (MD, Avia
 travelling for most of the next three weeks and will decide, not build. You build.
 
 READ FIRST, IN THIS ORDER, before doing anything:
+0. C:\AviaDev\GTM-STRATEGY-ROUTES-2026.md - THE UMBRELLA: decisions taken, the two milestones
+   (demo-ready 21 Oct, order-ready 7 Nov), the integrated timeline, the pre-mortem.
 1. C:\AviaDev\HANDOVER-ROUTES-19Sep2026.md  - the strategy, the calendar, the workstreams, the rules.
 1b. C:\AviaDev\ROUTES-COMMERCIAL-PLAN-19Sep2026.md - sales, presentation and pack, host manual,
    pricing structure, leads/CRM/feedback, website, marketing calendar, meetings, competitors.
@@ -93,4 +95,4 @@ STANDING RULES, non-negotiable:
 - Avia house style on every output: UK English, no em or en dashes, active voice, no
   consultant-generic words, Avia Solutions as document author, en-GB proofing.
 
-Start by confirming you have read the four documents, then hand John the block for step A.
+Start by confirming you have read the five documents, then hand John the block for step A.

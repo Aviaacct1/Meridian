@@ -6,6 +6,7 @@ John is travelling 20-27 September (UAE), then Italy (3 days) and Paris (3 days)
 deadlines between, so his hands-on time before Routes is a few days at most. Everything below
 is written to be run by Fable-led chats with John deciding, not building.
 
+Umbrella: `GTM-STRATEGY-ROUTES-2026.md`. Commercial detail: `ROUTES-COMMERCIAL-PLAN-19Sep2026.md`.
 Companion: `PROMPT-for-Fable-Routes-19Sep2026.txt` (paste into a new chat to start the work).
 Register of everything else open: `MASTER-TASK-LIST.md`. This note supersedes the Routes-related
 sequencing in that list; the list's other items stand.
@@ -33,11 +34,10 @@ first is engineering:
 3. **Assume the venue network is poor** (section 5). Compute is in Surrey; the stand needs a
    browser and a thin pipe, plus a 5G backup and an offline fallback that still tells the story.
 
-**Commercially, John's paid-beta instinct is right, with one hard gate**: before any price is
-quoted, the Sabre and OAG licence terms must be confirmed to permit selling derived outputs
-(section 7). The Boeing arrangement was "derived outputs only, by design"; a paid product to
-airports and airlines needs the same clearance stated in writing. That is a decision and a
-phone call, not a build, and it has to happen in the first week.
+**Commercially**: the go-to-market umbrella (`GTM-STRATEGY-ROUTES-2026.md`) holds the
+decisions of 19 September: licence confirmed verbally by OAG and Sabre with letters chased (in
+hand for the show, a gate for the first contract); a soft stated price with a written expiring
+launch-customer discount; two milestones, demo-ready 21 October and order-ready 7 November.
 
 ---
 
