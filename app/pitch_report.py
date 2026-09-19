@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-Avia Cortex - researched airline route pitch (Stage 2).
+Meridian, published by The Aviation Observatory - researched airline route pitch (Stage 2).
 =======================================================
 build_pitch(fc, inputs) runs the market-research query framework through a research provider
 (Claude web search by default), verifies every finding with pitch_verify, then assembles the
 full pitch deck via city_pair_pptx_generator, backed by the calibrated forecast for all the
 numbers. The model never supplies a commercial figure: forecast, catchment and economics come
-from Cortex. Returns (deck_path, audit). Falls back to a clear error if no research key is set.
+from Meridian. Returns (deck_path, audit). Falls back to a clear error if no research key is set.
 """
 import os
 import sys
@@ -116,7 +116,7 @@ def _pptx_config(fc, inputs):
     airline = inputs.get("airline_name") or fc.get("airline") or "the airline"
     fmt = lambda n: f"{round(n or 0):,}"
     total = dem.get("total") or 0; load = cap.get("load") or 0
-    exec_sum = (f"Cortex forecasts {fmt(total)} passengers each way per year on a nonstop "
+    exec_sum = (f"Meridian forecasts {fmt(total)} passengers each way per year on a nonstop "
                 f"{o['city']} to {d['city']} service, flying at {round(load*100)}% load on a "
                 f"{cap.get('aircraft','')} at {cap.get('freq','')} times a week. Demand is measured "
                 f"from Sabre Global Demand Data point-of-origin traffic in the {o['city']} catchment, with the airline's "
@@ -413,7 +413,7 @@ def build_pitch(fc, inputs=None, provider=None, fetch_back=True, contract=None,
                 "airport_charts"] = "%s: %s" % (type(e).__name__, e)
 
     config = _pptx_config(fc, inputs)
-    base = f'AviaCortex_Pitch_{o["iata"]}_{d["iata"]}'
+    base = f'Meridian_Pitch_{o["iata"]}_{d["iata"]}'
     deck_path = os.path.join(tempfile.gettempdir(), base + ".pptx")
     if OBSERVATORY:
         # house-style path: research -> deck_spec -> Observatory PowerPoint

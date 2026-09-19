@@ -295,7 +295,7 @@ def revenue_cabin(path, years, biz, prem, coach):
 def demand_build(path, *, market, p2p_carried, feed_behind, feed_beyond,
                  carried, load, origin_city, dest_city, year=None,
                  source="Source: OAG schedules, Sabre MIDT, AviaSolutions "
-                        "analysis (Avia Cortex).", w=8.6, h=4.3):
+                        "analysis (Meridian).", w=8.6, h=4.3):
     """Where year one traffic comes from, and what the aircraft takes of it.
 
     Two columns and a line, which is the whole forecast argument on one page.

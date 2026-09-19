@@ -56,7 +56,7 @@ BLOCK_FAMILY = {
     "case_study": "field",
 }
 
-SOURCE_FALLBACK = ("Source: OAG schedules, Sabre MIDT, AviaSolutions analysis (Avia Cortex).")
+SOURCE_FALLBACK = ("Source: OAG schedules, Sabre MIDT, AviaSolutions analysis (Meridian).")
 
 # Which end of the route each section is actually about. A divider for visitor
 # demand wants the destination; one for the airport wants the origin. Passing
@@ -505,12 +505,12 @@ def build_spec(research, forecast=None, *, codename, title, strap, prepared_for,
                   image="divider.method", family="instruments"))
     section = "Section %d - Method and assumptions" % n
     add(S.prose(METHODOLOGY, section=section, title="Methodology",
-                source="Source: Avia Cortex QSI methodology."))
+                source="Source: Meridian QSI methodology."))
     if assumptions:
         add(S.grid([(a, str(b)) for a, b in assumptions], section=section,
                    title="Key assumptions",
                    subtitle="Change any of these and the forecast changes",
-                   source="Source: Avia Cortex, run inputs."))
+                   source="Source: Meridian, run inputs."))
     if why_rows:
         add(S.grid(why_rows, section=section, title="Why this route",
                    source=why_source))

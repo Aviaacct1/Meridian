@@ -133,7 +133,7 @@ def optimised_fc(args, CA, audit_out=None):
         season=(args.season or "unselected"))
     fc = json.loads(resp.body)
     if not fc.get("ok"):
-        raise SystemExit("Cortex optimise failed: %s" % fc.get("error"))
+        raise SystemExit("Meridian optimise failed: %s" % fc.get("error"))
     o = fc.get("optimised") or {}
     args.aircraft = o.get("aircraft") or args.aircraft
     args.freq = o.get("freq") or args.freq
@@ -190,7 +190,7 @@ def auto_gauge(args, CA, freq):
 
 
 def live_fc(args, audit_out=None):
-    """The real thing: the calibrated Cortex engine for this city pair.
+    """The real thing: the calibrated Meridian engine for this city pair.
 
     Needs the OAG and Sabre stores, at AVIA_OAG and AVIA_SABRE or C:\\Avia. The
     engine returns {"ok": False, "error": ...} when it cannot resolve a route or
@@ -246,7 +246,7 @@ def live_fc(args, audit_out=None):
         if audit_out is not None:
             audit_out["schedule_sizing"] = {k: v for k, v in sized.items() if k != "fc"}
         if sized.get("reason") == "engine":
-            raise SystemExit("Cortex forecast failed while sizing: %s" % sized["note"])
+            raise SystemExit("Meridian forecast failed while sizing: %s" % sized["note"])
         if not sized["ok"]:
             # The engine worked; this route simply cannot be sized by frequency.
             # Carry on at the frequency asked for rather than abandoning the deck,
@@ -263,7 +263,7 @@ def live_fc(args, audit_out=None):
     else:
         fc = run(int(args.freq or 7))
     if not fc.get("ok"):
-        raise SystemExit("Cortex forecast failed: %s" % fc.get("error"))
+        raise SystemExit("Meridian forecast failed: %s" % fc.get("error"))
     _warn_induced_with_fixed_gauge(fc, args)
     return _finish_fc(fc, args)
 
@@ -516,7 +516,7 @@ def main():
         print("FORECAST: stub. The deck will carry no forecast section.")
     else:
         fc = live_fc(args, audit_out=pre_audit)
-        print("FORECAST: Cortex engine, %s to %s, %s carried each way."
+        print("FORECAST: Meridian engine, %s to %s, %s carried each way."
               % (fc["origin"]["city"], fc["dest"]["city"],
                  format(int(fc["demand"]["total"] or 0), ",")))
         try:

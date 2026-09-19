@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Avia Cortex - the writing pass over researched findings.
+"""Meridian, published by The Aviation Observatory - the writing pass over researched findings.
 
 The research half returns facts. A deck built from facts alone reads as evidence
 with no argument attached: five numbers on a page and nothing saying why they

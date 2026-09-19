@@ -426,7 +426,7 @@ def build():
                 "Each slide in this deck carries a named publisher and a date in the same line as the figure. Where an input is a judgement or a "
                 "working assumption it is described as one, in the assumptions register in the appendix."),
                ("The forecast engine",
-                "Passenger forecasts come from the Avia Cortex QSI engine: base demand grown to maturity, service-area demand only, stimulated "
+                "Passenger forecasts come from the Meridian QSI engine: base demand grown to maturity, service-area demand only, stimulated "
                 "for new direct service, and captured from frequency share, schedule quality and observed leakage rather than assumed.")],
         source="Source: AviaSolutions assumptions register, Genoa - New York business case, version of 5 August 2026."))
 
@@ -444,7 +444,7 @@ def build():
                     "Forecasting portfolios of twenty unseen routes, the portfolio total came within 20% of the actual total 94% of the time.",
                 ], tone="accent")],
         callouts=[S.callout(["89% within 20% of outturn", "82% within 10%"])],
-        source="Source: Avia Cortex QSI backtest programme, runs of 5 August 2026, n=2,915 launches, 2016-2019 and 2025; the pandemic years 2020-2023 are deliberately excluded. Outturn is US DOT DB1B for United States domestic routes and Sabre MIDT elsewhere."))
+        source="Source: Meridian QSI backtest programme, runs of 5 August 2026, n=2,915 launches, 2016-2019 and 2025; the pandemic years 2020-2023 are deliberately excluded. Outturn is US DOT DB1B for United States domestic routes and Sabre MIDT elsewhere."))
 
     # ---------------------------------------------------------------- 7
     add(S.divider("7", "The airport, the aircraft and the ask",

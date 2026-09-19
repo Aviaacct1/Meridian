@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Avia Cortex - detailed route workbook (built straight from the calibrated forecast).
+Meridian, published by The Aviation Observatory - detailed route workbook (built straight from the calibrated forecast).
 ====================================================================================
 build_workbook(out_path, fc, meta) writes the client-ready Excel with the full tables that
 sit behind the deck: the forecast breakdown, the connecting-feed detail each way (PTEW), the

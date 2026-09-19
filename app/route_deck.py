@@ -282,7 +282,7 @@ def build_deck(out, forecast, pnl, meta):
         # 6) methodology
         s = prs.slides.add_slide(blank)
         _txt(s, Inches(0.6), Inches(0.45), Inches(12.1), Inches(0.7), "Methodology", 32, bold=True)
-        _txt(s, Inches(0.62), Inches(1.15), Inches(12.1), Inches(0.5), "How Cortex builds the forecast, step by step", 15, color=GREY)
+        _txt(s, Inches(0.62), Inches(1.15), Inches(12.1), Inches(0.5), "How Meridian builds the forecast, step by step", 15, color=GREY)
         steps = ["Catchment", "Market (Sabre O&D)", "Capture (QSI + access)", "Stimulation", "Connecting feed", "Capacity cap", "Forecast + economics"]
         bw = Inches(1.68); gap = Inches(0.07)
         for i, st in enumerate(steps):

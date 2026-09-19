@@ -1,0 +1,39 @@
+W3: the development name off every client-facing surface
+
+John's ruling, 19 September: the product is Meridian, published by The Aviation
+Observatory. Cortex was the working code name and does not appear to a client.
+
+The portal was swept on 18 August (cortex_app.py carries the FastAPI title
+"Meridian - Route Forecasting" and a comment dating the retirement), but the
+generated outputs were not. The name was still on the pack, the researched deck,
+the route deck and the worked-deck source lines.
+
+app/pitch_html.py, the HTML pack a visitor opens: the page title, the masthead,
+the opening sentence and the footer. The footer also named Avia Solutions Limited
+as publisher; it now reads "The Aviation Observatory" and "Meridian analysis, The
+Aviation Observatory", as the naming ruling requires of a client surface.
+
+app/pitch_report.py: the generated deck's executive summary and the output
+filename, which was AviaCortex_Pitch_<O>_<D> against the Meridian_* filename
+ruling and is now Meridian_Pitch_<O>_<D>.
+
+app/route_deck.py: the method slide heading.
+
+app/pitch_prose.py, app/cortex_workbook.py: module headers naming the product.
+
+deck/: the source attribution lines, which matter most because the house rule
+puts a source under every figure and table. spec_from_research.py, spec_goa_nyc.py,
+build_ba_sjc.py, build_goa_nyc.py and avia_charts.py carried "Source: Avia Cortex
+QSI backtest programme" and similar under the accuracy and forecast figures.
+run_observatory_pitch.py carried it in its console messages.
+
+18 occurrences in deck/ and 7 on the app's client surfaces. What remains is the
+module docstring headers of internal app modules, which no client sees, and the
+history comment in app/attribution.py that records why the name changed. Those
+are left alone rather than opening a large diff across the app a fortnight before
+the freeze; the repo's own filenames (cortex_app.py, cortex_workbook.py) are
+development names in a development place and are unchanged.
+
+File references in comments are lowercase with underscores and were not touched.
+
+No change to the engine, to cortex_app.py, or to any run path.

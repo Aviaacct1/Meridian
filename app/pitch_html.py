@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
-Avia Cortex - interactive HTML digital pitch (self-contained, emailable, iPad-friendly).
+Meridian, published by The Aviation Observatory - interactive HTML digital pitch
+(self-contained, emailable, iPad-friendly).
 ========================================================================================
 build_html_pitch(fc, research_blocks, inputs) -> a single self-contained .html string: all CSS and
 JS inline, all data embedded, no server calls and no CDN, so it opens offline on any laptop or iPad.
@@ -99,7 +100,7 @@ def build_html_pitch(fc, research_blocks=None, inputs=None):
 # --------------------------------------------------------------------------------------------------
 _HTML = r"""<!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Avia Cortex - Route Pitch</title>
+<title>Meridian - Route Pitch</title>
 <style>
 :root{--navy:#0E1B33;--navy2:#1F3864;--accent:#2F6BF0;--accent2:#5C8DF6;--green:#0E9F6E;--amber:#C9781A;
 --red:#D84C4C;--ink:#0F1C30;--body:#46566E;--muted:#8A97AB;--line:#E6EBF2;--bg:#F4F7FB;--card:#fff;
@@ -172,7 +173,7 @@ table.tbl{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:4px;mi
 <body><div class="wrap">
   <div class="hero"><div class="bg" id="heroImg"></div><div class="in">
     <div class="brand"><span class="m"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M3 12c4 0 5-7 9-7s5 14 9 7" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg></span>
-      AVIA&nbsp;CORTEX<small>ROUTE INTELLIGENCE</small></div>
+      MERIDIAN<small>THE AVIATION OBSERVATORY</small></div>
     <h1 id="hTitle"></h1><div class="sub" id="hSub"></div>
     <div class="sub" id="hBasis" style="opacity:.82;font-size:13px;margin-top:3px"></div>
     <div class="kpis" id="kpis"></div>
@@ -248,7 +249,7 @@ $('#kpis').innerHTML=[
   ['Connecting feed',fmt(D.demand.feed_total),'behind + beyond, each way'],
 ].map(k=>`<div class="kpi"><div class="l">${k[0]}</div><div class="v">${k[1]}</div><div class="s">${k[2]}</div></div>`).join('');
 
-$('#lead').textContent=`Cortex forecasts ${fmt(D.demand.total)} passengers each way per year on a nonstop ${D.origin.city} to ${D.dest.city} service. Demand is measured from Sabre Global Demand Data origin-and-destination traffic in the ${D.origin.city} catchment, where the new nonstop captures ${Math.round(D.demand.qsi_share*100)}% of a ${fmt(D.demand.natural)} addressable market, with ${D.airline}'s connecting feed added behind ${D.origin.city} and beyond ${D.dest.city}.`;
+$('#lead').textContent=`Meridian forecasts ${fmt(D.demand.total)} passengers each way per year on a nonstop ${D.origin.city} to ${D.dest.city} service. Demand is measured from Sabre Global Demand Data origin-and-destination traffic in the ${D.origin.city} catchment, where the new nonstop captures ${Math.round(D.demand.qsi_share*100)}% of a ${fmt(D.demand.natural)} addressable market, with ${D.airline}'s connecting feed added behind ${D.origin.city} and beyond ${D.dest.city}.`;
 
 // forecast bars
 (function(){
@@ -395,5 +396,5 @@ function recompute(){
 SL.forEach(s=>$('#s_'+s[0]).addEventListener('input',recompute));
 recompute();
 
-$('#foot').innerHTML=`<b>Avia Solutions Limited</b> · Prepared for ${D.airline}${D.date?' · '+D.date:''}<br>Powered by Avia Cortex. Indicative central estimate for directional guidance.`;
+$('#foot').innerHTML=`<b>The Aviation Observatory</b> · Prepared for ${D.airline}${D.date?' · '+D.date:''}<br>Meridian analysis, The Aviation Observatory. Indicative central estimate for directional guidance.`;
 </script></body></html>"""

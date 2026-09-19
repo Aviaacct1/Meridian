@@ -601,7 +601,7 @@ def main(pages=None):
     d.panel(s, 6.20, 5.42, 3.52, 1.60, "And on routes never seen", [
         "Forecasting portfolios of twenty unseen routes, the portfolio total came within 20% of the actual total 94% of the time.",
     ], size=10.5)
-    d.source(s, "Source: Avia Cortex QSI backtest programme, runs of 5 August 2026, n=2,915 launches, 2016-2019 and 2025; the pandemic years "
+    d.source(s, "Source: Meridian QSI backtest programme, runs of 5 August 2026, n=2,915 launches, 2016-2019 and 2025; the pandemic years "
                 "2020-2023 are deliberately excluded. Outturn is US DOT DB1B for United States domestic routes and Sabre MIDT elsewhere. "
                 "AviaSolutions analysis.", size=7.5)
 

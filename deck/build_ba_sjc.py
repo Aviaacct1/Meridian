@@ -26,7 +26,7 @@ CODENAME = "Project Redwood"
 EVENT = "World Routes 2026"
 AVIA = "Source: AviaSolutions analysis."
 FCAST_BASIS = ("Source: AviaSolutions analysis. Base demand Sabre MI O&D, "
-               "service year as shown. Forecast produced on the Avia Cortex QSI "
+               "service year as shown. Forecast produced on the Meridian QSI "
                "engine; figures carry the model's calibrated confidence range.")
 
 # ---------------------------------------------------------------------------
@@ -568,7 +568,7 @@ def main(pages=None):
               "Implied seat factor %s on %s annual seats" % (pct(rv["implied_load_factor"][0], 1),
                                                             fmt(rv["annual_capacity"][0])),
               fill=NAVY, colour=WHITE)
-    d.source(s, "Source: AviaSolutions analysis on the Avia Cortex QSI engine. Base demand Sabre MI O&D adjusted for non-MIDT channels, "
+    d.source(s, "Source: AviaSolutions analysis on the Meridian QSI engine. Base demand Sabre MI O&D adjusted for non-MIDT channels, "
                 "service-area demand only. PDEW is passengers daily each way. This run uses the validated 2015-basis model and is presented for "
                 "format; a live pitch is re-run on the current Sabre MIDT year and the current schedule.", size=7.0)
 
@@ -783,7 +783,7 @@ def main(pages=None):
     d.panel(s, 6.20, 5.42, 3.52, 1.60, "And on routes never seen", [
         "Forecasting portfolios of twenty unseen routes, the portfolio total came within 20% of the actual total 94% of the time.",
     ], size=10.5)
-    d.source(s, "Source: Avia Cortex QSI backtest programme, runs of 5 August 2026, n=2,915 launches, 2016-2019 and 2025; the pandemic years "
+    d.source(s, "Source: Meridian QSI backtest programme, runs of 5 August 2026, n=2,915 launches, 2016-2019 and 2025; the pandemic years "
                 "2020-2023 are deliberately excluded. Outturn is US DOT DB1B for United States domestic routes and Sabre MIDT elsewhere. "
                 "AviaSolutions analysis.", size=7.5)
 
@@ -804,7 +804,7 @@ def main(pages=None):
         ("Calibrated, and labelled as such.", "These are the calibrated errors: the engine is given the history and asked to reproduce it. That is the test of whether the method is sound, and it is the figure Avia quotes."),
         ("The three misses are named, not hidden.", "San Jose to Vancouver 2016, Charlotte 2016 and the 2025 Detroit launch sit outside the band. They are in the evidence file with the rest."),
     ], size=10.5)
-    d.source(s, "Source: Avia Cortex QSI backtest programme, runs of 5 August 2026; per-route calibrated errors from route_fitted_errors.csv, "
+    d.source(s, "Source: Meridian QSI backtest programme, runs of 5 August 2026; per-route calibrated errors from route_fitted_errors.csv, "
                 "18 San Jose launches in the 2016-2019 and 2025 cohorts. Outturn is US DOT DB1B for United States domestic routes and Sabre MIDT "
                 "elsewhere. Presentation rule: between 10 and 29 launches the count is stated plainly rather than as a percentage. AviaSolutions analysis.",
                 size=7.0)
@@ -884,7 +884,7 @@ def main(pages=None):
         d._text(s, M + 2.60, y + 0.09, 6.70, 0.56, [(body, 11.5, False, BODY)],
                 anchor=MSO_ANCHOR.MIDDLE)
         y += 0.78
-    d.source(s, "Sources as cited on the preceding slides. Forecast: AviaSolutions analysis on the Avia Cortex QSI engine.", size=7.5)
+    d.source(s, "Sources as cited on the preceding slides. Forecast: AviaSolutions analysis on the Meridian QSI engine.", size=7.5)
 
     # -- thank you
     s = d._slide()
