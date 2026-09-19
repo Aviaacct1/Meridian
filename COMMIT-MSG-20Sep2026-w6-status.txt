@@ -1,0 +1,23 @@
+W6 status v5: the tao-website repository, the launch switch, and branch parity
+
+Status file only. No document or site change in this commit.
+
+Records, with hashes:
+- `Aviaacct1/tao-website` created and pushed, 600 objects, HEAD 2df95ee. Three attempts and
+  two instructive failures: git refuses a repository on E: until the path is added to
+  safe.directory, because that filesystem does not record ownership; and "Repository not
+  found" on a private repository means the repository is missing or invisible to the
+  credential, not that the credential is wrong.
+- The launch switch landed at e02dd1b on the renamed branch main: env.js reading SITE_URL and
+  SITE_ENV, generated robots.txt and _headers, the noindex tag and the pre-launch banner made
+  conditional, env.url in place of a hardcoded domain in twelve templates, wrangler.toml, and
+  the config moved to CommonJS. Proven by two builds in both modes before it was written.
+- Branch parity done: GitHub's default switched from master to main and the old branch
+  deleted. master pointed at 2df95ee, an ancestor of main, so nothing was lost.
+- Two corrections to the record: _site is gitignored, so the takedown has no built copy to
+  clean up; and the Meridian page's description front matter carries the price range, an
+  eighth place the price appears that no document named.
+
+Open on W6 and unchanged: the post 1 chart by 23 September (silence takes Bristol to Newark),
+one contact name per airport by 25 September, the four sentences settled on 25 September, and
+the Dallas Fort Worth route, which stays a question to them rather than an invented target.

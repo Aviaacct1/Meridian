@@ -58,11 +58,13 @@ GitHub: the default branch there still reads `master`, and the old branch is sti
 `_site/` is gitignored, so there is no built copy to clean up in the takedown, and the deploy
 rebuilds from source.
 
-**Branch parity done locally, one setting left.** The Observatory repository's branch is now
-`main`, matching the Avia site, whose editor, Pages build and `wrangler.toml` all name a
-branch. GitHub's own default for the repository still reads `master` and that branch still
-exists there; both want clearing before the Pages project is created, so the build is not
-wired to a branch nobody pushes to.
+**Branch parity DONE.** The Observatory repository is on `main`, matching the Avia site, whose
+editor, Pages build and `wrangler.toml` all name a branch. GitHub's default for the repository
+was switched from `master` to `main` and the old branch deleted, in John's browser with his
+approval, 20 September. Nothing was lost: `master` pointed at `2df95ee`, which is an ancestor
+of `main`, so its history is carried in `main` and the branch can be recreated with one
+command if anyone wants it. The Pages project can now be wired to `main` without pointing at a
+branch nobody pushes to.
 
 **The clean build passed.** `npm ci` then `npx @11ty/eleventy` wrote 23 files in 0.54 seconds
 on Eleventy 3.1.6, from John's paste. Node warned `MODULE_TYPELESS_PACKAGE_JSON` and reparsed
