@@ -15,19 +15,75 @@ The detail lives in two companions and this document points at them rather than 
 
 ## Status
 
-Rewritten every session by the programme controller; John reads this on a phone. Session 1,
-19 September 2026, 16:00. Clone: DevPC `C:\AviaDev`, HEAD `11a4c3f` (aircraft-econ code committed and pushed 19 Sep,
-confirmed by John's paste).
+Rewritten every session by the programme controller; John reads this on a phone. As at
+Saturday 20 September 2026, 00:30, session 1 closed. John pauses until Postmark approval
+(expected Monday 22 Sep). Repo `Aviaacct1/Meridian` HEAD `f5a5b4b`; `Aviaacct1/tao-website`
+HEAD `2df95ee`. Every workstream's own file is `routes\Wn-STATUS.md`; its instructions are
+`routes\Wn-RULINGS.md`; `routes\README.md` says how they work together.
 
-| WS | State | Evidence | Next action | Owner | Date |
+| WS | State | Where it stands | Next action | Owner | Date |
 |---|---|---|---|---|---|
-| W1 Speed and caches | Step 1 SHIPPED 19 Sep, acceptance MET | Commit 1012c29 live on the workstation: Run 35.4 to 9.8s (SJC-TPE), 42.5 to 9.0s (BRS-EWR, cold); Optimise 161 to 65s and 196 to 35s; payloads identical (probe diff PASS). TIMING-20260919-1907 (before) and -1937 (after) on the workstation | Step 2: persistence across a restart (pre-mortem 11) and the pre-warm script over the registered airports; then preagg wiring | Controller | 26 Sep |
-| W2 Stand flow | In progress (routes\W2-STATUS.md v6, 19 Sep 20:50) | Commit 2cab1b2: MCT master reports at startup, stand build refuses without it (14 checks); sender set up on Postmark, aviationobservatory.com DKIM and return-path verified, account in test mode pending Postmark approval; capture front end scoped, demonstrable 2 Oct | Stand mode build; DuckDB leads table and JSONL migration; John's items 20-24 | W2 chat / John | 2 Oct front end; 8 Oct laptop proof |
-| W3 Presentation | In progress (routes\W3-STATUS.md, 19 Sep) | Slides 1-6, 9-10 built (3af5158); provenance fix proven; John pulled pack, PDF and imagery to 3 Oct; PDF = full researched pack, HTML = 20-minute pitch page; Commons coverage probe waits for one workstation run | John: carrier for BLQ-JFK (26), accuracy sentence (25), route ruling (28), run the probe; W3 builds the PDF render and the pitch page | W3 / John | All four to Jol and Nick 3 Oct |
-| W4 Host | In progress (routes\W4-STATUS.md, 19 Sep) | STAND-HOST-MANUAL.md v1, 648 lines, 27 marked slots, timed script to the second on step-1 timings; every host-facing pre-mortem item answered | John: second and third phone contacts, his stand hours, the competitor sentence; rulings 28-30 | W4 / John | v2 after Suzanna's answers and the 8 Oct screenshots |
-| W5 Order-ready documents | In progress (routes\W5-STATUS.md v2, 19 Sep) | Agreement v0.1 (15 slots, 8 lawyer flags) and launch-customer one-pager v0.1 as verified Word files; feedback card drafted; the code half (lead store, attribution, monitoring) is W2's | John: contracting entity (31), offer numbers (6), solicitor and date; W5 drafts invoice, onboarding script, known-issues list | W5 / John | Agreement to solicitor 3 Oct |
-| W6 Messaging, marketing, website, meetings | In progress (routes\W6-STATUS.md v3, 19 Sep) | Messaging variants, five invitations, calendar, post 1 and list email drafted; the site to launch is THE OBSERVATORY site (John), 22 pages, in a local folder with NO git remote; competitor named in its header and footer; plan to deploy on Cloudflare Pages | John: push the site repo to GitHub this week (32), pricing position (29), chart and worked-route ruling (28), five contacts by 25 Sep | W6 / John | Sentences 25 Sep; invitations 26-29 Sep |
-| W7 Rehearsal and freeze | Replanned | Boeing 13 Oct is an ATLAS meeting with 15 minutes of Meridian, not the Meridian dress rehearsal (John to W2, 19 Sep); the umbrella was wrong | Two Meridian trials: 11-12 Oct full stand flow timed, Plan A and B, a pack sent and received; 16 Oct with Suzanna | Controller / John | Freeze 10 Oct unchanged |
+| W1 Speed and caches | Step 1 SHIPPED, targets met | Run 42s to 9s cold, Optimise 196s to 35s, payloads identical (1012c29). Preagg identity PASS. Sabre is not the cost | Step 2: persist boards, MCT and airport table across a restart; warm-up over registered airports; then preagg wiring | Controller | 26 Sep |
+| W2 Stand flow | In progress (v7) | MCT master reports at startup (2cab1b2); Postmark sender verified, account in TEST MODE; capture front end scoped; Plan A proven on MateBook; MateBook not Plan B | Zone move to Cloudflare (wk 22 Sep); DuckDB leads table and JSONL migration; stand mode; capture front end demonstrable 2 Oct; laptop proof 8 Oct | W2 chat / John | 2 and 8 Oct |
+| W3 Presentation | In progress | Slides 1-6, 9-10 built (3af5158); provenance fix proven; PDF path proven; Commons probe written, unrun | PDF render and 20-minute pitch page; probe run; slides 7-8 after item 28 and runs 29 Sep-1 Oct | W3 chat / John | All four to Jol and Nick 3 Oct |
+| W4 Host | In progress | STAND-HOST-MANUAL.md v1, 648 lines, 27 slots, timed script; pricing wording now John's of 19 Sep | v2 after Suzanna's four answers and 8 Oct screenshots; Word copy for print after | W4 chat / John | v2 mid-Oct |
+| W5 Order-ready documents | In progress (v2) | Agreement v0.1 and one-pager v0.1 as verified Word files; feedback card | Invoice, onboarding script, known-issues list, licence-record form; agreement to solicitor 3 Oct | W5 chat / John | 3 Oct |
+| W6 Messaging, marketing, website, meetings | In progress (v5) | Messaging variants, five invitations, calendar, post 1 drafted; tao-website pushed (2df95ee); launch switch proven; pricing held to November (John) | Launch-switch commit; Pages project; competitor and prices out of 22 pages; sentences settled 25 Sep; invitations 26-29 Sep | W6 chat / John | 25-29 Sep |
+| W7 Rehearsal and freeze | Replanned | Boeing 13 Oct is an Atlas meeting; Meridian trials 11-12 Oct (remote, one restart) and 16 Oct with Suzanna | Nothing until October; controller diaries the trials | Controller / John | Freeze 10 Oct |
+
+## What is left, by owner, as at 20 September
+
+**John, this week (dates are the chats' dates, not mine):**
+1. Item 28, by 23 Sep: worked routes. Keep SJC-TPE and Bologna, or apply your never-worked-
+   airport rule (candidate BRS-EWR plus a US origin). W3, W4 and W6 all wait on it.
+2. Item 26, by 23 Sep: the carrier for Bologna-New York (if item 28 keeps it).
+3. Item 25, by 26 Sep: what the 89% describes. Scope route (a), wire the BT2 band beside the
+   QSI forecast, or rule the fallback sentence; Nick signs either.
+4. Item 33, by 26 Sep: run W3's coverage probe on the workstation (block in W3's chat).
+5. The four messaging sentences: pick from W6-MESSAGING-VARIANTS-19Sep2026.md by 25 Sep.
+6. The five meeting contacts by 25 Sep; invitations out 26-29 Sep (drafts in
+   W6-INVITATIONS-AND-MEETINGS-19Sep2026.md).
+7. Item 14: order the 1TB external NVMe SSD before 28 Sep; run W2's two spec blocks.
+8. Item 31: the contracting entity for the agreement (Avia Solutions Limited or The Aviation
+   Observatory Ltd), so the solicitor can start; and name the solicitor.
+9. Item 23: send Suzanna W2's four questions (as they stand in W2-STATUS.md).
+10. Item 34: W4's three (second and third phone contacts; your stand hours; the competitor
+    sentence in manual 4.4).
+11. Postmark: chase approval on 1 Oct if not cleared (W2 watches).
+12. Item 6, by 3 Oct: launch offer numbers (year-1 discount, places, expiry) or "on request".
+13. Item 24: which tablet for the capture front end.
+14. W6's two dashboard tasks: the launch-switch commit block; the OAuth app and auth Worker
+    pointed at tao-website and the Access policy on its /admin (W6 writes the steps).
+15. The running git block for the controller's files (below) whenever convenient.
+
+**Controller (this chat), next session:** W1 step 2 (persistence and warm-up) with the probe
+diff; the pre-warm airport list with IATA codes from the register; the 40-60 route panel
+proposal for John; sweep of all six status files; Friday note on 26 Sep; diary the 11-12 and
+16 Oct trials; re-read the delegate list week of 12 Oct.
+
+**W2 chat:** zone move (wk 22 Sep) with Postmark re-verification; demo_mail host fail-loud;
+DuckDB leads table and JSONL migration; stand mode; capture front end (2 Oct); queue view;
+progressive Optimise; laptop load procedure once the SSD exists (proof 8 Oct); pre-mortem 15
+(GeoNames); scheduled-task restart if time (8 Oct); pack hostname and URL rule (3 Oct).
+
+**W3 chat:** PDF render off the full pack; the 20-minute pitch page with the route map,
+time-of-day curve and tail chart; probe results and the second-source recommendation; slides
+7-8 from runs 29 Sep-1 Oct; the full sweep 2 Oct; to Jol and Nick 3 Oct.
+
+**W4 chat:** manual v2 after Suzanna's answers; pricing wording swapped to John's of 19 Sep;
+"follows the same day" in 6.5; screenshots after 8 Oct; Word copy; training 14-16 Oct.
+
+**W5 chat:** invoice template, onboarding script, known-issues list (draft 1 Oct, frozen 10
+Oct), licence-record form, follow-up sequence; agreement to solicitor 3 Oct; feedback card
+to Jol 8 Oct.
+
+**W6 chat:** launch-switch commit; Pages project and preview; competitor out of eight files
+and prices out of eight places; accuracy line onto the Meridian page; clean-clone build
+proven; sentences and invitations finalised on John's picks; post 1 and list email out
+24-25 Sep once item 28 names the chart; exhibitor listing text (wk 29 Sep).
+
+**Open decisions with no default (cannot be silence-ruled):** 25, 26, 28, 31, 34, 24, and the
+five contacts.
 
 **Found this session, not in any document:**
 - The 29 August aircraft-economics CODE is uncommitted on the DevPC: `9cb5ed1` carries the CSV
@@ -303,10 +359,8 @@ confirmed by John's paste).
 31. **Contracting entity** for the agreement and invoices: Avia Solutions Limited or The
     Aviation Observatory Ltd, with registered number and office. No default; the solicitor
     cannot start without it (W5 fact 1).
-32. **Push the Observatory site repository to GitHub this week** (W6 has the block; tool
-    standard 1). Also: may W6 edit that repository directly through blocks you run (silence
-    to 23 Sep: yes), and grant the W6 chat the C:\src\avia-website folder so it can read the
-    editor's configuration.
+32. CLOSED 19 Sep: `Aviaacct1/tao-website` pushed at 2df95ee; W6 edits it through John's
+    blocks; C:\src\avia-website read.
 33. **W3's coverage probe**: one unattended run on the workstation by 26 Sep (W3 has the
     block); without it W3 drops airport photography and ships mood frames and charts.
 34. **W4's three**: a second and third phone contact who can reach the workstation; your

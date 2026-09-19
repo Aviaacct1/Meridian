@@ -22,7 +22,7 @@ routes/W6-MARKETING-CALENDAR-19Sep2026.md
   conflict: the ruling names SJC-TPE, a client route, against the standing rule that demo
   and marketing material never uses an airport Avia has worked for; proposes BRS-EWR.
 
-routes/W6-WEBSITE-LAUNCH-PLAN-19Sep2026.md (v3)
+routes/W6-WEBSITE-LAUNCH-PLAN-19Sep2026.md (v4)
   Rewritten twice after John's rulings of 19 September: the site is The Aviation Observatory
   site, the domain is aviationobservatory.com, and Jol is not writing copy at present, so W6
   prepares the pages and Jol proofs later. Read at E:\Avia\Observatory Website.
@@ -35,19 +35,27 @@ routes/W6-WEBSITE-LAUNCH-PLAN-19Sep2026.md (v3)
   line has to be added; and the Eleventy config uses ESM while package.json does not declare
   it, so a clean-clone build must be proven before any hosted build.
 
-  Carries three recommendations for John: hold the price grid until November and have the host
-  state it verbally with the follow-up carrying it in writing; deploy the site ourselves on
+  Records two rulings John took during the session. Pricing is held until November: the grid
+  does not go on the site before Routes, the host states the number in person in the published
+  wording, and the follow-up one-pager carries it in writing within 48 hours, so W4's manual
+  changes and every price comes off the site as a certainty. And the Observatory site is built
+  to work identically to the Avia site, which section 7 sets out item by item: Cloudflare
+  Pages, the SITE_ENV pattern in place of the hardcoded noindex tag, a preview environment,
+  the push script, the Sveltia editor on the same auth Worker and Access policy with the
+  normaliser and its round-trip test, and a Pages Function for the forms. Only body-text
+  editing waits for November, because the prose lives inside the templates.
+
+  Also carries: deploy the site ourselves on
   Cloudflare Pages from the repository, not from the workstation, with the packs staying on
-  the workstation tunnel and the zone moving to Cloudflare in the week of 22 September; and
-  bring the Observatory site into the Sveltia editor after Routes, once its prose is lifted
-  out of the templates, with only site.json exposed before then. Also records that the Avia
-  site already runs on Cloudflare Pages, so none of this is a new pattern, and that
-  CMS-README.md describes a review-branch flow the config no longer follows.
+  the workstation tunnel and the zone moving to Cloudflare in the week of 22 September. Notes
+  that the Avia site already runs on Cloudflare Pages, so none of this is a new pattern; that
+  the Meridian page's meta description carries the price range, an eighth place no document
+  names; and that CMS-README.md describes a review-branch flow the config no longer follows.
 
   Includes the page review by name, the exact takedown list, and the dates. The IT firm is off
   the W6 path and the paragraph drafted for them is withdrawn.
 
-routes/W6-STATUS.md (v3)
+routes/W6-STATUS.md (v4)
   State per scope item, John's rulings this session, five conflicts seen for the controller's
   resolution, six findings, what W6 needs from John, dependencies on W1, W2, W3 and W4, and
   the six risks W6 is carrying.
