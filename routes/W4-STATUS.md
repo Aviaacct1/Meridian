@@ -2,7 +2,7 @@
 
 Written by the W4 chat for the programme controller. Rewritten every session, never appended.
 W4 does not edit W4-RULINGS.md, the umbrella or any other workstream's file. Session 1,
-19 September 2026.
+19 September 2026, closed at 21:00 with the commit confirmed.
 
 Read and confirmed this session: `routes\W4-RULINGS.md` v1; `GTM-STRATEGY-ROUTES-2026.md`
 (Status block and section 6 read, not edited); `ROUTES-COMMERCIAL-PLAN-19Sep2026.md` sections
@@ -12,7 +12,8 @@ Read and confirmed this session: `routes\W4-RULINGS.md` v1; `GTM-STRATEGY-ROUTES
 and Nick Oldrini's methodology note of 23 August 2026, sections 2 to 6, for the three classes
 of number. No git command run by W4 against the mount.
 
-Clone: DevPC `C:\AviaDev`. `[Pull and HEAD requested from John this session; block issued.]`
+Clone: DevPC `C:\AviaDev`, pulled by John 19 September. HEAD `4c0d883`, confirmed by his
+paste after the commit.
 
 ## State per section of the manual
 
@@ -118,6 +119,9 @@ Friday, 09:00 to 17:00.
 
 ## Commits landed
 
-None yet this session. `STAND-HOST-MANUAL.md` v1 and this file are new and uncommitted; the
-DevPC block issued with this status commits both. HEAD before the block is whatever John's pull
-reports.
+**`4c0d883`**, 19 September 2026, DevPC `C:\AviaDev`, committed and pushed by John and
+confirmed by his paste. Three new files and no code: `routes\STAND-HOST-MANUAL.md` v1,
+`routes\W4-STATUS.md` v1 and `COMMIT-MSG-19Sep2026-w4-manual.txt`.
+
+Owed against it: the HEAD line above and this section, which name the hash the commit itself
+could not carry. One block clears them.
