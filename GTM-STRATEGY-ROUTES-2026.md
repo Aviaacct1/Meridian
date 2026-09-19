@@ -13,6 +13,78 @@ The detail lives in two companions and this document points at them rather than 
 
 ---
 
+## Status
+
+Rewritten every session by the programme controller; John reads this on a phone. Session 1,
+19 September 2026, 16:00. Clone: DevPC `C:\AviaDev`, HEAD `11a4c3f` (aircraft-econ code committed and pushed 19 Sep,
+confirmed by John's paste).
+
+| WS | State | Evidence | Next action | Owner | Date |
+|---|---|---|---|---|---|
+| W1 Speed and caches | In progress | No timing exists yet; probe `diag_routes_timing.py` written 19 Sep, commit block issued | John runs the timing block on the workstation and pastes it | John / controller | 23 Sep |
+| W2 Stand flow | Not started | Queue and email design not yet put to John | Design on one screen to John (step E); laptop build proof | Controller / John | Design 22 Sep; laptop 1 Oct |
+| W3 Presentation | Not started | Old 2 July pptx only | Deck v1 after messaging settles | Controller, Jol, Nick | 3 Oct |
+| W4 Host | Not started | Host's name and contact in no document | Manual v1; get host details from John | Controller / John | 10 Oct |
+| W5 Leads, feedback, order-ready | Blocked on John | Lead store and email sender undecided | Decisions batch (step C) | John | 25 Sep |
+| W6 Messaging, marketing, website, meetings | In progress | Four sentences drafted this session (step C) | John and Jol settle; invitations out | John, Jol | Final 25 Sep; invites 26-29 Sep |
+| W7 Rehearsal and freeze | Not started | Freeze 10 Oct, Boeing 13 Oct in the calendar | Nothing until W1 and W2 exist | Controller | 10 Oct |
+
+**Found this session, not in any document:**
+- The 29 August aircraft-economics CODE is uncommitted on the DevPC: `9cb5ed1` carries the CSV
+  only; `aircraft_econ_loader.py`, `test_aircraft_econ_table.py` and the edits to
+  `aircraft_economics.py`, `config.py`, `cortex_app.py` (`/api/aircraft`, fallback list
+  removed) are modified or untracked. Master list "Closed 29 Aug" and item 1.1 are wrong as
+  written; the workstation, if it pulled, has a table with no loader.
+- `app/preagg.duckdb.tmp` on the DevPC holds 24GB of DuckDB temp from a 5 July build that did
+  not finish (the 16GB box); `app/preagg.duckdb` (77MB, 5 July) is of unknown state. Treat no
+  preagg store as existing; build on the workstation (step D). The 24GB is deletable.
+- Estate index v11 (8 Aug) still says "World Routes early October"; the umbrella governs.
+- Master list 2.4 (does the 89/82 claim describe the engine the client sees) is still open;
+  the standing accuracy wording is fixed regardless, and pre-mortem 9 depends on it.
+- Working tree also carries an uncommitted +58 lines on HANDOVER-23Aug2026.md and three
+  binary test outputs (master list 5.10).
+- The preagg store is NOT reachable from the live app: `cortex_app.py` and `config.py` carry no
+  preagg hook; only `backtest.py --preagg` and `route_feed.py` (`feed_cfg["preagg"]`) know it.
+  "Switch it on" (handover 3.2) therefore needs a small wiring change on the demo path before
+  the freeze, after the identity check passes. `sector_adj` is optional by design; the core
+  tables are `od_p2p` and `od_single`.
+- No stage timing exists in the run path (only job-level `elapsed_s`), so measurement is
+  from outside: `diag_routes_timing.py` (HTTP wall clock in stand order, plus an in-process
+  cProfile mode for attribution). Evidence files: `TIMING-<date>.md` at repo root.
+
+## Decisions log
+
+- 19 Sep 2026: the six decisions in section 1 (licence in hand for the show; soft price with
+  expiring launch discount; two milestones; messaging before invitations; no competitor
+  approaches; Optimise demonstrated on the stand).
+- 19 Sep 2026: programme controller appointed; this Status block is the single truth.
+- 19 Sep 2026: the uncommitted 29 August aircraft-economics code is COMMITTED before the
+  freeze (John: it was a fix that emerged after he left for holiday and was held back so it
+  could not break anything while he was away). Commit block issued; one live check on the
+  workstation owed before 10 Oct.
+- 19 Sep 2026: the 24GB `app/preagg.duckdb.tmp` on the DevPC is checked for duplication
+  before removal, not removed on suspicion (John). Check block issued.
+- 19 Sep 2026: check done. DevPC `preagg.duckdb` holds `od_p2p` (1,157,577 rows) and
+  `od_single` (5,780,022 rows) and NO `sector_adj`: the 5 July build died on the heavy
+  sector table and the 24GB is its spill. Removal block issued; the Routes store is built on
+  the workstation with raised memory and a local temp dir.
+
+## Waiting on John
+
+1. CLOSED 19 Sep: HEAD `11a4c3f` confirmed and pushed.
+2. CLOSED 19 Sep: aircraft-econ code committed at `11a4c3f`. Live check on the workstation
+   still owed before 10 Oct (master list 6.6).
+3. **The timing block (step B)**: issued 19 Sep. Commit the probe on the DevPC, pull on the
+   workstation, restart the server, run it, paste the table. If not by 23 Sep: W1 cannot start, the 21 Oct speed acceptance is at risk
+   from day one, and the stand plan is written on the Plan B assumption (pre-rendered panel,
+   pitches queued for the evening).
+4. **Stand host's name, contact and start date; the stand number.** In no document. Needed
+   for W4 and for the Cloudflare Access policy (pre-mortem 7).
+5. Decisions batch of this week (pricing numbers, meeting targets, email sender, lead store,
+   attending-airport list source): sent separately as step C.
+
+---
+
 ## 1. Decisions taken 19 September (John)
 
 1. **Licence position**: OAG and Sabre have both confirmed on calls, with multiple witnesses,
