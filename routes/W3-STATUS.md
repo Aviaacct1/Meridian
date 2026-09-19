@@ -13,8 +13,17 @@ Clone: DevPC `C:\AviaDev`, pulled by John 19 Sep. HEAD `7be1470` (this file, v1)
 on `ad32627` (controller, W3 rulings v1). Workstation checked the same evening.
 No git command run by W3 against the mount.
 
-**Commit hashes landed this session:** `7be1470` (this file, v1). One commit owed, the
-provenance fix in `deck/render_pptx.py`, block issued to John.
+**Commit hashes landed this session:** `7be1470` (this file, v1), `45a5210` (the provenance
+fix in `deck/render_pptx.py`, 156 lines, with `COMMIT-MSG-19Sep2026-w3-provenance.txt`),
+`86999cc` (`deck/build_image_set.py`, `deck/routes2026_probe.json` and this file), plus the
+three-images-per-airport probe and the byte-order-mark fix committed after it.
+
+**Record correction.** `86999cc` carries the imagery probe but wears the provenance commit's
+message, because W3's command block reused `COMMIT-MSG-19Sep2026-w3-provenance.txt` for a
+second batch of files. W3's error, not John's. The message that describes `86999cc` correctly
+is `COMMIT-MSG-19Sep2026-w3-imagery.txt`, committed inside it. The history is not rewritten,
+for the same reason the controller left the misdated commit messages of 19 September alone:
+a force-push on main costs more than a wrong subject line. This note is the trail.
 
 ## State per scope item
 
@@ -246,18 +255,40 @@ Chrome present at `C:\Program Files\Google\Chrome\Application\chrome.exe`, `pike
 
 ## What W3 needs from John
 
-1. The pull on the DevPC and the HEAD hash, so W3 builds on the same tree (block below).
+1. CLOSED 19 Sep: pulled, HEAD confirmed.
 2. CLOSED 19 Sep: workstation checked, Chrome and `pikepdf` and `piexif` and `pillow` all present.
-3. CLOSED 19 Sep: slide 8 is Bologna-New York. Carrier still to name.
-4. CLOSED 19 Sep: mood frames and charts stay, and airport photography is added from
-   multiple online sources with stock held for the gaps. Section above.
-5. The coverage probe block, run on the workstation. It answers whether a second source and
-   paid stock are needed at all, and nothing else should be bought until it reports.
-6. The two July validation figures in Q1 item 3: W3 proposes they stay out. Silence to
+3. CLOSED 19 Sep: slide 8 is Bologna-New York. **Carrier still to name**, and the deck names an
+   airline; W3 will not pick one.
+4. CLOSED 19 Sep: mood frames and charts stay, and airport photography is added from multiple
+   online sources with stock held for the gaps.
+5. CLOSED 19 Sep: at least three images of the airport itself per airport. One looks thin.
+   The probe is regenerated to measure that, three airport slots over 401 airports.
+6. CLOSED 19 Sep: the image-source accounts are held by The Aviation Observatory, and the three
+   sign-ups wait until a mailbox on aviationobservatory.com works. Consequences below.
+7. **The coverage probe, run on the workstation.** Blocked twice this evening, on a missing
+   config and then on a byte-order mark, both now fixed. Third block issued. Nothing else on
+   imagery moves until it reports.
+8. The two July validation figures in Q1 item 3: W3 proposes they stay out. Silence to
    26 September, they stay out.
 
 ## For the controller
 
-The one-engine-or-two wording (Q1 item 1) is a stand answer, not a document tidy, and it sits
-with master list 2.4 and pre-mortem item 9. W3 needs the settled sentence before slides 4 and 5
-are final, which is before 3 October.
+1. **The one-engine-or-two wording** (Q1 item 1) is a stand answer, not a document tidy, and it
+   belongs with master list 2.4 and pre-mortem item 9. W3 needs the settled sentence before
+   slides 4 and 5 are final, which is before 3 October.
+2. **W3 now depends on W2.** John's ruling puts the three image-source accounts in The Aviation
+   Observatory's name and holds them until a mailbox on that domain works. That mailbox depends
+   on whether the domain sits on the Avia Microsoft 365 tenant, which is umbrella Waiting on
+   John 9 and does not default until 26 September. Registration, approval and an API key follow
+   it. **So a second image source will not be live and tested before the 10 October freeze, and
+   W3 is planning the deck and the packs on Commons plus the Observatory mood frames.** Stated
+   now rather than in October. If the probe reports coverage weak enough to change that
+   judgement, W3 says so the day it reads the file.
+3. **Scope.** W3-RULINGS item 4 reads "from the rights-managed Observatory library only". John
+   widened it on 19 September to airport photography from multiple sources. The controller may
+   want the rulings file to say so.
+4. Two defects found outside W3's own build and fixed in passing, both reported here rather
+   than resolved quietly: the JPEG re-encode that stripped every rights record from delivered
+   decks, and `avia_fonts.py` swallowing an unparseable config into an empty dict that surfaced
+   later as a missing setting. The second is the silent-fallback shape the project has been
+   caught by four times.

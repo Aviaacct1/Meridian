@@ -1,0 +1,24 @@
+W3 status: session 1 close, 19 September
+
+Rulings taken from John this evening and recorded: slide 8 is Bologna-New York,
+carrier still to name; at least three images of the airport itself per airport,
+one looks thin; the image-source accounts are held by The Aviation Observatory
+and the three sign-ups wait for a mailbox on aviationobservatory.com.
+
+The consequence of that last one is stated rather than left to emerge. The
+mailbox depends on whether the domain sits on the Avia Microsoft 365 tenant,
+which is umbrella Waiting on John 9 and does not default until 26 September, and
+registration, approval and an API key follow it. A second image source will not
+be live and tested before the 10 October freeze, so the deck and the packs are
+planned on Wikimedia Commons plus the Observatory mood frames. If the coverage
+probe reports weakly enough to change that judgement, W3 says so the day it
+reads the file.
+
+Also recorded for the controller: W3's scope has widened past W3-RULINGS item 4,
+which still reads "from the rights-managed Observatory library only"; and the
+two defects found outside W3's own build, the JPEG re-encode that stripped every
+rights record from delivered decks and the font-store config read that swallowed
+a parse failure into an empty dict.
+
+Outstanding: the carrier for Bologna-New York, the coverage probe run, and the
+one-engine-or-two wording the controller owes before slides 4 and 5 are final.
