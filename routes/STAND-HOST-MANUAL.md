@@ -186,12 +186,13 @@ For a visitor with no route in mind, and for the aisle. Both are the deck's work
 
 1. **SJC-TPE, China Airlines.** San Jose to Taipei. A US route with a long-haul Asian carrier
    and a real connecting story behind and beyond.
-2. **Bologna-New York, `[SLOT: carrier. John, umbrella item 26.]`** A European transatlantic
+2. **Bologna-New York, `[SLOT: carrier. John, umbrella item 26; W3 asks for it by
+   23 September because slide 8 names the airline.]`** A European transatlantic
    route from a secondary airport, which is the case most visitors recognise as their own.
 
-Rehearse both until you can run either without looking at this page. `[SLOT: the two runs
-are made on the frozen build after 10 October and the numbers checked before you use them on
-the stand. W3 and W2, at the 11-12 October trial.]`
+Rehearse both until you can run either without looking at this page. `[SLOT: the two runs behind
+these routes are made by W3 between 29 September and 1 October (W3-STATUS v1), and the numbers
+are checked again after the 10 October freeze before you use them on the stand.]`
 
 ### 3.3 The pack, explained not run
 
@@ -199,7 +200,8 @@ The researched pack is queued when the visitor leaves and it arrives by email. Y
 one on the stand, and you never promise a time you have not been told to promise (section 6.5).
 
 Two pre-built examples live on the laptop, one for each rehearsed route. `[SLOT: the two
-example packs, built on the frozen build. W3, by 8 October.]` `[SCREENSHOT: where the two
+example packs. W3, by 3 October; John pulled the pack, the PDF and the imagery forward from
+8 October to 3 October (W3-STATUS v1).]` `[SCREENSHOT: where the two
 examples sit on the laptop, and the folder to open under Plan B.]`
 
 ### 3.4 The three qualification questions
@@ -227,6 +229,12 @@ landed.
 
 Two emails follow each capture: a thank-you with the PDF attached, and a link to the pack
 hosted as a web page.
+
+The thank-you email asks the visitor one question, above the link: "Does this match what you
+have run yourselves? Tell us where it does not, and we will show you why the model reads the
+route the way it does." Source: `W5-FEEDBACK-CARD-19Sep2026.md` v0.1. Know it is there, because
+some visitors will answer it while still in the hall, and that reply is the best feedback we
+get.
 
 ### 3.6 Your own practice runs
 
@@ -482,6 +490,10 @@ numbers and we confirm it in the quotation; we do not print the thresholds." If 
 discount, a number of places or a deadline: "John handles that. Shall I book you a follow-up
 with him." No figure, no number of places, no expiry, and no rough one either.
 
+The written offer lives in a one-pager that John sends to qualified visitors within 48 hours of
+the show. It never travels on the stand and it is not in the pack, so do not hand it over, read
+from it or promise its contents.
+
 If the visitor wants to sign on the stand: take the details, thank them properly, and tell them
 the truth. "Onboarding opens on 7 November and you are first in the queue." A signature taken
 before we can support it is a support problem, not a sale.
@@ -523,6 +535,25 @@ implication that a client exists where one does not.
 
 "Yes, trials are free and we take no payment details. Let me capture you now and John will set
 it up." Do not promise a start date or a length.
+
+### 7.10 "Those operating costs are not ours"
+
+They are right, and the tool says so itself. "The economics are indicative and built on generic
+published assumptions, not on any airline's actual costs. They are there so you can see the
+shape of the route's profitability and compare one aircraft against another. If you want it run
+on a carrier's own cost base, that is a conversation with John."
+
+Never adjust a cost figure on the stand to match what a visitor tells you. Write what they said
+on the form; a route development team quoting a real airline cost base is telling us something
+worth having.
+
+### 7.11 "What do you get for the 100 presentations"
+
+"Three named seats, forecasts and scenarios and exports without limit within fair use, and 100
+generated presentations a year across the three seats, each one the forecast you ran. One review
+call a quarter with an Avia director on your own routes. Beyond 100 presentations, each document
+is charged at the rate in the licence." If asked what that rate is: "John will give you that in
+writing." No figure. Source: `W5-ONE-PAGER-19Sep2026.md` v0.1.
 
 ---
 
@@ -583,14 +614,29 @@ Fifteen to thirty minutes, every day, before you leave the hall.
 
 ### 8.5 The five feedback questions
 
-After each substantive demonstration, you answer these five, not the visitor. Thirty seconds
-on the form or the card. The aggregate is the product roadmap for November.
+After each substantive demonstration you answer these five, not the visitor. Thirty seconds
+while they walk away. Write what the visitor said, not what you thought. The wording is W5's
+stand card, `W5-FEEDBACK-CARD-19Sep2026.md` v0.1; the same five questions sit behind the capture
+front end, so a card can be typed in at the end of the day.
 
-1. What route did they run?
-2. What impressed them?
-3. What did they question?
+Visitor, company, route run, date and session, then:
+
+1. Which route did they run, and why that one?
+2. What impressed them? Their words, not ours.
+3. What did they question or push back on?
 4. What did they ask for that we do not have?
-5. Would they pay?
+5. Would they pay for it? Cold, warm, or a launch candidate, and what they said that puts them
+   there.
+
+Then one line of your own: anything you would change about the demonstration you just gave.
+
+Three rules. One card for every demonstration that ran a real route, including the ones that
+went badly, because a demonstration that went badly is the most useful card on the stand. Never
+leave question 4 blank; if they asked for nothing, write that they asked for nothing. Every card
+reaches the lead store as notes against that visitor before the stand closes, so nothing depends
+on a card surviving the journey home.
+
+The aggregate of questions 3 and 4 is the product list for November.
 
 `[SLOT: voice note-taking on the stand is under consideration by John. If it is used, the
 consent line you say before recording goes here, and you say it every time. John, by
@@ -601,7 +647,7 @@ consent line you say before recording goes here, and you say it every time. John
 | # | Slot | Owner | Date |
 |---|---|---|---|
 | 1 | The sentence saying what the 89% describes (2.3, 7.2) | John, Nick | 26 Sep |
-| 2 | Carrier for Bologna-New York (3.2) | John | Umbrella 26 |
+| 2 | Carrier for Bologna-New York (3.2) | John | 23 Sep, W3 |
 | 3 | The competitor sentence, wording approval (4.4) | John | 10 Oct |
 | 4 | John's mobile, the second and third numbers to ring (5.3) | John | 10 Oct |
 | 5 | Jol, Nick, Stefan, venue and stand numbers (5.3) | John | 15 Oct |
@@ -615,7 +661,7 @@ consent line you say before recording goes here, and you say it every time. John
 | 13 | Pre-rendered pack folder and the recording (5.1) | W2 | 15 Oct |
 | 14 | Queue view state names and its place in the navigation (6.1) | W2 | 8 Oct |
 | 15 | Separate lead file for practice runs, confirmed (3.6) | W2 | 8 Oct |
-| 16 | The two example packs and the two runs on the frozen build (3.2, 3.3) | W3, W2 | 8 Oct |
+| 16 | The two example packs, and the two runs behind the walk-up routes (3.2, 3.3) | W3 | 3 Oct |
 | 17 | Voice note-taking, and its consent line (8.5) | John | 10 Oct |
 | 18 | Screenshots: capture form, queue view, stand-mode marker, sign-in, example packs | W2 | after 8 Oct |
 | 19 | Atlas cover on the stand (8.2) | John, Jess | 15 Oct |

@@ -2,7 +2,8 @@
 
 Written by the W4 chat for the programme controller. Rewritten every session, never appended.
 W4 does not edit W4-RULINGS.md, the umbrella or any other workstream's file. Session 1,
-19 September 2026, closed at 21:00 with the commit confirmed.
+19 September 2026, reopened at 22:30 on John's instruction to read routes\README.md and follow
+it.
 
 Read and confirmed this session: `routes\W4-RULINGS.md` v1; `GTM-STRATEGY-ROUTES-2026.md`
 (Status block and section 6 read, not edited); `ROUTES-COMMERCIAL-PLAN-19Sep2026.md` sections
@@ -11,6 +12,23 @@ Read and confirmed this session: `routes\W4-RULINGS.md` v1; `GTM-STRATEGY-ROUTES
 `PROMPT-for-Fable-Routes-19Sep2026.txt`; `MASTER-TASK-LIST.md` (nothing in it duplicates W4);
 and Nick Oldrini's methodology note of 23 August 2026, sections 2 to 6, for the three classes
 of number. No git command run by W4 against the mount.
+
+Read after John's instruction at 22:30: `routes\README.md` v1, and `W4-RULINGS.md` again. The
+rulings file changed at 20:53 by one line only, the pointer to the README; no ruling changed, so
+nothing already built needs redoing. Then, per the README's rule that a cross-workstream fact
+comes from that workstream's own file and is quoted with its version: `routes\W3-STATUS.md` v1
+as rewritten at 20:48, `routes\W5-STATUS.md` v1, `W5-FEEDBACK-CARD-19Sep2026.md` v0.1,
+`W5-ONE-PAGER-19Sep2026.md` v0.1, `routes\W6-STATUS.md` v2 and
+`W6-MESSAGING-VARIANTS-19Sep2026.md` v1. W5's and W6's rulings files are not W4's to read as
+instructions and were not acted on.
+
+Manual v1 amended in consequence, seven changes, all sourced: the five feedback questions now
+carry W5's card wording rather than a second shorter form of the same five; the pack-email reply
+line added so the host knows what the visitor was asked; the one-pager named as a 48-hour
+follow-up document that never travels on the stand; two objections added from the one-pager, the
+indicative economics and what the 100 presentations cover; the walk-up routes' numbers dated to
+W3's runs of 29 September to 1 October; the example packs moved from 8 October to 3 October,
+which is John's pull-forward; and the Bologna carrier dated to W3's 23 September ask.
 
 Clone: DevPC `C:\AviaDev`, pulled by John 19 September. HEAD `4c0d883`, confirmed by his
 paste after the commit.
@@ -24,12 +42,12 @@ fact. UK English, no em or en dashes, no consultant-generic words, checked mecha
 |---|---|---|---|---|
 | 1 | Who we are, in 90 seconds | Done, draft 1 | Two learned paragraphs plus the aisle hook; Avia and Meridian in the ruled terms | John reads it aloud once and corrects the client list |
 | 2 | The three classes of number | Done, draft 1 | Measured, calibrated, physics from Nick's note section 2; no coefficient quoted; the accuracy wording verbatim and once; the hand-over line | Fill slot 1 (what the 89% describes) |
-| 3 | The demo script, timed | Drafted to the design, timed | Full script to the second, both paths, on measured stage times; two rehearsed routes; capture form; qualification questions | Re-time at the 11-12 Oct trial; slots 2, 10, 15, 16 |
+| 3 | The demo script, timed | Drafted to the design, timed | Full script to the second, both paths, on measured stage times; two rehearsed routes; capture form; qualification questions; the pack-email reply line | Re-time at the 11-12 Oct trial; slots 2, 10, 15, 16 |
 | 4 | What not to say | Done, draft 1 | Five bans: unbuilt features with the honest wording for each, price, single-route blind figure, competitor, defending a number | John approves the competitor sentence (slot 3) |
 | 5 | Plan B, step by step | Drafted to the design, gaps marked | Network order top to bottom, what changes for the visitor, the ring order, the restart words verbatim, the eight-minute morning check | Slots 4, 5, 11, 12, 13 |
 | 6 | The queue view | Drafted to the design, gaps marked | What it shows, when to check, the five steps when one fails, the person-checked pack | Screenshots and state names after 8 Oct (slot 14); slot 9 |
 | 7 | Objections and answers | Done, draft 1, one page each | Nine objections including the three the pre-mortem names, with the price wording verbatim and the gap conversation as the product working | Slot 1 changes two lines of 7.2 |
-| 8 | The day | Done, draft 1, rota slots open | Day shape, who is on when, Tuesday setup, the lead review, the five feedback questions, the slot register, training and the dry run | Slots 6, 7, 8, 17, 19 |
+| 8 | The day | Done, draft 1, rota slots open | Day shape, who is on when, Tuesday setup, the lead review, the five questions in W5's card wording, the slot register, training and the dry run | Slots 6, 7, 8, 17, 19; re-align 8.5 if Jol changes W5's card |
 
 ## The pre-mortem, item by item, where it names the host
 
@@ -86,6 +104,40 @@ Already tracked elsewhere and not repeated as questions: the sentence saying wha
 describes (umbrella item 25, due 26 September), the Bologna-New York carrier (item 26), the
 launch offer numbers (items 6 and 7), and the tablet (W2).
 
+## Conflicts seen
+
+Reported here per `README.md`, not resolved by W4 and not edited into anyone else's file.
+
+1. **The 30-minute pack promise is in the outgoing copy and the host cannot yet make it.** W6's
+   chosen sub-message (`W6-MESSAGING-VARIANTS-19Sep2026.md` v1, sentence 2.2, variants A and B)
+   promises the written pack within 30 minutes, and W6 recommends B. The manual holds section
+   6.5 open as a slot, because the sender account is in test mode until its review clears
+   (`W2-STATUS.md` v6, watchpoint 1) and because Plan B sends the pack that evening rather than
+   in half an hour (`HANDOVER-ROUTES-19Sep2026.md` 4.1a). A visitor who arrives holding an
+   invitation that promised 30 minutes, and is then told "later today", hears a broken promise
+   at the first contact. W4's view: the invitations say the visitor leaves with the run they
+   watched and the pack follows the same day, and the 30-minute wording waits until the sender
+   is approved and one pack has been sent and received on a hotspot at the 11-12 October trial.
+   Controller and John to rule; the copy goes out 26-29 September, so this needs an answer
+   before the manual's slot does.
+
+2. **Two price positions, and the host can hold only one.** The commercial plan section 5 says a
+   soft number plus a written expiring discount; the published grid in the rulings and in
+   `PRICING-HANDOVER-19Sep2026.md` prices by airport size with no discount stated. W6 raises the
+   same conflict in its own words and says the host cannot hold both. W4 built section 7.5 to the
+   rulings, so the manual carries the grid wording and "launch places this year on request" and
+   nothing else. W5's one-pager v0.1 carries the same grid with the offer sentence as an open
+   slot, so the manual and the one-pager agree today. They stop agreeing the moment umbrella
+   items 6 and 7 are answered in the plan's shape rather than the grid's. One ruling settles
+   three documents.
+
+3. **The five feedback questions existed in two forms, now resolved in W5's favour.** W4-RULINGS
+   points at commercial plan 6.2 for the five questions; W5 owns the card and has written them
+   longer and better (`W5-FEEDBACK-CARD-19Sep2026.md` v0.1, to Jol by 8 October). Manual section
+   8.5 now reproduces W5's wording and names the file and version, so the stand has one set of
+   questions rather than two. If Jol changes the card, 8.5 changes with it, and W4 tracks W5's
+   status for that rather than waiting to be told.
+
 ## Watchpoints
 
 1. **The send promise.** Until the sender account clears its review, the manual cannot let her
@@ -124,4 +176,4 @@ confirmed by his paste. Three new files and no code: `routes\STAND-HOST-MANUAL.m
 `routes\W4-STATUS.md` v1 and `COMMIT-MSG-19Sep2026-w4-manual.txt`.
 
 Owed against it: the HEAD line above and this section, which name the hash the commit itself
-could not carry. One block clears them.
+could not carry, plus the amendments made after the README was read. One block clears both.
