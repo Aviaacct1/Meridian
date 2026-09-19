@@ -1,13 +1,15 @@
 # W5 order-ready documents: status
 
-Version 1, 19 September 2026. Written by the W5 chat for the programme controller; rewritten
+Version 2, 19 September 2026. Written by the W5 chat for the programme controller; rewritten
 each session, never appended. W5-RULINGS.md v1 read and acted on. W5 writes no code and edits
 no other workstream's file.
 
 READ AND CONFIRMED: W5-RULINGS.md; GTM-STRATEGY-ROUTES-2026.md (Status, section 3, Waiting on
 John); ROUTES-COMMERCIAL-PLAN-19Sep2026.md 5 and 6; HANDOVER-ROUTES-19Sep2026.md 7;
 PRICING-HANDOVER-19Sep2026.md in full; routes\W2-STATUS.md v6;
-PROMPT-for-Fable-Routes-19Sep2026.txt; MASTER-TASK-LIST.md 1.3, 1.5, 2.1 to 2.4, 5.7.
+PROMPT-for-Fable-Routes-19Sep2026.txt; MASTER-TASK-LIST.md 1.3, 1.5, 2.1 to 2.4, 5.7;
+routes\README.md v1, which W5 now works to: one commit message file per commit, own files
+only, conflicts reported here rather than fixed in another's file.
 
 HEAD: the mounted DevPC clone reads `a2c96a7` with a dirty tree. John: run the block at the
 foot of this file and paste the HEAD it prints, so W5 knows what it committed on to.
@@ -20,7 +22,7 @@ foot of this file and paste the HEAD it prints, so W5 knows what it committed on
 | 2 | Invoice template, 30 days, sterling, VAT exclusive | NOT STARTED | | Next session; needs facts 1 and 9 |
 | 3 | Onboarding script, 45 minutes | NOT STARTED | | Next session, no dependency |
 | 4 | Known-issues list | NOT STARTED | Base is `TESTERS-KNOWN-ISSUES-23Aug2026.md` plus day-of-week, fare, the uncostable types | Draft 1 Oct, frozen 10 Oct, plus whatever Routes exposes |
-| 5 | Feedback card and pack-email line | DRAFTED | `W5-FEEDBACK-CARD-19Sep2026.md` | To Jol by 8 Oct; W2 holds the same five questions behind the capture form |
+| 5 | Feedback card and pack-email line | DRAFTED | `W5-FEEDBACK-CARD-19Sep2026.md` | To Jol by 8 Oct; ask the controller whether the five go behind W2's capture form, which W2-STATUS v6 does not carry |
 | 6 | Support arrangement | BLOCKED ON JOHN | | Fact 6 below |
 | 7 | Licence record, OAG and Sabre | NOT STARTED | | One-page form next session; only John holds the content, fact 10 |
 | 8 | Follow-up sequence and one-pager | ONE-PAGER DRAFTED | `W5-ONE-PAGER-19Sep2026.md`, `Meridian-Launch-Customer-One-Pager-DRAFT-v0.1.docx`, 1 page | The 48-hour and two-week sequence next session |
@@ -70,6 +72,19 @@ told his tier is quoted. Silence to 3 October: the published grid.
     whole of October is available.
 12. **Who signs off the known-issues list** before it goes to a client. W5 proposes Nick.
 
+## Conflicts seen
+
+1. **The umbrella's W5 row is out of date and describes the wrong job.** The Status block
+   reads "W5 Leads, feedback, order-ready, Blocked on John, lead store and email sender
+   undecided". Both were decided on 19 September in the same file's own decisions log (ruling
+   15, a DuckDB `leads` table; the sender is Postmark), both belong to W2, and W5-RULINGS v1
+   gives W5 the document half only and says the code half is not W5's. As written, the one line
+   John reads on his phone says the documents are blocked when they are drafted, and says the
+   lead store is undecided when W2 is building it. Controller to replace the row at the sweep.
+2. **Waiting on John item 20 carries two opposite recommendations in one paragraph**, Cloudflare
+   DNS now and Postmark digests now. W2's area, not W5's, but John cannot answer it as it
+   stands. Controller to cut it to one.
+
 ## Watchpoints
 
 1. **The accuracy line and umbrella item 25.** The agreement states the ruled sentence and
@@ -92,4 +107,6 @@ told his tier is quoted. Silence to 3 October: the published grid.
 
 ## Commits
 
-Nothing landed yet. The block below is the first. Run it on the DevPC and paste the HEAD.
+Nothing landed yet. The first block is with John: it commits the seven files above against
+`COMMIT-MSG-19Sep2026-w5-session1.txt`, per README.md's one message file per commit. Paste the
+HEAD it prints.

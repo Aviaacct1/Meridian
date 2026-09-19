@@ -1,0 +1,60 @@
+W5: agreement draft, launch-customer one-pager, stand feedback card, status v1
+
+W5 session 1, the document half of order-ready (umbrella section 3, commercial plan 5
+and 6). Four of the eight scope items in W5-RULINGS.md v1 are drafted; W5 writes no
+code, and the code half of order-ready stays W2's.
+
+THE AGREEMENT, DRAFT v0.1, FOR THE SOLICITOR AND NOT FOR A CLIENT.
+Fourteen clauses. Fifteen SLOT markers, each carrying the fallback that applies if John
+has not ruled the figure by 3 October, and eight LAWYER markers gathered into one list
+at the foot so the solicitor can work from that list alone. Nothing is invented: no
+price, discount, number of places, expiry, response time or legal wording appears as
+settled unless John has ruled it or a source in the repo carries it.
+
+  Clause 4   the published grid, £15,000 / £20,000 / £25,000 a year by airport size,
+             from PRICING-HANDOVER-19Sep2026.md. The overage rate is SLOT 9 and has no
+             fallback worth the name: the pricing note records that no figure exists
+             anywhere and that it must be set before the first licence issues.
+  Clause 7   the data position. OAG and Sabre confirmed verbally that outputs may be
+             shared; the letters are chased. Flagged to the solicitor as the largest
+             exposure in the document.
+  Clause 8   the accuracy line verbatim as ruled, and the economics disclaimer exactly
+             as it reads in app/aircraft_economics.py DISCLAIMER_FULL. The clause does
+             not say the forecast on the client's screen is 89% within 20%, because
+             umbrella item 25 has not decided that; if John rules (a), the clause
+             stands as drafted.
+  Clause 10  data handling as ruled: Avia stores no client data, and stores the
+             outputs, the routes run and the named user who ran them. Written so that
+             it stays true beside the per-client attribution W2 is building.
+
+THE ONE-PAGER, DRAFT v0.1, ONE PAGE.
+What the client gets, what the client gives, price and term, what is excluded. It goes
+to a qualified visitor in the 48-hour follow-up, never in the stand pack. The tier
+question is put to John in W5-STATUS.md: W5 recommends the published grid with airlines
+and advisers quoted, because the grid is already printed on the staging site and no
+airline or adviser price exists to print.
+
+THE FEEDBACK CARD AND THE PACK-EMAIL LINE.
+Five questions the host answers after each substantive demo, host-filled and not handed
+to the visitor, plus the one line inviting a reply in the pack email. Due to Jol by
+8 October.
+
+THE BUILD, AND WHAT IT VERIFIES.
+build_w5_docs.py builds both Word files from their markdown sources and re-opens each
+one afterwards: Avia Solutions as author and last-modified-by, en-GB at the document
+default and in settings, no run-level or style-level language anywhere else, and no em
+or en dash in the file. It fails loudly rather than reporting a build it did not check.
+Both files pass. Blocks marked SKIP in the sources are internal notes and never reach
+the Word file.
+
+  routes/W5-AGREEMENT-19Sep2026.md                        source, agreement
+  routes/W5-ONE-PAGER-19Sep2026.md                        source, one-pager
+  routes/W5-FEEDBACK-CARD-19Sep2026.md                    card and pack-email line
+  routes/build_w5_docs.py                                 builder and verifier
+  routes/Meridian-Licence-Agreement-DRAFT-v0.1.docx        3 pages with the markers in
+  routes/Meridian-Launch-Customer-One-Pager-DRAFT-v0.1.docx 1 page
+  routes/W5-STATUS.md                                     v1, state, conflicts, the
+                                                          twelve facts only John holds
+
+NOT DONE, AND OWED: the invoice template, the onboarding script, the known-issues list,
+the licence record form and the follow-up sequence. None of them waits on anyone.
