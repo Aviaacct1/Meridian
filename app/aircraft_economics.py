@@ -45,89 +45,71 @@ DISCLAIMER_SHORT = (
 )
 
 # ---------------------------------------------------------------- aircraft DB
-# Per-block-hour rates (USD). fuel via burn x price; maint = airframe+engine.
-AIRCRAFT: Dict[str, dict] = {
-    # Per-block-hour USD rates. fuel via burn x price; maint = airframe+engine combined.
-    # CALIBRATION (27 June): fuel_burn from published cruise/block data (citable, current);
-    # cost levels anchored as tagged in 'src': E190 = Maverick LCY-EDI worked example
-    # (validated 0.3%); E170/Saab = Maverick Cost/BH; A330/787 = LHLCC 2015 (maint) with
-    # crew/ownership re-anchored to Belobaba Form41 2013 + FAA YE2023 categories (prior
-    # widebody crew/ownership were too high); narrowbody = FAA NB category + easyJet unit
-    # cost; turboprop/RJ = EUROCONTROL/FAA RJ. See "Aircraft Economics Sourcing Reference.md".
-    # Refine further from in-house LHLCC/Avianca/Uzbekistan/PaceLab models.
-    # --- Regional / turboprop ---
-    "ATR72":  dict(econ_seats=70, bus_seats=0,  mtow_kg=23000, cargo_cap_kg=0, fuel_burn_kg_per_bh=620,  maint_per_bh=380, crew_per_bh=470, ownership_per_bh=360, price_usd=20e6, annual_util_bh=2200, range_km=1500, category="Regional", src="EUROCONTROL Dash8 + turboprop benchmark; burn ATR factsheet"),
-    "DH8D":   dict(econ_seats=78, bus_seats=0,  mtow_kg=30000, cargo_cap_kg=0, fuel_burn_kg_per_bh=720,  maint_per_bh=430, crew_per_bh=520, ownership_per_bh=440, price_usd=25e6, annual_util_bh=2200, range_km=2000, category="Regional", src="EUROCONTROL Dash8 $1,921/fh all-in; burn published"),
-    # REGIONAL JET FUEL BURN CORRECTED 10 August 2026 against reported actuals. See the note below
-    # the table. The previous figures ran at 0.51 to 0.75 of what US operators actually burned.
-    "CRJ900": dict(econ_seats=76, bus_seats=12, mtow_kg=38300, cargo_cap_kg=0, fuel_burn_kg_per_bh=1474, maint_per_bh=520, crew_per_bh=640, ownership_per_bh=560, price_usd=25e6, annual_util_bh=1900, range_km=2900, category="Regional", src="burn: US DOT Form 41 P-5.2 2023 fuel issued over airborne hours, blocked with the T-100 measured ratio 0.708 (was 1,100, 0.75x actual); rest FAA YE2023 RJ61-99 category"),
-    "E170":   dict(econ_seats=62, bus_seats=10, mtow_kg=38600, cargo_cap_kg=0, fuel_burn_kg_per_bh=1431, maint_per_bh=470, crew_per_bh=650, ownership_per_bh=560, price_usd=25e6, annual_util_bh=1708, range_km=3900, category="Regional", src="burn: US DOT Form 41 P-5.2 2023, T-100 block ratio 0.715 (was 920, 0.64x actual); rest Maverick Cost/BH + FAA RJ"),
-    "E190":   dict(econ_seats=88, bus_seats=10, mtow_kg=51800, cargo_cap_kg=0, fuel_burn_kg_per_bh=1950, maint_per_bh=529.1, crew_per_bh=712.9, ownership_per_bh=731.7, price_usd=6.27e6, annual_util_bh=1708, range_km=4500, category="Regional", src="burn: SCALED from the well-sampled E170/E175 Form 41 2023 cluster, NOT from the type's own row, which is JetBlue alone on 102 airborne hours during the year it retired the fleet and reads 46% above a heavier-per-tonne E175; corroborated by Aircraft Commerce Issue 64 at 1,923-1,980 block (was 1,105.5)"),
-    "E195":   dict(econ_seats=120,bus_seats=0,  mtow_kg=52300, cargo_cap_kg=0, fuel_burn_kg_per_bh=2116, maint_per_bh=540, crew_per_bh=720, ownership_per_bh=760, price_usd=27e6, annual_util_bh=1900, range_km=4800, category="Regional", src="burn: SCALED from the corrected E190 on the module's own prior E195/E190 ratio of 1.085; no US operator files P-5.2 for the type, so derived, not measured; rest FAA RJ category"),
-    "SF34":   dict(econ_seats=50, bus_seats=0,  mtow_kg=22000, cargo_cap_kg=0, fuel_burn_kg_per_bh=600,  maint_per_bh=300, crew_per_bh=420, ownership_per_bh=300, price_usd=8e6,  annual_util_bh=2000, range_km=1700, category="Regional", src="turboprop benchmark; burn published"),
-    # --- Narrowbody (LCC / FSC). FAA NB<165k non-fuel ~ maint1004/crew1336/own586 ---
-    "A319":   dict(econ_seats=144,bus_seats=0,  mtow_kg=75500, cargo_cap_kg=0, fuel_burn_kg_per_bh=2200, maint_per_bh=900, crew_per_bh=1150, ownership_per_bh=700, price_usd=35e6, annual_util_bh=2300, range_km=6700, category="Narrowbody", src="FAA YE2023 NB<165k; burn published"),
-    "A320":   dict(econ_seats=180,bus_seats=0,  mtow_kg=78000, cargo_cap_kg=0, fuel_burn_kg_per_bh=2400, maint_per_bh=1000, crew_per_bh=1300, ownership_per_bh=900, price_usd=45e6, annual_util_bh=2300, range_km=6100, category="Narrowbody", src="FAA NB<165k (Belobaba A320 2013 non-fuel ~2,094 inflated); burn published"),
-    "A20N":   dict(econ_seats=186,bus_seats=0,  mtow_kg=79000, cargo_cap_kg=0, fuel_burn_kg_per_bh=2050, maint_per_bh=960, crew_per_bh=1300, ownership_per_bh=1200, price_usd=50e6, annual_util_bh=2300, range_km=6500, category="Narrowbody", src="FAA NB + neo lease premium (IBA ~$400k/mo); burn published"),
-    "A321":   dict(econ_seats=200,bus_seats=16, mtow_kg=93500, cargo_cap_kg=0, fuel_burn_kg_per_bh=2750, maint_per_bh=1100, crew_per_bh=1380, ownership_per_bh=950, price_usd=50e6, annual_util_bh=2300, range_km=5900, category="Narrowbody", src="FAA NB>=165k; burn published"),
-    "A21N":   dict(econ_seats=206,bus_seats=16, mtow_kg=97000, cargo_cap_kg=0, fuel_burn_kg_per_bh=2400, maint_per_bh=1050, crew_per_bh=1380, ownership_per_bh=1300, price_usd=55e6, annual_util_bh=2300, range_km=7400, category="Narrowbody", src="FAA NB>=165k + neo lease (IBA ~$460k/mo); burn published"),
-    "A21X":   dict(econ_seats=162,bus_seats=20, mtow_kg=101000,cargo_cap_kg=2000, fuel_burn_kg_per_bh=2500, maint_per_bh=1100, crew_per_bh=1500, ownership_per_bh=1500, price_usd=65e6, annual_util_bh=2400, range_km=8700, category="Narrowbody-LR", src="A321neo + weight delta (NO clean XLR public data); burn A321LR proxy"),
-    "B738":   dict(econ_seats=189,bus_seats=0,  mtow_kg=79000, cargo_cap_kg=0, fuel_burn_kg_per_bh=2600, maint_per_bh=1000, crew_per_bh=1300, ownership_per_bh=900, price_usd=45e6, annual_util_bh=2300, range_km=5400, category="Narrowbody", src="FAA NB<165k; EUROCONTROL 737NG $4,337/fh; burn published"),
-    "B38M":   dict(econ_seats=189,bus_seats=0,  mtow_kg=82000, cargo_cap_kg=0, fuel_burn_kg_per_bh=2250, maint_per_bh=980, crew_per_bh=1300, ownership_per_bh=1300, price_usd=52e6, annual_util_bh=2300, range_km=6500, category="Narrowbody", src="FAA NB + MAX lease premium; burn published"),
-    "B752":   dict(econ_seats=199,bus_seats=0,  mtow_kg=115000,cargo_cap_kg=2000, fuel_burn_kg_per_bh=3300, maint_per_bh=1100, crew_per_bh=1400, ownership_per_bh=600, price_usd=20e6, annual_util_bh=2800, range_km=7200, category="Narrowbody-LR", src="EUROCONTROL 757 $5,357/fh; old type low ownership; burn published"),
-    # --- Comac (Jessica, 3 Jul 2026: needed for Asia routes). PROXY economics, flagged: no
-    # published maintenance reserves and thin appraiser coverage, so maint/ownership anchor to
-    # the A320/E190 families with an early-type support premium. Seats/MTOW/range published. ---
-    "C919":   dict(econ_seats=156,bus_seats=8,  mtow_kg=77900, cargo_cap_kg=0, fuel_burn_kg_per_bh=2400, maint_per_bh=1100, crew_per_bh=1300, ownership_per_bh=1100, price_usd=50e6, annual_util_bh=2300, range_km=5500, category="Narrowbody", src="PROXY: A320-family anchors + early-type premium; LEAP-1C burn ~ceo level; ER seats/MTOW/range published; value well below $99m list"),
-    "C909":   dict(econ_seats=90, bus_seats=0,  mtow_kg=43500, cargo_cap_kg=0, fuel_burn_kg_per_bh=2204, maint_per_bh=600, crew_per_bh=713, ownership_per_bh=500, price_usd=20e6, annual_util_bh=1708, range_km=3300, category="Regional", src="PROXY (ARJ21-700, renamed C909): E190 anchors + premium; CF34-10A burn ~E190+13%, carried through the E190 correction of 10 Aug 2026; seats/MTOW/range published"),
-    # --- Widebody / long-haul. RE-ANCHORED: Belobaba A330-200 2013 non-fuel ~$3,053 (x1.4
-    # infl ~$4,300) => prior crew/ownership were too high; A330 maint $964 from LHLCC 2015 ---
-    "B763":   dict(econ_seats=245,bus_seats=24, mtow_kg=186000,cargo_cap_kg=10000, fuel_burn_kg_per_bh=5200, maint_per_bh=1600, crew_per_bh=1500, ownership_per_bh=900, price_usd=30e6, annual_util_bh=3500, range_km=11000, category="Widebody", src="EUROCONTROL 767 $6,675/fh; old type low ownership; burn published"),
-    "A333":   dict(econ_seats=277,bus_seats=30, mtow_kg=233000,cargo_cap_kg=15000, fuel_burn_kg_per_bh=6000, maint_per_bh=964, crew_per_bh=1500, ownership_per_bh=1800, price_usd=90e6, annual_util_bh=3800, range_km=11300, category="Widebody", src="LHLCC 2015 (fuel $3,012/maint $964 per BH); Belobaba A330 non-fuel anchor; burn published"),
-    "A339":   dict(econ_seats=287,bus_seats=30, mtow_kg=251000,cargo_cap_kg=15000, fuel_burn_kg_per_bh=5400, maint_per_bh=1100, crew_per_bh=1600, ownership_per_bh=2600, price_usd=110e6, annual_util_bh=4000, range_km=13300, category="Widebody", src="A330 anchor + neo lease (IBA ~$800-900k/mo); burn published"),
-    "B788":   dict(econ_seats=242,bus_seats=28, mtow_kg=228000,cargo_cap_kg=12000, fuel_burn_kg_per_bh=5000, maint_per_bh=950, crew_per_bh=1550, ownership_per_bh=2200, price_usd=115e6, annual_util_bh=4200, range_km=13500, category="Widebody", src="EUROCONTROL 787 $7,184/fh; Belobaba WB non-fuel anchor; burn published"),
-    "B789":   dict(econ_seats=290,bus_seats=30, mtow_kg=254000,cargo_cap_kg=14000, fuel_burn_kg_per_bh=5400, maint_per_bh=1050, crew_per_bh=1650, ownership_per_bh=2500, price_usd=135e6, annual_util_bh=4300, range_km=14000, category="Widebody", src="EUROCONTROL 787 + IBA lease ~$1.0m/mo; burn published"),
-    "A359":   dict(econ_seats=300,bus_seats=36, mtow_kg=280000,cargo_cap_kg=16000, fuel_burn_kg_per_bh=5800, maint_per_bh=1200, crew_per_bh=1700, ownership_per_bh=2700, price_usd=150e6, annual_util_bh=4400, range_km=15000, category="Widebody", src="A350 newest; FAA WB + lease; burn published"),
-    "B77W":   dict(econ_seats=340,bus_seats=40, mtow_kg=351000,cargo_cap_kg=20000, fuel_burn_kg_per_bh=7500, maint_per_bh=1900, crew_per_bh=2000, ownership_per_bh=1900, price_usd=90e6, annual_util_bh=4500, range_km=13600, category="Widebody", src="EUROCONTROL 777 $9,507/fh; large WB; burn published"),
+# LOADED FROM THE REFERENCE TABLE, 29 August 2026. The per-type figures lived here as an
+# embedded dict from June to August 2026; they now come from reference_tables/aircraft_econ.csv
+# (68 types, Stefan Parry's sourced fill-in pack plus the 29 August closures), read through
+# aircraft_econ_loader, path from config. The loader enforces the table's rules structurally:
+# status labels carried, burn accepted only on a BLOCK basis (held rows with an unstated basis
+# carved out under a label, John's ruling 29 August 2026; TRIP never), NOT FOUND parsed as a
+# recorded absence, valuation columns empty by decision and never filled, nothing interpolated
+# from a neighbouring type. If the table is missing this module fails at import: there is no
+# embedded fallback, deliberately (the silent-fallback shape this codebase has paid for).
+#
+# AIRCRAFT keeps its historical shape (econ_seats, fuel_burn_kg_per_bh, maint_per_bh, ...,
+# category, src) so the 24 consumer modules are unchanged, and holds ONLY the costable types.
+# TYPES_KNOWN holds every type the table knows, costable or not, each naming what is missing,
+# so a surface can say "known type, cannot be costed yet" instead of pricing or crashing.
+from aircraft_econ_loader import load_table
 
-    # ---------------------------------------------------------------- added 10 August 2026
-    # Seventeen types the 2025 schedule flies and this table did not hold, so the optimiser could not
-    # offer them: EVA operates the 787-10 on sectors of SJC-TPE length and it was invisible.
-    #
-    # WHAT IS MEASURED AND WHAT IS NOT, per row, and the src field says so for each:
-    #   seats and premium seats  OAG 2025 median for the type, measured
-    #   fuel burn                US DOT Form 41 P-5.2 2023 over T-100 measured block ratio where the
-    #                            sample supports it, else Aircraft Commerce published block
-    #   range and MTOW           manufacturer documents and type certificate data sheets
-    #   maint, crew, ownership, price, utilisation
-    #                            SCALED from the nearest held type by MTOW inside the same category.
-    #                            NOT SOURCED. Ownership in particular is unpublishable for every one
-    #                            of these: OWNERSHIP_PROVENANCE below returns "none" for them, the
-    #                            payload flags it, and the P&L reports contribution before ownership
-    #                            with a break-even rather than asserting a lease rate.
-    #
-    # TWO FORM 41 ROWS WERE REJECTED after checking who files them. The 747-8 row is UPS, Polar and
-    # Atlas on 204 hours, which is the FREIGHTER, and the 787-10 row is United alone on 101 hours and
-    # reads below the 787-9, which a heavier stretch does not do. Both use the Aircraft Commerce
-    # passenger figure instead. That is the same sample-size trap the E190 sprang earlier the same day.
-    "A388":   dict(econ_seats=427,bus_seats=90, mtow_kg=575000,cargo_cap_kg=3890, fuel_burn_kg_per_bh=12019, maint_per_bh=3113, crew_per_bh=3276, ownership_per_bh=3113, price_usd=147.436e6, annual_util_bh=4500, range_km=14800, category="Widebody", src="seats OAG 2025 median; burn Aircraft Commerce block, flight-planned; range and MTOW researched 10 Aug 2026; maint, crew, ownership, price and utilisation SCALED from B77W on the MTOW ratio, not sourced"),
-    "B748":   dict(econ_seats=276,bus_seats=88, mtow_kg=447696,cargo_cap_kg=16920, fuel_burn_kg_per_bh=10089, maint_per_bh=2423, crew_per_bh=2551, ownership_per_bh=2423, price_usd=114.794e6, annual_util_bh=4500, range_km=14310, category="Widebody", src="seats OAG 2025 median; burn Aircraft Commerce Issue 113 passenger 747-8, 9,300 to 10,878 block, midpoint. The Form 41 2023 row is UPS, Polar and Atlas, i.e. FREIGHTERS, on 204 hours: different empty weight, zero-fuel weight and mission, so not usable here; range and MTOW researched 10 Aug 2026; maint, crew, ownership, price and utilisation SCALED from B77W on the MTOW ratio, not sourced"),
-    "B773":   dict(econ_seats=351,bus_seats=42, mtow_kg=299370,cargo_cap_kg=0, fuel_burn_kg_per_bh=6683, maint_per_bh=1283, crew_per_bh=1818, ownership_per_bh=2887, price_usd=160.377e6, annual_util_bh=4400, range_km=11140, category="Widebody", src="seats OAG 2025 median; burn Aircraft Commerce block, flight-planned; range and MTOW researched 10 Aug 2026; maint, crew, ownership, price and utilisation SCALED from A359 on the MTOW ratio, not sourced"),
-    "B772":   dict(econ_seats=239,bus_seats=43, mtow_kg=297556,cargo_cap_kg=0, fuel_burn_kg_per_bh=6046, maint_per_bh=1275, crew_per_bh=1807, ownership_per_bh=2869, price_usd=159.405e6, annual_util_bh=4400, range_km=13084, category="Widebody", src="seats OAG 2025 median; burn Form 41 2023 + T-100 block ratio; range and MTOW researched 10 Aug 2026; maint, crew, ownership, price and utilisation SCALED from A359 on the MTOW ratio, not sourced"),
-    "B781":   dict(econ_seats=280,bus_seats=38, mtow_kg=254011,cargo_cap_kg=13000, fuel_burn_kg_per_bh=5500, maint_per_bh=1050, crew_per_bh=1650, ownership_per_bh=2500, price_usd=135.006e6, annual_util_bh=4300, range_km=11750, category="Widebody", src="seats OAG 2025 median; burn Aircraft Commerce Issue 121, GEnx-1B at 337 seats, 5,199 to 5,552 block. The Form 41 row is United alone on 101 hours and reads BELOW the 787-9, which a heavier stretch does not do; range and MTOW researched 10 Aug 2026; maint, crew, ownership, price and utilisation SCALED from B789 on the MTOW ratio, not sourced"),
-    "A332":   dict(econ_seats=244,bus_seats=20, mtow_kg=242000,cargo_cap_kg=0, fuel_burn_kg_per_bh=5345, maint_per_bh=1001, crew_per_bh=1558, ownership_per_bh=1870, price_usd=93.4764e6, annual_util_bh=3800, range_km=13450, category="Widebody", src="seats OAG 2025 median; burn Form 41 2023 + T-100 block ratio; range and MTOW researched 10 Aug 2026; maint, crew, ownership, price and utilisation SCALED from A333 on the MTOW ratio, not sourced"),
-    "B764":   dict(econ_seats=184,bus_seats=54, mtow_kg=204116,cargo_cap_kg=0, fuel_burn_kg_per_bh=4909, maint_per_bh=1756, crew_per_bh=1646, ownership_per_bh=988, price_usd=32.9219e6, annual_util_bh=3500, range_km=10371, category="Widebody", src="seats OAG 2025 median; burn Form 41 2023 + T-100 block ratio (thin: 146 hours, Delta and United; corroborated by Aircraft Commerce at 5,000); range and MTOW researched 10 Aug 2026; maint, crew, ownership, price and utilisation SCALED from B763 on the MTOW ratio, not sourced"),
-    "B753":   dict(econ_seats=210,bus_seats=24, mtow_kg=122449,cargo_cap_kg=0, fuel_burn_kg_per_bh=3343, maint_per_bh=1325, crew_per_bh=1742, ownership_per_bh=1641, price_usd=69.4298e6, annual_util_bh=2300, range_km=6420, category="Narrowbody", src="seats OAG 2025 median; burn Form 41 2023 + T-100 block ratio (thin: 116 hours, United and Delta; Aircraft Commerce gives 3,573 to 4,101); range and MTOW researched 10 Aug 2026; maint, crew, ownership, price and utilisation SCALED from A21N on the MTOW ratio, not sourced"),
-    "B39M":   dict(econ_seats=163,bus_seats=16, mtow_kg=88314,cargo_cap_kg=0, fuel_burn_kg_per_bh=2011, maint_per_bh=1039, crew_per_bh=1303, ownership_per_bh=897, price_usd=47.2267e6, annual_util_bh=2300, range_km=6110, category="Narrowbody", src="seats OAG 2025 median; burn Form 41 2023 + T-100 block ratio; range and MTOW researched 10 Aug 2026; maint, crew, ownership, price and utilisation SCALED from A321 on the MTOW ratio, not sourced"),
-    "B739":   dict(econ_seats=161,bus_seats=19, mtow_kg=85139,cargo_cap_kg=4877, fuel_burn_kg_per_bh=2397, maint_per_bh=1018, crew_per_bh=1350, ownership_per_bh=1350, price_usd=53.9906e6, annual_util_bh=2300, range_km=4750, category="Narrowbody", src="seats OAG 2025 median; burn Form 41 2023 + T-100 block ratio; range and MTOW researched 10 Aug 2026; maint, crew, ownership, price and utilisation SCALED from B38M on the MTOW ratio, not sourced"),
-    "A223":   dict(econ_seats=140,bus_seats=0, mtow_kg=70896,cargo_cap_kg=5052, fuel_burn_kg_per_bh=2191, maint_per_bh=845, crew_per_bh=1080, ownership_per_bh=657, price_usd=32.8657e6, annual_util_bh=2300, range_km=6300, category="Narrowbody", src="seats OAG 2025 median; burn Form 41 2023 + T-100 block ratio; range and MTOW researched 10 Aug 2026; maint, crew, ownership, price and utilisation SCALED from A319 on the MTOW ratio, not sourced"),
-    "B737":   dict(econ_seats=137,bus_seats=2, mtow_kg=70080,cargo_cap_kg=5181, fuel_burn_kg_per_bh=2176, maint_per_bh=835, crew_per_bh=1067, ownership_per_bh=650, price_usd=32.4874e6, annual_util_bh=2300, range_km=6037, category="Narrowbody", src="seats OAG 2025 median; burn Form 41 2023 + T-100 block ratio; range and MTOW researched 10 Aug 2026; maint, crew, ownership, price and utilisation SCALED from A319 on the MTOW ratio, not sourced"),
-    "B734":   dict(econ_seats=165,bus_seats=0, mtow_kg=68039,cargo_cap_kg=0, fuel_burn_kg_per_bh=2494, maint_per_bh=811, crew_per_bh=1036, ownership_per_bh=631, price_usd=31.5413e6, annual_util_bh=2300, range_km=3889, category="Narrowbody", src="seats OAG 2025 median; burn Aircraft Commerce block, flight-planned; range and MTOW researched 10 Aug 2026; maint, crew, ownership, price and utilisation SCALED from A319 on the MTOW ratio, not sourced"),
-    "A221":   dict(econ_seats=97,bus_seats=12, mtow_kg=63730,cargo_cap_kg=3760, fuel_burn_kg_per_bh=1711, maint_per_bh=760, crew_per_bh=971, ownership_per_bh=591, price_usd=29.5437e6, annual_util_bh=2300, range_km=6700, category="Narrowbody", src="seats OAG 2025 median; burn Form 41 2023 + T-100 block ratio; range and MTOW researched 10 Aug 2026; maint, crew, ownership, price and utilisation SCALED from A319 on the MTOW ratio, not sourced"),
-    "B733":   dict(econ_seats=143,bus_seats=0, mtow_kg=63276,cargo_cap_kg=0, fuel_burn_kg_per_bh=2325, maint_per_bh=754, crew_per_bh=964, ownership_per_bh=587, price_usd=29.3332e6, annual_util_bh=2300, range_km=2963, category="Narrowbody", src="seats OAG 2025 median; burn Aircraft Commerce block, flight-planned; range and MTOW researched 10 Aug 2026; maint, crew, ownership, price and utilisation SCALED from A319 on the MTOW ratio, not sourced"),
-    "B735":   dict(econ_seats=152,bus_seats=8, mtow_kg=61689,cargo_cap_kg=4460, fuel_burn_kg_per_bh=2186, maint_per_bh=735, crew_per_bh=940, ownership_per_bh=572, price_usd=28.5975e6, annual_util_bh=2300, range_km=2963, category="Narrowbody", src="seats OAG 2025 median; burn Aircraft Commerce block, flight-planned; range and MTOW researched 10 Aug 2026; maint, crew, ownership, price and utilisation SCALED from A319 on the MTOW ratio, not sourced"),
-    "B717":   dict(econ_seats=98,bus_seats=12, mtow_kg=54885,cargo_cap_kg=0, fuel_burn_kg_per_bh=2104, maint_per_bh=654, crew_per_bh=836, ownership_per_bh=509, price_usd=25.4434e6, annual_util_bh=2300, range_km=3815, category="Narrowbody", src="seats OAG 2025 median; burn Form 41 2023 + T-100 block ratio; range and MTOW researched 10 Aug 2026; maint, crew, ownership, price and utilisation SCALED from A319 on the MTOW ratio, not sourced"),
+TYPES_KNOWN: Dict[str, dict] = load_table()
+
+# The tool's own taxonomy, not sourced data: the table carries no category column because a
+# category is a modelling classification (turnaround class, maintenance banding), not a fact
+# about the aircraft with a citable source. Explicit per key; an unknown key raises rather
+# than guesses.
+_CATEGORY = {
+    # held 42, categories unchanged from the embedded table
+    "ATR72": "Regional", "DH8D": "Regional", "CRJ900": "Regional", "E170": "Regional",
+    "E190": "Regional", "E195": "Regional", "SF34": "Regional", "C909": "Regional",
+    "A319": "Narrowbody", "A320": "Narrowbody", "A20N": "Narrowbody", "A321": "Narrowbody",
+    "A21N": "Narrowbody", "A21X": "Narrowbody-LR", "B738": "Narrowbody", "B38M": "Narrowbody",
+    "B752": "Narrowbody-LR", "C919": "Narrowbody", "B753": "Narrowbody", "B39M": "Narrowbody",
+    "B739": "Narrowbody", "A223": "Narrowbody", "B737": "Narrowbody", "B734": "Narrowbody",
+    "A221": "Narrowbody", "B733": "Narrowbody", "B735": "Narrowbody", "B717": "Narrowbody",
+    "B763": "Widebody", "A333": "Widebody", "A339": "Widebody", "B788": "Widebody",
+    "B789": "Widebody", "A359": "Widebody", "B77W": "Widebody", "A388": "Widebody",
+    "B748": "Widebody", "B773": "Widebody", "B772": "Widebody", "B781": "Widebody",
+    "A332": "Widebody", "B764": "Widebody",
+    # new 26 (29 August 2026), classified by the same taxonomy
+    "E175": "Regional", "ERJ145": "Regional", "CRJ700": "Regional", "CRJ200": "Regional",
+    "E295": "Regional", "AT42": "Regional", "DHC6": "Regional", "SU95": "Regional",
+    "CRJ550": "Regional", "DH8C": "Regional", "DH8A": "Regional", "B190": "Regional",
+    "CRJ1000": "Regional", "ERJ135": "Regional", "DH8B": "Regional", "F100": "Regional",
+    "E290": "Regional", "E120": "Regional", "SW4": "Regional", "AN24": "Regional",
+    "MD82": "Narrowbody", "B736": "Narrowbody", "A31N": "Narrowbody",
+    "A35K": "Widebody", "B77L": "Widebody", "A343": "Widebody",
 }
+
+AIRCRAFT: Dict[str, dict] = {}
+for _k, _r in TYPES_KNOWN.items():
+    if _k not in _CATEGORY:
+        raise KeyError(f"{_k}: in the reference table but not in the category taxonomy - "
+                       f"classify it here before it can be used")
+    if not _r["costable"]:
+        continue
+    AIRCRAFT[_k] = dict(
+        econ_seats=int(_r["econ_seats"]), bus_seats=int(_r["bus_seats"] or 0),
+        mtow_kg=_r["mtow_kg"], cargo_cap_kg=(_r["cargo_cap_kg"] or 0),
+        fuel_burn_kg_per_bh=_r["fuel_burn_kg_per_bh"], maint_per_bh=_r["maint_per_bh"],
+        crew_per_bh=_r["crew_per_bh"], ownership_per_bh=_r["ownership_per_bh"],
+        price_usd=_r["price_usd"], annual_util_bh=_r["annual_util_bh"],
+        range_km=_r["range_km"], category=_CATEGORY[_k],
+        # provenance rides with the figures so any surface can cite the row
+        src=(_r["avia_provenance"] or f"{_r['source']} ({_r['source_date']})"),
+        source=_r["source"], source_date=_r["source_date"],
+        status=_r["status"], flags=_r["flags"], burn_basis=_r["burn_basis"],
+        burn_basis_note=_r["burn_basis_note"])
+del _k, _r
 
 # ----------------------------------------------------- regional jet fuel burn, corrected 10 Aug 2026
 # The regional jet burns above were 0.51 to 0.75 of what US operators actually burned, and the fault

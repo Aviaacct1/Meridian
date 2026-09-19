@@ -3276,12 +3276,22 @@ def api_pitch_health():
 
 @app.get("/api/aircraft")
 def api_aircraft():
-    """Aircraft types the economics module knows, for the dashboard picker."""
+    """Aircraft types for the dashboard picker, from the 29 August 2026 reference table via
+    aircraft_economics. COSTABLE types are offered for a run; the types the table knows but
+    cannot yet cost (the valuation gap, plus TRIP/UNSTATED burns on new rows) ride alongside
+    with their reasons, so a surface can say "known type, cannot be costed yet" instead of
+    either offering it and crashing or pretending it does not exist."""
     try:
-        from aircraft_economics import AIRCRAFT
-        return JSONResponse({"aircraft": sorted(AIRCRAFT.keys())})
-    except Exception:
-        return JSONResponse({"aircraft": ["A21X", "A21N", "A20N", "B38M", "B789", "B788", "A333", "A339"]})
+        from aircraft_economics import AIRCRAFT, TYPES_KNOWN
+        unc = {k: r["uncostable_reasons"] for k, r in sorted(TYPES_KNOWN.items())
+               if not r["costable"]}
+        return JSONResponse({"aircraft": sorted(AIRCRAFT.keys()), "known_uncostable": unc})
+    except Exception as e:
+        # NO hardcoded fallback list (removed 29 August 2026): a picker quietly offering
+        # eight types while the economics table is broken is the silent-default shape this
+        # codebase keeps paying for. An empty list plus the reason is the honest answer.
+        return JSONResponse({"aircraft": [], "known_uncostable": {},
+                             "error": f"aircraft reference table unavailable: {e}"})
 
 
 @app.get("/api/lookup")

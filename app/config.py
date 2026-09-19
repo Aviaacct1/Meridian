@@ -189,6 +189,17 @@ CITY_LOOKUP = _env_path("AVIA_CITY_LOOKUP", REFERENCE_TABLES_DIR / "OAG_Airport_
 MCT_MASTER = _env_path("AVIA_MCT_MASTER", REFERENCE_TABLES_DIR / "MCT Master List.xlsx")
 
 # ----------------------------------------------------------------------------
+# Aircraft economics reference table (29 August 2026)
+# ----------------------------------------------------------------------------
+# The 68-type table built from Stefan Parry's sourced fill-in pack. It VERSIONS
+# WITH THE CODE, deliberately: the loader enforces the table's own rules (status
+# labels, burn basis, recorded absences), so table and enforcement move together
+# in one commit, unlike the workstation stores which the tool reads via
+# LOCAL_CACHE. aircraft_econ_loader.py is the only reader.
+AIRCRAFT_ECON_TABLE = _env_path("AVIA_AIRCRAFT_ECON_TABLE",
+                                APP_DIR / "reference_tables" / "aircraft_econ.csv")
+
+# ----------------------------------------------------------------------------
 # Document authorship (applied to every generated Excel, Word, PowerPoint)
 # ----------------------------------------------------------------------------
 DOC_AUTHOR = "Avia Solutions"
@@ -217,6 +228,7 @@ ALL_PATHS = {
     "AIRPORT_DB": AIRPORT_DB,
     "CITY_LOOKUP": CITY_LOOKUP,
     "MCT_MASTER": MCT_MASTER,
+    "AIRCRAFT_ECON_TABLE": AIRCRAFT_ECON_TABLE,
 }
 
 

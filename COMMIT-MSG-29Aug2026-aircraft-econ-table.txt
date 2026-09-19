@@ -1,0 +1,40 @@
+Aircraft economics reads from the reference table, per the tool standard
+
+reference_tables/aircraft_econ.csv (68 types, Stefan Parry's sourced pack +
+the 29 Aug closures) becomes the single source for aircraft economics and
+the type list. New aircraft_econ_loader.py is its ONLY reader, path from
+config (AIRCRAFT_ECON_TABLE, env-overridable), nothing embedded in code:
+the 84-line AIRCRAFT dict in aircraft_economics.py is gone and the module
+fails at import if the table is absent - no fallback, deliberately.
+
+The table's rules are enforced structurally, not trusted:
+- status rides on every record; amber/proxy labels reach AIRCRAFT rows and
+  any surface printing figures. The open row (A31N) has its flagged fields
+  (seats, cargo) NULLED at load with the flag text as reason.
+- burn accepted only on a BLOCK basis. No conversion path exists anywhere.
+  TRIP burns (CRJ550, B77L, MD82) and UNSTATED new-row burns are missing.
+  HELD rows with UNSTATED basis keep their burn under a labelled carve-out
+  (John's ruling 29 Aug: the same figures the live tool has always run on;
+  22 live types would otherwise de-cost mid-beta), each carrying
+  burn_basis_note "basis unstated, under query".
+- NOT FOUND (...) parses as a recorded absence with reason, never a value.
+- valuation columns stay empty pending the IBA/Cirium/EETC decision;
+  uncostable rows name every gap (uncostable_reasons), so the tool says
+  "known type, cannot be costed yet" rather than pricing or crashing.
+
+AIRCRAFT keeps the legacy shape and holds the costable 42 (held rows only),
+so all 24 consumer modules are unchanged; TYPES_KNOWN carries all 68.
+Equivalence measured against the embedded dict: identical on every field
+for all 42 types except CRJ900 cargo_cap_kg, 0 -> 2756 kg, where the table
+carries a sourced figure against the code's placeholder (small cargo line
+appears on CRJ900 routes). Category is the tool's own taxonomy, kept in
+code as classification, explicit per key, KeyError on an unclassified type.
+
+/api/aircraft: hardcoded fallback list REMOVED (the silent-default shape);
+on failure it returns empty plus the reason. Response now carries
+known_uncostable with per-type reasons for the 26 new types.
+
+Tests: test_aircraft_econ_table.py locks the rules (42 checks: A31N refusal,
+no conversion, carve-out labelled, NOT FOUND absent, row count, valuation
+empty, provenance reachable). test_economics_wiring.py and test_network.py
+pass unchanged on the loaded table.
