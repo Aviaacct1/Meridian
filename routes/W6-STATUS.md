@@ -1,26 +1,28 @@
 # W6 status: messaging, marketing, website, meetings
 
 W6 writes this file and rewrites it each session; the controller reads it and never edits it.
-Version 5, 19 September 2026, 23:55. Author: Avia Solutions. Version 4 replaces the earlier
-versions of the same evening, after John's rulings on the site, the domain, the copy owner,
-pricing and building the Observatory site like the Avia site.
+Version 5, 20 September 2026, 00:25. Author: Avia Solutions. Version 5 replaces the earlier
+versions of the same night, after John's rulings on the site, the domain, the copy owner,
+pricing and building the Observatory site like the Avia site, and after the first changes were
+made to that site.
 
 Read at session start: routes/README.md; W6-RULINGS.md v1; GTM-STRATEGY-ROUTES-2026.md
 (Status, Decisions log, Waiting on John, section 4); ROUTES-COMMERCIAL-PLAN-19Sep2026.md 1-2
 and 7-10; ROUTES-CONTROLLER-QUEUE-19Sep2026.md section B; PRICING-HANDOVER-19Sep2026.md;
 ROUTES-ATTENDING-ORGANISATIONS-21Sep2026.md; PROMPT-for-Fable-Routes-19Sep2026.txt;
 MASTER-TASK-LIST.md 1.6 and 1.7. Cross-workstream facts quoted from W2-STATUS.md v6,
-19 September 2026, 20:50. Also read, after John's answer: the Observatory site repository at
-`E:\Avia\Observatory Website`, read only, no git run from this chat.
+19 September 2026, 20:50. Also read, and now edited, after John's answers: the Observatory site repository at
+`E:\Avia\Observatory Website`. No git command has been run from this chat, on that repository
+or any other; every commit and push is a block John runs.
 
 ## State by scope item
 
 | # | Item | State | Evidence | Next action |
 |---|---|---|---|---|
-| 1 | Messaging, four sentences | Drafted, waiting on John | W6-MESSAGING-VARIANTS-19Sep2026.md: 3 variants of the one-liner, 3 per sub-message, 2 of the offer; accuracy line verbatim; sentence 3 hold condition revised for the pricing question | John picks by 25 Sep |
+| 1 | Messaging, four sentences | Drafted, waiting on John | W6-MESSAGING-VARIANTS-19Sep2026.md: 3 variants of the one-liner, 3 per sub-message, 2 of the offer; accuracy line verbatim; sentence 3 now carries the pricing ruling, so it is spoken at the stand and published in November | John picks by 25 Sep |
 | 2 | Five invitations | Drafted, blocked on contacts and one route | W6-INVITATIONS-AND-MEETINGS-19Sep2026.md: five paragraphs, a proposed pre-run route each with its basis stated | Contacts from John or Suzanna; unserved check on the five routes; send 26-29 Sep |
 | 3 | Marketing calendar | Drafted for approval; post 1 and the list email written | W6-MARKETING-CALENDAR-19Sep2026.md | John settles the chart question; out 24-25 Sep |
-| 4 | Website launch plan | v3, rewritten against the real repository and John's three rulings | W6-WEBSITE-LAUNCH-PLAN-19Sep2026.md v3: 22 pages reviewed by name, exact takedown list, deployment recommendation, dates | John rules on pricing and on W6 editing the site repo; the repo goes to GitHub this week |
+| 4 | Website | Plan settled at v4; the repository is on GitHub and the launch switch is built | W6-WEBSITE-LAUNCH-PLAN-19Sep2026.md v4: 22 pages reviewed by name, exact takedown list, deployment recommendation, parity list, dates. `Aviaacct1/tao-website` pushed at `2df95ee`. Launch switch proven by two scratch builds | John runs the launch-switch commit block; then the Pages project, then the copy |
 | 5 | Meetings logistics | In progress | Schedule, per-meeting owners and dates, pack list, in the invitations file | Firm the slots once the five replies land |
 
 **Commits landed this session.** `8afbe56` on `Aviaacct1/Meridian`, pushed, from John's paste:
@@ -30,11 +32,37 @@ launch plan was still being written to when the block ran, and it shows as modif
 in John's transcript. The remainder goes in a second commit,
 `COMMIT-MSG-19Sep2026-w6-v4.txt`, and the hash is recorded here next session.
 
-**The `tao-website` push did NOT land.** Every git command in
-`E:\Avia\Observatory Website` failed with "detected dubious ownership": `E:` does not record
-ownership, so git refuses the repository until the path is added to `safe.directory`. The
-remote was never added and nothing was pushed. The site repository still has no remote and one
-copy. Block reissued to John with the `safe.directory` line first.
+**`tao-website` is on GitHub, and the Observatory site exists in more than one place for the
+first time.** `Aviaacct1/tao-website`, private and empty, created 19 September in John's
+browser with his approval, owner and settings checked before and after; then pushed from
+`E:\Avia\Observatory Website`: 600 objects, `master` tracking `origin/master`, HEAD
+`2df95ee`. It took three attempts, and the two failures are worth keeping: git refuses a
+repository on `E:` until the path is added to `safe.directory`, because that filesystem does
+not record ownership, and "Repository not found" on a private repository means the repository
+is missing or invisible to the credential, not that the credential is wrong. `git ls-remote`
+against `Aviaacct1/Meridian` proved the credential before anything else was changed.
+
+**The launch switch is built, proven and LANDED:** commit `e02dd1b` on
+`Aviaacct1/tao-website`, pushed, on the renamed branch `main`. With the repository
+backed up, W6 made the first changes to it: `src/_data/env.js` reading `SITE_URL` and
+`SITE_ENV`, generated `robots.txt` and `_headers` in place of the static file, the noindex tag
+and the pre-launch banner made conditional, `site.siteUrl` replaced by `env.url` in twelve
+templates so no template holds a domain, `wrangler.toml` for Cloudflare Pages, and the config
+moved to CommonJS, which matches the Avia site and removes the Node warning. Proven by two
+clean builds to a scratch directory, 25 files each: staging carries the noindex tag, the
+banner, `Disallow: /` and the `X-Robots-Tag` header; production carries none of them and reads
+`https://aviationobservatory.com` in its canonicals and sitemap. The site now launches on one
+variable, as the rulings assumed it already did. The static `src/robots.txt` went with the
+same commit, and `master` was renamed to `main` to match the Avia site. One step is left on
+GitHub: the default branch there still reads `master`, and the old branch is still present. Two corrections to the record while there:
+`_site/` is gitignored, so there is no built copy to clean up in the takedown, and the deploy
+rebuilds from source.
+
+**Branch parity done locally, one setting left.** The Observatory repository's branch is now
+`main`, matching the Avia site, whose editor, Pages build and `wrangler.toml` all name a
+branch. GitHub's own default for the repository still reads `master` and that branch still
+exists there; both want clearing before the Pages project is created, so the build is not
+wired to a branch nobody pushes to.
 
 **The clean build passed.** `npm ci` then `npx @11ty/eleventy` wrote 23 files in 0.54 seconds
 on Eleventy 3.1.6, from John's paste. Node warned `MODULE_TYPELESS_PACKAGE_JSON` and reparsed

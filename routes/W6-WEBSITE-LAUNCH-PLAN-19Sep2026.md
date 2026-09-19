@@ -179,8 +179,8 @@ pages moved by hand between two repositories is how a page gets missed.
 
 ## 5. The takedown list, by file
 
-Nothing about any competitor is published. The name is in eight source files, and `_site/` is
-committed, so the rebuild is part of the takedown.
+Nothing about any competitor is published. The name is in eight source files. `_site/` is
+gitignored, so there is no built copy to clean up: the deploy rebuilds from source.
 
 | File | What comes out |
 |---|---|
@@ -192,7 +192,7 @@ committed, so the rebuild is part of the takedown.
 | `src/products/index.njk` | The FAQ row asking how Meridian compares |
 | `src/products/meridian/index.njk` | The compare button |
 | `src/legal/index.njk` | The mention there |
-| `_site/` and `src/sitemap.njk` | Rebuilt, with no comparison URL in the sitemap |
+| `src/sitemap.njk` | Rebuilt by the deploy, with no comparison URL in it |
 
 **Pricing, if John rules as section 2 recommends.** Seven source files carry prices:
 `src/_data/site.json`, `src/pricing/index.njk`, `src/products/meridian/index.njk`,

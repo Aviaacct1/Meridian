@@ -1,0 +1,42 @@
+Launch switch, Pages config and generated robots and headers, matching the Avia site
+
+The site had no way to go live short of hand-editing a meta tag. It now launches on one
+variable, the same way the Avia Solutions site does, per John's ruling of 19 September that
+the two sites work identically.
+
+src/_data/env.js (new)
+  SITE_URL and SITE_ENV read at build time. SITE_URL drives canonicals, schema URLs and the
+  sitemap, and defaults to http://localhost:8080, which is safe because it is obviously not a
+  live domain. SITE_ENV defaults to staging. Same pattern and same defaults as src/_data/site.js
+  on the Avia site.
+
+src/robots.njk and src/headers.njk (new)
+  robots.txt is generated: Allow with a sitemap line in production, Disallow everywhere
+  otherwise. _headers carries the security headers on every build and adds X-Robots-Tag:
+  noindex while SITE_ENV is not production, so a staging build cannot be indexed even if the
+  meta tag and robots.txt were both missed. The static src/robots.txt and its passthrough are
+  retired by the same change.
+
+src/_includes/layouts/base.njk
+  The noindex meta tag and the pre-launch banner are now conditional on SITE_ENV. Neither is
+  hand-edited at launch.
+
+Twelve templates
+  site.siteUrl becomes env.url, so no template holds a domain. The repository previously
+  pointed at staging.theaviationobservatory.aero, a domain that was never secured; the name
+  is aviationobservatory.com, ruled by John on 19 September.
+
+wrangler.toml (new)
+  Cloudflare Pages configuration: output _site, SITE_ENV staging and SITE_URL
+  https://aviationobservatory.com, with a preview environment. The same shape as the Avia
+  site's, so the two deploy and are operated the same way.
+
+eleventy.config.js and package.json
+  The config moves from ES modules to CommonJS, matching the Avia site, which also removes the
+  MODULE_TYPELESS_PACKAGE_JSON warning Node raised on every build. Node 22.x declared in
+  engines, as on the Avia site.
+
+Proven before commit: a clean build in both modes to a scratch directory, 25 files each.
+Staging carries the noindex tag, the banner, Disallow and the X-Robots-Tag header. Production
+carries none of them, robots.txt allows with the sitemap line, and canonicals and the sitemap
+read https://aviationobservatory.com. Nothing about the page content changed in this commit.
