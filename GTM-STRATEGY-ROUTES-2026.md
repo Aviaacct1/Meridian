@@ -22,7 +22,7 @@ confirmed by John's paste).
 | WS | State | Evidence | Next action | Owner | Date |
 |---|---|---|---|---|---|
 | W1 Speed and caches | Step 1 SHIPPED 19 Sep, acceptance MET | Commit 1012c29 live on the workstation: Run 35.4 to 9.8s (SJC-TPE), 42.5 to 9.0s (BRS-EWR, cold); Optimise 161 to 65s and 196 to 35s; payloads identical (probe diff PASS). TIMING-20260919-1907 (before) and -1937 (after) on the workstation | Step 2: persistence across a restart (pre-mortem 11) and the pre-warm script over the registered airports; then preagg wiring | Controller | 26 Sep |
-| W2 Stand flow | In progress (Opus chat; routes\W2-STATUS.md v1, 19 Sep) | Plan A proven on John's MateBook; MateBook is ARM64 so NOT the Plan B machine; request form and lead store already built 16 Aug (JSONL, M365 SMTP) and need extending; stand mode designed; MCT silent fallback found under laptop build | John's rulings 14-19 below; W2 builds stand mode and extends the lead flow | W2 chat / John | Hardware go/no-go 1 Oct; proof 8 Oct |
+| W2 Stand flow | In progress (routes\W2-STATUS.md v6, 19 Sep 20:50) | Commit 2cab1b2: MCT master reports at startup, stand build refuses without it (14 checks); sender set up on Postmark, aviationobservatory.com DKIM and return-path verified, account in test mode pending Postmark approval; capture front end scoped, demonstrable 2 Oct | Stand mode build; DuckDB leads table and JSONL migration; John's items 20-24 | W2 chat / John | 2 Oct front end; 8 Oct laptop proof |
 | W3 Presentation | Not started | Old 2 July pptx only | Deck v1 after messaging settles | Controller, Jol, Nick | 3 Oct |
 | W4 Host | Not started | Host's name and contact in no document | Manual v1; get host details from John | Controller / John | 10 Oct |
 | W5 Leads, feedback, order-ready | Blocked on John | Lead store and email sender undecided | Decisions batch (step C) | John | 25 Sep |
@@ -68,6 +68,21 @@ confirmed by John's paste).
   handover's two acceptance tests are met by memoisation alone. The launcher trap bit once on
   the way: a pull does not replace a running server, and Meridian-run.bat re-warms rather
   than relaunches, so the process must be stopped first (Stop-Process, then relaunch).
+- 19 Sep 2026 (John, in the W2 chat): the pack SENDER is POSTMARK, not Microsoft Graph. Reason:
+  verifying a domain, creating a mailbox and consenting a Graph app on the Avia Microsoft 365
+  tenant all need Global Administrator, which the IT firm holds and John does not; three
+  weeks before the freeze that queue is not on the Routes path. aviationobservatory.com set up
+  clean on Postmark: DKIM verified, Return-Path verified, DMARC p=none published, no reporting
+  address yet. Postmark account in TEST MODE until its human review clears (requested 19
+  Sep; chase 1 Oct). Ruling 15 amended accordingly; two emails per visitor stands.
+- 19 Sep 2026: W2 FINDING, material. config._resolve_egnyte_root falls back to the nominal
+  Z: path when no marker folder is found, and Z: is per logon and invisible to ssh, so a
+  server started over ssh resolves MCT_MASTER to a path that does not exist, load_mct_data
+  returns an empty dict in silence, and every connection cascades to a flat 90 minutes,
+  which moves the forecast on any multi-airport metro. Whether the live portal has ever run
+  that way is not knowable from the code. Fixed at 2cab1b2 (the server states rows loaded or
+  the reason, stand mode refuses to start without the master); the NEXT RESTART after the
+  workstation pulls 2cab1b2 answers the question. Pre-mortem item 16 added.
 - 19 Sep 2026: DATE CORRECTION. Several entries above and the commit messages 6bbdc0b to
   1012c29 say "21 Sep"; the controller misdated them. Everything so dated happened on
   Saturday 19 September 2026 (the timing files and the workstation clock agree). File
@@ -197,11 +212,29 @@ confirmed by John's paste).
     stand (W2); CRM after Routes.
 16. CLOSED 19 Sep: yes, the MCT master reports and the stand build refuses to start without it.
 17. CLOSED 19 Sep: agreed (1 Oct go/no-go, 8 Oct proof, 10 Oct loaded, 15 Oct hard stop).
-18. **Boeing correction**: confirm the two Meridian trials (11-12 Oct full flow, timed, Plan A
-    and B, a pack sent and received on a hotspot; 16 Oct with Suzanna, remote). Confirm who is
-    at the workstation for the first.
+18. CLOSED 19 Sep as a question, reopened as a build item. The workstation is unmanned; John
+    runs everything remotely, including Boeing. Restart procedure for Routes: remote desktop
+    over Tailscale, sign in, run both launchers, DISCONNECT (never sign out, which kills the
+    servers). Written into the runbook and host manual; rehearsed once in the 11-12 Oct trial
+    with a deliberate restart. Better answer for W2 if time on 8 Oct: scheduled tasks at
+    system startup for Meridian and Atlas, so an auto-reboot needs nobody. Check once that
+    the Cloudflare tunnel runs as a service.
 19. **Suzanna's practice runs**: they write to the lead store and use the one-pack quota. Give
     her a separate lead file (AVIA_DEMO_LEADS) on the stand build. Silence: separate file.
+20. **DMARC reporting route** (W2 watchpoint 3): Postmark's DMARC Digests now (no DNS move
+    before the laptop proof; nothing to recreate), Cloudflare DNS and Email Routing after
+    Routes. Controller's view; confirm. Silence to 26 Sep: Postmark digests.
+21. **Public pack URL controls** (W2 watchpoint 5): noindex header, an expiry, no personal
+    data in the file, and every pack checked against the Sabre position (attribution
+    constant, fares as bands, no single-route blind figure) before it is hosted. Controller
+    rules yes to all four; W2 the hosting controls, W3 the content check. No answer needed
+    unless you disagree.
+22. **One email or two** (W2 still recommends one). Your 19 Sep ruling of two stands unless
+    you say otherwise; the queue view then shows both sends separately.
+23. **Send Suzanna the four questions** in W2-STATUS.md now (controller recommends yes, as
+    they stand). Silence to 23 Sep: I take it as yes and W2 proceeds on her answers.
+24. **Which tablet for the capture front end**, and whether it is yours or bought. Under
+    Plan B it reaches the form on the laptop's own hotspot; W2 confirms.
 13. **Pick the five meetings**: John agreed the buyer-test list 19 Sep (Birmingham, Dublin,
     Vienna, Dallas Fort Worth, Milan SEA; reserves in the organisations file, section 3).
     Open point: whether one competitor-client airport goes on the five as a deliberate test
@@ -364,6 +397,13 @@ Written as if it happened. Each has an owner and a mitigation already in the pla
     which entry paths on the dashboard need it (code entry should not); install the dump on
     the workstation or make the message a visible, honest refusal; test with a city-name
     entry on 13 October. Owner: W2. Status: open.
+16. **The live server has been running without the MCT master and nobody knew.** Found by
+    W2, 19 Sep: a server started in a session without the Z: mapping resolves MCT_MASTER to a
+    missing path and cascades every connection to 90 minutes in silence. Answer: 2cab1b2 makes
+    the server say at startup how many rows it loaded, and the stand build refuses to start
+    without it; the first restart after the workstation pulls it settles whether the testers'
+    weeks ran on the master or the default. If they did not, the tester known-issues list
+    gets a line and Nick is told. Status: open until that restart.
 ---
 
 ## 7. Who owns what, in one line each
