@@ -387,6 +387,92 @@ sterling, and no early-payment discount (W8 proposal, decision 12). The invoice 
 in advance, so an early-payment discount pays twice for the same cash and adds a fifth discount
 to a list John has ruled closed at four.
 
+**Quarterly payment, understood but not preferred** (John, 20 September 2026: it is not preferred
+for Avia's cash flow, but some clients will have to use it). Offered with a visible premium, at a
+clean quarterly figure, which covers the working capital and stops clients defaulting to it:
+
+| Airports covered | Annual | A quarter | Annual equivalent |
+|---|---|---|---|
+| One | £15,000 | £4,000 | £16,000 |
+| Two to nine | £22,500 | £6,000 | £24,000 |
+| Ten or more | £30,000 | £8,000 | £32,000 |
+
+A 6.7% premium on each (W8 proposal, decision 14). £4,000 a quarter also falls under a delegated
+authority where £15,000 needs a board paper, which is the reason for offering it at all.
+
+**THERE IS NO QUARTERLY LICENCE** (John, 20 September 2026). The licence is annual whichever way
+it is paid. Quarterly is a payment method, so the client owes the full year from signature and an
+instalment plan does not shorten the commitment. Non-payment of an instalment suspends access
+until it is paid, and the year remains due as a debt. That is also why front-loading gains the
+client nothing: a client who runs everything in the first quarter still owes the remaining three.
+
+**The on-off pattern: signing for a year, running everything including forecasts in advance,
+taking a year off and returning** (John's risk, 20 September 2026). It matters beyond the lost
+year, because revenue that is not genuinely recurring is valued on a consultancy multiple rather
+than a software one. Four responses, in order of effort:
+
+1. **The product limits it more than any clause.** A forecast is built on the schedules, demand
+   data and calibration as at the day it ran. Twelve months later the schedules have moved, the
+   competitive set has moved and the accuracy record being cited is last year's. An airline
+   network planner asks when the data is from, and a pack dated eighteen months ago does not
+   survive the question. Stockpiling works only for a client who is not really pitching anybody.
+   The sales language says so from day one: the client licenses the current forecast, not a file.
+2. **The launch price is conditional on continuous licensing.** Lapse and the remaining launch
+   years are lost and the client returns at the then-current list. It costs nothing, needs no
+   enforcement, and does not breach item 29's "no obligation to renew", because the client is
+   still free to leave. Decision 15.
+3. **A re-onboarding fee of £2,500 on any lapsed licence**, covering account re-provisioning and
+   reloading the catchment. Honest work, not a penalty dressed up. Decision 15.
+4. **The honest limit, stated rather than papered over.** A launch client who skips year two
+   saves £11,600 and pays circa £4,900 more to return, so the incentives still favour a genuinely
+   biennial buyer. That is a signal, not a hole: **a client who wants the on-off pattern has
+   bought the wrong product.** An airport on a two-year cycle should buy route studies at £3,500.
+   Keeping the licence for continuous route development is what makes the revenue actually
+   recurring, so the answer to that buyer is to put the study in front of them first, which the
+   one-pager already does.
+
+**A minimum term is not proposed.** It would close the on-off pattern properly and is ordinary in
+enterprise software, but it contradicts item 29's "no obligation to renew at any step", and John
+has ruled the better instrument instead.
+
+### The permanent renewal discount
+
+John's proposal, 20 September 2026, and it is the right instrument, because it keeps "no
+obligation to renew" intact. The client is always free to leave; leaving costs them a price they
+cannot get back. It also builds retention, which is what the exit case in section 8 actually
+rests on, rather than buying a year of revenue.
+
+Three versions, costed on the 81 independent single-airport clients in the 25% penetration case:
+
+| Version | Steady-state price | Annual cost to Avia | Exit value at 5 to 8 times |
+|---|---|---|---|
+| 5% from the second renewal, held | £14,250 | £60,750 | £304,000 to £486,000 |
+| 5% from the second, 10% from the fourth, held | £13,500 | £121,500 | £608,000 to £972,000 |
+| None, keeping only the re-onboarding fee and the launch-year forfeit | £15,000 | nil | nil |
+
+**The test is churn.** A 5% discount pays for itself if it reduces churn by about five percentage
+points. A 10% discount has to reduce it by ten, which a discount of that size is unlikely to
+achieve, because a client who leaves usually leaves for a reason other than price.
+
+**W8 recommends 5% from the second renewal**, held for as long as the licence is continuous and
+lost entirely on a lapse (decision 15). The mechanism matters more than the magnitude: the
+sentence "your price falls the longer you stay, and you lose it if you leave" does the work, and
+£750 does not have to do it alone. It stands alongside forfeiting the remaining launch years and
+the £2,500 re-onboarding fee.
+
+**On paying for it.** W8 recommends leaving the list at £15,000 and accepting £14,250 as the
+steady-state price, rather than setting the list at £15,750 so the continuity price is £15,000.
+Raising the list preserves the revenue exactly and £15,750 is not harder to sell, but it reopens
+a number now sitting in four workstreams' files four days before the solicitor, and it makes the
+list a figure that exists to be discounted from, which is the thing John dislikes about software
+pricing. If the discount does not buy retention, it is dropped at the first renewal cycle before
+it has cost much.
+
+**The continuity price is Avia's best price and carries no further discount**, except the group
+rate. The floors in this section govern negotiated discounts for a client that has not yet earned
+continuity; an earned continuity price is not negotiated down further. That is also a good
+sentence to say to a long-standing client.
+
 **Contracting entity.** W8's view, for W5 and the solicitor: contract from Avia Solutions Limited
 and market as The Aviation Observatory, because the OAG and Sabre licences, the professional
 indemnity cover and the liability behind the accuracy record all belong to Avia Solutions
@@ -563,10 +649,13 @@ and no consulting before 2027. Analysis of any city pair is never scoped.
 | 7 | Client's own catchment loaded, £2,500 one-off per airport, sold as consistency and credibility, never as accuracy | |
 | 8 | The scope check goes on the two output endpoints, is a condition of the first multi-airport contract rather than of Routes, and the scope clause goes to the solicitor now | |
 | 9 | The agreement commits Avia to issue the dated accuracy record with that year's n to every client every year | |
-| 10 | The Knock test, in September: run Meridian on a route Knock cares about, send the pack, and ask whether it would have replaced the hand work and what they would pay a year. Then four more existing small clients before November | |
-| 11 | Floors of £13,500 / £20,000 as ruled / £25,000 | |
+| 10 | The Knock test, in September: run Meridian on a route Knock cares about, send the pack, and ask whether it is good enough to put in front of an airline and whether twenty a year beats five by hand. Then four more existing small clients before November | |
+| 11 | Floors of £13,500 / £20,000 / £25,000, governing negotiated discounts only | |
 | 12 | Annual in advance, invoice on signature, 14 days, no early-payment discount | |
 | 13 | The two spend questions go into W5's feedback card and the five meeting briefs | |
-| 14 | Airlines and advisers quoted only, and no airline licence signed before Sabre's written approval | |
+| 14 | Quarterly payment at £4,000 / £6,000 / £8,000 a quarter, a 6.7% premium, as a payment method for an annual licence with the full year due from signature | |
+| 15 | Continuity discount of 5% from the second renewal, held while the licence is continuous, lost on a lapse; the continuity price carries no further discount except the group rate; the list stays at £15,000 | |
+| 16 | Against the on-off pattern: the launch price is conditional on continuous licensing, and a lapsed licence pays £2,500 re-onboarding to return. No minimum term, so item 29 stands | |
+| 17 | Airlines and advisers quoted only, and no airline licence signed before Sabre's written approval | |
 
 Copyright Avia Solutions Limited. All rights reserved.

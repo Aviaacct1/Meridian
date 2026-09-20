@@ -42,6 +42,10 @@ open in the table below them. Decision 1, the three bands, is the one every othe
 | 20 Sep 2026 | THE PACK IS NOT AS GOOD AS A HANDMADE AVIA STUDY. The handmade one carried pages of detailed research from an expert analyst, in the client's preferred format, adjusted on their feedback. But a client may accept a lower but good output that lets them run twenty routes a year or more rather than a handful. Section 2a of the decision file states the positioning that follows |
 | 20 Sep 2026 | John's read: Knock might well buy at £10,000 a year rather than pay consultants, but only if it knew the presentation was good enough. There may be a niche of small airports that do not buy today and would buy this at the right price, and it cannot be known from here |
 | 20 Sep 2026 | Exit multiples, John's read: consultancy trades at 1 to 1.5 times and software at 5 to 8 times, so the goal is definitely to build a business for exit, which needs penetration and revenue |
+| 20 Sep 2026 | QUARTERLY PAYMENT understood but NOT PREFERRED for Avia's cash flow, though some clients will have to use it. John's condition: once given access a client can run everything quickly, so a quarter must buy access for that quarter only |
+| 20 Sep 2026 | THERE IS NO QUARTERLY LICENCE. The licence is always annual whether paid quarterly or annually. W8 had written it as a quarterly access right and that was wrong; corrected in section 6 |
+| 20 Sep 2026 | A PERMANENT DISCOUNT ON RENEWAL is John's proposed answer to the on-off pattern, keeping "no obligation to renew" intact, with pricing possibly tweaked to allow for it. W8 costed three versions and recommends 5% from the second renewal with the list unchanged |
+| 20 Sep 2026 | RISK RAISED: clients signing for a year, running everything including forecasts in advance, taking a year off and returning. Section 6 of the decision file carries four responses and the honest limit |
 | 20 Sep 2026 | NO CONSULTANT HOLDS A SEAT on an airport licence. A consultant with access could produce forecasts for anybody. Seats are named individuals on the airport's own corporate email domain; consultants are priced differently, as a separate licence. W8's adviser-seat proposal is withdrawn |
 
 ## What this session did
@@ -166,6 +170,20 @@ The sixteen decisions in section 9 of the decision file. Decisions 1 to 5 block 
    client calls, and decide then whether a smaller price is needed and by which mechanism: a
    multi-year prepay, which is already a named discount and matches a two-yearly budget cycle, or
    quarterly payment, which suits a cash-constrained airport better. Not a passenger band.
+
+## For the solicitor, via W5
+
+1. **The licence is annual whichever way it is paid.** Quarterly is a payment method: the full
+   year is due from signature, an unpaid instalment suspends access until paid, and the year
+   remains due as a debt.
+2. **The launch price is conditional on continuous licensing**, so a lapse forfeits the remaining
+   launch years.
+3. **A £2,500 re-onboarding fee** on any lapsed licence.
+4. **No minimum term**, because item 29 rules no obligation to renew and John has chosen the
+   permanent renewal discount as the instrument instead. The solicitor needs the continuity
+   discount drafted as an earned, automatic term that resets on a lapse, not as a negotiated one.
+5. **No consultant holds a seat**, as an express restriction on use.
+6. **A schedule of covered airports**, with the scope clause.
 
 ## Conflicts seen
 
