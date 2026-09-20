@@ -4,12 +4,51 @@ Version 2, 20 September 2026. Written by the W8 chat for the programme controlle
 each session, never appended. `routes/README.md` v1 and `routes/W8-RULINGS.md` v1 read and acted
 on. W8 writes no code and edits no other workstream's file.
 
-Deliverable state: `routes/PRICING-DECISION-2026.md` is at **v0.5 DRAFT**, which replaces
+Deliverable state: `routes/PRICING-DECISION-2026.md` is at **v0.6 DRAFT**, and ALL TWENTY
+DECISIONS ARE ANSWERED (John, 20 September 2026, section 11). The file becomes FINAL when John
+writes "final" in the chat; three things remain open and none of them blocks 3 October.
+
+Original note on v0.5, which replaces
 everything before it. The axis is the number of airports the licence covers, in three bands.
 Eight things are settled and listed at the head of its section 11; fourteen decisions remain
 open in the table below them. Decision 1, the three bands, is the one every other chat waits on.
 
-## Decisions John has given W8
+## The twenty decisions, answered 20 September 2026
+
+Recorded in full in section 11 of the decision file. The ones where John did not take W8's
+proposal, because those are the ones the controller and the other chats must notice:
+
+| # | W8 proposed | John ruled |
+|---|---|---|
+| 15 | Continuity discount from the second renewal | From the **first** renewal |
+| 17 | Multi-year at 5% for a three-year commitment | **10% each year**, with the prices **locked as a cash schedule** on the Sabre pattern so the client has a clear budget to sign off. Prepay stays but few will take it |
+| 5 | Ten launch places | **No limit at all.** If Avia can onboard twenty in a month it should. 30 November is the only limit, which closes umbrella item 6 in full and W5 slot 2 and agreement slot 7 with "none" |
+| 7 | Catchment load £2,500 | **£3,500**, restoring the original 7 August figure |
+| 4 | Route study leads the one-pager | **On the price list but not led on.** John is not sure who would take it. The licence leads |
+| 20 | Airlines and advisers quoted | **Airlines BLOCKED** until the Sabre licence issue is worked through, which is John's action. Advisers and other non-airports are price on request |
+| 9 | The accuracy record as a contractual commitment | **NO.** The site is updated annually as practice; Avia does not take the legal obligation |
+| 8 | The scope clause to the solicitor now | **With the full document.** Nothing piecemeal goes to legal. The code-side timing is unchanged |
+
+The other twelve were taken as proposed: the three bands, the floors with structural discounts
+outside them, adding airports at the full annual difference, launch years 2 and 3 fixed cash,
+the launch price conditional on continuity with the £2,500 re-onboarding and no minimum term,
+annual in advance with no early-payment discount, quarterly as a payment method at a 6.7%
+premium, fair use at 250 packs, the Knock test, the two spend questions, Standard Terms plus an
+Order Form, and 90 days' cancellation notice.
+
+## What remains open
+
+1. **One confirmation.** Decision 7 was given as £3,500 and decision 4 was answered with a
+   reference to £2,500. W8 has taken them in the order asked: catchment £3,500, route study
+   £3,500. If John meant them the other way round they swap, and W8 has filed nothing that
+   assumes otherwise.
+2. **The Knock test result.** John runs it in a week or two and reports back. It informs a
+   possible small-airport price in November and blocks nothing before 3 October.
+3. **The airline licence position with Sabre**, John's to resolve, blocking any airline pricing.
+
+## Earlier record of decisions John gave W8 during the session
+
+
 
 | Date | Decision |
 |---|---|

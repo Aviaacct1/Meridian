@@ -1,6 +1,6 @@
 # Meridian: pricing and the commercial offer
 
-Version 0.5 - DRAFT - 20 September 2026 - Avia Solutions - Commercial in Confidence
+Version 0.6 - DRAFT - 20 September 2026 - Avia Solutions - Commercial in Confidence
 
 Written by W8. This is the only file in the Routes 2026 programme that states a price. Every
 other document quotes this file and its version. Status is DRAFT until John writes "final" in
@@ -253,9 +253,19 @@ list prices in section 2. The 3% is the illustration; the contractual mechanism 
 not less than UK CPI (section 6). The first two rows are the figures W5 has already built and
 verified in the agreement and one-pager, so only the third row is new work.
 
-**Number of launch places: ten** (W8 proposal, decision 5). The limit is Avia's onboarding
-capacity in November and December. Ten against 353 registered airport organisations
-(`ROUTES-ATTENDING-ORGANISATIONS-21Sep2026.md`, section 1) still reads as limited.
+**NO LIMIT ON LAUNCH PLACES** (John, 20 September 2026). The offer is open to anyone who signs
+by 30 November 2026, and the date is the only limit.
+
+John's reason: if Avia can onboard twenty in a month it should, and the onboarding constraint is
+a problem it probably will not face. W8 agrees, and the date is the better instrument in any
+case. A date is verifiable and a procurement department can work to it. A quantity invites "how
+many are left?", to which the honest answer destroys the scarcity, and a cap Avia would not
+enforce is a published untruth sitting next to a published error record. If twenty do sign,
+onboarding is scheduled rather than the offer withdrawn.
+
+This closes umbrella item 6 in full, which asked for the year-one discount, the number of places
+and the expiry: 50%, none, and 30 November 2026. It also closes W5's slot 2 and agreement slot 7
+with "none" rather than a figure.
 
 **Years 2 and 3 are fixed cash at signature, not the list as later published** (W8 proposal,
 decision 6). Umbrella item 29 says both and they cannot both be true; W5 has drafted fixed cash
@@ -270,68 +280,25 @@ Offered at 50% of list if adopted in year 1 and 75% in year 2 (John, 20 Septembe
 
 | Option | Price | Basis | Source |
 |---|---|---|---|
-| Meridian route study, one route | £3,500 | per route, invoiced on delivery, no licence, delivered within five working days | W8 proposal, decision 4; umbrella item 35 |
-| Client's own catchment loaded | £2,500 | one-off per airport, one price, no banding | W8 proposal, decision 7 |
+| Meridian route study, one route | £3,500 | per route, invoiced on delivery, no licence, delivered within five working days; on the price list, NOT led on | John, 20 Sep 2026; umbrella item 35 |
+| Client's own catchment loaded | £3,500 | one-off per airport, one price, no banding | John, 20 Sep 2026 |
 | Client template mapping | £5,000 | one-off, bespoke, with the fit caveat | John, 20 Sep, item 37 |
 | Cortex API | from £15,000 a year | on request, when available | `PRICING_AND_SCOPE_07Aug2026.md` |
 | The long-term forecast product | priced separately when it exists | a separate software product that integrates with Meridian | John, 20 Sep |
 
-**The route study is the purchase one person can sign, and it is the answer to the small
-airport.** A licence needs a board and procurement that will not clear before the spring for most
-of the room in November; a study needs neither.
+**The route study is on the price list and is not what the one-pager leads with** (John, 20
+September 2026: he is not sure who would take it). W8 had recommended it lead and has withdrawn
+that, because John's doubt exposes something W8 under-weighted. Knock already buys a single
+forecast from Avia at circa £5,000. A £3,500 machine-produced study does not open a new market
+with that buyer; it undercuts Avia's own consultancy by £1,500 for work Avia was already winning.
+The airports that genuinely cannot buy a licence are largely the ones already buying the
+occasional study at the full price.
 
-The price is anchored in Avia's own book, all points John's of 20 September 2026 and all
-tentative. Knock, a client of twenty years with small budgets, has paid circa £5,000 for one
-forecast, circa £20,000 for about six, and £6,000 for five high-level forecasts WITHOUT
-presentations. Tampa paid $40,000 for ten, circa £4,000 each
-(`Avia_QSI_Licence_Model_07Aug2026.xlsx`).
-
-Those are not the same product, and the gap between them is the finding. A forecast alone is
-circa £1,200. A finished job with the presentation is circa £3,300 to £5,000. **So roughly 70% of
-what a small airport pays Avia is the presentation, not the forecast**, which matches John's own
-statement that most of Avia's time on a Knock job goes on the presentation.
-
-That qualifies section 1's reading of the researched pack, and section 2a states where it
-lands. The pack is reproducible by a group with its own analysts, it is not as good as the
-handmade study, and it is also the majority of what a small client pays Avia for. All three
-hold. At £3,500 a Meridian study sits
-at the bottom of the finished-job range, which is right for a machine-produced document, and
-undercuts the single-forecast price by 30%.
-
-**A bare forecast at circa £1,200, workbook only and no presentation, is a possible third product
-and is NOT proposed here.** Twelve would equal the single-airport licence, so the ladder would
-work, but it carries a sales cost against a small margin. If a small airport would pay £10,000 a
-year for the licence, that is the better answer than a £1,200 forecast.
-
-**Four studies is £14,000 and five is £17,500, so past four routes a year the single-airport
-licence is cheaper than buying studies.** That is the sentence for the stand.
-
-**Whether Knock is a licence buyer is now an open question with a cheap test attached.** Its
-spend is episodic and circa £10,000 a year at its heaviest, so £15,000 is more than it spends
-today. John's read, 20 September: Knock might well buy at £10,000 a year rather than pay
-consultants, but only if it knew the presentation was good enough, and there may be a niche of
-small airports that do not buy today and would buy this at the right price. That cannot be known
-from here.
-
-**THE KNOCK TEST, W8's recommendation and the cheapest evidence available anywhere.** Run Meridian
-on a route Knock cares about, send the pack, and ask the two questions that follow from section
-2a: is this good enough to put in front of an airline, and would twenty of these a year be worth
-more to you than five of ours by hand. Not whether it matches the handmade study, because John
-has already answered that and it does not. Twenty years of relationship means the answer is
-honest rather than polite, and September rather than November means W3 can still act on it.
-Decision 10.
-
-**If the answer is £10,000, the mechanism is not a passenger band.** Two routes reopen nothing:
-the multi-year prepay, which is already one of the four named discounts and matches Knock's own
-two-yearly budget cycle, or quarterly payment, which helps a cash-constrained airport more than a
-prepay does since a prepay asks for more up front than Knock spends today. Those pull in opposite
-directions and the test should decide which, not a guess.
-
-**What the niche would be worth, recorded so the question is not lost.** If a population of small
-regionals exists below the Routes World 353 and a £10,000 product reached fifty of them, that is
-£500,000 a year, which roughly doubles the independent licence revenue in section 8. It is a 2027
-market, it depends entirely on the pack being good enough, and the Knock test is the first read
-on it.
+So **the one-pager leads with the licence**, and the study is offered in conversation to the
+buyer who cannot commit to one. That catches the airport which would otherwise buy nothing
+without handing a 30% discount to the airports that would have paid £5,000. It remains the
+direct answer to the cash change that moved order-ready to 21 October, and it remains the honest
+answer to the small airport that pitches two or three routes a year.
 
 **The catchment load is sold as consistency and credibility, never as accuracy** (John, 20
 September 2026: the accuracy record rests on the raw model and an uploaded catchment does not
@@ -348,8 +315,9 @@ argued about and can be banded in 2027.
 
 ## 6. The terms
 
-**Renewal.** Annual and automatic. The client cancels with at least one month's notice; Avia
-notifies at three months and two months. A client whose procurement rules forbid evergreen terms
+**Renewal.** Annual and automatic. **The client cancels on 90 days' written notice** (John, 20
+September 2026, on the RDC precedent, which W5 had drafted as one month); Avia notifies at three
+months and two months. A client whose procurement rules forbid evergreen terms
 may opt out of automatic renewal on declaring so, at no premium (John, 20 September 2026).
 
 **Escalation.** Not less than UK CPI, ONS all items, twelve months to the preceding December,
@@ -470,75 +438,71 @@ Three versions, costed on the 81 independent single-airport clients in the 25% p
 points. A 10% discount has to reduce it by ten, which a discount of that size is unlikely to
 achieve, because a client who leaves usually leaves for a reason other than price.
 
-**W8 recommends 5% from the second renewal**, held for as long as the licence is continuous and
-lost entirely on a lapse (decision 15). It stands alongside forfeiting the remaining launch years
-and the £2,500 re-onboarding fee.
+**The continuity discount is 5% from the FIRST renewal** (John, 20 September 2026; W8 had
+proposed the second, and the worked example below was already at the first). It is held for as
+long as the licence is continuous and lost entirely on a lapse. It stands alongside forfeiting
+the remaining launch years and the £2,500 re-onboarding fee.
 
-**The discount is off the list price of the year, never off the price last paid** (John's
-question, 20 September 2026). Off the price paid compounds, so 95% of 95% of 95% reaches 60% of
-the original after ten years, which is not a discount but a slow collapse. Off list, the client
-holds a standing 5% below whatever the list is that year.
+**The discount is off the list price of the year, never off the price last paid** (John, 20
+September 2026). Off the price paid compounds, so 95% of 95% of 95% reaches 60% of the original
+after ten years, which is not a discount but a slow collapse. Off list, the client holds a
+standing 5% below whatever the list is that year.
 
-That gives the accurate sentence for the sales language, which is better than a vague loyalty
-claim because the client can check it every year: **the price falls once at the first renewal and
-then tracks 5% below list.** Worked on a single airport: year 1 at £15,000; at the first renewal
-the list is £15,450 and the client pays £14,700, a fall of £300; thereafter their price rises
-with the list and stays 5% under it.
+That gives the accurate sentence for the sales language, and the client can check it every year:
+**the price falls once at the first renewal and then tracks 5% below list.** Worked on a single
+airport: year 1 at £15,000; at the first renewal the list is £15,450 and the client pays £14,700,
+a fall of £300; thereafter their price rises with the list and stays 5% under it.
 
-**On paying for it.** W8 recommends leaving the list at £15,000 and accepting £14,250 as the
-steady-state price, rather than setting the list at £15,750 so the continuity price is £15,000.
-Raising the list preserves the revenue exactly and £15,750 is not harder to sell, but it reopens
-a number now sitting in four workstreams' files four days before the solicitor, and it makes the
-list a figure that exists to be discounted from, which is the thing John dislikes about software
-pricing. If the discount does not buy retention, it is dropped at the first renewal cycle before
-it has cost much.
+**The continuity discount does not stack with a multi-year discount.** While a committed term
+runs, the multi-year price applies. At the end of a committed term a client renewing annually
+holds the 5%, or re-commits.
 
-**The continuity price is Avia's best price and carries no further discount**, except the group
-rate. The floors in this section govern negotiated discounts for a client that has not yet earned
-continuity; an earned continuity price is not negotiated down further. That is also a good
-sentence to say to a long-standing client.
+### Multi-year, with the prices locked as cash
 
-### Multi-year, which is two different goods
+John, 20 September 2026: a 5% multi-year discount is too thin, a multi-year commitment should be
+worth about 10% each year, and **the prices are locked as a cash schedule on the Sabre pattern so
+the client has a clear budget to sign off.** Prepayment stays on the sheet although John expects
+few to take it.
 
-John, 20 September 2026: he would not be averse to 10% for a multi-year sign-up, and expects
-buyers may want more for a three-year contract.
+The locked schedule is stated in the Order Form and the escalation clause does not apply during
+the term. That is the trade for the commitment, and it is a second answer to the problem of a
+price rise a board will not see: the rise is agreed once, at signature.
 
-A commitment paid annually gives Avia revenue certainty. A prepay gives certainty plus the cash
-and no credit risk. They are not the same good and should not earn the same discount.
+**Three-year commitment, 10% off each year's list, paid annually:**
 
-**What a three-year prepay is worth to Avia.** The time value of receiving two years early, at an
-8% cost of capital, is circa 7% of the total. The avoided churn risk, at 12% a year, is worth
-circa 12% more. So a three-year prepay is worth roughly 15 to 19%, which is why 10% is
-comfortably profitable and why there is room above it.
+| Airports covered | Year 1 | Year 2 | Year 3 | Three-year total | Three years at list |
+|---|---|---|---|---|---|
+| One | £13,500 | £13,900 | £14,300 | £41,700 | £46,364 |
+| Two to nine | £20,250 | £20,850 | £21,500 | £62,600 | £69,545 |
+| Ten or more | £27,000 | £27,800 | £28,650 | £83,450 | £92,727 |
 
-W8 proposal, decision 17, applying to any band and worked here on a single airport at the 3%
-illustration:
+**Two-year commitment, 7.5% off each year's list, paid annually:**
 
-| What the client commits to | Discount | Single airport |
-|---|---|---|
-| Three years, paid annually | 5% | the continuity discount from day one, instead of earning it at the second renewal |
-| Two years, prepaid | 7.5% | £28,150 for the two years |
-| Three years, prepaid | 12.5% | £40,550 for the three years, or £13,517 a year |
+| Airports covered | Year 1 | Year 2 | Two-year total |
+|---|---|---|---|
+| One | £13,900 | £14,300 | £28,200 |
+| Two to nine | £20,800 | £21,450 | £42,250 |
+| Ten or more | £27,750 | £28,600 | £56,350 |
 
-The three-year commitment paid annually earns the continuity discount immediately rather than at
-the second renewal. It is the same number with nothing new to explain, and it converts a discount
-Avia was giving away at renewal into something that buys a commitment.
+**Prepaid**, being two and a half points more for the cash: three years prepaid at 12.5% is
+£40,550, £60,850 or £81,150; two years prepaid at 10% is £27,400, £41,100 or £54,800.
 
-**The answer when a buyer pushes past 12.5%, and it has the advantage of being true.** Twelve and
-a half per cent on a three-year prepay is £13,517 a year, which is £17 above the £13,500 floor.
-Fifteen per cent is £13,136 a year and breaches it. So the floor is what Avia says in the room:
-that is as far as we go, and it is not a negotiating position but the floor set for every client.
-The floor and the maximum affordable prepay discount agreeing to within £17 is also a reasonable
-sign that both numbers are about right.
+Two and a half points for the extra year and two and a half for the cash, so the ladder is
+consistent and there is no combination that beats another.
 
-**A launch client may prepay the three launch years at no further discount**, being £32,650 for a
-single airport, £48,950 for two to nine and £65,250 for ten or more. Nothing stacks, so no rule
-is broken, and it is cash upside at a moment when cash matters. Decision 17.
+**What 10% costs Avia, recorded so the trade is visible.** On a 12% churn assumption a three-year
+commitment is worth about 11.7% in avoided churn, so 10% is roughly what the commitment is worth.
+It is fair rather than profitable in itself, and it earns its keep through the recurring-revenue
+multiple at exit rather than through margin.
 
-**Contracting entity.** W8's view, for W5 and the solicitor: contract from Avia Solutions Limited
-and market as The Aviation Observatory, because the OAG and Sabre licences, the professional
-indemnity cover and the liability behind the accuracy record all belong to Avia Solutions
-Limited. Umbrella item 31. W8 states a view only; the slot is W5's.
+**Every Meridian contract spanning more than one year states its prices as fixed cash figures
+rather than a formula.** The launch offer does it and multi-year now does it. The sentence for a
+buyer is that they always know exactly what they will pay for as long as they have committed.
+
+**The structural discounts sit outside the floors** (John, 20 September 2026). The floors in this
+section govern negotiated discounts, which is what they were for. Continuity and multi-year are
+earned, published and automatic, so a three-year commitment at 10% landing on £13,500 in year one
+does not breach anything. The lowest price any client pays is the three-year prepay.
 
 ---
 
@@ -594,7 +558,7 @@ moving band signs a new Order Form rather than reopening the agreement.
 
 | Mechanism | What RDC does | What Meridian should do |
 |---|---|---|
-| **Cancellation notice** | Rolling subscription, **90 days' written notice** to terminate | **Take 90 days, or 60.** W5 drafts one month. Ninety days from the comparator John named is the annual-renewable equivalent of a minimum term, and a stronger retention mechanism than the continuity discount. Decision 19 |
+| **Cancellation notice** | Rolling subscription, **90 days' written notice** to terminate | **TAKEN. 90 days** (John, 20 Sep 2026), replacing the one month W5 drafted. From the comparator John named, it is the annual-renewable equivalent of a minimum term |
 | Named users | A unique personal username per user, for the sole purpose of that person's use | Matches the corporate-domain rule and the no-consultant rule |
 | Automated access | No robot, scraper or other automated collection | Adopt, and it also protects the scope limit |
 | **Permitted use** | The client may use the content for its own analysis, including extracts in reports and presentations of its own authorship, provided RDC and the software are recognised as the source | **Almost exactly Meridian's clause.** It is the provenance line in contract form, from a company selling to the same buyers |
@@ -623,7 +587,10 @@ and the renewal date.
 2. **The onward-use clause reaching machine learning.** Meridian's outputs are exactly the
    material somebody would train on, and no comparator agreement Avia holds addresses it.
 3. **The liability cap figure**, once the basis is fees paid.
-4. **Whether 90 days or 60 is the cancellation notice**, which is decision 19.
+4. **The scope clause goes to the solicitor inside the full document, not on its own** (John, 20
+   September 2026: nothing piecemeal goes to legal). It is drafted into the Standard Terms and
+   travels with them in the week of 6 October. The code-side check is unchanged: on the two
+   output endpoints, a condition of the first multi-airport contract rather than of Routes.
 
 ---
 
@@ -759,53 +726,73 @@ asset; price per client does not.
 
 ---
 
-## 11. Decisions
+## 11. Decisions, all answered by John on 20 September 2026
 
-John answers yes, no, or a number. Answers are logged in `W8-STATUS.md` with the date and never
-re-asked.
+Twenty decisions were put to John as questions and all twenty were answered the same day. They
+are recorded here with his answer, and none is re-asked.
 
-### Settled on 20 September 2026 and not reopened
+### The licence and the price
 
-**The single-airport list starts at £15,000 for Routes** (John, 20 September 2026). It is quoted
-in writing and unpublished until November. If the evidence after Routes shows £15,000 is too
-expensive for an airport of Knock's shape, or a small Caribbean airport, a smaller airport band
-may be introduced then, with the evidence behind it. Nothing in the 2026 material carries a
-passenger threshold.
-
-**A caution on that evidence.** John's own observation, 20 September: airports of Knock's shape
-do not attend World Routes because they cannot afford it. Feedback collected at Frankfurt will
-therefore over-represent airports that can afford Frankfurt, which are the least likely to need a
-lower band. Decision 10 covers the fix, which is five telephone calls to existing small clients.
-
-The axis is the number of airports covered. Researched packs unlimited with no cap, no overage and
-no counter, protected by a fair-use clause rather than overage limits. Token-cost drift accepted
-as a risk worth running. Seats are named individuals on the corporate domain with no count and no
-charge, and no consultant holds one. The long-term forecast is a separate product. No Avia review
-and no consulting before 2027. Analysis of any city pair is never scoped.
-
-### Open
-
-| # | Decision | Answer |
+| # | Decision | John's answer |
 |---|---|---|
-| 1 | Three bands by airports covered: £15,000 / £22,500 / £30,000 at one airport, two to nine, ten or more | |
-| 2 | Adding airports moves the client to the band at the full annual difference, renewal date unchanged; during the launch years the launch percentage applies to the new band | |
-| 3 | Fair use acts at 250 researched packs a licence year, being a telephone call and never a block or an invoice | |
-| 4 | Meridian route study at £3,500 a route, first on the one-pager. Closes umbrella item 35 | |
-| 5 | Ten launch places | |
-| 6 | Years 2 and 3 fixed cash at signature, not the list as later refined. Closes the contradiction in item 29 | |
-| 7 | Client's own catchment loaded, £2,500 one-off per airport, sold as consistency and credibility, never as accuracy | |
-| 8 | The scope check goes on the two output endpoints, is a condition of the first multi-airport contract rather than of Routes, and the scope clause goes to the solicitor now | |
-| 9 | The agreement commits Avia to issue the dated accuracy record with that year's n to every client every year | |
-| 10 | The Knock test, in September: run Meridian on a route Knock cares about, send the pack, and ask whether it is good enough to put in front of an airline and whether twenty a year beats five by hand. Then four more existing small clients before November | |
-| 11 | Floors of £13,500 / £20,000 / £25,000, governing negotiated discounts only | |
-| 12 | Annual in advance, invoice on signature, 14 days, no early-payment discount | |
-| 13 | The two spend questions go into W5's feedback card and the five meeting briefs | |
-| 14 | Quarterly payment at £4,000 / £6,000 / £8,000 a quarter, a 6.7% premium, as a payment method for an annual licence with the full year due from signature | |
-| 15 | Continuity discount of 5% from the second renewal, held while the licence is continuous, lost on a lapse; the continuity price carries no further discount except the group rate; the list stays at £15,000 | |
-| 16 | Against the on-off pattern: the launch price is conditional on continuous licensing, and a lapsed licence pays £2,500 re-onboarding to return. No minimum term, so item 29 stands | |
-| 17 | Multi-year: three years paid annually earns the 5% continuity discount from day one; two years prepaid 7.5%; three years prepaid 12.5%, which is £17 above the floor and is therefore the maximum. A launch client may prepay the three launch years at no further discount | |
-| 18 | The agreement splits into Standard Terms signed once and an Order Form per client carrying the band, covered airports, launch schedule, payment basis and options, on the Sabre master-and-work-order pattern | |
-| 19 | Cancellation notice moves from one month to 90 days, or 60, on the RDC precedent | |
-| 20 | Airlines and advisers quoted only, and no airline licence signed before Sabre's written approval | |
+| 1 | Three bands by airports covered: £15,000 / £22,500 / £30,000 at one airport, two to nine, ten or more | YES |
+| 11 | Net floors of £13,500 / £20,000 / £25,000, governing negotiated discounts only, with continuity and multi-year sitting outside them | YES |
+| 15 | Continuity discount of 5% off the list of the year, held while continuous and lost on a lapse, with the list staying at £15,000 | YES, but **from the FIRST renewal**, not the second |
+| 17 | Multi-year discounts | **10% each year for three years, 7.5% for two, prices LOCKED as a cash schedule on the Sabre pattern so the client has a clear budget to sign off.** Prepay stays at 12.5% and 10%, though few will take it |
+| 2 | Adding airports moves the client to the band at the full annual difference, renewal date unchanged, with the launch percentage applying to the new band | YES |
+
+### The launch offer
+
+| # | Decision | John's answer |
+|---|---|---|
+| 6 | Years 2 and 3 fixed cash at signature, closing the contradiction in umbrella item 29 | YES |
+| 16 | Launch price conditional on continuous licensing, £2,500 re-onboarding on a lapse, no minimum term | YES |
+| 12 | Annual in advance, invoice on signature, 14 days, no early-payment discount | YES |
+| 14 | Quarterly at £4,000 / £6,000 / £8,000 a quarter, a 6.7% premium, as a payment method for an annual licence | YES |
+| 5 | Ten launch places | **NO. No limit at all.** If Avia can onboard twenty in a month it should. 30 November is the only limit. Closes umbrella item 6 in full |
+
+### What is in it, and what the options cost
+
+| # | Decision | John's answer |
+|---|---|---|
+| 3 | Fair use acts at 250 researched packs a licence year, a telephone call and never a block or an invoice | YES |
+| 7 | Client's own catchment loaded, one price, no banding | YES at **£3,500**, not £2,500, restoring the original 7 August figure |
+| 4 | Meridian route study at £3,500 a route, leading the one-pager | **On the price list, but NOT led on.** John is not sure who would take it. The one-pager leads with the licence |
+| 20 | Airlines and advisers quoted only, no airline licence before Sabre's written approval | **Airlines are BLOCKED, not quoted**: there is a licence issue to work through first, which is John's action. Advisers and other non-airport buyers are price on request |
+
+### Proof and evidence
+
+| # | Decision | John's answer |
+|---|---|---|
+| 9 | The agreement commits Avia to issue the dated accuracy record every year | **NO.** The site is updated once a year as practice; Avia does not take on the legal commitment |
+| 10 | The Knock test in September, then four more small clients before November | YES in substance; John will run it in a week or two and report back |
+| 13 | The two spend questions into W5's feedback card and the five meeting briefs | YES |
+| 8 | Scope check on the two output endpoints, a condition of the first multi-airport contract; the scope clause to the solicitor | YES on the code timing. **The scope clause goes with the full document**: nothing piecemeal goes to legal |
+
+### The documents
+
+| # | Decision | John's answer |
+|---|---|---|
+| 18 | Standard Terms signed once plus an Order Form per client, on the Sabre master-and-work-order pattern | YES |
+| 19 | Cancellation notice moves from one month to 90 days on the RDC precedent | YES, 90 days |
+
+### The two notes that go with decision 9
+
+John's reason is that the site is updated annually anyway, so a contractual commitment adds
+obligation without adding anything the client does not already get. W8 accepts it, and there is a
+second reason worth recording: a contractual undertaking to publish the record would oblige Avia
+to hand every client a reason to leave in any year the numbers moved the wrong way. The annual
+publication does the commercial work either way, as the thing Avia points at when a renewal price
+rises. It is a practice, not a promise.
+
+### What remains genuinely open
+
+1. **One confirmation from John.** Decision 7 was given as £3,500 and decision 4 was answered with
+   a reference to £2,500. W8 has taken them in the order asked, so the catchment is £3,500 and the
+   route study stays £3,500. If John meant them the other way round, they swap.
+2. **The Knock test result**, which John will report. It informs a possible small-airport price in
+   November and blocks nothing before 3 October.
+3. **The airline licence position with Sabre**, which is John's to resolve and which blocks any
+   airline pricing at all.
 
 Copyright Avia Solutions Limited. All rights reserved.
