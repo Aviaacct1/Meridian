@@ -7,6 +7,12 @@ Read routes/README.md first: it says who writes which file, who owns which code,
 
 ## RULING 20 September 2026, 14:00 (final, replaces the 13:00 text): TIERS BY USAGE, NOT AIRPORT SIZE (umbrella item 37). SUPERSEDES every "by airport size, three seats, 100 presentations" and every "£15,000 / £20,000 / £25,000" wording below
 
+PROVISIONAL from 20 September 15:00: John has moved pricing to a dedicated chat (W8,
+routes/W8-RULINGS.md). The table below is the working assumption until
+routes/PRICING-DECISION-2026.md says FINAL (target 26 Sep, hard 3 Oct). Draft structure
+around it; do not finish any pricing surface (schedule, one-pager block, host sentence, site
+copy) until that file is FINAL, then quote it with its version.
+
 John has ruled the list price is three tiers differing in usage and wrap-around, with ONE
 PRODUCT in every tier. Airport size is not a pricing axis and no size definition is to
 appear anywhere. Where older wording survives in this file or in your own drafts, replace it

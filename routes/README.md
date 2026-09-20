@@ -12,6 +12,7 @@ first. Version 1, 19 September 2026.
 | Wn-STATUS.md | workstream n only, rewritten each session | controller, and any other workstream that needs a fact |
 | ../MASTER-TASK-LIST.md | controller only | everyone |
 | STAND-HOST-MANUAL.md and other deliverables | the owning workstream | everyone |
+| PRICING-DECISION-2026.md (the only file that states a price; others quote it with its version) | W8 only | everyone |
 
 Nobody edits another's file. If a workstream believes another's status is wrong, it says so
 in its own status under "Conflicts seen", and the controller resolves it in the umbrella and
@@ -26,7 +27,7 @@ STATUS file, never from memory of a chat, and quoted with the file's version.
 | app/wave_cache.py, route_feed.py, catchment.py, water_check.py, preagg.py, backtest.py, config.py cache paths | W1 | nobody |
 | app/demo_*.py, connection_builder.py, cortex_dashboard.html, the lead store, queue view, stand mode, laptop build, launcher | W2 | nobody |
 | deck/, app/pitch_html.py, imagery, PDF render | W3 | nobody |
-| routes/*.md documents | W4, W5, W6 each their own | nobody |
+| routes/*.md documents | W4, W5, W6, W8 each their own | nobody |
 | diag_routes_timing.py | W1 | anyone runs it |
 | engine demand logic (route_forecast, qsi_*, capture, feed levels) | FROZEN before Routes | nobody |
 

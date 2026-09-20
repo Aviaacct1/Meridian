@@ -16,9 +16,10 @@ The detail lives in two companions and this document points at them rather than 
 ## Status
 
 Rewritten every session by the programme controller; John reads this on a phone. As at
-Saturday 19 September 2026, 22:45, session 1 closed; sweep at 22:45 found no movement. John pauses until Postmark approval
-(expected Monday 22 Sep). Repo `Aviaacct1/Meridian` HEAD `f5a5b4b`; `Aviaacct1/tao-website`
-HEAD `2df95ee`. Every workstream's own file is `routes\Wn-STATUS.md`; its instructions are
+Sunday 20 September 2026, 15:00: controller chat 1 closes; HANDOVER-CONTROLLER-20Sep2026.md
+carries the state for controller chat 2. Pricing moved to W8. John pauses until Postmark
+approval (expected Monday 22 Sep). Repo `Aviaacct1/Meridian` HEAD `e38f76a` plus this
+commit; `Aviaacct1/tao-website` HEAD `2df95ee`. Every workstream's own file is `routes\Wn-STATUS.md`; its instructions are
 `routes\Wn-RULINGS.md`; `routes\README.md` says how they work together.
 
 | WS | State | Where it stands | Next action | Owner | Date |
@@ -29,6 +30,7 @@ HEAD `2df95ee`. Every workstream's own file is `routes\Wn-STATUS.md`; its instru
 | W4 Host | In progress | STAND-HOST-MANUAL.md v1, 648 lines, 27 slots, timed script; pricing wording now John's of 19 Sep | v2 after Suzanna's four answers and 8 Oct screenshots; Word copy for print after | W4 chat / John | v2 mid-Oct |
 | W5 Order-ready documents | In progress (v2) | Agreement v0.1 and one-pager v0.1 as verified Word files; feedback card | Invoice, onboarding script, known-issues list, licence-record form; agreement to solicitor 3 Oct | W5 chat / John | 3 Oct |
 | W6 Messaging, marketing, website, meetings | In progress (v5) | Messaging variants, five invitations, calendar, post 1 drafted; tao-website pushed (2df95ee); launch switch proven; pricing held to November (John) | Launch-switch commit; Pages project; competitor and prices out of 22 pages; sentences settled 25 Sep; invitations 26-29 Sep | W6 chat / John | 25-29 Sep |
+| W8 Pricing and commercial offer | NEW 20 Sep | Tier table rewritten four times in the controller chat; John moved pricing to one dedicated chat. Item 37 provisional | Read W8-RULINGS.md v1; buyer's-chair analysis; at most two shapes with a recommendation; PRICING-DECISION-2026.md | W8 chat / John | Target 26 Sep, hard 3 Oct |
 | W7 Rehearsal and freeze | Replanned | Boeing 13 Oct is an Atlas meeting; Meridian trials 11-12 Oct (remote, one restart) and 16 Oct with Suzanna | Nothing until October; controller diaries the trials | Controller / John | Freeze 10 Oct |
 
 ## What is left, by owner, as at 19 September, 22:45
@@ -450,8 +452,12 @@ five contacts.
     Access identity confirmed (master list 6.8); the shared Basic-auth password stays for the
     first clients and is stated in the known-issues list; monitoring is the restart procedure
     plus John's phone. Ruled by the controller; say if you disagree.
-37. **TIERS BY USAGE, NOT AIRPORT SIZE. RULED by John 20 Sep (closed; revised twice the same
-    day, this is the final text).** The list is three tiers at £15,000 / £22,500 / £27,500 a
+37. **TIERS BY USAGE, NOT AIRPORT SIZE. PROVISIONAL from 20 Sep 15:00: John moved pricing to
+    a dedicated chat (W8, routes/W8-RULINGS.md) because the table below was rewritten four
+    times in one afternoon and he is not convinced the steps between tiers give a buyer a
+    reason to move up. W8 produces routes/PRICING-DECISION-2026.md (target 26 Sep, hard 3 Oct);
+    until it says FINAL, the text below is the working assumption and no chat builds a
+    pricing surface beyond a placeholder that quotes it.** The list is three tiers at £15,000 / £22,500 / £27,500 a
     year; airport size is not a pricing axis and no size definition exists anywhere. This
     supersedes every "by airport size, three seats, 100 presentations" and every "£15,000 /
     £20,000 / £25,000" wording in this file and the rulings files; where it survives, read it
