@@ -1,0 +1,16 @@
+W1 step 2b: persist the catchment land-path answers on disk (the cold cost the boards did not cover)
+
+Step 2a measured on the workstation (TIMING-20260920-1515 and -1537): 1,203 boards written on
+restart 1 and read back on restart 2 with none rewritten; probe --diff PASS on SJC-TPE,
+BRS-EWR and DUB-DFW. Cold Run fell 33.6/53.3/23.3s to 21.3/42.0/20.8s; warm 11.6/10.3/8.5s.
+The in-process profile of a cold BRS-EWR Run (TIMING-20260920-1545, 118.8s profiled) put 84s
+in run_catchment: 1,943 water_check.land_path_km searches whose lru_cache dies at restart.
+
+water_check._cached_land_path now reads and writes a sqlite table under
+LOCAL_CACHE\water_check\land_path-<tag>.sqlite, tag = mask package version, LAND_STEP_KM,
+MAX_DETOUR, _MAX_CELLS, so a changed rule is a different table. The search is unchanged.
+AVIA_WATER_DISK=0 restores memory-only; an unopenable store is reported once, never fails a Run.
+land_path_stats() added. Measurement follows in the next commit.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_018CkmoTUt4WcQLbhGuKfeMd

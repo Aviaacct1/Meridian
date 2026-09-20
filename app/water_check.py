@@ -194,9 +194,96 @@ def land_path_km(lat1, lon1, lat2, lon2, step_km=LAND_STEP_KM, max_detour=MAX_DE
     return None
 
 
+# ON-DISK COPY OF THE LAND-PATH ANSWERS (Routes W1 step 2b, 20 September 2026). The in-process
+# profile of a cold BRS-EWR Run on the workstation (TIMING-20260920-1545) put 84 of 118 profiled
+# seconds in run_catchment, all of it 1,943 land_path_km searches for the Bristol catchment's
+# locale-airport pairs across the Severn and the Channel. The lru_cache above them dies with the
+# process, so every restart paid it again; that, not the OAG boards, was most of the cold cost
+# that survived step 2a. This keeps each answer (path km or None) in a small sqlite table under
+# LOCAL_CACHE\water_check\, keyed on the four rounded coordinates plus a tag of everything that
+# could change the answer: the mask package version, LAND_STEP_KM, MAX_DETOUR and _MAX_CELLS. A
+# different tag is a different table, so a changed rule never reads an old answer. The search
+# itself is untouched. sqlite is used rather than a pickle because several server threads write
+# while a Run is in flight and sqlite serialises them. AVIA_WATER_DISK=0 restores the in-process
+# cache alone; a store that cannot be opened is reported once and the process carries on in
+# memory. It never fails a Run.
+_LP_DB = None            # sqlite3 connection, or False after a failure
+_LP_LOCK = None
+_LP_STATS = {"hits": 0, "writes": 0, "db": None}
+
+
+def _land_path_tag():
+    try:
+        from importlib.metadata import version as _v
+        mv = _v("global-land-mask")
+    except Exception:
+        mv = "unknown"
+    return "mask%s-step%g-detour%g-cells%d" % (mv, LAND_STEP_KM, MAX_DETOUR, _MAX_CELLS)
+
+
+def _land_path_db():
+    global _LP_DB, _LP_LOCK
+    if _LP_DB is not None:
+        return _LP_DB or None
+    import threading
+    if _LP_LOCK is None:
+        _LP_LOCK = threading.Lock()
+    with _LP_LOCK:
+        if _LP_DB is not None:
+            return _LP_DB or None
+        if os.environ.get("AVIA_WATER_DISK", "1").strip().lower() in ("0", "false", "off", "no"):
+            _LP_DB = False
+            return None
+        try:
+            import sqlite3
+            base = os.environ.get("AVIA_WATER_DIR", "").strip()
+            if not base:
+                from config import LOCAL_CACHE
+                base = os.path.join(str(LOCAL_CACHE), "water_check")
+            os.makedirs(base, exist_ok=True)
+            path = os.path.join(base, "land_path-%s.sqlite" % _land_path_tag())
+            con = sqlite3.connect(path, check_same_thread=False, timeout=30)
+            con.execute("PRAGMA journal_mode=WAL")
+            con.execute("CREATE TABLE IF NOT EXISTS land_path (k TEXT PRIMARY KEY, km REAL)")
+            con.commit()
+            _LP_DB = con
+            _LP_STATS["db"] = path
+        except Exception as e:                                       # noqa: BLE001
+            print("[water_check] land-path store unavailable (%s: %s); answers stay in memory only" % (type(e).__name__, e))
+            _LP_DB = False
+            return None
+    return _LP_DB
+
+
+def land_path_stats():
+    """{db, hits, writes} for the timing probe and health surfaces."""
+    return dict(_LP_STATS)
+
+
 @lru_cache(maxsize=50000)
 def _cached_land_path(lat1, lon1, lat2, lon2):
-    return land_path_km(lat1, lon1, lat2, lon2)
+    db = _land_path_db()
+    k = "%.3f,%.3f,%.3f,%.3f" % (lat1, lon1, lat2, lon2)
+    if db is not None:
+        try:
+            with _LP_LOCK:
+                row = db.execute("SELECT km FROM land_path WHERE k=?", (k,)).fetchone()
+        except Exception as e:                                       # noqa: BLE001
+            print("[water_check] land-path read failed (%s: %s); searching" % (type(e).__name__, e))
+            row = None
+        if row is not None:
+            _LP_STATS["hits"] += 1
+            return row[0]
+    km = land_path_km(lat1, lon1, lat2, lon2)
+    if db is not None:
+        try:
+            with _LP_LOCK:
+                db.execute("INSERT OR REPLACE INTO land_path (k, km) VALUES (?, ?)", (k, km))
+                db.commit()
+            _LP_STATS["writes"] += 1
+        except Exception as e:                                       # noqa: BLE001
+            print("[water_check] land-path write failed (%s: %s); answer kept in memory only" % (type(e).__name__, e))
+    return km
 
 
 def road_reachable(lat1, lon1, lat2, lon2, max_gap_km=20.0, max_detour=MAX_DETOUR):
