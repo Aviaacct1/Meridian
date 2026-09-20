@@ -26,18 +26,18 @@ John pauses until Postmark approval (expected Mon 22 Sep). `Aviaacct1/tao-websit
 
 | WS | State | Where it stands | Next action | Owner | Date |
 |---|---|---|---|---|---|
-| W1 Speed and caches | Step 1 SHIPPED; step 2 STARTING | Run 42s to 9s cold, Optimise 196s to 35s, payloads identical (1012c29). Preagg store built and identity PASS 85/85; no live hook yet | Step 2: on-disk boards, MCT and airport table under LOCAL_CACHE keyed on store vintage; warm-up over register airports; probe save-json before/after and diff | Controller | Design 21 Sep; measured by 26 Sep |
+| W1 Speed and caches | Step 2a PROVEN, 2b written | Boards persist across restart, diff PASS; cold Run 21-42s, warm 8-12s; profile says the rest is the catchment land-path cache | Commit 2b, restarts 3-4, r4 diff; then warm_boards over the register and the market-brief first-call cost | Controller / John | 21 Sep |
 | W2 Stand flow | In progress (v7, 19 Sep) | MCT master reports at startup (2cab1b2); Postmark verified, account in TEST MODE; MateBook is Plan A only; Plan B needs SSD (item 14) | Zone move to Cloudflare wk 22 Sep; DuckDB leads table; stand mode; capture front end 2 Oct; laptop proof 8 Oct | W2 chat / John | 2 and 8 Oct |
 | W3 Presentation | In progress; STATUS file stale (v1, 19 Sep) | Slides 1-6, 9-10 built (3af5158 per handover, unconfirmed in W3-STATUS); provenance fix proven (45a5210); Commons probe written, unrun (item 33) | W3 rewrites its STATUS; PDF render and pitch page; probe run by 26 Sep; slides 7-8 from runs 29 Sep-1 Oct | W3 chat / John | All four to Jol and Nick 3 Oct |
 | W4 Host | In progress (v1) | STAND-HOST-MANUAL.md v1, 648 lines, 27 slots; built on size-band pricing, now superseded | v2 after Suzanna's four answers (item 23) and 8 Oct screenshots; pricing slots wait on W8 FINAL | W4 chat / John | v2 mid-Oct |
 | W5 Order-ready documents | In progress (v3, 20 Sep) | Agreement and one-pager v0.2 committed (3197c43), 17 clauses; checklist 8 of 13 DONE; BUILT ON SIZE BANDS, to be rebuilt on W8's tiers | Invoice, onboarding script, known-issues list, licence-record form; twelve slots are John's by 3 Oct; solicitor wk 6 Oct | W5 chat / John | 3 and 10 Oct |
 | W6 Messaging, marketing, website, meetings | In progress (v6, 20 Sep) | Competitor and prices out of the site (6d153d2); invitations v2 say "follows the same day" and carry launch terms; post 1 and list email ready for approval | Clean-clone proof; Pages project after zone move; sentences and five contacts by 25 Sep; invitations 26-29 Sep | W6 chat / John | 25-29 Sep |
-| W8 Pricing and commercial offer | NEW 20 Sep, not started | W8-RULINGS.md v1; no W8-STATUS.md yet; John's unease on the tier steps unresolved | John opens the W8 chat; buyer's-chair analysis; at most two shapes; PRICING-DECISION-2026.md | W8 chat / John | Target 26 Sep, hard 3 Oct |
+| W8 Pricing and commercial offer | DONE 20 Sep | PRICING-DECISION-2026.md v1.0 FINAL; twenty decisions answered; bands by airports covered | W3-W6 rebuild to it (pointers in place); Knock test result from John in a week or two | W8 chat closed / John | Knock by 3 Oct |
 | W7 Rehearsal and freeze | Replanned | Boeing 13 Oct is an Atlas meeting; Meridian trials 11-12 Oct (remote, one restart) and 16 Oct with Suzanna | Controller diaries the trials; nothing until October | Controller / John | Freeze 10 Oct |
 
 Found on the 20 Sep read, not yet resolved: (a) W3-STATUS.md is still session 1, so the
 slide build at 3af5158 is recorded only in the handover; (b) W4 and W5 built their pricing
-sections to the size-band offer of 20 Sep 13:00 and both change when W8 rules; (c) Waiting on
+sections to the size-band offer of 20 Sep 13:00 and both rebuild to PRICING-DECISION-2026.md v1.0; (c) Waiting on
 John items 8 and 9 are overtaken by John's Postmark ruling and are closed below.
 
 ## What is left, by owner, as at 19 September, 22:45
@@ -326,6 +326,19 @@ five contacts.
   sector table and the 24GB is its spill. Removal block issued; the Routes store is built on
   the workstation with raised memory and a local temp dir.
 
+- 20 Sep 2026 (John, in the W8 chat, 18:00): PRICING FINAL. routes\PRICING-DECISION-2026.md v1.0;
+  bands by airports covered (£15,000 / £22,500 / £30,000), whole product in every band, no
+  seat count, fair use at 250 packs, no limit on launch places, years 2-3 fixed cash,
+  continuity 5% from first renewal, multi-year 10%/7.5% locked, 90 days' notice, Standard
+  Terms plus Order Form, study £2,500, catchment load £3,500, airlines not sold (Sabre
+  licence). Items 6, 35, 37 closed; 29 superseded where it differs. W3-W6 rulings repointed.
+- 20 Sep 2026: W1 step 2a MEASURED. Boards persist across a restart (1,203 written on restart 1,
+  read back on restart 2, none rewritten); probe --diff PASS on three pairs. Cold Run 33.6/53.3/
+  23.3s to 21.3/42.0/20.8s (SJC-TPE, BRS-EWR, DUB-DFW); warm 11.6/10.3/8.5s. The in-process
+  profile (TIMING-20260920-1545) puts the remaining cold cost in the catchment's land-path
+  searches, not the boards; step 2b persists those (written, awaiting commit and restarts 3-4).
+  The market brief costs 6-8s on first entry of any route; noted, not yet attributed.
+
 ## Waiting on John
 
 1. CLOSED 19 Sep: HEAD `11a4c3f` confirmed and pushed.
@@ -338,8 +351,9 @@ five contacts.
 4. **Stand host's name, contact and start date; the stand number.** In no document. Needed
    for W4 and for the Cloudflare Access policy (pre-mortem 7).
 5. CLOSED 19 Sep: six of seven answered (Decisions log). Open remainder below.
-6. **Launch offer numbers**: year-1 discount, number of places, expiry date, against the
-   £15-27.5k tiers (item 37). Silence to 3 Oct: the host says "on request, limited places" only.
+6. CLOSED 20 Sep by PRICING-DECISION-2026.md v1.0: 50% year 1, NO LIMIT on places, expiry 30
+   November 2026; overage replaced by fair use at 250 packs; payment annual in advance, 14 days;
+   entity still item 31.
 7. **Tier shape**: CLOSED 20 Sep by item 37 for airports (three capability tiers). Airlines
    and advisers remain "quoted"; the commercial plan's Airline / Adviser tiers are not
    priced for Routes.
@@ -396,7 +410,8 @@ five contacts.
     aside for these two by his own decision; W6's post-1 chart therefore uses SJC-TPE as
     first ruled, and W4's rehearsed routes stand. Carrier for Bologna-New York still open
     (item 26).
-29. PRICING, RULED by John 20 Sep (final structure; the remaining numbers are in item 6).
+29. SUPERSEDED 20 Sep 18:00 by PRICING-DECISION-2026.md v1.0 where they differ (years 2 and 3
+    are FIXED CASH, bands by airports covered). Kept for the record:
     LAUNCH OFFER at Routes: year 1 at 50% of list, year 2 at 75% of list, year 3 at 85% of
     list, then list; no obligation to renew at any step. LIST is the standard price of the
     tier chosen (£15,000 / £22,500 / £27,500 a year; tiers by usage, item 37, NOT by
@@ -443,7 +458,8 @@ five contacts.
     cannot start without it (W5 fact 1).
 32. CLOSED 19 Sep: `Aviaacct1/tao-website` pushed at 2df95ee; W6 edits it through John's
     blocks; C:\src\avia-website read.
-35. **A per-route study product on the one-pager** (20 Sep, controller's proposal after the
+35. CLOSED 20 Sep: Meridian route study £2,500 per route (PRICING-DECISION-2026.md v1.0, decision
+    4), on the price list, the licence leads the one-pager. Original text: (20 Sep, controller's proposal after the
     cash change): a Meridian route study, the researched pack for one route, priced per route
     (Avia's own consultancy anchor is the reference), invoiced on delivery, no licence, no
     procurement of a tool. It is the purchase a route development manager can sign off alone
@@ -454,65 +470,10 @@ five contacts.
     Access identity confirmed (master list 6.8); the shared Basic-auth password stays for the
     first clients and is stated in the known-issues list; monitoring is the restart procedure
     plus John's phone. Ruled by the controller; say if you disagree.
-37. **TIERS BY USAGE, NOT AIRPORT SIZE. PROVISIONAL from 20 Sep 15:00: John moved pricing to
-    a dedicated chat (W8, routes/W8-RULINGS.md) because the table below was rewritten four
-    times in one afternoon and he is not convinced the steps between tiers give a buyer a
-    reason to move up. W8 produces routes/PRICING-DECISION-2026.md (target 26 Sep, hard 3 Oct);
-    until it says FINAL, the text below is the working assumption and no chat builds a
-    pricing surface beyond a placeholder that quotes it.** The list is three tiers at £15,000 / £22,500 / £27,500 a
-    year; airport size is not a pricing axis and no size definition exists anywhere. This
-    supersedes every "by airport size, three seats, 100 presentations" and every "£15,000 /
-    £20,000 / £25,000" wording in this file and the rulings files; where it survives, read it
-    as the table below. It restores the 7 Aug position (PRICING_AND_SCOPE_07Aug2026.md:
-    "airport size is the wrong pricing axis; usage is").
-    ONE PRODUCT IN EVERY TIER (John: splitting the engine across tiers makes the product
-    harder to manage): route leads, route forecast (Run), optimised route forecast
-    (Optimise), schedule sizing (app/schedule_sizing.py, the frequency the demand supports)
-    and route economics (aircraft P&L, 11a4c3f) are in Tier 1 and above. Tiers differ in the
-    RESEARCHED PITCH PACKS (each one is an Anthropic API call and an airline meeting, so the
-    count is the honest usage measure; the 7 Aug "meter nothing" ruling was about runs, which
-    stay unmetered) and in what is wrapped around the product.
-    TIER 1, £15,000, FORECAST: Meridian in full as above; the standard forecast pack (deck and
-    workbook); 2 users; no researched packs.
-    TIER 2, £22,500, PITCH: Tier 1 plus up to 100 researched airline pitch packs a year; brand
-    skin (client logo, colours and fonts on Meridian's own layouts); 3 users. Beyond 100 the
-    client upgrades to Tier 3 for the difference or buys packs at the overage rate (item 6).
-    TIER 3, £27,500, PROGRAMME: Tier 2 with unlimited researched packs (fair-use clause); the
-    client's own defined catchment, loaded ONCE at onboarding and refreshed only at renewal
-    (never on demand); Watch monitoring across the client's leads; 5 users; a named Avia
-    contact for onboarding and one refresh call a year.
-    PRICE LOGIC (John): the list carries headroom because day-to-day selling after Routes will
-    run discounts from time to time; Tier 2 at £22,500 still nets £20,000 at a routine
-    discount. Discounts are NAMED, never ad hoc (launch cohort; multi-year prepay; group,
-    second and later airports under one operator; referral), the agreement's discount line
-    says which applied, and Tier 2 has a NET FLOOR of £20,000 below which no combination goes
-    (W5 finalisation checklist). UPGRADE in year: the client pays the FULL annual difference
-    (£7,500 Tier 1 to 2; £5,000 Tier 2 to 3), never pro rata, and the renewal date does not
-    move (John: pro rata is gamed by signing up a month before a route event and blitzing
-    packs). Stand logic: Tier 1 says which routes; Tier 2 gives you the deck to pitch them;
-    Tier 3 runs your whole route-development programme. Larger airports pay more because they
-    pitch more airlines, not because they are large.
-    OPTIONS (launch rate 50% year 1, 75% year 2 per item 29): client template mapping £5,000
-    one-off, BESPOKE, worded "Avia maps Meridian's outputs to the client's template as a
-    one-off exercise; where a researched section does not fit the template's layouts, Avia
-    proposes the layout" (John: the tiers carry only the brand skin, so nobody who paid can
-    claim a fit shortfall); additional catchment definition £2,500; extra users (price
-    unset); Cortex API from £15,000 when available.
-    NOT IN ANY ROUTES MATERIAL: an Assured package (Avia review of runs, consulting hours).
-    John: a manual review of what could be hundreds of runs is not viable, not for £5k, and it
-    puts Avia on the hook for every forecast. Assured is a 2027 package, price unset. More
-    features and priced options are added in 2027 when a more complicated approach is ready.
-    CODE CONSEQUENCE, NOT FOR THE FREEZE: the cap needs a per-client count of Stage 2 pack
-    generations visible to Avia (W2's dashboard, post-Routes list); no client passes 100
-    before spring. The agreement states the cap and "usage reported to the client quarterly";
-    the counter follows. The client-catchment load is sold from launch, delivered from
-    onboarding, and is not on the demo path.
-    The launch offer (item 29) applies unchanged to the tier chosen: year 1 at 50% is £7,500 /
-    £11,250 / £13,750, fixed at signing. Host sentence: "launch clients who sign by the end of
-    November pay half our list price in year one; the list is £15,000 to £27,500 a year
-    depending on how much of the tool the airport wants". Item 6's "size thresholds" is closed
-    by this ruling; item 6's overage rate is now the per-pack price above 100. W3, W4, W5, W6
-    carry the table.
+37. CLOSED 20 Sep 18:00: PRICING IS FINAL in routes\PRICING-DECISION-2026.md v1.0 (W8; twenty
+    decisions answered by John the same day, section 11). Bands by AIRPORTS COVERED: one £15,000;
+    two to nine £22,500; ten or more £30,000; the whole product in every band, no user count. The
+    usage-tier table that stood here is withdrawn; the four rulings files carry a pointer only.
 33. **W3's coverage probe**: one unattended run on the workstation by 26 Sep (W3 has the
     block); without it W3 drops airport photography and ships mood frames and charts.
 34. **W4's three**: a second and third phone contact who can reach the workstation; your

@@ -1,0 +1,10 @@
+Controller: pricing FINAL repointed; W1 step 2a measured; Status and Decisions updated
+
+routes/PRICING-DECISION-2026.md v1.0 (W8) is FINAL as of 20 Sep 18:00. Umbrella item 37 now
+points at it; items 6 and 35 closed; item 29 marked superseded where it differs. W3, W4, W5 and
+W6 rulings files: the provisional tier table replaced by a pointer and each workstream's own
+change list; the earlier pricing sections marked superseded. Decisions log carries the pricing
+ruling and the W1 step 2a measurement; Status block rewritten.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_018CkmoTUt4WcQLbhGuKfeMd
