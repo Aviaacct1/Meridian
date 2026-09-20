@@ -2,8 +2,8 @@
 
 Run on the DevPC:  python routes\\build_w5_docs.py
 Outputs, beside the sources in routes\\:
-  Meridian-Licence-Agreement-DRAFT-v0.1.docx
-  Meridian-Launch-Customer-One-Pager-DRAFT-v0.1.docx
+  Meridian-Licence-Agreement-DRAFT.docx
+  Meridian-Launch-Customer-One-Pager-DRAFT.docx
 
 House rules enforced here, not by hand: Avia Solutions as author and last-modified-by,
 en-GB at the document default with no run-level or style-level language anywhere else,
@@ -29,12 +29,12 @@ GREY = RGBColor(0x59, 0x59, 0x59)
 
 JOBS = [
     ("W5-AGREEMENT-19Sep2026.md",
-     "Meridian-Licence-Agreement-DRAFT-v0.1.docx",
-     "Meridian licence agreement, draft v0.1",
+     "Meridian-Licence-Agreement-DRAFT.docx",
+     "Meridian licence agreement, draft v0.2",
      "DRAFT for legal review, not for issue to a client"),
     ("W5-ONE-PAGER-19Sep2026.md",
-     "Meridian-Launch-Customer-One-Pager-DRAFT-v0.1.docx",
-     "Meridian launch customer offer, draft v0.1",
+     "Meridian-Launch-Customer-One-Pager-DRAFT.docx",
+     "Meridian launch customer offer, draft v0.2",
      "DRAFT, commercial in confidence"),
 ]
 

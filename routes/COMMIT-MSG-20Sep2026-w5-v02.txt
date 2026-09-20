@@ -1,0 +1,67 @@
+W5: agreement and one-pager v0.2 to the 20 September pricing and term rulings
+
+W5-RULINGS.md v2 read in full. Order-ready moved to 21 October, so every W5 document lands
+by 10 October. The launch offer, the three-year price schedule, escalation, renewal and
+Avia's exit are now ruled, and both documents are rebuilt to them. v0.1's price clause is
+gone: it offered the standard grid, which the 20 September ruling replaced.
+
+THE PRICE CLAUSE, CLAUSE 4.
+Launch clients pay 50%, 75% and 85% of the list for years 1, 2 and 3, as fixed cash sums in
+pounds, and the published list from year 4. The list is the banded standard price by airport
+size, inflated at a flat 3% a year FOR ILLUSTRATION, with the contractual mechanism named as
+clause 5. The nine figures, rounded to the nearest £50 as ruled:
+
+  Small  (list £15,000)   £7,500    £11,600   £13,550
+  Medium (list £20,000)   £10,000   £15,450   £18,050
+  Large  (list £25,000)   £12,500   £19,300   £22,550
+
+The illustrative list is printed to the nearest pound rather than the nearest £50, so that
+85% of the year-3 list reconciles with the year-3 cash price. Rounding both would leave a
+£50 gap for any buyer who checks the arithmetic in the meeting. W5's judgement call, recorded
+in W5-STATUS.md for the controller to overturn.
+
+WHAT ELSE THE RULINGS ADDED, AND WHERE IT LANDED.
+  clause 3    annual automatic renewal, one month's notice from the client, Avia's notices at
+              three and two months, and the opt-out for a client whose procurement rules
+              forbid evergreen terms, on a declaration and at no premium
+  clause 5    escalation at not less than UK CPI, ONS all items, twelve months to the
+              preceding December, with the launch years as the express exception
+  clause 6    add-ons at 50% in year 1 or 75% in year 2; new functions as priced options; a
+              core-price increase above escalation where a function is folded into core
+  clause 8    the four launch conditions and signature by 30 November 2026, in the offer and
+              not in the term, with the known-issues list attached as the schedule
+  clause 15   Avia ending or suspending the service: notice, pro-rata refund to the day within
+              30 days, outputs kept, no further liability, the data-licence trigger express
+
+THE ONE-PAGER leads with half list in year one for anyone signing by 30 November, shows the
+three bands and the three-year schedule, and carries the escalation line, the exit terms and
+the new-functions line. It is written to be printed double-sided for the five Routes meetings
+and handed to any qualified buyer who asks. It runs to two pages: the table and the terms do
+not fit on one side at a size anyone reads across a table.
+
+SLOTS AND FLAGS. Nine slots in the agreement, seven on the one-pager, twelve distinct facts,
+all John's by 3 October and all listed in W5-STATUS.md against the document slot that waits on
+them. Thirteen lawyer flags, each marked in its clause and gathered once at the foot for the
+solicitor, who has the week of 6 October. Nothing is invented: every figure here traces to
+W5-RULINGS.md v2 or to arithmetic on its numbers, and the arithmetic is shown in the status
+file.
+
+The finalisation checklist of 20 September is ticked item by item in W5-STATUS.md: eight done,
+five part-done, each part-done naming the slot that holds it open.
+
+  routes/W5-AGREEMENT-19Sep2026.md                 source, agreement v0.2, 17 clauses
+  routes/W5-ONE-PAGER-19Sep2026.md                 source, one-pager v0.2
+  routes/build_w5_docs.py                          output names lose the version, which now
+                                                   lives in the document and in git history
+  routes/Meridian-Licence-Agreement-DRAFT.docx     4 pages with the markers in
+  routes/Meridian-Launch-Customer-One-Pager-DRAFT.docx  2 pages
+  routes/W5-STATUS.md                              v3, the ticked checklist, every slot, the
+                                                   judgement calls and the watchpoints
+  the two v0.1 .docx files removed
+
+Both Word files rebuilt and verified by build_w5_docs.py: Avia Solutions as author and
+last-modified-by, en-GB at the document default and in settings, no other language anywhere,
+no em or en dash in the file.
+
+STILL OWED, none of it waiting on anyone: the invoice template, the onboarding script, the
+known-issues list, the licence-record form and the follow-up sequence.
