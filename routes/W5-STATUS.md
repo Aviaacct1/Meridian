@@ -126,6 +126,8 @@ rewritten and Waiting on John item 20 is cut to one recommendation.
 
 ## Commits
 
-`11a4c3f..702d525` carries W5 session 1. This session's files commit against
-`COMMIT-MSG-20Sep2026-w5-v02.txt`, per README.md's one message file per commit. The block also
-removes the two v0.1 Word files, which the version-free names replace.
+`11a4c3f..702d525` carries W5 session 1. **`3197c43`, 20 September, pushed to Aviaacct1/Meridian
+main (702d525..3197c43)**: agreement and one-pager v0.2, the builder, this file at v3 and
+`COMMIT-MSG-20Sep2026-w5-v02.txt`; the two v0.1 Word files removed, which git recorded as
+renames to the version-free names. A stale `.git/index.lock` from 21:40 on 19 September blocked
+the first attempt and was removed; nothing had committed since 21:33, so nothing was lost.

@@ -1,0 +1,124 @@
+W8: pricing decision file v0.5 DRAFT and W8 status v2
+
+First commit from W8. Supersedes four uncommitted earlier shapes in the same
+files.
+
+THE AXIS IS THE NUMBER OF AIRPORTS THE LICENCE COVERS, which John reached
+himself. Five shapes were proposed across 20 September and four withdrawn on
+John's rulings: tiers carrying the long-term forecast (it is a separate software
+product); tiers carrying researched-pack blocks (a pack limit stops the client
+refining and adds development complexity, and the pack is the part of Meridian
+easiest for anyone to copy); tiers by seat count (no airport needs more than five
+and most run two or three, so seats have no range, and the brand skin will not
+carry a price either); and a flat per-airport rate (RDC at circa 12,000 buys
+global airport charges and OAG at circa 20,000 buys global access, so a flat rate
+becomes expensive against that shelf very quickly).
+
+THE LICENCE: three bands by airports covered, 15,000 for one airport, 22,500 for
+two to nine, 30,000 for ten or more. Two of the three are John's own prices from
+item 37, so the downstream change is the smallest of any shape considered, and
+the first two launch rows are arithmetic W5 has already built and verified. Every
+band carries the whole product with unlimited runs, scenarios, exports and
+researched packs under a fair-use clause, no seat count and no seat charge, named
+users on the operator's corporate email domain, and no consultant ever holding a
+seat. Analysis of any city pair is unrestricted on every licence; only production,
+being the researched pack, the client's brand, route leads, the opportunity scan
+and Watch, is scoped to covered airports, with the check on the two output
+endpoints and a condition of the first multi-airport contract rather than of
+Routes. Groups are quoted and the bands are never published beside the
+single-airport price, which is John's own decision of 3 August.
+
+Cross-check recorded: every band lands at roughly 5,000 to 7,500 per person doing
+air service development, so seats and estate are two independent readings arriving
+at the same prices.
+
+Section 8 is new and internal: the universe on John's rule is Routes World
+registration give or take 15 per cent, so 353 organisations, circa 30 groups and
+323 independents. Break-even against the 526,121 fixed base falls at about 10 per
+cent penetration, or 35 clients. Licences earn 1,455,000 at 25 per cent; with the
+long-term forecast product and route studies the whole business reaches circa
+2.5m. Raising the ladder 20 per cent earns less than the current ladder if it
+costs five points of penetration, so client count moves the answer roughly twice
+as hard as price does.
+
+routes/W8-STATUS.md v2 logs every ruling John gave on 20 September against its
+date, eleven findings for the controller and six judgement calls. Findings the
+controller must act on: the five proposed meetings carry no group head office,
+and the largest delegations at the show are group teams; umbrella item 29
+contradicts itself on whether years 2 and 3 are fixed; W5's agreement and
+one-pager v0.2 are still built on the superseded size axis and now also need a
+schedule of covered airports and a scope clause.
+
+Nothing else touched. No code, no deck, no site, no agreement, no manual.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01DtwCfEnhiXACeJawoD9cxM
+
+Final ruling of the day from John: the single-airport list starts at 15,000 for
+Routes, quoted and unpublished, and a smaller airport band can be introduced
+later if the evidence supports it. Nothing in the 2026 material carries a
+passenger threshold, so item 37's ruling that size is not a pricing axis stands.
+
+Knock is recorded as the worked example of the small airport and as a second
+sourced anchor for the study price: Avia is employed every two years or so for
+one forecast at circa 5,000 or about six for circa 20,000, which with Tampa's
+40,000 dollars for ten puts an Avia consultancy route report at circa 3,300 to
+5,000. A Meridian study at 3,500 sits at the bottom of that range and undercuts
+the single-forecast price by 30 per cent. Knock is not a licence buyer at any
+price in this file, because its spend is circa 10,000 a year and episodic; it is
+a study buyer, and that is the correct outcome. The crossover is corrected: four
+studies is 14,000 and five is 17,500, so past four routes a year the
+single-airport licence is cheaper, not past six.
+
+A sampling caution is recorded with a November action: airports of Knock's shape
+do not attend World Routes because they cannot afford it, so feedback collected
+at Frankfurt will over-represent airports that can, and the small-airport band
+cannot be settled from the show alone. Five telephone calls to existing small
+clients from Avia's own book is the fix.
+
+Knock anchors corrected and extended, all tentative, all John's of 20 September:
+circa 5,000 for one forecast, circa 20,000 for about six, and 6,000 for five
+HIGH-LEVEL forecasts without presentations. Those are different products and the
+gap between them is the finding: a forecast alone is circa 1,200 and a finished
+job circa 3,300 to 5,000, so roughly 70 per cent of what a small airport pays
+Avia is the presentation, which matches John's statement that most of Avia's time
+on a Knock job goes there. That qualifies the earlier reading of the researched
+pack: it is reproducible by a group with its own analysts and it is also the
+majority of what a small client pays for, because a small airport will never build
+a research pipeline.
+
+Whether Knock is a licence buyer is reopened as a question with a cheap test
+attached. THE KNOCK TEST, recommended for September rather than November: run
+Meridian on a route Knock cares about, send the pack, and ask whether it would
+have replaced the hand work and what they would pay a year. If the pack is not
+good enough for a client who already buys the hand-made version, that is the most
+important product finding in the programme and it should not wait. If the answer
+is 10,000 a year, the mechanism is a multi-year prepay or quarterly payment,
+never a passenger band.
+
+A bare forecast at circa 1,200, workbook only, is recorded as a possible third
+product and is NOT proposed. The niche of small airports that do not buy today is
+recorded with what it would be worth: fifty of them at 10,000 is 500,000 a year,
+roughly doubling the independent licence revenue, a 2027 market entirely
+dependent on the pack being good enough.
+
+Section 2a added, and it is the most consequential entry of the session for W3,
+W4 and W6. John, 20 September: the researched pack is NOT as good as a handmade
+Avia study, which carried pages of detailed research from an expert analyst in
+the client's preferred format, adjusted on their feedback; but a client may
+accept a lower but good output that lets them run twenty routes a year rather
+than a handful. The claim is therefore not "as good as a consultant, cheaper" but
+"not as good, and many times as many". The forecast is the strong claim with the
+accuracy record behind it and the pack is the volume claim, and the two are never
+mixed in one sentence. In Knock's own numbers: about six by hand for circa 20,000,
+or unlimited for 15,000.
+
+Two consequences recorded. The positioning protects Avia's consultancy book
+rather than competing with it, because an airport running twenty routes finds two
+or three worth doing properly and those come back to Avia by hand, so Meridian
+creates consultancy demand. And unlimited packs are now settled twice over, on
+cost and on positioning, since a cap would destroy the only proposition there is.
+
+The host says what the pack is not, unprompted. The Knock test questions are
+rewritten accordingly: is this good enough to put in front of an airline, and
+would twenty a year be worth more than five by hand.

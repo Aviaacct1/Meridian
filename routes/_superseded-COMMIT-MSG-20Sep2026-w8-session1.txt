@@ -1,0 +1,22 @@
+W8 session 1: pricing decision file v0.1 DRAFT and W8 status v1
+
+Adds routes/PRICING-DECISION-2026.md v0.1 DRAFT, the only file in the Routes 2026
+programme that states a price. Two tier shapes with a recommendation, the launch
+offer worked for both on John's ruled 50/75/85 percentages and 3% illustrative
+inflator, options and prices, upgrade and renewal and escalation and Avia exit and
+named discounts and floors and payment terms, the host sentence and the one-pager
+pricing block, what is not offered before 2027, and what W3, W4, W5 and W6 each
+change when the file says FINAL. Fifteen numbered decisions for John in section 8.
+
+Adds routes/W8-STATUS.md v1: what the session did, what W8 needs from John, five
+findings for the controller, five judgement calls, one conflict.
+
+Findings carried: W5's agreement and one-pager v0.2 are built on the superseded
+size axis and should not take another session until this file is FINAL; agreement
+slot 3 (internal size thresholds) closes with no figure because no size axis
+exists; two paths in W8-RULINGS.md do not resolve.
+
+Nothing else touched. No code, no deck, no site, no agreement, no manual.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01DtwCfEnhiXACeJawoD9cxM
