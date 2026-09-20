@@ -431,9 +431,25 @@ than a software one. Four responses, in order of effort:
    recurring, so the answer to that buyer is to put the study in front of them first, which the
    one-pager already does.
 
-**A minimum term is not proposed.** It would close the on-off pattern properly and is ordinary in
-enterprise software, but it contradicts item 29's "no obligation to renew at any step", and John
-has ruled the better instrument instead.
+**A MINIMUM TERM IS RULED OUT AND IS NOT REOPENED** (John, 20 September 2026). The licence is
+annual and renewable, with no obligation to renew, as item 29 says.
+
+The question was raised and answered on the evidence of the three vendors Avia itself buys from.
+Sabre supplies on a minimum three-year contract with discounts for four or five years and the
+cash schedule locked at signature. **OAG and RDC are annual renewable**, and they are the closer
+analogues, because they sell an annual subscription to an airport, which is what Meridian is;
+Sabre supplies a bulk data feed with infrastructure and licensing behind it, which is what
+justifies the longer lock. Two of the three comparators, and the two that look like this product,
+say annual renewable.
+
+Two things follow rather than a change of term. **The multi-year option below is the Sabre shape
+offered as a choice**, so a client who wants that certainty can buy it while the default stays
+OAG's. And **the continuity discount matters more without a minimum term**, because it is then the
+only thing rewarding a client for staying.
+
+It is also a third cross-check on £15,000. The two comparators closest to Meridian's shape sell
+annual renewable at circa £11,000 and circa £20,000, so a £15,000 annual renewable single-airport
+licence sits between them on both price and term.
 
 ### The permanent renewal discount
 
@@ -455,10 +471,19 @@ points. A 10% discount has to reduce it by ten, which a discount of that size is
 achieve, because a client who leaves usually leaves for a reason other than price.
 
 **W8 recommends 5% from the second renewal**, held for as long as the licence is continuous and
-lost entirely on a lapse (decision 15). The mechanism matters more than the magnitude: the
-sentence "your price falls the longer you stay, and you lose it if you leave" does the work, and
-£750 does not have to do it alone. It stands alongside forfeiting the remaining launch years and
-the £2,500 re-onboarding fee.
+lost entirely on a lapse (decision 15). It stands alongside forfeiting the remaining launch years
+and the £2,500 re-onboarding fee.
+
+**The discount is off the list price of the year, never off the price last paid** (John's
+question, 20 September 2026). Off the price paid compounds, so 95% of 95% of 95% reaches 60% of
+the original after ten years, which is not a discount but a slow collapse. Off list, the client
+holds a standing 5% below whatever the list is that year.
+
+That gives the accurate sentence for the sales language, which is better than a vague loyalty
+claim because the client can check it every year: **the price falls once at the first renewal and
+then tracks 5% below list.** Worked on a single airport: year 1 at £15,000; at the first renewal
+the list is £15,450 and the client pays £14,700, a fall of £300; thereafter their price rises
+with the list and stays 5% under it.
 
 **On paying for it.** W8 recommends leaving the list at £15,000 and accepting £14,250 as the
 steady-state price, rather than setting the list at £15,750 so the continuity price is £15,000.
@@ -472,6 +497,43 @@ it has cost much.
 rate. The floors in this section govern negotiated discounts for a client that has not yet earned
 continuity; an earned continuity price is not negotiated down further. That is also a good
 sentence to say to a long-standing client.
+
+### Multi-year, which is two different goods
+
+John, 20 September 2026: he would not be averse to 10% for a multi-year sign-up, and expects
+buyers may want more for a three-year contract.
+
+A commitment paid annually gives Avia revenue certainty. A prepay gives certainty plus the cash
+and no credit risk. They are not the same good and should not earn the same discount.
+
+**What a three-year prepay is worth to Avia.** The time value of receiving two years early, at an
+8% cost of capital, is circa 7% of the total. The avoided churn risk, at 12% a year, is worth
+circa 12% more. So a three-year prepay is worth roughly 15 to 19%, which is why 10% is
+comfortably profitable and why there is room above it.
+
+W8 proposal, decision 17, applying to any band and worked here on a single airport at the 3%
+illustration:
+
+| What the client commits to | Discount | Single airport |
+|---|---|---|
+| Three years, paid annually | 5% | the continuity discount from day one, instead of earning it at the second renewal |
+| Two years, prepaid | 7.5% | £28,150 for the two years |
+| Three years, prepaid | 12.5% | £40,550 for the three years, or £13,517 a year |
+
+The three-year commitment paid annually earns the continuity discount immediately rather than at
+the second renewal. It is the same number with nothing new to explain, and it converts a discount
+Avia was giving away at renewal into something that buys a commitment.
+
+**The answer when a buyer pushes past 12.5%, and it has the advantage of being true.** Twelve and
+a half per cent on a three-year prepay is £13,517 a year, which is £17 above the £13,500 floor.
+Fifteen per cent is £13,136 a year and breaches it. So the floor is what Avia says in the room:
+that is as far as we go, and it is not a negotiating position but the floor set for every client.
+The floor and the maximum affordable prepay discount agreeing to within £17 is also a reasonable
+sign that both numbers are about right.
+
+**A launch client may prepay the three launch years at no further discount**, being £32,650 for a
+single airport, £48,950 for two to nine and £65,250 for ten or more. Nothing stacks, so no rule
+is broken, and it is cash upside at a moment when cash matters. Decision 17.
 
 **Contracting entity.** W8's view, for W5 and the solicitor: contract from Avia Solutions Limited
 and market as The Aviation Observatory, because the OAG and Sabre licences, the professional
@@ -656,6 +718,7 @@ and no consulting before 2027. Analysis of any city pair is never scoped.
 | 14 | Quarterly payment at £4,000 / £6,000 / £8,000 a quarter, a 6.7% premium, as a payment method for an annual licence with the full year due from signature | |
 | 15 | Continuity discount of 5% from the second renewal, held while the licence is continuous, lost on a lapse; the continuity price carries no further discount except the group rate; the list stays at £15,000 | |
 | 16 | Against the on-off pattern: the launch price is conditional on continuous licensing, and a lapsed licence pays £2,500 re-onboarding to return. No minimum term, so item 29 stands | |
-| 17 | Airlines and advisers quoted only, and no airline licence signed before Sabre's written approval | |
+| 17 | Multi-year: three years paid annually earns the 5% continuity discount from day one; two years prepaid 7.5%; three years prepaid 12.5%, which is £17 above the floor and is therefore the maximum. A launch client may prepay the three launch years at no further discount | |
+| 18 | Airlines and advisers quoted only, and no airline licence signed before Sabre's written approval | |
 
 Copyright Avia Solutions Limited. All rights reserved.

@@ -163,3 +163,37 @@ solicitor. The continuity price is Avia's best price and carries no further
 discount except the group rate; the floors govern negotiated discounts only.
 
 The open decisions are consolidated at seventeen in section 11.
+
+John's question answered in section 6: the renewal discount is off the list price
+of the year, never off the price last paid, because off the price paid compounds
+to 60 per cent of the original in ten years. The accurate sales sentence follows:
+the price falls once at the first renewal, by 300 pounds on a single airport, and
+then tracks 5 per cent below list.
+
+Multi-year added as decision 17, split into two goods because they are not the
+same. A commitment paid annually gives revenue certainty; a prepay gives
+certainty plus cash and no credit risk. A three-year prepay is worth 15 to 19 per
+cent to Avia on time value at an 8 per cent cost of capital plus avoided churn at
+12 per cent a year, so John's 10 per cent is comfortably profitable and there is
+room above it. Proposed: three years paid annually earns the 5 per cent
+continuity discount from day one; two years prepaid 7.5 per cent; three years
+prepaid 12.5 per cent, being 40,550 or 13,517 a year. That is also the maximum,
+because it lands 17 pounds above the 13,500 floor while 15 per cent breaches it,
+which gives Avia a true answer when a buyer pushes for more. A launch client may
+prepay the three launch years at no further discount, which stacks nothing and is
+cash upside.
+
+Minimum term raised and CLOSED the same day. W8 proposed a three-year minimum on
+the precedent that Sabre supplies Avia on a minimum three-year contract with
+discounts for four or five years and the cash schedule locked at signature. John
+corrected it: OAG and RDC are annual renewable, and they are the closer
+analogues, because they sell an annual subscription to an airport, which is what
+Meridian is, while Sabre supplies a bulk data feed with infrastructure and
+licensing behind it. Item 29 stands: annual renewable, no obligation to renew, no
+minimum term, and the question is not reopened.
+
+Two things survive. The multi-year option in section 6 is the Sabre shape offered
+as a choice rather than imposed. And the continuity discount matters more without
+a minimum term, because it is then the only thing rewarding a client for staying.
+A third cross-check on 15,000 is recorded: the two comparators closest to
+Meridian's shape sell annual renewable at circa 11,000 and circa 20,000.

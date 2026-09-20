@@ -45,6 +45,9 @@ open in the table below them. Decision 1, the three bands, is the one every othe
 | 20 Sep 2026 | QUARTERLY PAYMENT understood but NOT PREFERRED for Avia's cash flow, though some clients will have to use it. John's condition: once given access a client can run everything quickly, so a quarter must buy access for that quarter only |
 | 20 Sep 2026 | THERE IS NO QUARTERLY LICENCE. The licence is always annual whether paid quarterly or annually. W8 had written it as a quarterly access right and that was wrong; corrected in section 6 |
 | 20 Sep 2026 | A PERMANENT DISCOUNT ON RENEWAL is John's proposed answer to the on-off pattern, keeping "no obligation to renew" intact, with pricing possibly tweaked to allow for it. W8 costed three versions and recommends 5% from the second renewal with the list unchanged |
+| 20 Sep 2026 | The renewal discount is OFF THE LIST PRICE OF THE YEAR, not off the price last paid, because off the price paid compounds to 60% of the original in ten years. John's question, answered in section 6 |
+| 20 Sep 2026 | John would not be averse to 10% for a multi-year sign-up as an alternative, and expects buyers may want more for a three-year contract. W8 costed it: a three-year prepay is worth 15 to 19% to Avia, so 12.5% is affordable and is also the maximum, because it lands £17 above the £13,500 floor |
+| 20 Sep 2026 | SABRE supplies Avia on a minimum three-year contract with discounts for four or five years and pricing locked at signature as a stated cash schedule. OAG and RDC are ANNUAL RENEWABLE. John's ruling: the annual renewable shape is the right analogue, so item 29 stands, there is NO MINIMUM TERM, and the question is closed |
 | 20 Sep 2026 | RISK RAISED: clients signing for a year, running everything including forecasts in advance, taking a year off and returning. Section 6 of the decision file carries four responses and the honest limit |
 | 20 Sep 2026 | NO CONSULTANT HOLDS A SEAT on an airport licence. A consultant with access could produce forecasts for anybody. Seats are named individuals on the airport's own corporate email domain; consultants are priced differently, as a separate licence. W8's adviser-seat proposal is withdrawn |
 
@@ -170,6 +173,15 @@ The sixteen decisions in section 9 of the decision file. Decisions 1 to 5 block 
    client calls, and decide then whether a smaller price is needed and by which mechanism: a
    multi-year prepay, which is already a named discount and matches a two-yearly budget cycle, or
    quarterly payment, which suits a cash-constrained airport better. Not a passenger band.
+
+## Closed and not to be reopened
+
+**The minimum term.** W8 proposed a three-year minimum term on the Sabre precedent and John
+corrected it the same day: Sabre supplies a bulk data feed with infrastructure behind it, while
+OAG and RDC, the two comparators that look like Meridian, are annual renewable. Item 29 stands,
+the licence is annual and renewable with no obligation to renew, and the multi-year option in
+section 6 is the Sabre shape offered as a choice rather than imposed. No future session reopens
+this.
 
 ## For the solicitor, via W5
 
