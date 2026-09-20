@@ -115,6 +115,60 @@ class _Boards:
             pass
         self._cache = {}
         self._lock = threading.RLock()   # a SHARED instance (see shared()) serves several threads
+        # ON-DISK COPY OF THE PARSED BOARDS (Routes W1 step 2, 20 September 2026). Step 1 kept
+        # each parsed (week, airport, side) board in this dict for the life of the process, so a
+        # restart lost every one and the first Run on each airport paid the store query and the
+        # dedupe again (circa 30s cold against 9s warm, TIMING-20260919). This keeps the SAME leg
+        # list on disk, one pickle per board, under LOCAL_CACHE\boards\<store>-<vintage>, where
+        # vintage is the store file's (path, mtime_ns, size), so a refreshed store starts a new
+        # folder and never reads a stale board. Parsing is unchanged: the pickle holds what
+        # _rows_locked produced, so the legs are identical by construction and the probe's
+        # --diff is the proof. Only the live OAG table is persisted (CacheBoards is already a
+        # pre-built cache). AVIA_BOARDS_DISK=0 restores step 1 behaviour (the A/B switch);
+        # AVIA_BOARDS_DIR overrides the folder. A folder that cannot be written is reported once
+        # and the process carries on in memory only; it never fails a Run.
+        self._disk = None
+        self.disk_hits = self.disk_writes = 0
+        if self._TABLE == "oag":
+            self._disk = _disk_dir(db)
+
+    def _disk_path(self, week, airport, side):
+        safe = "".join(ch if (ch.isalnum() or ch in "-_") else "_" for ch in f"{week}_{airport}_{side}")
+        return os.path.join(self._disk, safe + ".pkl")
+
+    def _disk_read(self, key):
+        if not self._disk:
+            return None
+        import pickle
+        try:
+            with open(self._disk_path(*key), "rb") as fh:
+                legs = pickle.load(fh)
+        except FileNotFoundError:
+            return None
+        except Exception as e:                                          # noqa: BLE001
+            print("[boards] disk read failed for %s (%s: %s); parsing from the store" % (key, type(e).__name__, e))
+            return None
+        self.disk_hits += 1
+        return legs
+
+    def _disk_write(self, key, legs):
+        if not self._disk:
+            return
+        import pickle
+        path = self._disk_path(*key)
+        tmp = "%s.%d.tmp" % (path, os.getpid())
+        try:
+            with open(tmp, "wb") as fh:
+                pickle.dump(legs, fh, protocol=pickle.HIGHEST_PROTOCOL)
+            os.replace(tmp, path)          # atomic: a reader never sees a half-written board
+            self.disk_writes += 1
+        except Exception as e:                                          # noqa: BLE001
+            print("[boards] disk write failed for %s (%s: %s); boards stay in memory for this process" % (key, type(e).__name__, e))
+            self._disk = None
+            try:
+                os.remove(tmp)
+            except OSError:
+                pass
 
     def _rows(self, week, airport, side):
         key = (week, airport, side)
@@ -125,6 +179,10 @@ class _Boards:
 
     def _rows_locked(self, key, week, airport, side):
         if key not in self._cache:
+            legs_from_disk = self._disk_read(key)
+            if legs_from_disk is not None:
+                self._cache[key] = legs_from_disk
+                return legs_from_disk
             col = "dep_airport" if side == "dep" else "arr_airport"
             rows = self._con.execute(
                 f"SELECT {_BOARD_COLS} FROM {self._TABLE} WHERE week=? AND {col}=?",
@@ -170,6 +228,7 @@ class _Boards:
                 if leg["_dop"]:
                     leg["freq"] = float(len(leg["_dop"]))
             self._cache[key] = list(legs.values())
+            self._disk_write(key, self._cache[key])
         return self._cache[key]
 
     def dep_rows(self, week, airport):
@@ -225,6 +284,53 @@ def shared(oag_db):
 def shared_stats():
     """{store: boards held} for the /api/health style surfaces and the timing probe."""
     return {k: len(v._cache) for k, v in _SHARED.items()}
+
+
+def disk_stats():
+    """Per shared store: the on-disk folder, boards on disk, and this process's hits and writes."""
+    out = {}
+    for k, v in _SHARED.items():
+        d = v._disk
+        n = None
+        if d and os.path.isdir(d):
+            n = sum(1 for f in os.listdir(d) if f.endswith(".pkl"))
+        out[k] = {"dir": d, "on_disk": n, "hits": v.disk_hits, "writes": v.disk_writes}
+    return out
+
+
+def _store_vintage(db):
+    """(normalised path, mtime_ns, size) of the store file, the key a persisted board is valid for."""
+    p = os.path.normcase(os.path.abspath(str(db)))
+    st = os.stat(p)
+    return p, st.st_mtime_ns, st.st_size
+
+
+def _disk_dir(db):
+    """The folder for this store vintage's boards, created on first use; None when disabled."""
+    import hashlib
+    if os.environ.get("AVIA_BOARDS_DISK", "1").strip().lower() in ("0", "false", "off", "no"):
+        return None
+    try:
+        p, mt, sz = _store_vintage(db)
+    except OSError as e:
+        print("[boards] store not stat-able (%s); boards stay in memory only" % e)
+        return None
+    tag = hashlib.sha1(("%s|%d|%d" % (p, mt, sz)).encode("utf-8")).hexdigest()[:12]
+    base = os.environ.get("AVIA_BOARDS_DIR", "").strip()
+    if not base:
+        try:
+            from config import LOCAL_CACHE
+            base = os.path.join(str(LOCAL_CACHE), "boards")
+        except Exception as e:                                          # noqa: BLE001
+            print("[boards] config.LOCAL_CACHE unavailable (%s); boards stay in memory only" % e)
+            return None
+    d = os.path.join(base, "%s-%s" % (os.path.splitext(os.path.basename(p))[0], tag))
+    try:
+        os.makedirs(d, exist_ok=True)
+    except OSError as e:
+        print("[boards] cannot create %s (%s); boards stay in memory only" % (d, e))
+        return None
+    return d
 
 
 class CacheBoards(_Boards):

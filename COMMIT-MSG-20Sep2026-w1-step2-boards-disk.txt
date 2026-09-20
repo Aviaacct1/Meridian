@@ -1,0 +1,24 @@
+W1 step 2: persist parsed OAG boards on disk under LOCAL_CACHE, keyed on store vintage; register warm-up
+
+wave_cache._Boards now writes each parsed (week, airport, side) board as one pickle under
+LOCAL_CACHE\boards\<store>-<vintage> (vintage = store path, mtime_ns, size) and reads it back
+on a memory miss, so a server restart no longer pays the store query and dedupe for every
+airport (the pre-mortem 11 gap). Parsing is unchanged; the probe --diff is the identity proof.
+AVIA_BOARDS_DISK=0 restores step 1 behaviour; AVIA_BOARDS_DIR overrides the folder; an
+unwritable folder is reported once and the process carries on in memory. disk_stats() added.
+
+app/warm_boards.py (new): touches dep and arr boards for every code in
+routes/PREWARM-AIRPORTS.txt at the server's schedule week, in its own process, reporting
+legs, seconds, disk or parsed, and EMPTY for any code with no board; writes WARM-<date>.md.
+
+routes/PREWARM-AIRPORTS.txt (new): 196 codes from the Routes register tiers 1-2 plus the
+worked and probe routes; tier 3 unmapped, re-read week of 12 Oct.
+
+GTM-STRATEGY-ROUTES-2026.md: Status block rewritten for controller chat 2; items 8 and 9 closed.
+
+Measured before (workstation, 20 Sep 14:51, TIMING-20260920-1451.md, warm server): Run
+SJC-TPE 9.5s, BRS-EWR 7.8s, DUB-DFW 18.8s first call / 6.6s warm; Optimise narrowed 40.4 /
+38.3 / 32.4s. After-measurement follows in the next commit.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_018CkmoTUt4WcQLbhGuKfeMd

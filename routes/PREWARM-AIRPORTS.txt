@@ -1,0 +1,271 @@
+# Pre-warm airport set for Routes World 2026 (Frankfurt, 21-23 October).
+# Read by app\warm_boards.py: one IATA code per line, anything after the code or after # is ignored.
+# Version 1, 20 September 2026, controller (W1). Source of the organisations:
+# ROUTES-ATTENDING-ORGANISATIONS-21Sep2026.md section 4 (contents dated 19 Sep), tiers 1 and 2,
+# plus the worked routes and the probe pairs. The IATA codes are the controller's mapping from
+# the organisation names; warm_boards.py verifies each against the OAG store and prints EMPTY for
+# any code with no board either side, which is the check that a mapping is wrong. Airport groups
+# (AENA, VINCI, Avinor, Swedavia, TAV, Fraport, ACV, Changi, AOT, ACSA, ANA, Polish Airports,
+# Lithuanian, Malaysia Airports, Angkasa Pura, Queensland, Hokkaido, Aboitiz, GAP, ASUR, OMA)
+# are represented by their principal airports only. Tier 3 (one delegate) is not yet mapped;
+# re-read the register in the week of 12 October and extend.
+
+# --- Worked routes, rehearsed routes and probe pairs (always warm)
+SJC  San Jose Mineta (worked route SJC-TPE)
+TPE  Taiwan Taoyuan
+BLQ  Bologna (worked route Bologna-New York)
+JFK  New York JFK
+EWR  New York Newark (probe pair BRS-EWR)
+BRS  Bristol (probe pair)
+GOA  Genova (Avia case)
+LHR  London Heathrow (validated case LHR-SJC)
+SOU  Southampton (warm_demo showcase)
+TFS  Tenerife South (warm_demo showcase)
+
+# --- Register tier 1 (three or more delegates, or exhibiting)
+SIN  Changi Airport Group
+BKK  Airports of Thailand
+DMK  Airports of Thailand
+HKT  Airports of Thailand
+CNX  Airports of Thailand
+CPH  Copenhagen
+SGN  Airports Corporation of Vietnam
+HAN  Airports Corporation of Vietnam
+DAD  Airports Corporation of Vietnam
+OSL  Avinor
+BGO  Avinor
+TRD  Avinor
+SVG  Avinor
+DFW  Dallas Fort Worth
+DOH  Hamad Doha
+ARN  Swedavia
+GOT  Swedavia
+PRG  Prague
+MAD  AENA
+BCN  AENA
+PMI  AENA
+AGP  AENA
+ALC  AENA
+BRU  Brussels
+MXP  Milan SEA
+LIN  Milan SEA
+PLS  Turks and Caicos
+VIE  Vienna
+JNB  ACSA South Africa
+CPT  ACSA South Africa
+DUR  ACSA South Africa
+BHX  Birmingham
+DUB  Dublin
+HEL  Finavia
+FRA  Fraport Frankfurt
+CDG  Groupe ADP
+ORY  Groupe ADP
+GRU  GRU Sao Paulo
+STN  London Stansted
+MUC  Munich
+NRT  Narita
+SYD  Sydney
+ABZ  AGS Aberdeen Glasgow Southampton
+GLA  AGS Aberdeen Glasgow Southampton
+HRE  Airports Company of Zimbabwe
+VFA  Airports Company of Zimbabwe / Victoria Falls
+LIS  ANA Portugal
+OPO  ANA Portugal
+FAO  ANA Portugal
+BER  Berlin Brandenburg
+BNE  Brisbane
+CXR  Cam Ranh
+EDI  Edinburgh
+AYT  Fraport TAV Antalya
+IST  iGA Istanbul
+SAW  Istanbul Sabiha Gokcen
+VNO  Lithuanian Airports
+KUN  Lithuanian Airports
+CEB  Mactan-Cebu
+MCT  Oman Airports
+STR  Stuttgart
+TPA  Tampa
+ADB  TAV Airports
+YVR  Vancouver
+AUH  Abu Dhabi Airports
+AMS  Amsterdam Schiphol
+AKL  Auckland
+BLR  Bangalore
+CGN  Cologne Bonn
+DUS  Dusseldorf
+BSL  EuroAirport Basel
+VAR  Fraport Bulgaria
+BOJ  Fraport Bulgaria
+HAM  Hamburg
+KRK  Krakow
+KIX  Kansai VINCI
+BTS  Bratislava
+MLE  Maldives Airports
+MLA  Malta
+MAN  Manchester
+MRS  Marseille
+MEL  Melbourne
+WDH  Namibia Airports
+ONT  Ontario California
+WAW  Polish Airports
+CGK  Angkasa Pura Indonesia
+DPS  Angkasa Pura Indonesia
+OOL  Queensland Airports
+TSV  Queensland Airports
+RSI  Red Sea International
+VCE  Venice
+LGW  VINCI Airports / London Gatwick
+LUN  Zambia Airports
+LVI  Zambia Airports
+AAR  Aarhus
+LYS  Lyon
+QRO  Queretaro
+CKY  Conakry
+SKD  Samarkand
+HKG  Hong Kong
+ALA  Almaty
+CUN  ASUR
+ATH  Athens
+BAH  Bahrain
+BIA  Corsica Bastia
+CLY  Corsica Calvi
+PEK  Beijing Capital
+PKX  Beijing Daxing
+BEG  Belgrade
+BLL  Billund
+BUD  Budapest
+NGO  Central Japan
+CRK  Clark
+ORK  Cork
+DEN  Denver
+DBV  Dubrovnik
+SKG  Fraport Greece
+FUK  Fukuoka
+ACC  Ghana Airports
+YHZ  Halifax
+ATL  Atlanta
+CTS  Hokkaido Airports
+KTW  Katowice
+KSC  Kosice
+LIM  Lima
+LCY  London City
+MST  Maastricht
+KUL  Malaysia Airports
+KNO  Medan
+FMM  Memmingen
+DRS  Mitteldeutsche Dresden
+LEJ  Mitteldeutsche Leipzig
+UBN  New Ulaanbaatar
+NCL  Newcastle UK
+OLB  Olbia
+PER  Perth
+PDX  Portland
+PRN  Prishtina
+FCO  Rome
+CIA  Rome
+RZE  Rzeszow
+SAN  San Diego
+SDJ  Sendai
+SNN  Shannon
+TLL  Tallinn
+PSA  Toscana Aeroporti Pisa
+FLR  Toscana Aeroporti Florence
+TLS  Toulouse
+TAS  Uzbekistan Airports
+WRO  Wroclaw
+URC  Xinjiang Airport Group
+YUL  Montreal YUL
+ZAD  Zadar
+ZRH  Zurich
+
+# --- Register tier 2 (two delegates)
+AAL  Aalborg
+ADL  Adelaide
+BOD  Bordeaux
+YQB  Quebec
+NTE  Nantes
+RMI  Rimini
+AOI  Ancona
+BFS  Belfast International
+BIO  Bilbao
+BON  Bonaire
+CAG  Cagliari
+CNS  Cairns
+PNH  Cambodia Airports
+REP  Cambodia Airports
+CWL  Cardiff
+CDT  Castellon
+CHC  Christchurch
+COK  Cochin
+CMH  Columbus
+COO  Cotonou
+DEL  Delhi
+DTW  Detroit
+DXB  Dubai Airports
+DWC  Dubai Airports
+EMA  East Midlands
+YEG  Edmonton
+POA  Fraport Brasil
+FOR  Fraport Brasil
+GDN  Gdansk
+HYD  GMR Hyderabad
+GRZ  Graz
+GDL  GAP Mexico
+TIJ  GAP Mexico
+HAJ  Hannover
+NOC  Ireland West
+JAX  Jacksonville
+JER  Jersey
+KEF  Keflavik
+RUH  King Salman Riyadh
+RSW  Southwest Florida
+LBA  Leeds Bradford
+LIG  Limoges
+LTN  London Luton
+SEN  London Southend
+LUZ  Lublin
+IAD  Washington MWAA
+DCA  Washington MWAA
+MIA  Miami-Dade
+BGY  Milan Bergamo
+MPL  Montpellier
+NAP  Napoli
+QSR  Salerno
+BNA  Nashville
+MSY  New Orleans
+NTL  Newcastle Australia
+NCE  Nice
+NUE  Nuremberg
+OAK  Oakland
+MTY  OMA VINCI Mexico
+MCO  Orlando
+PHX  Phoenix
+POZ  Poznan
+PUY  Pula
+KGL  Rwanda Airports
+TRN  Sagat Turin
+SFO  San Francisco
+TRF  Sandefjord
+SCL  Santiago de Chile
+SJJ  Sarajevo
+SRQ  Sarasota
+BES  Bretagne Ouest
+SEA  Seattle
+PVG  Shanghai
+SHA  Shanghai
+SZX  Shenzhen
+SBZ  Sibiu
+SOF  Sofia
+NYO  Stockholm Skavsta
+VST  Stockholm Vasteras
+SXB  Strasbourg
+MME  Teesside
+MED  TIBAH Madinah
+TIA  Tirana
+YYZ  Toronto Pearson
+TBS  United Airports of Georgia
+KUT  United Airports of Georgia
+YWG  Winnipeg
+YHU  Montreal Saint-Hubert
+KMG  Yunnan Aviation
+ZAG  Zagreb

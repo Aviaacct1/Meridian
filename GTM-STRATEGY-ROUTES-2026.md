@@ -16,22 +16,29 @@ The detail lives in two companions and this document points at them rather than 
 ## Status
 
 Rewritten every session by the programme controller; John reads this on a phone. As at
-Sunday 20 September 2026, 15:00: controller chat 1 closes; HANDOVER-CONTROLLER-20Sep2026.md
-carries the state for controller chat 2. Pricing moved to W8. John pauses until Postmark
-approval (expected Monday 22 Sep). Repo `Aviaacct1/Meridian` HEAD `e38f76a` plus this
-commit; `Aviaacct1/tao-website` HEAD `2df95ee`. Every workstream's own file is `routes\Wn-STATUS.md`; its instructions are
-`routes\Wn-RULINGS.md`; `routes\README.md` says how they work together.
+Sunday 20 September 2026, 13:45 BST (the handover and W8-RULINGS say 15:00; the files were
+written at 13:33-13:34, a clock slip, contents unaffected): controller chat 2 open (Fable); reads done; W1 step 2
+starts once John confirms the DevPC pull and HEAD (handover HEAD `e38f76a` plus the uncommitted
+controller edits at handover). Order-ready is 21 Oct. Pricing is W8's; item 37 provisional.
+John pauses until Postmark approval (expected Mon 22 Sep). `Aviaacct1/tao-website` HEAD
+`6d153d2` (W6-STATUS v6). Files: `routes\Wn-STATUS.md` (chat writes), `routes\Wn-RULINGS.md`
+(controller writes), `routes\README.md`.
 
 | WS | State | Where it stands | Next action | Owner | Date |
 |---|---|---|---|---|---|
-| W1 Speed and caches | Step 1 SHIPPED, targets met | Run 42s to 9s cold, Optimise 196s to 35s, payloads identical (1012c29). Preagg identity PASS. Sabre is not the cost | Step 2: persist boards, MCT and airport table across a restart; warm-up over registered airports; then preagg wiring | Controller | 26 Sep |
-| W2 Stand flow | In progress (v7) | MCT master reports at startup (2cab1b2); Postmark sender verified, account in TEST MODE; capture front end scoped; Plan A proven on MateBook; MateBook not Plan B | Zone move to Cloudflare (wk 22 Sep); DuckDB leads table and JSONL migration; stand mode; capture front end demonstrable 2 Oct; laptop proof 8 Oct | W2 chat / John | 2 and 8 Oct |
-| W3 Presentation | In progress | Slides 1-6, 9-10 built (3af5158); provenance fix proven; PDF path proven; Commons probe written, unrun | PDF render and 20-minute pitch page; probe run; slides 7-8 after item 28 and runs 29 Sep-1 Oct | W3 chat / John | All four to Jol and Nick 3 Oct |
-| W4 Host | In progress | STAND-HOST-MANUAL.md v1, 648 lines, 27 slots, timed script; pricing wording now John's of 19 Sep | v2 after Suzanna's four answers and 8 Oct screenshots; Word copy for print after | W4 chat / John | v2 mid-Oct |
-| W5 Order-ready documents | In progress (v2) | Agreement v0.1 and one-pager v0.1 as verified Word files; feedback card | Invoice, onboarding script, known-issues list, licence-record form; agreement to solicitor 3 Oct | W5 chat / John | 3 Oct |
-| W6 Messaging, marketing, website, meetings | In progress (v5) | Messaging variants, five invitations, calendar, post 1 drafted; tao-website pushed (2df95ee); launch switch proven; pricing held to November (John) | Launch-switch commit; Pages project; competitor and prices out of 22 pages; sentences settled 25 Sep; invitations 26-29 Sep | W6 chat / John | 25-29 Sep |
-| W8 Pricing and commercial offer | NEW 20 Sep | Tier table rewritten four times in the controller chat; John moved pricing to one dedicated chat. Item 37 provisional | Read W8-RULINGS.md v1; buyer's-chair analysis; at most two shapes with a recommendation; PRICING-DECISION-2026.md | W8 chat / John | Target 26 Sep, hard 3 Oct |
-| W7 Rehearsal and freeze | Replanned | Boeing 13 Oct is an Atlas meeting; Meridian trials 11-12 Oct (remote, one restart) and 16 Oct with Suzanna | Nothing until October; controller diaries the trials | Controller / John | Freeze 10 Oct |
+| W1 Speed and caches | Step 1 SHIPPED; step 2 STARTING | Run 42s to 9s cold, Optimise 196s to 35s, payloads identical (1012c29). Preagg store built and identity PASS 85/85; no live hook yet | Step 2: on-disk boards, MCT and airport table under LOCAL_CACHE keyed on store vintage; warm-up over register airports; probe save-json before/after and diff | Controller | Design 21 Sep; measured by 26 Sep |
+| W2 Stand flow | In progress (v7, 19 Sep) | MCT master reports at startup (2cab1b2); Postmark verified, account in TEST MODE; MateBook is Plan A only; Plan B needs SSD (item 14) | Zone move to Cloudflare wk 22 Sep; DuckDB leads table; stand mode; capture front end 2 Oct; laptop proof 8 Oct | W2 chat / John | 2 and 8 Oct |
+| W3 Presentation | In progress; STATUS file stale (v1, 19 Sep) | Slides 1-6, 9-10 built (3af5158 per handover, unconfirmed in W3-STATUS); provenance fix proven (45a5210); Commons probe written, unrun (item 33) | W3 rewrites its STATUS; PDF render and pitch page; probe run by 26 Sep; slides 7-8 from runs 29 Sep-1 Oct | W3 chat / John | All four to Jol and Nick 3 Oct |
+| W4 Host | In progress (v1) | STAND-HOST-MANUAL.md v1, 648 lines, 27 slots; built on size-band pricing, now superseded | v2 after Suzanna's four answers (item 23) and 8 Oct screenshots; pricing slots wait on W8 FINAL | W4 chat / John | v2 mid-Oct |
+| W5 Order-ready documents | In progress (v3, 20 Sep) | Agreement and one-pager v0.2 committed (3197c43), 17 clauses; checklist 8 of 13 DONE; BUILT ON SIZE BANDS, to be rebuilt on W8's tiers | Invoice, onboarding script, known-issues list, licence-record form; twelve slots are John's by 3 Oct; solicitor wk 6 Oct | W5 chat / John | 3 and 10 Oct |
+| W6 Messaging, marketing, website, meetings | In progress (v6, 20 Sep) | Competitor and prices out of the site (6d153d2); invitations v2 say "follows the same day" and carry launch terms; post 1 and list email ready for approval | Clean-clone proof; Pages project after zone move; sentences and five contacts by 25 Sep; invitations 26-29 Sep | W6 chat / John | 25-29 Sep |
+| W8 Pricing and commercial offer | NEW 20 Sep, not started | W8-RULINGS.md v1; no W8-STATUS.md yet; John's unease on the tier steps unresolved | John opens the W8 chat; buyer's-chair analysis; at most two shapes; PRICING-DECISION-2026.md | W8 chat / John | Target 26 Sep, hard 3 Oct |
+| W7 Rehearsal and freeze | Replanned | Boeing 13 Oct is an Atlas meeting; Meridian trials 11-12 Oct (remote, one restart) and 16 Oct with Suzanna | Controller diaries the trials; nothing until October | Controller / John | Freeze 10 Oct |
+
+Found on the 20 Sep read, not yet resolved: (a) W3-STATUS.md is still session 1, so the
+slide build at 3af5158 is recorded only in the handover; (b) W4 and W5 built their pricing
+sections to the size-band offer of 20 Sep 13:00 and both change when W8 rules; (c) Waiting on
+John items 8 and 9 are overtaken by John's Postmark ruling and are closed below.
 
 ## What is left, by owner, as at 19 September, 22:45
 
@@ -336,14 +343,9 @@ five contacts.
 7. **Tier shape**: CLOSED 20 Sep by item 37 for airports (three capability tiers). Airlines
    and advisers remain "quoted"; the commercial plan's Airline / Adviser tiers are not
    priced for Routes.
-8. **Pack email pattern**: controller view is two emails, not three: a plain thank-you with
-   the PDF attached, and the HTML pack hosted at an unguessable public URL on the launched
-   site (no login) linked from that email, because HTML attachments are stripped far more
-   often than PDFs and a hosted page is also what a visitor forwards. Three emails triples
-   the spam-filter exposure. Your call. Silence to 26 Sep: two emails as described.
-9. **Sending domain**: aviationobservatory.com. Is it on the Avia Microsoft 365 tenant, or
-   elsewhere? Decides Graph versus a transactional sender, and who sets SPF/DKIM/DMARC.
-   Silence to 26 Sep: assumed on the tenant; W2 checks and reports.
+8. CLOSED 20 Sep: two emails per visitor (John's 19 Sep ruling stands; item 22 records it).
+9. CLOSED 20 Sep: not on the tenant and it does not need to be; Postmark is the sender,
+   domain verified 19 Sep (W2-STATUS v7). Inbound mail comes with the Cloudflare move (item 20).
 10. **Host training**: the plan says 14-16 Oct in person; Suzanna lands 20 Oct afternoon.
     Proposal: two remote sessions 14-16 Oct on the frozen build over video, and an in-person
     run-through on the stand or hotel on the evening of 20 Oct. Silence to 1 Oct: as proposed.
