@@ -187,3 +187,55 @@ about overage, places or add-ons; John or Jol handles those within 48 hours.
 more may be added later. Build to them now; nothing waits on a route decision. The carrier
 for Bologna-New York is still item 26.
 W4: the rehearsed walk-up routes stand as written.
+
+## 20 September 2026, 21:45: SUZANNA'S FOUR ANSWERS (umbrella item 23 closed; quoted from her email to John)
+
+1. Order of use: she types origin and destination, then follows the boxes left to right adding
+   what she knows (carrier, aircraft, frequency); she likes that blank boxes optimise. "The input
+   screen is very intuitive."
+2. Looked up more than once: the row carrying OUTPUT, OPTIMISE and RUN ASSESSMENT. She was unsure
+   what the OUTPUT buttons did and whether they belonged to OPTIMISE or to RUN ASSESSMENT; she
+   suggests a heading ("RUN") over the two action buttons, or moving the three to the right-hand
+   side. She is also unclear what differs between entering a route with everything else blank
+   and pressing RUN ASSESSMENT versus OPTIMISE. "I do not feel this is clear in the UI." The help
+   section she rates highly.
+3. Would not put in front of a visitor: (a) any route where the data is thin and the forecast
+   weaker, because OAG clients pick a route they have already studied and pick the forecast
+   apart; she asks for the known weak scenarios so she can steer round them; (b) Optimise, if it
+   is still slow: she ran it a couple of times and would talk about it rather than demo it. Run
+   Assessment she found impressive for speed.
+4. Expected and could not find: nothing yet.
+Biggest question she expects on the stand: how accurate are the forecasts; she needs an answer.
+She offers a call on Tuesday 22 Sep to walk through how she first used it.
+
+CONTROLLER RULINGS FOR W4 from these answers:
+- Manual section 3: the demo script follows her order of use (route first, then the boxes left
+  to right, blanks optimise) and says in one line what Run does and what Optimise does, in the
+  words W2 puts on the screen.
+- Manual section 7.2 and 2.3: her "biggest question" is the accuracy question; the slot for
+  item 25 is the priority slot in v2, and until it lands she has the ruled sentence and the
+  hand-over to John.
+- New section content: a short list of the known weak scenarios she should steer round on the
+  stand (thin Sabre coverage, city names the workstation cannot resolve, day-of-week, fare, the
+  uncostable types), taken from W5's known-issues list when it exists (1 Oct) and worded for the
+  host.
+- Optimise is demonstrated; her speed concern is answered by W1's measurements, and she sees it
+  herself at the 16 Oct trial.
+
+## 20 September 2026, 22:15: John on the accuracy conversation (pre-mortem 3, manual 7.6 and 2.3)
+
+A visitor will run a route they have already forecast. They do not know how accurate their
+own forecast is, so the stand conversation is forecast against forecast, not forecast against
+outcome. Two things follow for the manual:
+1. Everyone on the stand understands the 89% claim the same way (item 25 lands by 26 Sep; the
+   manual carries it in 2.3 and 7.2 and Suzanna is briefed on it by voice).
+2. When the numbers differ, the host opens the METHODOLOGY page (/methodology): its bridge
+   chart rebuilds the LAST forecast run step by step with the weight of each element (natural
+   market, capture share, coverage, stimulation, behind and beyond feed, capacity cap), so the
+   gap can be placed on a step. John's two cases: we say 110k and they say 120k, the bridge
+   shows where the 10k could sit; we say 150k and they say 50k, the bridge is the case for our
+   number and the request form captures theirs for a proper look after the show. Script 7.6
+   to that: "which step do you think is different, and why", never a defence of the total.
+   W4 checks the page on the workstation build (it exists: app/methodology_page.py, bridge tied
+   to LAST_FC) and writes the walk-through in the host's words; if any step label is unclear
+   to a lay reader, say so in W4-STATUS for the controller.

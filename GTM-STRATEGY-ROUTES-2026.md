@@ -339,6 +339,28 @@ five contacts.
   searches, not the boards; step 2b persists those (written, awaiting commit and restarts 3-4).
   The market brief costs 6-8s on first entry of any route; noted, not yet attributed.
 
+- 20 Sep 2026 (John, 19:30): MESSAGING is in THE AVIATION OBSERVATORY'S voice; Avia appears only
+  as the affiliate with its credential. Sentence 1 promises the forecast "while you wait, in
+  under five minutes" ("about a minute" only when W1's restart-proof numbers allow it, Run
+  only); 2.1 "the optimal time to fly it"; 2.2 "a full presentation pack follows the same
+  day"; 2.3 as an affiliation clause; 3 is the W8 host sentence. Meetings: the five stand as a
+  start (Dublin and SEA are groups); every invitation asks the airport to name a route and the
+  forecast is prepared ahead of the meeting. W6-RULINGS carries it.
+
+- 20 Sep 2026, 21:45: Suzanna's four answers received (item 23 closed). Consequences: W2 stand
+  mode separates OUTPUT from the two actions and labels each; W4's manual takes her order of use
+  and a weak-scenario list from W5's known-issues list; John tells her Optimise is now 38-55s;
+  the accuracy sentence (item 25) is the host's priority slot.
+
+- 20 Sep 2026, 22:15 (John): the Run / Optimise / OUTPUT row is learned on first use, not a
+  defect; clearer only if it stays clean; Suzanna's understanding is the stand mitigation; a
+  client help guide or video is an onboarding item (W5). ACCURACY on the stand is forecast
+  against the visitor's own forecast: everyone understands the 89% claim the same way (item
+  25), and the gap is placed on the methodology page's bridge chart, step by step, rather than
+  argued on the total (pre-mortem 3, manual 7.6; W4 writes the walk-through). The bridge exists
+  in the build (methodology_page.py, tied to the last run); the controller checks it renders on
+  the workstation build and reads for a lay visitor before the freeze.
+
 ## Waiting on John
 
 1. CLOSED 19 Sep: HEAD `11a4c3f` confirmed and pushed.
@@ -490,8 +512,10 @@ five contacts.
     unless you disagree.
 22. **One email or two** (W2 still recommends one). Your 19 Sep ruling of two stands unless
     you say otherwise; the queue view then shows both sends separately.
-23. **Send Suzanna the four questions** in W2-STATUS.md now (controller recommends yes, as
-    they stand). Silence to 23 Sep: I take it as yes and W2 proceeds on her answers.
+23. CLOSED 20 Sep 21:45: Suzanna answered all four (W2-RULINGS and W4-RULINGS carry her words).
+    Input screen intuitive; the OUTPUT / OPTIMISE / RUN ASSESSMENT row is unclear (stand-mode
+    requirement); she wants the known weak scenarios; Optimise slow in her experience (pre step 1);
+    accuracy is the question she expects. Offers a call Tue 22 Sep.
 24. **Which tablet for the capture front end**, and whether it is yours or bought. Under
     Plan B it reaches the form on the laptop's own hotspot; W2 confirms.
 13. **Pick the five meetings**: John agreed the buyer-test list 19 Sep (Birmingham, Dublin,
@@ -616,7 +640,12 @@ Written as if it happened. Each has an owner and a mitigation already in the pla
 3. **The forecast contradicts the visitor's own numbers.** Answer: this is the product working.
    The host says so: "a gap is informative; which side do you think is right, and why", captures
    the reason, and the follow-up is exactly that conversation. Nick's methodology note is the
-   backing. Never defend a number on the stand; ask about the gap.
+   backing. Never defend a number on the stand; ask about the gap. ADDED 20 Sep (John): the
+   visitor is comparing forecasts, not outcomes; the host opens the methodology page's bridge
+   chart for the run just made and places the gap on a step (110k v 120k: where the 10k sits;
+   150k v 50k: the case for ours, theirs captured for a proper look). Status: bridge exists in
+   the build; walk-through owed by W4; controller checks the page on the workstation before
+   the freeze.
 4. **A competitor's client, or the competitor, tests the host.** Answer: commercial plan 10;
    the one honest sentence; no comparison; capture what they say.
 5. **The host quotes a price, or a feature that is not in the build.** Answer: the manual's

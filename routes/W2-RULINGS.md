@@ -136,3 +136,45 @@ confirm attribution in the R9 log comes from the Access identity, not the Basic-
 username (master list 6.8), and fix if not; the shared Basic-auth password stays for the
 first clients and is stated in the known-issues list (W5 owns the list; give W5 the line).
 Nothing else new; the stand build is unchanged.
+
+## 20 September 2026, 21:45: SUZANNA'S FOUR ANSWERS (umbrella item 23 closed; quoted from her email to John)
+
+1. Order of use: she types origin and destination, then follows the boxes left to right adding
+   what she knows (carrier, aircraft, frequency); she likes that blank boxes optimise. "The input
+   screen is very intuitive."
+2. Looked up more than once: the row carrying OUTPUT, OPTIMISE and RUN ASSESSMENT. She was unsure
+   what the OUTPUT buttons did and whether they belonged to OPTIMISE or to RUN ASSESSMENT; she
+   suggests a heading ("RUN") over the two action buttons, or moving the three to the right-hand
+   side. She is also unclear what differs between entering a route with everything else blank
+   and pressing RUN ASSESSMENT versus OPTIMISE. "I do not feel this is clear in the UI." The help
+   section she rates highly.
+3. Would not put in front of a visitor: (a) any route where the data is thin and the forecast
+   weaker, because OAG clients pick a route they have already studied and pick the forecast
+   apart; she asks for the known weak scenarios so she can steer round them; (b) Optimise, if it
+   is still slow: she ran it a couple of times and would talk about it rather than demo it. Run
+   Assessment she found impressive for speed.
+4. Expected and could not find: nothing yet.
+Biggest question she expects on the stand: how accurate are the forecasts; she needs an answer.
+She offers a call on Tuesday 22 Sep to walk through how she first used it.
+
+CONTROLLER RULINGS FOR W2 from these answers:
+- Stand mode (scope item 2) takes her point 2 as a requirement: the OUTPUT group is visibly
+  separated from the two actions, the two actions carry a heading, and each action carries a
+  one-line label saying what it does ("Run: the forecast for the schedule you entered";
+  "Optimise: finds the schedule the demand supports"). Nothing that changes the engine.
+- Her speed impression of Optimise predates W1 step 1 (19 Sep). Optimise narrowed now runs in
+  38-55s on the workstation (TIMING-20260920-1910). She is told so by John, not asked again
+  until the 16 Oct trial. Optimise remains the stand demonstration (umbrella decision 6).
+- Her point 3(a) is W5's known-issues list read from the host's side: W2 makes sure the
+  "data is thin for that market" message (pre-mortem 2) is a visible line on the screen, not a
+  silent thin forecast.
+
+## 20 September 2026, 22:15: John on Suzanna's point 2 (Run / Optimise / OUTPUT row)
+
+Run, Optimise and the output choice are the elements every user learns on first use, so the
+row is not a defect. Make it clearer only if it does not make the UI messier; not a stand
+requirement. On the stand nobody uses the tool without Suzanna beside them, so her
+understanding is the mitigation. The ruling above (separate the output group, label the two
+actions) stands as a "do if cheap" item, behind stand mode and the leads table.
+For clients: a clear help guide or a short video on those three controls is a W5 onboarding
+item (John); W2 supplies W5 with the screen once stand mode is built.

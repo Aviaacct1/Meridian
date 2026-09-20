@@ -187,3 +187,41 @@ are available at the meeting and close on 30 November. Website: no prices until 
 more may be added later. Build to them now; nothing waits on a route decision. The carrier
 for Bologna-New York is still item 26.
 W6: post 1 uses the SJC-TPE time-of-day curve as first ruled; the BRS-EWR alternative is dropped. Post 1 and the list email can go to John for approval now.
+
+## 20 September 2026, 19:30: JOHN'S RULINGS ON THE FOUR SENTENCES (answers to W6-MESSAGING-VARIANTS v2)
+
+Brand voice first: every sentence speaks as THE AVIATION OBSERVATORY, not Avia. Avia is named
+only as the affiliate, and only where it carries the credential ("affiliated to Avia Solutions,
+who ..."). Any variant that says "we" meaning Avia, or "Avia has used by hand for 25 years",
+is rejected on that ground alone.
+
+1. Sentence 1: none of A, B, C. The deck the visitor gets is emailed, so the promise is the
+   forecast, not the pack: "create a route forecast while you wait, in under five minutes".
+   John would prefer "in about a minute" if it can be claimed. Controller's ruling on the
+   claim: "under five minutes" is claimable now for Run and Optimise together (Optimise
+   narrowed 40-55s, Run 8-12s warm, TIMING-20260920-1537). "About a minute" is claimable for
+   Run only, and only once W1 step 2b's restart-proof cold numbers are in (r4 probe, this
+   week); until then no copy says a minute. W6 drafts sentence 1 in the Observatory voice on
+   "under five minutes" with a marked alternative on "about a minute" for the controller to
+   release.
+2. Sentence 2.1: A, reworded to "the optimal time to fly it" (John's words).
+3. Sentence 2.2: B, with the pack clause reworded "and a full presentation pack follows the
+   same day".
+4. Sentence 2.3: none as written; they claim Avia's independence in the Observatory's voice.
+   Usable only as the affiliation: "affiliated to Avia Solutions, who ..." with the
+   credential clause. W6 drafts two versions of the clause for John (controller's draft:
+   "... who have forecast routes for airports and airlines, independently, since 2001").
+5. Sentence 3: superseded by PRICING-DECISION-2026.md v1.0 section 7 (the host sentence and the
+   qualifying question). W6 quotes it with its version; the 3A/3B/3C variants are withdrawn.
+6. Sentence 4: unchanged, verbatim.
+
+## 20 September 2026, 19:30: MEETINGS (John)
+
+- The five (Birmingham, Dublin, Vienna, Dallas Fort Worth, Milan SEA) are "a start". Dublin
+  (daa) and SEA are groups, which answers W8's point that a group head office should be on the
+  list. Keep the five; more may be added.
+- Every invitation ASKS THE AIRPORT TO NAME A ROUTE it wants to learn more about, and the
+  Observatory prepares a forecast on it AHEAD of the meeting. This replaces W6's "proposed
+  pre-run route per invitation": the route is theirs to choose, and W6 rewrites the five
+  invitations accordingly (a suggested route may stay as the example if they do not name one).
+- Contacts: still John's; the platform read with the controller is the fallback.
