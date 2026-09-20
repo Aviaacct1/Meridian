@@ -542,6 +542,91 @@ Limited. Umbrella item 31. W8 states a view only; the slot is W5's.
 
 ---
 
+## 6a. Terms architecture, as the input W5 drafts from
+
+W8 does not draft the agreement, which is W5's file under `routes/README.md`. This section is
+the architecture and the commercial terms; W5 writes the clauses and the solicitor reviews them.
+
+Built from two agreements Avia itself signs, read on Egnyte 20 September 2026 at John's
+instruction: the Sabre GLBL Master Agreement of 1 May 2023 with Work Order 1
+(`/Shared/Company Data/02 Knowledge/5 Aviation general/Sabre/Sabre 2023/`), and RDC Aviation's
+Standard Terms of Use with the RDC contract renewal papers
+(`/Shared/Company Data/07 Current Projects/Avia - Benchmark Database Development/Data and
+Analysis/RDC Examples/` and `/Shared/Management/.../RDC Aviation/Contracts/`). **Structure and
+mechanism are taken; no clause text is copied.** The Sabre agreement is marked Sabre Confidential
+on every page and RDC's terms are RDC's copyright.
+
+### The architecture: standard terms plus an Order Form
+
+Sabre signs a Master Agreement once and issues a Work Order per engagement, the Work Order
+superseding the Master only for what it covers. Meridian should do the same.
+
+**Standard Terms**, signed once, carrying everything that does not vary: the licence grant and
+its restrictions, intellectual property, permitted use, confidentiality, warranty and its limits,
+liability and its cap, data protection, renewal and cancellation, escalation, suspension and
+termination, Avia's withdrawal of the service, governing law.
+
+**An Order Form per client**, carrying everything that does vary: the band and the price, the
+schedule of covered airports, the launch schedule as three fixed cash figures, annual or
+quarterly payment, the commencement date, any option purchased, and which named discount applied.
+
+This solves W5's problem directly. The agreement is 17 clauses and four pages with nine open
+slots, and every slot is a commercial variable. Moving them to the Order Form leaves standard
+terms with no holes in them. It is also the expansion mechanism: a client adding airports or
+moving band signs a new Order Form rather than reopening the agreement.
+
+### What to take from Sabre's master agreement
+
+| Mechanism | What Sabre does | What Meridian should do |
+|---|---|---|
+| Annual adjustment | Tied to a named published index, raised not more than once per calendar year, measured from the later of the effective date or the last adjustment | Avia's CPI clause has the index; it needs the frequency limit and the measurement point |
+| Cure periods | 60 days for material breach, 10 days for non-payment | Adopt both |
+| Repeat late payment | Right to terminate if undisputed payment defaults twice in any 12 months | Adopt. It is a better answer to the quarterly-payment risk than anything W8 proposed |
+| Effects of termination | Access ceases, copies erased, an officer of the client certifies compliance in writing | Adopt, and align it with what a client keeps: delivered outputs stay theirs, the right to run stops |
+| Sunset | 12 months' notice to retire a system, with replacement options and a right to let the order lapse | A better-drafted clause 15, and Avia already accepts it from Sabre, so nobody can call it harsh |
+| Marketing assistance | References, press releases, a public quote, imagery, demonstrations, site visits and media interviews, each subject to the customer's approval | This is the launch condition on references and use of name and brand, written properly and more specifically than W5's current draft |
+| Liability cap | The lesser of fees actually paid for the system in question, or a stated sum | Fees paid is the right basis. The agreement currently has no cap |
+| Claims period | One year from accrual | Adopt |
+| Express restrictions | No modifying, merging with other software, sublicensing, leasing, or reverse engineering | Adopt |
+| Change management | A formal change request process with costs and schedule stated before either party is bound | Adopt for option purchases and band changes |
+
+### What to take from RDC, which is the closer analogue
+
+| Mechanism | What RDC does | What Meridian should do |
+|---|---|---|
+| **Cancellation notice** | Rolling subscription, **90 days' written notice** to terminate | **Take 90 days, or 60.** W5 drafts one month. Ninety days from the comparator John named is the annual-renewable equivalent of a minimum term, and a stronger retention mechanism than the continuity discount. Decision 19 |
+| Named users | A unique personal username per user, for the sole purpose of that person's use | Matches the corporate-domain rule and the no-consultant rule |
+| Automated access | No robot, scraper or other automated collection | Adopt, and it also protects the scope limit |
+| **Permitted use** | The client may use the content for its own analysis, including extracts in reports and presentations of its own authorship, provided RDC and the software are recognised as the source | **Almost exactly Meridian's clause.** It is the provenance line in contract form, from a company selling to the same buyers |
+| Onward use | Explicitly forbidden to use the content in any other systems, products or software services without written agreement | Adopt, **and extend it expressly to training or evaluating any machine learning model**, which RDC's wording predates |
+| Third-party data | No warranty that third-party data is accurate or complete, with an undertaking to correct RDC's own errors | The right shape for the OAG and Sabre position, and it sits alongside the accuracy record rather than against it, because the record is about Avia's forecast and not the underlying feeds |
+| Eligibility | Real name, address, credit standing | Adopt the credit-standing test, which matters for quarterly payment |
+| Governing law | English law, non-exclusive jurisdiction of the English courts | Already in clause 17 |
+
+### The commercial terms the Order Form carries
+
+Every one of these is settled or is a numbered decision in section 11, and none of them belongs
+in the standard terms:
+
+the band and the annual price; the schedule of covered airports; the three launch cash figures
+and the 30 November 2026 signature date; the four launch conditions; annual or quarterly payment
+and the payment premium; any option purchased with its price; the named discount that applied and
+the resulting net price against the floor; the continuity discount status; the commencement date
+and the renewal date.
+
+### What W8 has not resolved and W5 must put to the solicitor
+
+1. **What a client keeps on termination.** Delivered packs, decks and workbooks are the client's
+   and stay theirs. The right to run stops, and Sabre's certification mechanic applies to the
+   software itself. The question the solicitor answers is whether a pack already sent to an
+   airline is affected at all, and the answer should plainly be no.
+2. **The onward-use clause reaching machine learning.** Meridian's outputs are exactly the
+   material somebody would train on, and no comparator agreement Avia holds addresses it.
+3. **The liability cap figure**, once the basis is fees paid.
+4. **Whether 90 days or 60 is the cancellation notice**, which is decision 19.
+
+---
+
 ## 7. The host sentence and the one-pager pricing block
 
 **Host sentence**, for W4's manual section 4.4 and any stand conversation. The host's first
@@ -719,6 +804,8 @@ and no consulting before 2027. Analysis of any city pair is never scoped.
 | 15 | Continuity discount of 5% from the second renewal, held while the licence is continuous, lost on a lapse; the continuity price carries no further discount except the group rate; the list stays at £15,000 | |
 | 16 | Against the on-off pattern: the launch price is conditional on continuous licensing, and a lapsed licence pays £2,500 re-onboarding to return. No minimum term, so item 29 stands | |
 | 17 | Multi-year: three years paid annually earns the 5% continuity discount from day one; two years prepaid 7.5%; three years prepaid 12.5%, which is £17 above the floor and is therefore the maximum. A launch client may prepay the three launch years at no further discount | |
-| 18 | Airlines and advisers quoted only, and no airline licence signed before Sabre's written approval | |
+| 18 | The agreement splits into Standard Terms signed once and an Order Form per client carrying the band, covered airports, launch schedule, payment basis and options, on the Sabre master-and-work-order pattern | |
+| 19 | Cancellation notice moves from one month to 90 days, or 60, on the RDC precedent | |
+| 20 | Airlines and advisers quoted only, and no airline licence signed before Sabre's written approval | |
 
 Copyright Avia Solutions Limited. All rights reserved.

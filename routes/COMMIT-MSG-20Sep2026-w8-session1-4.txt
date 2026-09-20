@@ -197,3 +197,35 @@ as a choice rather than imposed. And the continuity discount matters more withou
 a minimum term, because it is then the only thing rewarding a client for staying.
 A third cross-check on 15,000 is recorded: the two comparators closest to
 Meridian's shape sell annual renewable at circa 11,000 and circa 20,000.
+
+Section 6a added at John's instruction: terms architecture and the commercial
+terms, as the input W5 drafts from. W8 has NOT drafted clauses, because the
+agreement is W5's file under README.md; if W8 is to draft the terms themselves
+that is a change to the workstream split for the controller to make.
+
+Built from two agreements Avia itself signs, read on Egnyte: the Sabre GLBL
+Master Agreement of 1 May 2023 with Work Order 1, and RDC Aviation's Standard
+Terms of Use with the contract renewal papers. Structure and mechanism taken, no
+clause text copied; the Sabre agreement is marked Sabre Confidential on every
+page and RDC's terms are RDC's copyright.
+
+The architectural finding: Sabre signs a Master Agreement once and issues a Work
+Order per engagement. Meridian splits the same way into Standard Terms and an
+Order Form per client carrying the band, the schedule of covered airports, the
+launch schedule, the payment basis and any options. That removes all nine of W5's
+open slots from the agreement itself and gives band changes and added airports a
+home that does not reopen the agreement.
+
+The commercial finding: RDC cancels on ninety days' written notice on a rolling
+subscription, against the one month W5 has drafted. From the comparator John
+named himself, selling to the same buyers, ninety days is the annual-renewable
+equivalent of a minimum term.
+
+Eighteen further mechanisms tabulated, including Sabre's twelve-month sunset
+notice as a better clause 15, its marketing-assistance schedule as a properly
+written version of the launch conditions on references and brand, a liability cap
+on fees actually paid where the agreement has none, and RDC's permitted-use
+wording, which is the provenance line in contract form. Four questions left
+expressly for the solicitor, including extending the onward-use restriction to
+training or evaluating a machine learning model, which no comparator agreement
+Avia holds addresses.

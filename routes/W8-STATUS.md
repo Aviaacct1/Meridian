@@ -183,6 +183,36 @@ the licence is annual and renewable with no obligation to renew, and the multi-y
 section 6 is the Sabre shape offered as a choice rather than imposed. No future session reopens
 this.
 
+## Terms work done 20 September, at John's instruction
+
+John asked W8 to draft standard terms, reviewing the Sabre and RDC agreements on Egnyte as
+examples. **W8 has not drafted clauses**, because the agreement is W5's file under README.md. W8
+read both agreements and written the architecture and the commercial terms into section 6a of the
+decision file as the input W5 drafts from. If John wants W8 to draft the terms themselves, that is
+a change to the workstream split and the controller makes it.
+
+Read on Egnyte: the Sabre GLBL Master Agreement of 1 May 2023 with Work Order 1, and RDC
+Aviation's Standard Terms of Use with the RDC contract renewal papers. Structure and mechanism
+taken, no clause text copied; the Sabre agreement is marked Sabre Confidential on every page.
+
+**The finding that matters most is architectural.** Sabre signs a Master Agreement once and issues
+a Work Order per engagement. Meridian should split the same way: Standard Terms with no holes in
+them, and an Order Form per client carrying the band, the covered airports, the launch schedule
+and the payment basis. That removes all nine of W5's open slots from the agreement itself and
+gives the expansion mechanism a home, because a client adding airports signs a new Order Form
+rather than reopening the agreement. Decision 18.
+
+**The finding that matters most commercially is RDC's ninety-day cancellation notice** against
+W5's drafted one month. From the comparator John named himself, on a rolling annual subscription
+to the same buyers, ninety days is the annual-renewable equivalent of a minimum term and a
+stronger retention mechanism than the continuity discount. Decision 19.
+
+Eighteen other mechanisms are tabulated in section 6a, including Sabre's twelve-month sunset
+notice as a better-drafted clause 15, its marketing-assistance schedule as a properly written
+version of the launch conditions on references and brand, its liability cap on fees actually paid
+where the agreement currently has none, and RDC's permitted-use wording, which is the provenance
+line in contract form.
+
 ## For the solicitor, via W5
 
 1. **The licence is annual whichever way it is paid.** Quarterly is a payment method: the full
@@ -196,6 +226,12 @@ this.
    discount drafted as an earned, automatic term that resets on a lapse, not as a negotiated one.
 5. **No consultant holds a seat**, as an express restriction on use.
 6. **A schedule of covered airports**, with the scope clause.
+7. **The onward-use clause must reach training or evaluating a machine learning model.** Meridian's
+   outputs are exactly the material somebody would train on, and no comparator agreement Avia
+   holds addresses it.
+8. **What a client keeps on termination**: delivered packs, decks and workbooks stay theirs and a
+   pack already sent to an airline is unaffected; the right to run stops.
+9. **A liability cap on fees actually paid**, where the agreement currently has none.
 
 ## Conflicts seen
 
