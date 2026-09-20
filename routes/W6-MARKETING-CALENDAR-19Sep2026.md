@@ -1,6 +1,8 @@
 # W6: the marketing calendar to Routes, drafted for approval
 
-Author: Avia Solutions. Version 1, 19 September 2026. Every piece below is a draft for Jol's
+Author: Avia Solutions. Version 2, 20 September 2026: item 28 closed, so post 1 carries the
+SJC-TPE curve as first ruled; the pack promise is "the same day" until the 11-12 October
+trial proves a send. Every piece below is a draft for Jol's
 copy pass and John's approval. W6 publishes nothing, sends nothing and posts nothing. No
 piece mentions any competitor, directly or by implication. Product naming throughout:
 Meridian, published by The Aviation Observatory. Avia Cortex appears nowhere.
@@ -24,27 +26,17 @@ John answers umbrella item 6 and the commercial sign-off lands.
 
 ---
 
-## The chart on post 1: a conflict for John to settle
+## The chart on post 1: ruled
 
-The ruling names the SJC-TPE time-of-day curve, produced by the tool on the current build,
-with the unit, the period and the word forecast on the image and a source line on it.
+John closed umbrella item 28 on 20 September. The worked routes stay San Jose to Taipei and
+Bologna to New York, and more may be added later. Post 1 therefore carries the SJC-TPE
+time-of-day curve as first ruled, and the BRS-EWR alternative W6 proposed is dropped. Nothing
+in the calendar waits on a route decision any longer.
 
-The conflict: San Jose is an Avia client and the SJC-TPE work was done for them, so the
-curve comes out of a client engagement. John's standing rule for demo and marketing material
-is that Avia never uses an airport it has worked for as the example, because past clients
-gave targets under commercial confidence and a public demonstration on their airport carries
-a perceived breach risk, and that the example pair should be one European and one US airport
-Avia has never worked with.
-
-W6 proposal: use **Bristol to Newark** instead. It is already run on the current build, cold,
-as a never-run pair on 19 September (umbrella Status block, commit 1012c29, 9.0 seconds), it
-is a European and US pair, and it belongs to no engagement. John confirms Bristol is not an
-Avia client before it goes. If John rules for SJC-TPE anyway, the post carries no airline
-name, no figure that identifies anyone's pitch, and the chart shows the shape of the curve
-with the axis labelled in passengers and the period stated.
-
-Either way the image comes from the tool on the current build, never from research or from
-memory, and it carries: the unit, the period, the word forecast, and the source line.
+Two things still hold on the image itself. It comes from the tool on the current build, never
+from research or memory. It states the unit, the period and the word forecast on the image,
+with the source line on it. The post names no airline and carries no figure that identifies
+anyone's pitch.
 
 ---
 
@@ -59,11 +51,11 @@ memory, and it carries: the unit, the period, the word forecast, and the source 
 > forecasts what a new route will carry. It also forecasts the best time of day to fly it,
 > which is the part most route cases leave to judgement.
 >
-> The chart is one of ours. It shows the forecast demand by departure time on [ROUTE]. The
-> same curve comes out for any route you bring us, in seconds, on the stand.
+> The chart is one of ours. It shows the forecast demand by departure time on San Jose to
+> Taipei. The same curve comes out for any route you bring us, in seconds, on the stand.
 >
 > You will not leave with a brochure. You will leave with the run you watched, and the
-> written pack follows to your inbox within 30 minutes.
+> written pack follows to your inbox the same day.
 >
 > Calibrated leads are within 20% of the outcome 89% of the time and within 10% 82% of the
 > time, on 2,915 real launches; blind results are reported as portfolios only, never as a
@@ -90,8 +82,8 @@ From John's Avia address. Plain text, no images, no tracking, one link.
 > We have built the route forecasting method we have run by hand for 25 years into a tool,
 > Meridian, published by The Aviation Observatory. It forecasts what a new route will carry
 > and the departure time that carries the most of it. On the stand we will run it on a route
-> of yours while you watch, and send you the written pack, with your numbers in it, within
-> half an hour.
+> of yours while you watch, and send you the written pack, with your numbers in it, the same
+> day.
 >
 > Ten minutes is enough to see it. Twenty is enough to argue with it, which is the more
 > useful conversation. Reply with a day and a time and I will hold a slot, or tell me the
@@ -104,7 +96,10 @@ From John's Avia address. Plain text, no images, no tracking, one link.
 > Managing Director, Avia Solutions
 
 Notes: the email goes from aviasolutions.com, not from the Observatory sender; the
-Observatory sender carries the packs only. [SITE URL] resolves from the website launch plan.
+Observatory sender carries the packs only. The launch offer is deliberately absent: it is
+offered in writing to qualified buyers at the five meetings and to anyone who asks on the
+stand, and a broadcast to the whole contact list is neither. [SITE URL] resolves from the
+website launch plan.
 If the site is not live when this goes, the line comes out and the reply-to-book sentence
 carries the whole call to action.
 

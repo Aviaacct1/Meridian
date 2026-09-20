@@ -1,6 +1,8 @@
 # W6: the five meeting invitations, and the meetings logistics
 
-Author: Avia Solutions. Version 1, 19 September 2026. Drafts in John's voice for Jol's copy
+Author: Avia Solutions. Version 2, 20 September 2026, after the rulings of 20 September:
+order-ready moves to 21 October, and the launch offer is decided, so each invitation now says
+that terms are available at the meeting and close on 30 November. Drafts in John's voice for Jol's copy
 pass and John's approval. John sends them, 26 to 29 September, through the Routes meeting
 system or by email. W6 sends nothing.
 
@@ -41,7 +43,9 @@ which is the point of the buyer test.
 > twenty minutes is your route on the screen and not a product tour, and we will change a
 > variable or two in front of you and run it again. You keep the written pack with the
 > numbers in it. Tell me a better route for us to run if JFK is not the one you are working
-> on, and we will run that instead. Which of the three days suits you?
+> on, and we will run that instead. If you have budget this year, I can put our launch terms in
+> front of you at the meeting: they close on 30 November, and an agreement and onboarding
+> are ready immediately after the show. Which of the three days suits you?
 
 ## 2. Dublin Airport (6 delegates, exhibiting)
 
@@ -58,7 +62,9 @@ read 19 September 2026). Confirm the unserved status before sending.
 > of it, and it does so from measured data with a source line on every figure. We will
 > pre-run Dublin to Tokyo Haneda before we meet so that the session is your route, not ours,
 > and we will show you the working rather than the headline. You keep the pack. If Haneda is
-> not the case you are pitching this year, name the route and we will run that one. Which
+> not the case you are pitching this year, name the route and we will run that one. If you have budget this year, I can put our launch terms in
+> front of you at the meeting: they close on 30 November, and an agreement and onboarding
+> are ready immediately after the show. Which
 > day works for you?
 
 ## 3. Vienna Airport (7 delegates, exhibiting AC12)
@@ -76,7 +82,9 @@ Asia", read 19 September 2026).
 > the meeting, so you will see your own market rather than a demonstration case, and we will
 > run a second version live with whatever assumption you want changed. You keep the written
 > pack afterwards. If southern Asia is not where your current case sits, tell me the route
-> and we will run that. Would Wednesday or Thursday suit you better?
+> and we will run that. If you have budget this year, I can put our launch terms in
+> front of you at the meeting: they close on 30 November, and an agreement and onboarding
+> are ready immediately after the show. Would Wednesday or Thursday suit you better?
 
 ## 4. Dallas Fort Worth (9 delegates, exhibiting)
 
@@ -95,7 +103,9 @@ Birmingham's question of DFW instead: let them name it in the reply. Marked slot
 > schedules and bookings, with the source stated on every figure. Rather than run a case of
 > ours at you, tell me the route your team is working hardest on for next year and we will
 > have it forecast before we sit down, with the pack written up for you to keep. If it helps,
-> we will bring [ROUTE] as the worked example. Which of the three days suits you?
+> we will bring [ROUTE] as the worked example. If you have budget this year, I can put our launch terms in
+> front of you at the meeting: they close on 30 November, and an agreement and onboarding
+> are ready immediately after the show. Which of the three days suits you?
 
 ## 5. Milan SEA (7 delegates, plus a second SEA entry, exhibiting)
 
@@ -114,7 +124,9 @@ Bergamo, which is a different organisation from SEA, so this is a first meeting.
 > from measured data, with every figure sourced on the page. We will pre-run Milan Malpensa
 > to Osaka Kansai before the meeting so you see your own market, and we will rerun it live
 > with your assumptions in it. You keep the pack. Name a different route if Kansai is not
-> the one on your panel this year, and we will run yours instead. Which day works?
+> the one on your panel this year, and we will run yours instead. If you have budget this year, I can put our launch terms in
+> front of you at the meeting: they close on 30 November, and an agreement and onboarding
+> are ready immediately after the show. Which day works?
 
 ---
 
@@ -145,14 +157,21 @@ without a slot.
 | Route pre-run and held in cache | W1 (pre-warm by airport) | 19 Oct | Pre-warm script is W1's next action, due 26 Sep |
 | Pack printed, one per attendee plus two | W3 (PDF render) | 16 Oct | PDF render not started, unblocked 19 Sep, due 8 Oct |
 | Optimise live on the meeting route | W1 and W2 | 19 Oct | Optimise at 35 to 65 seconds on the current build |
-| One-pager left behind | John, W6 drafts | 16 Oct | BLOCKED: no offer numbers (umbrella item 6) |
+| One-pager left behind, carrying the launch offer in writing | W5 owns it, John approves | 16 Oct | Offer ruled 20 Sep: 50, 75, 85 then list, signing closes 30 Nov. The year-1 pounds go in writing here and nowhere public. Places, overage rate, payment terms, thresholds and entity are John's by 3 Oct |
 | Lead written to the store the same day | W5 | 21 Oct | Leads table is W2 and W5's build item |
 
 **Pack list to carry, per meeting:** the printed pack for their route, John's card with the
-site URL on it, and the one-pager once the numbers land. No price is spoken in the room
-beyond "on request, limited places" until John rules item 6.
+site URL on it, and the one-pager, which carries the launch offer in writing. Spoken in the
+room: the steps, 50% of list in year one, 75% in year two, 85% in year three, then list, with
+no obligation to renew, and signing closes on 30 November. The list itself is not published
+until November, so the pounds are handed over in writing rather than said across a table.
+
+**Order-ready is 21 October, not 7 November.** John does not expect a signature at Routes, but
+Avia must not be the reason a client waits: the agreement, the one-pager, the known-issues
+list and the onboarding steps all exist by the 21st, so an airport with budget this year can
+sign straight after the show and be running in November.
 
 **After each meeting:** the pack goes to every attendee by email from the Observatory sender
-within 30 minutes, the lead is typed into the store the same evening, and the follow-up is
+the same day, the lead is typed into the store the same evening, and the follow-up is
 booked inside 48 hours. That is the commercial plan's stand-to-signature sequence applied to a meeting rather
 than a walk-up, and it is the same discipline.

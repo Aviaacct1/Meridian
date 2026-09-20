@@ -1,6 +1,7 @@
 # W6 to John and Jol: the four sentences, variants to choose from
 
-Author: Avia Solutions. Version 1, 19 September 2026. Drafted by W6 from the controller's
+Author: Avia Solutions. Version 2, 20 September 2026, rewritten after the rulings of 20
+September: order-ready moves to 21 October, and sentence 3 becomes the launch offer. Drafted by W6 from the controller's
 draft in ROUTES-CONTROLLER-QUEUE-19Sep2026.md section B and the umbrella section 4.
 Nothing here is published. John settles these by 25 September; the invitations follow.
 
@@ -45,12 +46,16 @@ colleague.
 
 ### 2.2 The pack
 
-**A.** A researched pack with your numbers in your inbox within 30 minutes.
-**B.** You leave with the run you watched, and the written pack follows within 30 minutes.
-**C.** Your numbers, researched and written up, before you reach the far end of the hall.
+**A.** A researched pack with your numbers in it, in your inbox the same day.
+**B.** You leave with the run you watched, and the written pack follows the same day.
+**C.** Your numbers, researched and written up, in your inbox before the hall closes.
 
 W6 view: B. It ties the pack to the run the visitor saw, which is the one-run rule, and it
-survives a slow queue better than A because it promises the run first.
+promises the run first, so a slow queue does not break the promise.
+
+The wording is "the same day" on every surface until the sender is out of test mode and one
+pack has been sent and received over a hotspot at the 11-12 October trial. "Within 30 minutes"
+is only used after that, and the controller ruled it, not W6.
 
 ### 2.3 Independent
 
@@ -62,28 +67,40 @@ W6 view: B. It carries the 2001 date, which does the work that "senior" alone do
 
 ---
 
-## Sentence 3: the offer
+## Sentence 3: the launch offer
 
-Structure only. The numbers are John's and are not set: umbrella Waiting on John item 6
-(year-1 discount, number of places, expiry) and item 7 (tier shape). The published grid
-wording is fixed by the rulings and is reproduced here without change.
+John ruled the offer on 20 September. It is no longer a price sentence with the numbers
+missing: it is the launch offer, and it is what a buyer signs. Year 1 at 50% of list, year 2
+at 75%, year 3 at 85%, then list, with no obligation to renew. List is the banded standard
+price by airport size, which is not published until November, so the sentence carries the
+steps and not the pounds. Signing closes on 30 November 2026.
 
-**3A.** Meridian is published at £15,000, £20,000 or £25,000 a year by airport size, three
-seats, 100 presentations included, quoted and invoiced; [N] launch places this year carry
-[Y]% off year one, in writing, expiring [DATE].
+**3A, the plain one.** Launch clients who sign by 30 November pay half the standard licence in
+year one, 75% of it in year two and 85% in year three, then the published list, with no
+obligation to renew.
 
-**3B.** The price is on the page: £15,000, £20,000 or £25,000 a year by airport size, three
-seats, 100 presentations included. [N] launch places this year carry [Y]% off year one, in
-writing, until [DATE].
+**3B, the one that states the bargain.** Sign by 30 November and year one is half of list,
+year two 75% and year three 85%: in return you take the early bugs with us on a written
+known-issues list, give us a reference when the work earns one, and let us say who you are.
 
-Hold condition, settled by John on 19 September: the grid is held until November. Sentence 3
-is therefore not a published sentence before Routes. It is what Suzanna says out loud when
-asked, in the published wording and no other, and what the follow-up one-pager carries in
-writing within 48 hours. It appears on no post, no listing, no invitation and no page before
-November. She says nothing about an overage rate or a discount, because neither exists.
-Variant 3A is the spoken form. Variant 3B becomes the page wording in November, once the
-commercial sign-off, the overage rate and the launch offer all exist, and it still needs [N],
-[Y] and [DATE] from umbrella items 6 and 7 before it can be written out in full.
+**3C, the one that answers the objection.** The launch discount steps down rather than
+disappearing at renewal: 50% of list in year one, 75% in year two, 85% in year three, then
+list, for airports that sign by 30 November 2026.
+
+W6 view: 3A for the host and the invitation, because it is the shortest true statement of the
+offer. 3B on the one-pager and in the meeting, because the conditions belong next to the
+discount, not in a later paragraph.
+
+What the sentence does NOT carry, and why. The pounds: year one is £7,500, £10,000 or £12,500
+by airport size, fixed in pounds at signing, and those go in writing on the one-pager and in
+the agreement, to a qualified buyer, never on a post, a page or a listing. The list itself
+stays off the website until November. The add-on rule, 50% off in year one and 75% of list in
+year two for the Global Forecast, Design Day and a priced route study, belongs on the
+one-pager rather than in a sentence this short.
+
+Slots still open, John's by 3 October (umbrella item 6): the number of launch places, the
+overage rate, payment terms, the size thresholds, and which entity contracts. The sentence
+works without them; the agreement does not.
 
 ---
 
@@ -102,10 +119,9 @@ not W6's.
 ## What W6 changed from the controller's draft, and why
 
 1. "in seconds" moved off Optimise. The measured numbers support it for Run only.
-2. The offer sentence now quotes the published grid as the rulings state it, rather than a
-   soft figure. The soft-figure approach in the commercial plan section 5 predates the
-   published grid in the pricing note. John should say which of the two governs the stand
-   answer: they are not the same position, and the host cannot hold both.
+2. The offer sentence is now the launch offer of 20 September, which supersedes both the soft
+   figure in the commercial plan section 5 and the published grid in the pricing note. The
+   host states the steps, never the list, and the pounds travel in writing.
 3. Nothing about any competitor appears in any variant, including by implication. "No house
    view" and "no network position" describe Avia, not anyone else.
 4. Product naming throughout: Meridian, published by The Aviation Observatory. Avia Cortex

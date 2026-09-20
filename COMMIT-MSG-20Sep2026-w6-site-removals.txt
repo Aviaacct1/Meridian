@@ -1,0 +1,36 @@
+Competitor out of the build, prices held until November, accuracy line on the Meridian page
+
+Routes programme, W6, to the rulings of 19 and 20 September: nothing about any competitor on
+any surface, no prices on the site until November 2026, and the accuracy line carried verbatim.
+
+COMPETITOR, nine changes
+  src/compare/meridian-vs-paxup/ moved to withheld/compare/, outside the Eleventy input, so it
+  renders nowhere and no URL for it enters the sitemap. The file is intact if the content is
+  ever wanted. The name also came out of the header navigation and the Products current-page
+  test, the footer, the insights index card, the insights article in three places (the lede,
+  the FAQ JSON-LD answer and the closing paragraph), the products FAQ row and the Meridian
+  page's compare button. The legal page's third-party marks line keeps Boeing, Airbus, the CMO
+  and the GMF, which are the forecasts the Global Forecast is scored against on its own page,
+  and drops the competitor alone.
+
+PRICES, eight places across six files
+  Every figure is out of src/_data/site.json, the pricing page (meta description, two FAQ
+  answers in JSON-LD, the lede, the summary and four price tiles), the Meridian page (meta
+  description, three Offer entries in the SoftwareApplication JSON-LD, the priced FAQ answer,
+  the priced prose and the trial paragraph), the Global Forecast page (meta description, the
+  Offer, the licence sentence and the trial paragraph), the products hero stat and the home
+  page's licence sentence. The pricing page keeps its structure, its tiers and the licence
+  shape, and states that standard prices are published in November 2026 and are quoted in
+  writing until then. The Meridian page's own description front matter carried the price range
+  and no document had recorded it; it is the eighth place and it is what a search result
+  prints.
+
+ACCURACY
+  The ruled sentence is now on the Meridian page, verbatim, under "How accurate is it?", with
+  no elaboration, because what the figures describe is still open.
+
+PROVEN BEFORE COMMIT
+  Two builds, 24 pages each. Production: no competitor name anywhere, no price figure
+  anywhere, no comparison URL in the sitemap, the accuracy line present, no noindex, robots
+  allowing with the sitemap line. Staging: noindex on all pages, Disallow, and the
+  X-Robots-Tag header. No page content changed beyond the removals and the one added sentence.

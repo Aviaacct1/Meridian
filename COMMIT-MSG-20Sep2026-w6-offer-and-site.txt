@@ -1,0 +1,30 @@
+W6 session 2: the launch offer in the messaging and invitations, order-ready 21 October
+
+Follows W6-RULINGS v2 and the four rulings of 20 September.
+
+routes/W6-MESSAGING-VARIANTS-19Sep2026.md (v2)
+  Sentence 3 is rebuilt as the launch offer: three variants carrying the steps, 50% of list in
+  year one, 75% in year two, 85% in year three, then list, no obligation to renew, signing
+  closes 30 November 2026. The variants carry no pounds: the year-1 figures and the list go in
+  writing on the one-pager and in the agreement, to a qualified buyer, and the list stays off
+  the website until November. Sub-message 2.2 moves to "the pack follows the same day" until
+  the 11-12 October trial proves a send, per the controller's pack-promise ruling.
+
+routes/W6-INVITATIONS-AND-MEETINGS-19Sep2026.md (v2)
+  All five invitations now say launch terms can be put in front of them at the meeting, that
+  they close on 30 November, and that an agreement and onboarding are ready immediately after
+  the show. Meetings logistics updated for order-ready on 21 October, with the one-pager row
+  rewritten around the ruled offer and the spoken-versus-written split stated.
+
+routes/W6-MARKETING-CALENDAR-19Sep2026.md (v2)
+  Item 28 closed, so post 1 carries the SJC-TPE time-of-day curve as first ruled and the
+  BRS-EWR alternative is dropped; the conflict section is replaced by the ruling. Pack promise
+  corrected to the same day in the post and the list email. The launch offer is deliberately
+  absent from both: it goes in writing to qualified buyers, and a broadcast to the contact
+  list is not that.
+
+routes/W6-STATUS.md (v6)
+  Session 2 status in the shape the controller asked for: the push confirmed with the remote
+  and HEAD, the competitor and price removals as file lists with what changed in each, the
+  invitation updates, three conflicts seen, and the risk that order-ready moving to 21 October
+  removes seventeen days from the agreement work that the offer is signed on.
