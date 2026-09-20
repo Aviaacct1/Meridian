@@ -4,14 +4,33 @@ Version 2, 20 September 2026. Written by the W8 chat for the programme controlle
 each session, never appended. `routes/README.md` v1 and `routes/W8-RULINGS.md` v1 read and acted
 on. W8 writes no code and edits no other workstream's file.
 
-Deliverable state: `routes/PRICING-DECISION-2026.md` is at **v0.6 DRAFT**, and ALL TWENTY
-DECISIONS ARE ANSWERED (John, 20 September 2026, section 11). The file becomes FINAL when John
-writes "final" in the chat; three things remain open and none of them blocks 3 October.
+**DELIVERABLE COMPLETE. `routes/PRICING-DECISION-2026.md` is v1.0 FINAL, 20 September 2026.**
+All twenty decisions answered by John the same day, the last two prices settled, and John ruled
+the position final for now. The controller points umbrella item 37 at the file; the four rulings
+files carry a pointer only; nothing else in the programme states a price except by quoting it
+with its version. Target was 26 September and the hard deadline 3 October.
 
-Original note on v0.5, which replaces
-everything before it. The axis is the number of airports the licence covers, in three bands.
-Eight things are settled and listed at the head of its section 11; fourteen decisions remain
-open in the table below them. Decision 1, the three bands, is the one every other chat waits on.
+## What each workstream changes, one line each
+
+- **W3**: the pitch page and stand deck carry a pricing line that quotes the file and its version,
+  nothing more. No change to the demo flow.
+- **W4**: section 4.4 takes the host sentence from section 7 of the file, the qualifying question
+  "is route development done here, or at group?", the silence rule to 3 October, and "the same
+  day" rather than any minutes figure for the pack. The host also needs the answer to why the
+  catchment costs more than a study, and needs to know a group delegation may be the buyer.
+- **W5**: the size-banded table goes in full. The agreement splits into Standard Terms and an
+  Order Form. Cancellation moves to 90 days. Clause 2's three seats becomes the corporate-domain
+  term with no count plus the no-consultant restriction; clause 6's pack cap becomes the fair-use
+  wording. Slot 2 and agreement slot 7 close with "none" because there is no limit on launch
+  places, and slot 3 closes with no figure because there is no size axis. The one-pager leads with
+  the licence, not the study, and carries the two spend questions on the feedback card.
+- **W6**: prices stay unpublished until November, the group bands are never published, and the
+  seven files carrying the £15,000 / £20,000 / £25,000 size grid are rewritten before the November
+  publication rather than before Routes.
+- **Controller**: repoint umbrella item 37; close item 6 (50%, no places, 30 November) and item 35
+  (£2,500 study); resolve item 29's internal contradiction in favour of fixed cash; and note that
+  the five proposed meetings carry no group head office when the largest delegations at the show
+  are group teams.
 
 ## The twenty decisions, answered 20 September 2026
 
@@ -38,13 +57,16 @@ Order Form, and 90 days' cancellation notice.
 
 ## What remains open
 
-1. **One confirmation.** Decision 7 was given as £3,500 and decision 4 was answered with a
-   reference to £2,500. W8 has taken them in the order asked: catchment £3,500, route study
-   £3,500. If John meant them the other way round they swap, and W8 has filed nothing that
-   assumes otherwise.
-2. **The Knock test result.** John runs it in a week or two and reports back. It informs a
+1. **The Knock test result.** John runs it in a week or two and reports back. It informs a
    possible small-airport price in November and blocks nothing before 3 October.
-3. **The airline licence position with Sabre**, John's to resolve, blocking any airline pricing.
+2. **The Sabre licence change**, only if Avia ever wants to sell to airlines. John's position, 20
+   September: the current licence does not permit selling to airlines and that is the only
+   restriction; it can be changed, but not before there is a product selling to airports.
+
+Two notes W8 owes the programme alongside the final prices, both in the decision file: the
+catchment at £3,500 now costs more than a £2,500 route study and the honest answer should be
+ready before a buyer asks; and the multi-year commitment is the tool that gets a launch client
+through the year-4 step, taking the rise from 15% to 8.9%, which answers W5's watchpoint 1.
 
 ## Earlier record of decisions John gave W8 during the session
 

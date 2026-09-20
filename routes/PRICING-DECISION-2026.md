@@ -1,11 +1,11 @@
 # Meridian: pricing and the commercial offer
 
-Version 0.6 - DRAFT - 20 September 2026 - Avia Solutions - Commercial in Confidence
+Version 1.0 - FINAL - 20 September 2026 - Avia Solutions - Commercial in Confidence
 
 Written by W8. This is the only file in the Routes 2026 programme that states a price. Every
-other document quotes this file and its version. Status is DRAFT until John writes "final" in
-the W8 chat, at which point it becomes FINAL with that date and the controller points umbrella
-item 37 at it.
+other document quotes this file and its version. **STATUS: FINAL, 20 September 2026.** John settled the last two prices and ruled the position
+final for now. The controller now points umbrella item 37 at this file and the four rulings files
+carry a pointer only. Any change from here is a new version with John's ruling against its date.
 
 Target 26 September 2026. Hard deadline 3 October 2026, when W5 sends the agreement to the
 solicitor and the one-pager goes to print.
@@ -280,7 +280,7 @@ Offered at 50% of list if adopted in year 1 and 75% in year 2 (John, 20 Septembe
 
 | Option | Price | Basis | Source |
 |---|---|---|---|
-| Meridian route study, one route | £3,500 | per route, invoiced on delivery, no licence, delivered within five working days; on the price list, NOT led on | John, 20 Sep 2026; umbrella item 35 |
+| Meridian route study, one route | £2,500 | per route, invoiced on delivery, no licence, delivered within five working days; on the price list, NOT led on | John, 20 Sep 2026; umbrella item 35 |
 | Client's own catchment loaded | £3,500 | one-off per airport, one price, no banding | John, 20 Sep 2026 |
 | Client template mapping | £5,000 | one-off, bespoke, with the fit caveat | John, 20 Sep, item 37 |
 | Cortex API | from £15,000 a year | on request, when available | `PRICING_AND_SCOPE_07Aug2026.md` |
@@ -289,16 +289,20 @@ Offered at 50% of list if adopted in year 1 and 75% in year 2 (John, 20 Septembe
 **The route study is on the price list and is not what the one-pager leads with** (John, 20
 September 2026: he is not sure who would take it). W8 had recommended it lead and has withdrawn
 that, because John's doubt exposes something W8 under-weighted. Knock already buys a single
-forecast from Avia at circa £5,000. A £3,500 machine-produced study does not open a new market
-with that buyer; it undercuts Avia's own consultancy by £1,500 for work Avia was already winning.
+forecast from Avia at circa £5,000. A £2,500 machine-produced study does not open a new market
+with that buyer; it halves the price of work Avia was already winning.
 The airports that genuinely cannot buy a licence are largely the ones already buying the
 occasional study at the full price.
 
 So **the one-pager leads with the licence**, and the study is offered in conversation to the
 buyer who cannot commit to one. That catches the airport which would otherwise buy nothing
-without handing a 30% discount to the airports that would have paid £5,000. It remains the
+without halving the price for the airports that would have paid £5,000. It remains the
 direct answer to the cash change that moved order-ready to 21 October, and it remains the honest
 answer to the small airport that pitches two or three routes a year.
+
+**Six studies is £15,000, exactly the single-airport licence, so past six routes a year the
+licence is cheaper than buying studies.** That is the sentence for the stand. Under the launch
+offer it is sharper: three studies is £7,500, which is the whole licence in year one.
 
 **The catchment load is sold as consistency and credibility, never as accuracy** (John, 20
 September 2026: the accuracy record rests on the raw model and an uploaded catchment does not
@@ -394,7 +398,7 @@ than a software one. Four responses, in order of effort:
 4. **The honest limit, stated rather than papered over.** A launch client who skips year two
    saves £11,600 and pays circa £4,900 more to return, so the incentives still favour a genuinely
    biennial buyer. That is a signal, not a hole: **a client who wants the on-off pattern has
-   bought the wrong product.** An airport on a two-year cycle should buy route studies at £3,500.
+   bought the wrong product.** An airport on a two-year cycle should buy route studies at £2,500.
    Keeping the licence for continuous route development is what makes the revenue actually
    recurring, so the answer to that buyer is to put the study in front of them first, which the
    one-pager already does.
@@ -660,8 +664,8 @@ Break-even against the £526,121 fixed base
 
 **The whole business, not the licence alone.** At 25% penetration the licence earns £1,455,000;
 the long-term forecast product at £15,000 to half of those clients adds £675,000; route studies
-at £3,500 to sixty airports that never licence, buying two a year, adds £420,000. That is circa
-£2.5m, and circa £2.9m at 30%.
+at £2,500 to sixty airports that never licence, buying two a year, adds £300,000. That is circa
+£2.4m, and circa £2.8m at 30%.
 
 **Why the price is not the thing to optimise.** Raising the whole ladder 20%, to £18,000 and
 £36,000, earns £1,746,000 at 25% penetration. If that rise costs five points of penetration, it
@@ -756,9 +760,9 @@ are recorded here with his answer, and none is re-asked.
 | # | Decision | John's answer |
 |---|---|---|
 | 3 | Fair use acts at 250 researched packs a licence year, a telephone call and never a block or an invoice | YES |
-| 7 | Client's own catchment loaded, one price, no banding | YES at **£3,500**, not £2,500, restoring the original 7 August figure |
-| 4 | Meridian route study at £3,500 a route, leading the one-pager | **On the price list, but NOT led on.** John is not sure who would take it. The one-pager leads with the licence |
-| 20 | Airlines and advisers quoted only, no airline licence before Sabre's written approval | **Airlines are BLOCKED, not quoted**: there is a licence issue to work through first, which is John's action. Advisers and other non-airport buyers are price on request |
+| 7 | Client's own catchment loaded, one price, no banding | **£3,500**, confirmed 20 Sep, restoring the original 7 August figure |
+| 4 | Meridian route study, per route, leading the one-pager | **£2,500** for a single forecast and presentation, confirmed 20 Sep. On the price list but NOT led on, and the one-pager leads with the licence |
+| 20 | Airlines and advisers quoted only, no airline licence before Sabre's written approval | **Avia's current Sabre licence does not permit selling to airlines, and that is the only restriction** (John, 20 Sep). It can be changed, but that discussion waits until there is a product selling to airports. So no airline is sold, quoted or priced anywhere. Advisers and other non-airport buyers are price on request |
 
 ### Proof and evidence
 
@@ -785,14 +789,26 @@ to hand every client a reason to leave in any year the numbers moved the wrong w
 publication does the commercial work either way, as the thing Avia points at when a renewal price
 rises. It is a practice, not a promise.
 
-### What remains genuinely open
+### Two notes W8 owes John alongside the final prices
 
-1. **One confirmation from John.** Decision 7 was given as £3,500 and decision 4 was answered with
-   a reference to £2,500. W8 has taken them in the order asked, so the catchment is £3,500 and the
-   route study stays £3,500. If John meant them the other way round, they swap.
-2. **The Knock test result**, which John will report. It informs a possible small-airport price in
-   November and blocks nothing before 3 October.
-3. **The airline licence position with Sabre**, which is John's to resolve and which blocks any
-   airline pricing at all.
+**The catchment load now costs more than a whole route study**, £3,500 against £2,500, and a
+buyer will ask why loading their own data costs more than a forecast and a presentation. The
+answer should be given before it is asked: the catchment is one to three days of Avia's people
+doing bespoke work on the client's own survey or mobility data, and the study is machine
+produced. The prices are right; the question needs an answer ready.
+
+**The multi-year commitment is what gets a launch client through the year-4 step**, which is W5's
+watchpoint 1. A single-airport launch client pays £13,550 in year 3. On list with the continuity
+discount, year 4 is £15,571, a rise of 15%. Committing to three more years at 10% makes year 4
+£14,752, a rise of 8.9%. The renewal conversation in year 4 therefore has a tool in it, and W5
+and W4 should both know the multi-year schedule is the save.
+
+### What remains open after the final prices
+1. **The Knock test result**, which John runs in a week or two and reports. It informs a possible
+   small-airport price in November and blocks nothing before 3 October.
+2. **The Sabre licence change**, if Avia ever wants to sell to airlines. John's position, 20
+   September: the current licence does not permit it and that is the only restriction; it can be
+   changed, but not before there is a product selling to airports. Nothing in the 2026 or 2027
+   material depends on it.
 
 Copyright Avia Solutions Limited. All rights reserved.

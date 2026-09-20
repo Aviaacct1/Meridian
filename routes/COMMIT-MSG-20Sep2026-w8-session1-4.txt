@@ -253,3 +253,24 @@ on 13,500 in year one breaches nothing. Cancellation notice is 90 days.
 Three things remain open and none blocks 3 October: one confirmation on whether
 decisions 7 and 4 were answered in the order asked, the Knock test result, and
 the Sabre airline licence position.
+
+FINAL. John settled the last two prices on 20 September and ruled the position
+final for now: the catchment load is 3,500 and a single forecast and presentation
+is 2,500. The decision file goes to v1.0 FINAL. Six studies is 15,000, exactly
+the single-airport licence, so past six routes a year the licence is cheaper, and
+under the launch offer three studies is the whole first year.
+
+The Sabre position is recorded precisely as John put it: Avia's current licence
+does not permit selling to airlines and that is the only restriction. It can be
+changed, but that discussion waits until there is a product selling to airports.
+No airline is sold, quoted or priced anywhere.
+
+Two notes added for the programme. The catchment at 3,500 now costs more than a
+2,500 route study, and the honest answer, being that the catchment is one to
+three days of Avia's people on the client's own data while the study is machine
+produced, should be ready before a buyer asks. And the multi-year commitment is
+the tool that gets a launch client through the year-4 step, taking the rise from
+15 per cent to 8.9 per cent, which answers W5's watchpoint 1.
+
+W8-STATUS.md v2 now opens with the deliverable complete and one line per
+workstream for what each has to change, for the controller's sweep.
