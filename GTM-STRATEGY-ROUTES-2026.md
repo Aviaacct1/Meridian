@@ -16,7 +16,7 @@ The detail lives in two companions and this document points at them rather than 
 ## Status
 
 Rewritten every session by the programme controller; John reads this on a phone. As at
-Saturday 20 September 2026, 00:30, session 1 closed. John pauses until Postmark approval
+Saturday 19 September 2026, 22:45, session 1 closed; sweep at 22:45 found no movement. John pauses until Postmark approval
 (expected Monday 22 Sep). Repo `Aviaacct1/Meridian` HEAD `f5a5b4b`; `Aviaacct1/tao-website`
 HEAD `2df95ee`. Every workstream's own file is `routes\Wn-STATUS.md`; its instructions are
 `routes\Wn-RULINGS.md`; `routes\README.md` says how they work together.
@@ -31,11 +31,10 @@ HEAD `2df95ee`. Every workstream's own file is `routes\Wn-STATUS.md`; its instru
 | W6 Messaging, marketing, website, meetings | In progress (v5) | Messaging variants, five invitations, calendar, post 1 drafted; tao-website pushed (2df95ee); launch switch proven; pricing held to November (John) | Launch-switch commit; Pages project; competitor and prices out of 22 pages; sentences settled 25 Sep; invitations 26-29 Sep | W6 chat / John | 25-29 Sep |
 | W7 Rehearsal and freeze | Replanned | Boeing 13 Oct is an Atlas meeting; Meridian trials 11-12 Oct (remote, one restart) and 16 Oct with Suzanna | Nothing until October; controller diaries the trials | Controller / John | Freeze 10 Oct |
 
-## What is left, by owner, as at 20 September
+## What is left, by owner, as at 19 September, 22:45
 
 **John, this week (dates are the chats' dates, not mine):**
-1. Item 28, by 23 Sep: worked routes. Keep SJC-TPE and Bologna, or apply your never-worked-
-   airport rule (candidate BRS-EWR plus a US origin). W3, W4 and W6 all wait on it.
+1. Item 28 CLOSED 20 Sep: SJC-TPE and Bologna-New York stay.
 2. Item 26, by 23 Sep: the carrier for Bologna-New York (if item 28 keeps it).
 3. Item 25, by 26 Sep: what the 89% describes. Scope route (a), wire the BT2 band beside the
    QSI forecast, or rule the fallback sentence; Nick signs either.
@@ -52,11 +51,14 @@ HEAD `2df95ee`. Every workstream's own file is `routes\Wn-STATUS.md`; its instru
 11. Postmark: chase approval on 1 Oct if not cleared (W2 watches).
 12. Item 6, by 3 Oct: launch offer numbers (year-1 discount, places, expiry) or "on request".
 13. Item 24: which tablet for the capture front end.
-14. W6's two dashboard tasks: the launch-switch commit block; the OAuth app and auth Worker
-    pointed at tao-website and the Access policy on its /admin (W6 writes the steps).
+14. W6's dashboard task: the OAuth app and auth Worker pointed at tao-website and the Access
+    policy on its /admin (W6 writes the steps); the launch-switch commit has landed.
 15. The running git block for the controller's files (below) whenever convenient.
 
-**Controller (this chat), next session:** W1 step 2 (persistence and warm-up) with the probe
+**Controller (this chat), next session:** push the item 37 tier table into W5 (clause 2 and the
+schedule), W3 (pitch page pricing line), W4 (host sentence, 4.4 pricing slot) and W6 (site
+copy, still unpublished until November): DONE 20 Sep in the four rulings files, chats pick it
+up at their next run. Then W1 step 2 (persistence and warm-up) with the probe
 diff; the pre-warm airport list with IATA codes from the register; the 40-60 route panel
 proposal for John; sweep of all six status files; Friday note on 26 Sep; diary the 11-12 and
 16 Oct trials; re-read the delegate list week of 12 Oct.
@@ -77,10 +79,18 @@ time-of-day curve and tail chart; probe results and the second-source recommenda
 Oct), licence-record form, follow-up sequence; agreement to solicitor 3 Oct; feedback card
 to Jol 8 Oct.
 
-**W6 chat:** launch-switch commit; Pages project and preview; competitor out of eight files
+**W6 chat:** Pages project and preview (the launch switch landed at e02dd1b on tao-website); competitor out of eight files
 and prices out of eight places; accuracy line onto the Meridian page; clean-clone build
 proven; sentences and invitations finalised on John's picks; post 1 and list email out
 24-25 Sep once item 28 names the chart; exhibitor listing text (wk 29 Sep).
+
+**NEW 20 Sep, order-ready pulled to 21 Oct, so by 3 Oct John also rules:** the launch offer
+(discount, places, expiry), the presentation overage rate, the internal size thresholds,
+payment terms (controller's view: annual in advance, invoice on signature, 14 days, a small
+discount for payment within 14 days), the contracting entity (31), and the solicitor's slot
+in the week of 6 Oct. And whether a PER-ROUTE STUDY (a Meridian route study delivered as a
+pack, priced per route, invoiced on delivery) goes on the one-pager as the fast-entry product
+that a route development manager can buy without procurement (item 35).
 
 **Open decisions with no default (cannot be silence-ruled):** 25, 26, 28, 31, 34, 24, and the
 five contacts.
@@ -179,6 +189,46 @@ five contacts.
   recommendation adopted; silence rule to 3 Oct unchanged). (iii) The five stand feedback
   questions are W5's card wording everywhere; W2 adds them as an optional host-only screen
   after the capture form only if it costs nothing before the freeze.
+- 20 Sep 2026 (John): worked routes stay SJC-TPE and Bologna-New York; more may be added
+  later. Item 28 closed; the never-worked-airport rule set aside for these two.
+- 20 Sep 2026 (John): the pricing and term points of today are consolidated as a 13-point
+  finalisation checklist in routes\W5-RULINGS.md; W5 ticks it in its status before the
+  agreement goes to the solicitor and the one-pager to print.
+- 20 Sep 2026 (John, later): every agreement states that prices move by at least inflation
+  each year (UK CPI); new functions are priced options or, if folded into core, raise the
+  core price above inflation at a renewal. Expectation set in the first contract.
+- 20 Sep 2026 (John, later): three FIXED cash prices for years 1-3 on a flat 3% illustrative
+  inflator; annual auto-renewal with one month's cancellation and Avia's notices at three and
+  two months; a clause for Avia ending the service (notice, pro-rata refund, outputs kept).
+- 20 Sep 2026 (John, final): LAUNCH OFFER 50% / 75% / 85% of list in years 1 to 3, list being
+  the banded grid; add-ons at 50% in year 1 or 75% in year 2; in return for tolerance of
+  launch bugs, references, use of name and brand in marketing, and signing by 30 November
+  2026. Item 29 rewritten; W3, W4, W5, W6 carry the wording.
+- 20 Sep 2026 (John, latest, final): TIERS BY USAGE, NOT SIZE. One product in every tier
+  (Run, Optimise, schedule sizing, route economics). Forecast £15,000 (standard pack, 2
+  users, no researched packs) / Pitch £22,500 (up to 100 researched packs a year, brand
+  skin, 3 users) / Programme £27,500 (unlimited packs, client catchment loaded once at
+  onboarding and at renewal only, Watch, 5 users, named contact). List carries headroom for
+  the named discounts day-to-day selling will need; Tier 2 net floor £20,000; in-year
+  upgrade at the full annual difference, never pro rata. Client template mapping stays a
+  bespoke £5,000 option with a fit caveat. Assured (review, consulting) is a 2027 package,
+  out of all Routes material. Item 37; item 29 amended; W3, W4, W5, W6 carry it. This
+  reconciles the 7 Aug usage-axis position with the 2-3 Aug website price points, raised.
+- 20 Sep 2026 (John): PRICING DECOUPLED. Launch terms firm before Routes (a fixed year-1
+  price for a fixed cohort with an expiry, offered in writing at the meetings and on
+  request); standard pricing held in mind, not published or quoted at Routes, set after the
+  show on feedback. Item 29 rewritten; W3, W4, W5 and W6 carry the wording.
+- 20 Sep 2026 (John): ORDER-READY MOVES TO 21 OCTOBER. A large engagement has been suspended
+  and cash matters sooner than planned. John does not expect a signature at Routes (every
+  purchase is corporate and needs approvals) but AVIA MUST NEVER BE THE DELAY: pricing agreed
+  and every document ready at Routes or immediately after, so a client can be running and
+  paying in November. Decision 3 of 19 Sep amended: demo-ready and order-ready are the same
+  date. Consequences: W5's documents all land by 10 Oct with the solicitor's review inside
+  that; pricing becomes FIRM numbers by 3 Oct (launch offer, overage rate, size thresholds,
+  payment terms, entity); the code half of order-ready is done before the freeze where it is
+  a dashboard task (per-client Access policy) and otherwise written into the known-issues
+  list rather than built; pre-mortem 14 rewritten; the one-pager with real numbers is
+  printed for the five meetings and handed to any qualified buyer on request.
 - 19 Sep 2026: DATE CORRECTION. Several entries above and the commit messages 6bbdc0b to
   1012c29 say "21 Sep"; the controller misdated them. Everything so dated happened on
   Saturday 19 September 2026 (the timing files and the workstation clock agree). File
@@ -280,11 +330,10 @@ five contacts.
    for W4 and for the Cloudflare Access policy (pre-mortem 7).
 5. CLOSED 19 Sep: six of seven answered (Decisions log). Open remainder below.
 6. **Launch offer numbers**: year-1 discount, number of places, expiry date, against the
-   £15-25k grid. Silence to 3 Oct: the host says "on request, limited places" only.
-7. **Tier shape**: the commercial plan has Airport / Airline / Adviser tiers; the published
-   grid prices by airport size only and quotes consultancies on portfolio. Which shape goes
-   in the offer sentence and the one-pager? Silence to 3 Oct: the published grid, airlines
-   and advisers "quoted".
+   £15-27.5k tiers (item 37). Silence to 3 Oct: the host says "on request, limited places" only.
+7. **Tier shape**: CLOSED 20 Sep by item 37 for airports (three capability tiers). Airlines
+   and advisers remain "quoted"; the commercial plan's Airline / Adviser tiers are not
+   priced for Routes.
 8. **Pack email pattern**: controller view is two emails, not three: a plain thank-you with
    the PDF attached, and the HTML pack hosted at an unguessable public URL on the launched
    site (no login) linked from that email, because HTML attachments are stripped far more
@@ -338,22 +387,51 @@ five contacts.
     controller's ruling is that nothing is re-sent; the exposure is an internal provenance
     gap, not a client obligation, and it goes on the master list as a post-Routes review
     of C:\assets\engagement against its sources. Say if you disagree.
-28. **THE WORKED ROUTES, and a standing preference of yours.** Your rule for demo and
-    marketing material (Meridian and Observatory): never use an airport Avia has worked for,
-    because past clients gave targets in confidence; pick airports Avia has never worked
-    with, one European and one US. The deck's worked routes (SJC-TPE, Bologna-New York),
-    the host's two rehearsed routes and the chart for post 1 (SJC-TPE) all use Avia client
-    airports. W6 has raised it for the chart and proposes BRS-EWR (already run cold on the
-    build). Controller's view: the rule stands for everything that leaves the stand (deck,
-    posts, hosted packs, printed packs); the two pre-arranged meetings with Bologna and
-    Taoyuan may still see their own routes in the room. Candidate pair: BRS-EWR (European)
-    and a US origin you name. Decide by 23 Sep; W3, W4 and W6 all change on it. No default.
-29. CLOSED 19 Sep by John (in the W6 chat): PRICING IS HELD UNTIL NOVEMBER. The grid does
-    not go on the site before Routes. Suzanna states the number in person when asked, in the
-    published wording and no other, and says nothing about an overage rate or a discount
-    because neither exists; it goes to the visitor in writing within 48 hours in the follow-up
-    one-pager; the grid is published in November with the order-ready milestone. W4's manual
-    and W5's one-pager take that wording verbatim.
+28. CLOSED 20 Sep (John): the worked routes STAY SJC-TPE and Bologna-New York; more may be
+    added later. John's never-worked-airport rule for demo and marketing material is set
+    aside for these two by his own decision; W6's post-1 chart therefore uses SJC-TPE as
+    first ruled, and W4's rehearsed routes stand. Carrier for Bologna-New York still open
+    (item 26).
+29. PRICING, RULED by John 20 Sep (final structure; the remaining numbers are in item 6).
+    LAUNCH OFFER at Routes: year 1 at 50% of list, year 2 at 75% of list, year 3 at 85% of
+    list, then list; no obligation to renew at any step. LIST is the standard price of the
+    tier chosen (£15,000 / £22,500 / £27,500 a year; tiers by usage, item 37, NOT by
+    airport size), so a launch client pays year 1 at 50% of its tier: £7,500, £11,250 or £13,750, fixed in
+    pounds at signing; years 2 and 3 follow the list as published at each renewal. Add-on
+    options discussed (the Global Forecast, Design Day, a per-route study if John prices it,
+    item 35): 50% off if adopted in year 1, 75% of list if adopted in year 2. In return the
+    launch client accepts launch bugs with understanding (the known-issues list), gives
+    references, allows use of its name and brand in Avia's marketing, and SIGNS BY 30
+    NOVEMBER 2026 (the time pressure). The list is quoted in writing to qualified buyers on
+    the one-pager and in the agreement as the reference for the discount; it is NOT
+    published on the website until November and may be refined after Routes, which moves
+    years 2 and 3, never a signed year 1. The host, if asked: "launch clients who sign by the
+    end of November pay half our list price in year one; the list is £15,000 to £27,500 a
+    year depending on how much of the tool the airport wants." Still to rule (item 6): the
+    number of launch places, the overage rate (now the per-pack price above 100 on Tier 2),
+    payment terms, the entity (size thresholds closed by item 37).
+    TERM AND RENEWAL (John, 20 Sep, later): the one-pager and agreement show a three-year
+    schedule with list inflated at a stated flat 3% a year for illustration (list is reviewed
+    annually; no index named), and the launch client gets THREE FIXED CASH PRICES for years 1,
+    2 and 3 (50%, 75% and 85% of the inflated band), so they have price certainty if they
+    proceed. Renewal is annual and automatic unless the client cancels at least one month
+    before the renewal date; Avia notifies three months and again two months before. The
+    auto-renewal opt-out is CONDITIONAL, not priced (John asked about a 10% premium; the
+    controller advised against): available only to a client that declares its procurement
+    rules do not permit evergreen terms; for everyone else the clause is standard and stays,
+    and the launch terms are offered on the standard agreement as it stands. AVIA ENDING THE
+    SERVICE: the agreement states what happens if Avia withdraws or suspends the service for
+    any reason, including loss of a data licence: notice, a pro-rata refund of the unused part
+    of the year's fee, the client keeps every output already delivered, and no further
+    liability. Solicitor drafts the clause; W5 marks it.
+    ANNUAL ESCALATION (John, 20 Sep, later): every agreement states that the standard price
+    moves each year by AT LEAST inflation (UK CPI, ONS, twelve months to the preceding
+    December), applied at each renewal; the launch cohort's three fixed cash prices are the
+    stated exception, and from year four the client is on the list and the same escalation.
+    NEW FUNCTIONS: offered as priced options the client may accept, or, where Avia folds a
+    function into the core product, the core price may rise above the annual escalation at a
+    renewal on the same notice as the renewal itself. The expectation is set in the first
+    contract, not the second.
 30. CLOSED 19 Sep by the controller: the pack promise reads "follows the same day" everywhere
     until proven at the 11-12 Oct trial.
 31. **Contracting entity** for the agreement and invoices: Avia Solutions Limited or The
@@ -361,6 +439,72 @@ five contacts.
     cannot start without it (W5 fact 1).
 32. CLOSED 19 Sep: `Aviaacct1/tao-website` pushed at 2df95ee; W6 edits it through John's
     blocks; C:\src\avia-website read.
+35. **A per-route study product on the one-pager** (20 Sep, controller's proposal after the
+    cash change): a Meridian route study, the researched pack for one route, priced per route
+    (Avia's own consultancy anchor is the reference), invoiced on delivery, no licence, no
+    procurement of a tool. It is the purchase a route development manager can sign off alone
+    in November; the licence is the purchase that needs a board. Both on the one-pager, the
+    study first. Needs a price from you; W5 carries the slot. Silence to 3 Oct: not offered.
+36. **Order-ready code half before the freeze**: per-client Cloudflare Access policy per
+    signing client (dashboard task, W2 writes the steps, John clicks); attribution from the
+    Access identity confirmed (master list 6.8); the shared Basic-auth password stays for the
+    first clients and is stated in the known-issues list; monitoring is the restart procedure
+    plus John's phone. Ruled by the controller; say if you disagree.
+37. **TIERS BY USAGE, NOT AIRPORT SIZE. RULED by John 20 Sep (closed; revised twice the same
+    day, this is the final text).** The list is three tiers at £15,000 / £22,500 / £27,500 a
+    year; airport size is not a pricing axis and no size definition exists anywhere. This
+    supersedes every "by airport size, three seats, 100 presentations" and every "£15,000 /
+    £20,000 / £25,000" wording in this file and the rulings files; where it survives, read it
+    as the table below. It restores the 7 Aug position (PRICING_AND_SCOPE_07Aug2026.md:
+    "airport size is the wrong pricing axis; usage is").
+    ONE PRODUCT IN EVERY TIER (John: splitting the engine across tiers makes the product
+    harder to manage): route leads, route forecast (Run), optimised route forecast
+    (Optimise), schedule sizing (app/schedule_sizing.py, the frequency the demand supports)
+    and route economics (aircraft P&L, 11a4c3f) are in Tier 1 and above. Tiers differ in the
+    RESEARCHED PITCH PACKS (each one is an Anthropic API call and an airline meeting, so the
+    count is the honest usage measure; the 7 Aug "meter nothing" ruling was about runs, which
+    stay unmetered) and in what is wrapped around the product.
+    TIER 1, £15,000, FORECAST: Meridian in full as above; the standard forecast pack (deck and
+    workbook); 2 users; no researched packs.
+    TIER 2, £22,500, PITCH: Tier 1 plus up to 100 researched airline pitch packs a year; brand
+    skin (client logo, colours and fonts on Meridian's own layouts); 3 users. Beyond 100 the
+    client upgrades to Tier 3 for the difference or buys packs at the overage rate (item 6).
+    TIER 3, £27,500, PROGRAMME: Tier 2 with unlimited researched packs (fair-use clause); the
+    client's own defined catchment, loaded ONCE at onboarding and refreshed only at renewal
+    (never on demand); Watch monitoring across the client's leads; 5 users; a named Avia
+    contact for onboarding and one refresh call a year.
+    PRICE LOGIC (John): the list carries headroom because day-to-day selling after Routes will
+    run discounts from time to time; Tier 2 at £22,500 still nets £20,000 at a routine
+    discount. Discounts are NAMED, never ad hoc (launch cohort; multi-year prepay; group,
+    second and later airports under one operator; referral), the agreement's discount line
+    says which applied, and Tier 2 has a NET FLOOR of £20,000 below which no combination goes
+    (W5 finalisation checklist). UPGRADE in year: the client pays the FULL annual difference
+    (£7,500 Tier 1 to 2; £5,000 Tier 2 to 3), never pro rata, and the renewal date does not
+    move (John: pro rata is gamed by signing up a month before a route event and blitzing
+    packs). Stand logic: Tier 1 says which routes; Tier 2 gives you the deck to pitch them;
+    Tier 3 runs your whole route-development programme. Larger airports pay more because they
+    pitch more airlines, not because they are large.
+    OPTIONS (launch rate 50% year 1, 75% year 2 per item 29): client template mapping £5,000
+    one-off, BESPOKE, worded "Avia maps Meridian's outputs to the client's template as a
+    one-off exercise; where a researched section does not fit the template's layouts, Avia
+    proposes the layout" (John: the tiers carry only the brand skin, so nobody who paid can
+    claim a fit shortfall); additional catchment definition £2,500; extra users (price
+    unset); Cortex API from £15,000 when available.
+    NOT IN ANY ROUTES MATERIAL: an Assured package (Avia review of runs, consulting hours).
+    John: a manual review of what could be hundreds of runs is not viable, not for £5k, and it
+    puts Avia on the hook for every forecast. Assured is a 2027 package, price unset. More
+    features and priced options are added in 2027 when a more complicated approach is ready.
+    CODE CONSEQUENCE, NOT FOR THE FREEZE: the cap needs a per-client count of Stage 2 pack
+    generations visible to Avia (W2's dashboard, post-Routes list); no client passes 100
+    before spring. The agreement states the cap and "usage reported to the client quarterly";
+    the counter follows. The client-catchment load is sold from launch, delivered from
+    onboarding, and is not on the demo path.
+    The launch offer (item 29) applies unchanged to the tier chosen: year 1 at 50% is £7,500 /
+    £11,250 / £13,750, fixed at signing. Host sentence: "launch clients who sign by the end of
+    November pay half our list price in year one; the list is £15,000 to £27,500 a year
+    depending on how much of the tool the airport wants". Item 6's "size thresholds" is closed
+    by this ruling; item 6's overage rate is now the per-pack price above 100. W3, W4, W5, W6
+    carry the table.
 33. **W3's coverage probe**: one unattended run on the workstation by 26 Sep (W3 has the
     block); without it W3 drops airport photography and ships mood frames and charts.
 34. **W4's three**: a second and third phone contact who can reach the workstation; your
@@ -402,9 +546,10 @@ five contacts.
    is refined after Routes from that reaction. The numbers themselves come from the pricing
    chat and go in the follow-up one-pager, never on the stand unprompted; if asked, the host
    gives the expected range and the launch offer in one sentence.
-3. **Two milestones, not one**: DEMO-READY 21 October (the stand); ORDER-READY 7 November (an
-   airport with budget to use this calendar year can sign and be onboarded). Order-ready is a
-   checklist (section 3), not a rebuild, and it is where the Routes follow-ups land.
+3. **Two milestones, not one** (AMENDED 20 Sep): DEMO-READY 21 October (the stand); ORDER-READY
+   now ALSO 21 October (an airport with budget to use this calendar year can sign and be
+   onboarded the week it asks). Order-ready is a checklist (section 3), not a rebuild; the
+   documents are ready by the 10 Oct freeze and the checklist is closed by 20 Oct.
 4. **Messaging gates the meetings**: invitations go 26-29 September, after the message is
    settled (section 4). Late requests at Routes are rarely honoured, so the message comes first
    this week.
@@ -427,10 +572,12 @@ the 48-hour follow-up and the order-ready checklist close them.
 
 ---
 
-## 3. Order-ready by 7 November: the checklist
+## 3. Order-ready by 21 October (was 7 November; amended 20 Sep): the checklist
 
 What has to be true for the first paying client to sign, be onboarded and be supported. None of
-it is the full user model; all of it is achievable in the three weeks after Routes.
+it is the full user model. Documents by 10 October (W5); dashboard tasks by 20 October (W2 and
+John); anything not achievable by then is written into the known-issues list a client receives,
+never left as a surprise. Avia is never the delay in signing someone up.
 
 - Per-client Cloudflare Access policy (their email domain) and a unique password per client;
   the shared tester password retired for paying clients.
@@ -533,10 +680,11 @@ Written as if it happened. Each has an owner and a mitigation already in the pla
     Status: open until the 11-12 Oct trial is diaried with a named person at the workstation.
 13. **The licence letter has not arrived.** Answer: the verbal confirmations are recorded with
     date and participants on Egnyte; the show proceeds; the letter gates the first contract.
-14. **A visitor wants to sign on the stand.** Answer: take the details, thank them, and tell
-    them the truth: onboarding opens 7 November and they are first in the queue. A signature
-    taken before order-ready is a support problem, not a sale.
-
+14. **A visitor wants to sign on the stand.** (REWRITTEN 20 Sep.) Answer: take the details,
+    thank them, and say the truth: the agreement and the invoice can be with them the same
+    day, and onboarding is a 45-minute call in the week they choose. The host does not
+    negotiate; John or Jol does, within 48 hours, with the one-pager already in the visitor's
+    hand. Avia is never the delay.
 15. **A visitor's airport is typed as a city name and the workstation cannot resolve it.**
     Found 19 Sep: three pinned routes errored in the back-test with "a GeoNames dump is
     required to resolve a city name"; the workstation has no GeoNames dump. Answer: confirm

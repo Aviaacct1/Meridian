@@ -5,7 +5,48 @@ W6 reads this at the start of every session and acts on it; W6 never edits it. W
 statements go in W6-STATUS.md, which the controller never edits. John pastes nothing.
 Read routes/README.md first: it says who writes which file, who owns which code, and how conflicts are reported and resolved.
 
-Version 2, 19 September 2026, 23:30. Read after W6-STATUS.md v3; scope item 4 rewritten.
+## RULING 20 September 2026, 14:00 (final, replaces the 13:00 text): TIERS BY USAGE, NOT AIRPORT SIZE (umbrella item 37). SUPERSEDES every "by airport size, three seats, 100 presentations" and every "£15,000 / £20,000 / £25,000" wording below
+
+John has ruled the list price is three tiers differing in usage and wrap-around, with ONE
+PRODUCT in every tier. Airport size is not a pricing axis and no size definition is to
+appear anywhere. Where older wording survives in this file or in your own drafts, replace it
+with this table and report the replacement in your STATUS.
+
+| Tier | Price a year | What it includes | Users |
+|---|---|---|---|
+| 1 Forecast | £15,000 | Meridian in full: calibrated route leads, route forecast (Run), optimised route forecast (Optimise), schedule sizing, route economics; the standard forecast pack (deck and workbook). No researched packs | 2 |
+| 2 Pitch | £22,500 | Tier 1 plus up to 100 researched airline pitch packs a year; brand skin (client logo, colours and fonts on Meridian's own layouts) | 3 |
+| 3 Programme | £27,500 | Tier 2 with unlimited researched packs (fair use); the client's own defined catchment, loaded once at onboarding and refreshed only at renewal; Watch monitoring across the client's leads; a named Avia contact and one refresh call a year | 5 |
+
+Stand logic, usable verbatim: Tier 1 says which routes; Tier 2 gives you the deck to pitch
+them; Tier 3 runs your whole route-development programme. Larger airports pay more because
+they pitch more airlines, not because they are large.
+
+Terms that go with the table (W5 drafts them; W3, W4, W6 quote nothing beyond the table and
+the host sentence): above 100 packs a Tier 2 client upgrades for the difference or pays the
+per-pack overage rate (John still owes the rate, umbrella item 6); an in-year upgrade costs
+the FULL annual difference (£7,500 Tier 1 to 2; £5,000 Tier 2 to 3), never pro rata, and the
+renewal date does not move; discounts are NAMED only (launch cohort; multi-year prepay;
+group, second and later airports under one operator; referral) with a Tier 2 net floor of
+£20,000; usage is reported to the client quarterly.
+
+Options, at the launch rate (50% if adopted in year 1, 75% in year 2): client template
+mapping £5,000 one-off, bespoke, always worded "Avia maps Meridian's outputs to the client's
+template as a one-off exercise; where a researched section does not fit the template's
+layouts, Avia proposes the layout"; additional catchment definition £2,500; extra users
+(price unset); Cortex API from £15,000 when available. The tiers carry only the brand skin,
+never a promise of fit to the client's own template.
+
+NOT IN ANY ROUTES MATERIAL: an Assured or review package, consulting hours, or any Avia
+review of runs. The client-catchment load is "available from your onboarding", never
+demonstrated on the stand.
+
+The launch offer (item 29) is unchanged and applies to whichever tier is chosen: year 1 at
+50% (£7,500 / £11,250 / £13,750, fixed at signing), year 2 at 75%, year 3 at 85%, three
+fixed cash prices on the 3% illustrative inflator, sign by 30 November 2026. Host sentence:
+"launch clients who sign by the end of November pay half our list price in year one; the
+list is £15,000 to £27,500 a year depending on how much of the tool the airport wants".
+Still open in item 6: launch places, per-pack overage rate, payment terms, entity.
 
 ## Scope (commercial plan sections 7, 8 and 9; umbrella section 4 and W6)
 
@@ -123,3 +164,51 @@ Version 2, 19 September 2026, 23:30. Read after W6-STATUS.md v3; scope item 4 re
 2. Five invitation drafts with the proposed pre-run route for each.
 3. Post 1 and the contact-list email, drafted.
 4. The site launch plan: pages, owners, dates, the two takedowns, the IT firm's paragraph.
+
+## 20 September: ORDER-READY IS NOW 21 OCTOBER (John)
+
+A large engagement has been suspended and cash matters sooner. John does not expect a
+signature at Routes, but Avia must never be the delay: pricing agreed and every document ready
+at Routes or immediately after, so a client can be running and paying in November.
+For W6: the five invitations and the follow-up emails say plainly that an agreement and
+onboarding are available immediately after Routes for airports with budget this year. The
+website's November pricing ruling is unchanged.
+
+## 20 September: PRICING DECOUPLED (John). Supersedes every earlier pricing line above.
+
+Two decisions, kept apart. (i) LAUNCH TERMS are firm and decided before Routes: a fixed
+year-1 price for a fixed number of launch parties with an expiry (John's illustration, not
+yet the ruling: £5,000 for five parties); offered in writing on the one-pager at the five
+meetings and to any qualified buyer who asks; the agreement is signable on those terms at
+Routes. (ii) STANDARD PRICING (the £15,000 / £20,000 / £25,000 grid or whatever the feedback
+says) is held in mind, NOT published and NOT quoted at Routes; it is set and published after
+the show. Year 2 for launch clients: the then-published list less a stated loyalty discount,
+no obligation to renew (controller's view; John rules the discount by 3 Oct). Website: no
+prices until November. The host's sentence, if asked: "launch terms for the first [N] are
+£[X] for year one; our standard pricing is published after Routes." The numbers (X, N,
+expiry, loyalty discount, overage rate, payment terms, entity) are John's by 3 Oct; slots
+until then.
+W6: messaging sentence 3 (the offer) becomes the launch terms with slots; the site's
+November pricing ruling is unchanged; invitations may say launch terms are available at the
+meeting.
+
+## 20 September, final: THE LAUNCH OFFER (John). Supersedes the two pricing sections above.
+
+Year 1 at 50% of list, year 2 at 75% of list, year 3 at 85% of list, then list; no
+obligation to renew. LIST is the banded standard price by airport size (£15,000 / £20,000 /
+£25,000 a year, three seats, 100 presentations), so year 1 is £7,500, £10,000 or £12,500,
+fixed in pounds at signing; years 2 and 3 follow the list as published at each renewal.
+Add-on options (Global Forecast, Design Day, per-route study if priced): 50% off if adopted in
+year 1, 75% of list if adopted in year 2. Conditions: the client accepts launch bugs with
+understanding (the known-issues list), gives references, allows use of its name and brand in
+Avia's marketing, and signs by 30 NOVEMBER 2026. The list is quoted in writing to qualified
+buyers on the one-pager and in the agreement; it is not published on the website until
+November. Still open (umbrella item 6, by 3 Oct): number of places, overage rate, payment
+terms, size thresholds, entity.
+W6: messaging sentence 3 is the launch offer in one sentence; invitations say launch terms
+are available at the meeting and close on 30 November. Website: no prices until November.
+
+## 20 September: item 28 CLOSED (John). The worked routes stay SJC-TPE and Bologna-New York;
+more may be added later. Build to them now; nothing waits on a route decision. The carrier
+for Bologna-New York is still item 26.
+W6: post 1 uses the SJC-TPE time-of-day curve as first ruled; the BRS-EWR alternative is dropped. Post 1 and the list email can go to John for approval now.

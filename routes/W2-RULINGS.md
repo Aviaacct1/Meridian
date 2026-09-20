@@ -124,3 +124,15 @@ Version 4, 19 September 2026, 23:30. Read after W2-STATUS.md v6.
   aviationobservatory.com until you have reproduced the DKIM, Return-Path and DMARC records at
   Cloudflare and re-verified them in Postmark; you do the move yourself in the week of 22 Sep
   for that reason.
+
+## 20 September: ORDER-READY IS NOW 21 OCTOBER (John)
+
+A large engagement has been suspended and cash matters sooner. John does not expect a
+signature at Routes, but Avia must never be the delay: pricing agreed and every document ready
+at Routes or immediately after, so a client can be running and paying in November.
+For W2: the code half of order-ready comes forward. Before the freeze: the steps for a
+per-client Cloudflare Access policy (email domain) that John clicks per signing client;
+confirm attribution in the R9 log comes from the Access identity, not the Basic-auth
+username (master list 6.8), and fix if not; the shared Basic-auth password stays for the
+first clients and is stated in the known-issues list (W5 owns the list; give W5 the line).
+Nothing else new; the stand build is unchanged.
