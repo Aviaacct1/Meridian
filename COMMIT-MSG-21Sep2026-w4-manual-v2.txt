@@ -1,0 +1,48 @@
+W4 session 2: stand host's manual v2 on the 20-21 September rulings
+
+Built to W4-RULINGS.md as at 21 September and PRICING-DECISION-2026.md v1.0
+(FINAL). Slots for umbrella items 25 and 34 kept open as John instructed.
+
+PRICING. Manual 7.5 rewritten to section 7 of the pricing file, verbatim: the
+qualifying question "is route development done here, or at group?" first, then
+the host sentence once and nothing further unprompted. What she may add if
+pressed (no user count, route study £2,500, catchment load £3,500 with the
+answer to why it costs more than a study, years two and three, 30 November),
+and the six things she never says. New 4.6: Meridian is not sold, quoted or
+priced to an airline. 7.11 rewritten: the whole product, no seats, no metering,
+fair use as a clause and never a counter.
+
+ORDER-READY 21 OCTOBER. A visitor who wants to sign is now told the agreement
+and invoice can be with them the same day and onboarding is a 45-minute call in
+the week they choose; she does not negotiate.
+
+SUZANNA'S FOUR ANSWERS. Section 3 follows her order of use: origin and
+destination, then left to right, blanks optimise. One line separating Run
+Assessment from Optimise, with a slot to match W2's final screen words, because
+that row is the thing she had to look up twice. New 3.3a lists the five weak
+scenarios she asked for, with a slot for W5's known-issues list of 1 October to
+replace it.
+
+THE ACCURACY CONVERSATION. 7.6 rewritten to John's ruling: forecast against
+forecast, not forecast against outcome. The host opens /methodology and walks
+the bridge chart's eight steps in her own words, then asks which step is
+different and why. John's two cases carried. The step labels quoted are the ones
+app/methodology_page.py actually draws; three that do not read to a lay visitor
+are reported in W4-STATUS for the controller, with no code proposed.
+
+THE RECORDER. New 8.6: never covert, a visible notice plus the spoken line, with
+both drafted by W4 and marked as W2's to confirm after W9 reads the exhibitor
+rules. Voice note and card drop are the primary record; the recording is the
+backstop and may not happen at all.
+
+PACK PROMISE. "The same day" everywhere; no minutes figure remains in the
+manual. The demonstration finishes on the forecast and the pack shown is
+pre-made on a rehearsed route.
+
+W4-STATUS.md v2: what changed and what ruled it, the bridge-label report, the
+three questions as umbrella item 34, five watchpoints.
+
+No code touched. Nothing in app\ changed.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01Sifs7TNyk1t4m8SdSdpgSm

@@ -2,15 +2,24 @@
 
 Stand F124, Messe Frankfurt. Wednesday 21 to Friday 23 October 2026.
 
-Version 1, 19 September 2026. DRAFT, internal. Prepared by Avia Solutions for Suzanna
+Version 2, 21 September 2026. DRAFT, internal. Prepared by Avia Solutions for Suzanna
 McIntosh, with Stefan Parry as second host. Meridian is published by The Aviation
 Observatory.
+
+**What changed from version 1.** The pricing is settled and section 7.5 now carries the ruled
+host sentence and the question that comes before it, from `PRICING-DECISION-2026.md` v1.0
+section 7. The demo script follows the order Suzanna actually works in, from her four answers of
+20 September. The pack is no longer promised in minutes: it follows the same day. Section 7.6
+walks the visitor through the methodology page's bridge chart, which is John's ruling of
+20 September on how a gap gets placed on a step. Order-ready moved to 21 October, so a visitor
+who wants to sign is answered differently. Sections 4.6 and 8.6 are new: what is never priced,
+and the recording notice.
 
 Written for someone who already knows the tool. It does not teach Meridian; it settles what
 you say, in what order, with what numbers, and what you do when something fails.
 
 **How to read the marked slots.** Where a fact is not yet settled, this manual carries a
-marked slot and no invented content. Every slot is listed in section 8.6 with its owner and
+marked slot and no invented content. Every slot is listed in section 8.7 with its owner and
 its date. A slot that is still open on 16 October goes into the dry run as an open item, and
 you say "I will come back to you on that" rather than filling it yourself.
 
@@ -134,8 +143,24 @@ the credibility behind it.
 
 ## 3. The demo script, timed
 
-Two paths from one opening. Every visitor gets Run. The interested also get Optimise, which is
-the part that sells.
+Two paths from one opening. Every visitor gets Run Assessment. The interested also get Optimise,
+which is the part that sells.
+
+**The order of entry is the order you already work in** (your four answers of 20 September):
+origin and destination first, then the boxes left to right, adding what you know, carrier,
+aircraft, frequency. A blank box optimises, and that is worth saying out loud, because it is the
+moment a visitor realises the tool is answering the question rather than taking dictation.
+
+**The one line that separates the two buttons**, said once, early: "Run Assessment forecasts the
+route as you have described it. Optimise searches for the best version of it and ranks what it
+finds." `[SLOT: match these two sentences to the words W2 finally puts on the screen. You flagged
+that the OUTPUT, OPTIMISE and RUN ASSESSMENT row does not read clearly; W2 is changing it, and
+the manual follows the screen rather than the screen following the manual. W2, by 8 October.]`
+
+**The demonstration finishes on the forecast.** The researched pack takes about ten minutes to
+build, so it does not happen while the visitor stands there. You show a pack that was made
+earlier, on one of the two rehearsed routes, and theirs arrives by email the same day on the
+route they asked for. John's stand flow, 20 September.
 
 **Timings.** The stage times below come from the speed work measured on the workstation on
 19 September 2026 (commit 1012c29): Run on SJC-TPE 9.8 seconds cold and 8.9 seconds warm, Run
@@ -150,7 +175,7 @@ Read the cumulative clock on the left. Say the words in quotation marks.
 | Clock | You do | You say |
 |---|---|---|
 | 0:00-0:20 | Stand, make eye contact, do not sit | "Would you like to run your own route forecast on the stand? Tell me the airport you are pitching and the airline you are pitching it to." |
-| 0:20-0:35 | Type the airport, the destination, the airline. Airport and airline come from the pick list, never free text | "San Jose to Taipei, China Airlines. Watch the left of the screen while I enter it." |
+| 0:20-0:35 | Origin, destination, then left to right: carrier, aircraft, frequency, filling only what they tell you. Airport and airline come from the pick list, never free text | "San Jose to Taipei, China Airlines. I will leave the aircraft and the frequency blank, because anything I leave blank it works out for itself. Watch the left of the screen." |
 | 0:35-0:45 | The market background paints itself as the route goes in | "That is the market as it exists today, before we forecast anything: who flies this journey now and how they do it." |
 | 0:45-0:55 | Run lands, circa 10 seconds | "That is the forecast." |
 | 0:55-1:05 | Point at the market background | "Measured. Real passengers on that journey today, on every routing they actually use, not just the nonstops." |
@@ -174,7 +199,7 @@ The pack, the form and the close, both paths:
 |---|---|---|
 | 2:50-3:20 | Open one of the two pre-built examples on the laptop. Never run a pack live | "The last piece is what you take to the airline. We research the route and build the pitch: your forecast, the market, the schedule, the economics. Here is one we built earlier this week." |
 | 3:20-4:20 | Hand over the tablet or hold it, capture form, 60 seconds | "I will send you that pack for the route we just ran, built on exactly the run you watched. Name, company, email, and tick the consent box. Everything after your email is optional." |
-| 4:20-4:40 | Confirmation names the person and the route. Close | "That is in the queue. You will have it within about half an hour. `[SLOT: send promise, see 6.5]` John is on the stand `[SLOT: John's hours]` if you want the method in detail." |
+| 4:20-4:40 | Confirmation names the person and the route. Close | "That is in the queue and the pack reaches you today, on your route rather than this one. John is on the stand `[SLOT: John's hours]` if you want the method in detail." |
 
 Run only, closing from 1:45: skip to 2:50 and finish the same way. Circa 2 minutes 25 seconds
 door to door.
@@ -196,24 +221,55 @@ are checked again after the 10 October freeze before you use them on the stand.]
 
 ### 3.3 The pack, explained not run
 
-The researched pack is queued when the visitor leaves and it arrives by email. You never run
-one on the stand, and you never promise a time you have not been told to promise (section 6.5).
+The researched pack takes about ten minutes to build, so no pack is made in front of a visitor.
+What they see is a pack made earlier on one of the two rehearsed routes; what they receive is
+their own route, by email, the same day.
 
-Two pre-built examples live on the laptop, one for each rehearsed route. `[SLOT: the two
-example packs. W3, by 3 October; John pulled the pack, the PDF and the imagery forward from
-8 October to 3 October (W3-STATUS v1).]` `[SCREENSHOT: where the two
-examples sit on the laptop, and the folder to open under Plan B.]`
+Say it in that order and there is nothing to apologise for: "This is one we built earlier this
+week, so you can see what arrives. Yours will be this, on your route, in your inbox today."
+
+`[SLOT: the two example packs. W3, by 3 October; John pulled the pack, the PDF and the imagery
+forward from 8 October to 3 October (W3-STATUS v1).]` `[SCREENSHOT: where the two examples sit
+on the laptop, and the folder to open under Plan B.]`
+
+### 3.3a The scenarios to steer round
+
+You asked for the known weak cases so you can avoid walking into one in front of a visitor who
+has already studied that route. Five are known today:
+
+1. **Thin booking coverage.** Small airports and markets where a large share of travel never
+   reaches the booking data. The forecast is weaker and you will feel it in the market
+   background looking sparse. Move to a neighbour and capture their route for a proper run.
+2. **A city name the workstation cannot resolve.** Enter the airport code instead. Never retype
+   a name repeatedly in front of someone.
+3. **Day of week.** Frequency is weekly and is not allocated to days.
+4. **Fare.** Fares are in the economics, not yet inside the capture score.
+5. **The newest aircraft types.** Their operating economics are still being built.
+
+`[SLOT: the full known-issues list, worded for the stand. W5, by 1 October. It replaces this
+list rather than adding to it, so there is one list on the stand and one in the onboarding.]`
+
+Steering round a weak case is not hiding it. If the visitor asks directly, tell them which of
+the five they have hit; the honesty is worth more than the demonstration was.
 
 ### 3.4 The three qualification questions
 
-Woven into the demo at 1:25, never asked as a form.
+Woven into the demo at 1:25, never asked as a form. The first one is the one that decides
+everything else, because it decides which price applies and whether the person in front of you
+can buy at all:
 
-1. Are you pitching routes here this week? Yes means an airport, which is the buyer.
-2. Do you build your own forecasts today, or buy them? Buying means a budget exists.
-3. Who signs off a tool like this at your organisation? This names the real buyer for the
+1. **"Is route development done here, or at group?"** Ruled wording,
+   `PRICING-DECISION-2026.md` v1.0 section 7. A group delegation may be the buyer even though it
+   has no airport of its own, and an airport delegation may not be the buyer at all. The largest
+   delegations in the room are group teams.
+2. Are you pitching routes here this week? Yes means the route development work is real.
+3. Do you build your own forecasts today, or buy them? Buying means a budget exists.
+4. Who signs off a tool like this at your organisation? This names the real buyer for the
    follow-up.
 
-Answers go in the capture form's notes, not in your memory.
+Answers go in the capture form's notes, not in your memory. If the answer to the first is
+"group", say so on the form in those words, because the licence is priced on how many airports a
+buyer covers.
 
 ### 3.5 The capture form
 
@@ -310,6 +366,16 @@ When the tool disagrees with the visitor, section 7.6 is the whole answer, and i
 opportunity rather than a problem. You never defend a figure and you never adjust one to
 please someone.
 
+### 4.6 No price to an airline, at all
+
+Meridian is not sold, quoted or priced to an airline. This follows from the data licence behind
+the tool, so it is not a negotiating position and there is no figure to withhold. If an airline
+network planner asks what it costs: "We are not selling it to airlines at the moment. I would
+still like to show you what it does, and John can tell you where that stands." Then demonstrate
+it, capture them, and mark the form as an airline.
+
+Consultancies and advisers are priced on request, which means John prices them, not you.
+
 ---
 
 ## 5. Plan B, step by step
@@ -335,8 +401,8 @@ Work down this list. Do not skip a step to try a later one.
 
 ### 5.2 What changes for the visitor under Plan B
 
-Almost nothing, and you say so plainly: "I will run it here on the laptop. The pack goes out
-tonight rather than in half an hour, because the queue runs on our own machine in the UK."
+Almost nothing, and you say so plainly: "I will run it here on the laptop, and the pack still
+reaches you today, because the queue runs on our own machine in the UK."
 Capture the lead exactly as you would under Plan A. If the form cannot reach the store, write
 the details on a card, tell the visitor the same thing, and type them in at end of day.
 
@@ -426,9 +492,16 @@ and you say nothing different to the visitor.
 
 ### 6.5 The send promise
 
-`[SLOT: whether you may promise "within half an hour" on the stand. It depends on the sender
-account clearing its review, which was requested on 19 September and is chased on 1 October.
-Until John confirms, say "later today" rather than a time. W2 and John, by 15 October.]`
+**The pack follows the same day. Never a number of minutes.** Controller's ruling of
+19 September, reaffirmed in `PRICING-DECISION-2026.md` v1.0 section 7: every outgoing word says
+the same day until the sender is out of test mode and one pack has been sent and received over a
+hotspot at the 11-12 October trial. If that trial passes and John rules otherwise, this section
+changes and nothing else does.
+
+Delivery itself is proven from Avia's own domain (W2-STATUS v13, 21 September). What is not yet
+proven is delivery from the Observatory domain, which waits on the sender's approval. So the
+promise is the day, not the hour, and you make it in the same words every time: "You will have
+it today."
 
 ---
 
@@ -480,38 +553,92 @@ November.
 
 ### 7.5 "What does it cost"
 
-Say the published structure only:
+Ask the qualifying question first, every time, because the answer decides which price applies
+and whether this person can buy at all:
 
-> £15,000, £20,000 or £25,000 a year by airport size. Three named seats. 100 generated
-> presentations included. Launch places this year on request.
+> "Is route development done here, or at group?"
 
-Then stop. If the visitor asks which band they are in: "Size comes from published passenger
-numbers and we confirm it in the quotation; we do not print the thresholds." If they ask for a
-discount, a number of places or a deadline: "John handles that. Shall I book you a follow-up
-with him." No figure, no number of places, no expiry, and no rough one either.
+Then, once only, and nothing further unprompted:
 
-The written offer lives in a one-pager that John sends to qualified visitors within 48 hours of
-the show. It never travels on the stand and it is not in the pack, so do not hand it over, read
-from it or promise its contents.
+> "Launch clients who sign by the end of November pay half our list price in year one, and we
+> hold the year two and year three prices in writing at signature. For a single airport the list
+> is £15,000 a year, with no limit on users or on how much you run it. For a group it depends on
+> how many airports you cover and we quote it. I will send you the one-pager with the numbers."
 
-If the visitor wants to sign on the stand: take the details, thank them properly, and tell them
-the truth. "Onboarding opens on 7 November and you are first in the queue." A signature taken
-before we can support it is a support problem, not a sale.
+Verbatim from `PRICING-DECISION-2026.md` v1.0 section 7. Then stop, and put the one-pager in the
+follow-up. `[SLOT: if John reinstates the silence rule before 3 October, the whole answer becomes
+"on request, limited places" and the sentence above travels in the one-pager instead. John,
+umbrella item 6, which the pricing file records as closed.]`
+
+**What you may add if they push, and nothing beyond it.**
+
+- **Why the licence has no user count.** "Every band is the whole product. We price on how many
+  airports you cover, not on how many people use it or how much you run it."
+- **A single route study, if they want one thing rather than a licence.** £2,500, on the price
+  list. It is the purchase one person can usually sign.
+- **Loading their own catchment data.** £3,500. They will ask why that costs more than a whole
+  study, so answer before they ask: "The study is machine produced. The catchment load is one to
+  three days of our people working on your own survey or mobility data, by hand."
+- **Years two and three.** "Year two is 75% of list and year three is 85%, held in writing at
+  signature, and there is no obligation to renew." If they ask about year four, that is the
+  multi-year conversation and it belongs to John.
+- **The signature date.** 30 November 2026. There is no limit on the number of launch places, so
+  do not invent scarcity.
+
+**What you never say**: the overage rate, the group bands, the add-on prices, the payment terms,
+the contracting entity, the size thresholds. None of those is yours, and several do not exist
+yet.
+
+**If a visitor wants to sign on the stand.** Order-ready is 21 October, which is the first day of
+the show, so the answer changed on 20 September and it is now a good one: take their details and
+tell them the agreement and the invoice can be with them the same day, and that onboarding is a
+45-minute call in the week they choose, running their first three routes together. You do not
+negotiate anything; John or Jol does that within 48 hours.
+
+**The one-pager** carries the numbers in writing. It travels in the follow-up and lives in your
+folder for a qualified buyer who asks for it. It is never on display on the stand.
 
 ### 7.6 "The forecast is wrong, we know our market"
 
-This one is the product working, and you say so.
+This one is the product working, and it is the conversation most worth having on the stand.
 
-"A gap is informative. Which side do you think is right, and why?"
+Start from what is actually happening. The visitor has forecast this route themselves, and they
+do not know how accurate their own forecast is any more than they know ours. So this is one
+forecast against another, not a forecast against an outcome, and the useful question is not who
+is right but where the two builds part company.
 
-Then listen and write down the reason, in their words, on the capture form. Ask what they know
-that the data does not: a charter that does not book through the global systems, a visiting
-friends and relatives market, a fare deal, a road or rail link that changed. Offer the
-follow-up: "That conversation is exactly the one worth having with John, and the pack will
-give you both something to argue over."
+**Open the methodology page** (`/methodology`). Its bridge chart rebuilds the run you have just
+done, step by step, and shows the weight each step carried. Then walk them down it:
 
-Never defend the number. Never adjust it to please someone. A host who argues loses; a host
-who asks why gets the market intelligence and the meeting.
+| The step on the chart | What you say |
+|---|---|
+| Measured market | "This is what the booking data says is flying that journey today, on every routing, not just nonstops." |
+| Capture share | "This is the share the new nonstop takes, scored against every existing way to make that trip." |
+| Coverage | "This is us adding back what the booking data misses in this market." |
+| Stimulation | "This is the new traffic the route creates that did not exist before." |
+| Feed behind | "Passengers joining at your end from the cities behind you." |
+| Feed beyond | "Passengers going on past the far end." |
+| Aircraft cap | "And here the aircraft runs out of seats, so this much demand does not get carried." |
+| Forecast | "Which gives the number, carried, each way, a year." |
+
+Then the question, which is the whole point:
+
+> "Which step do you think is different, and why?"
+
+**John's two cases.** If we say 110,000 and they say 120,000, the bridge shows where 10,000
+could reasonably sit, and the conversation is about which step carries it. If we say 150,000 and
+they say 50,000, the bridge is the case for our number, step by step, and their number goes on
+the capture form for a proper look after the show.
+
+Never defend the total. Never adjust a figure to please someone. Write what they said, in their
+words, on the form: a charter that does not book through the global systems, a visiting friends
+and relatives market, a fare deal, a road or rail link that changed. Then offer the follow-up:
+"That is exactly the conversation to have with John, and the pack gives you both something to
+argue over."
+
+The bridge only draws after a run, so do the run first. `[SLOT: check the bridge on the frozen
+build during training, once with each of the two rehearsed routes, so you have seen the shape
+the chart makes before a visitor does.]`
 
 ### 7.7 "Your airport is not in there" or the run looks wrong
 
@@ -547,13 +674,19 @@ Never adjust a cost figure on the stand to match what a visitor tells you. Write
 on the form; a route development team quoting a real airline cost base is telling us something
 worth having.
 
-### 7.11 "What do you get for the 100 presentations"
+### 7.11 "What is actually included"
 
-"Three named seats, forecasts and scenarios and exports without limit within fair use, and 100
-generated presentations a year across the three seats, each one the forecast you ran. One review
-call a quarter with an Avia director on your own routes. Beyond 100 presentations, each document
-is charged at the rate in the licence." If asked what that rate is: "John will give you that in
-writing." No figure. Source: `W5-ONE-PAGER-19Sep2026.md` v0.1.
+"The whole product, in every band. No user count, no seat count, and no metering: forecasts,
+optimisations, scenarios, exports and researched packs, for your own route development
+programme. We ask only that it stays reasonable, and the terms say we will ring you rather than
+invoice you if it goes a long way past what one airport's programme looks like."
+
+Nothing about a number of packs, a counter or an overage rate. There is no meter in the product
+and no figure for you to give. Source: `PRICING-DECISION-2026.md` v1.0 sections 2 and 3.
+
+If they ask who may use it: "Anyone in your organisation. It is licensed to the airport, or to
+the group, not to named people. Consultants working for you are the one exception, and John
+covers that in the agreement."
 
 ---
 
@@ -638,35 +771,75 @@ on a card surviving the journey home.
 
 The aggregate of questions 3 and 4 is the product list for November.
 
+**Two more, asked of the visitor rather than answered about them**, because they are how the
+list price gets set in November and they cost nothing to ask: how many route studies did you
+commission last year, and what did they cost; and what do you pay today for your data
+subscriptions. Ask about their own spend; never compare us with anyone.
+Source: `PRICING-DECISION-2026.md` v1.0 section 7. `[SLOT: W5 adds these two to the card, and
+the card's wording governs. W5, by 8 October.]`
+
 `[SLOT: voice note-taking on the stand is under consideration by John. If it is used, the
 consent line you say before recording goes here, and you say it every time. John, by
 10 October.]`
 
-### 8.6 The open slots in this manual
+### 8.6 The recording on the stand, and what you say about it
+
+John is testing all-day recording on the stand: hourly files on the laptop, for general
+intelligence only, never attached to a named person, transcribed after the show and deleted by a
+stated date. It goes ahead only if it survives his own test, which is to record twenty minutes
+in a noisy room and see whether the transcript is usable. It may not happen at all.
+
+**If it runs, it is never covert.** Two things carry that, and both are conditions of the ruling:
+a visible notice on the stand, and your own spoken line at the start of a demonstration.
+
+`[SLOT: the notice wording and the spoken line, which W2 owns and hands to W4, after W9 has read
+the Routes exhibitor rules. W2, by 8 October. Drafted below by W4 so there is something to react
+to; do not use either until W2 confirms them.]`
+
+> Drafted for confirmation, the notice: "We record audio on this stand during show hours to help
+> us improve the product. Recordings are not linked to you, are used only in aggregate, and are
+> deleted by [DATE]. Please tell us if you would rather we stopped."
+>
+> Drafted for confirmation, the spoken line: "Before we start, we record audio on the stand
+> during the show, in aggregate and not against your name. Say the word and I will stop it."
+
+If anyone asks you to stop, stop, and say so at the 17:00 review.
+
+**Your voice note and the card are the primary record, not the recording.** Thirty seconds after
+each conversation, in your own words, is worth more than raw audio, because it is your read
+rather than the room's noise. The recording is the backstop for the busy hour when you are on
+your own and cannot stop. Every record is editable at the 17:00 review, so a rushed note is
+fine; an unwritten one is not.
+
+### 8.7 The open slots in this manual
 
 | # | Slot | Owner | Date |
 |---|---|---|---|
-| 1 | The sentence saying what the 89% describes (2.3, 7.2) | John, Nick | 26 Sep |
+| 1 | The sentence saying what the 89% describes (2.3, 7.2). The priority slot: it is the question Suzanna expects most | John, Nick | 26 Sep |
 | 2 | Carrier for Bologna-New York (3.2) | John | 23 Sep, W3 |
-| 3 | The competitor sentence, wording approval (4.4) | John | 10 Oct |
-| 4 | John's mobile, the second and third numbers to ring (5.3) | John | 10 Oct |
+| 3 | The competitor sentence, wording approval (4.4). Umbrella item 34 | John | 10 Oct |
+| 4 | John's mobile, the second and third numbers to ring (5.3). Umbrella item 34 | John | 10 Oct |
 | 5 | Jol, Nick, Stefan, venue and stand numbers (5.3) | John | 15 Oct |
-| 6 | John's hours on the stand and his meeting slots (8.2) | John | 15 Oct |
+| 6 | John's hours on the stand and his meeting slots (8.2). Umbrella item 34 | John | 15 Oct |
 | 7 | Stefan's days and hours (8.2) | John | 10 Oct |
 | 8 | Hall opening and closing times, break times (8.1) | John | 10 Oct |
-| 9 | Whether "within half an hour" may be promised (6.5) | John, W2 | 15 Oct |
+| 9 | The two button sentences, matched to W2's screen words (3) | W2 | 8 Oct |
 | 10 | Which tablet, and the form under Plan B (3.5) | John, W2 | 1 Oct |
 | 11 | Laptop build proven, or step 4 deleted (5.1) | W2 | 8 Oct |
 | 12 | Router make, SIM, spare holder (5.1) | W2 | 15 Oct |
-| 13 | Pre-rendered pack folder and the recording (5.1) | W2 | 15 Oct |
+| 13 | Pre-rendered pack folder and the screen recording (5.1) | W2 | 15 Oct |
 | 14 | Queue view state names and its place in the navigation (6.1) | W2 | 8 Oct |
 | 15 | Separate lead file for practice runs, confirmed (3.6) | W2 | 8 Oct |
 | 16 | The two example packs, and the two runs behind the walk-up routes (3.2, 3.3) | W3 | 3 Oct |
-| 17 | Voice note-taking, and its consent line (8.5) | John | 10 Oct |
+| 17 | The recording notice and the spoken line (8.6) | W2, W9 | 8 Oct |
 | 18 | Screenshots: capture form, queue view, stand-mode marker, sign-in, example packs | W2 | after 8 Oct |
 | 19 | Atlas cover on the stand (8.2) | John, Jess | 15 Oct |
+| 20 | The known-issues list worded for the stand, replacing 3.3a's five (3.3a) | W5 | 1 Oct |
+| 21 | The two spend questions added to the card (8.5) | W5 | 8 Oct |
+| 22 | The silence rule, if John reinstates it before 3 October (7.5) | John | 3 Oct |
+| 23 | The bridge chart seen once on each rehearsed route in training (7.6) | Suzanna, John | 16 Oct |
 
-### 8.7 Training and the dry run
+### 8.8 Training and the dry run
 
 Training is remote, because John is not in the country before the show.
 
@@ -678,18 +851,18 @@ Training is remote, because John is not in the country before the show.
 - Read this manual before session one. Bring the questions the four weeks of using the tool
   have already raised; they are better than anything on this page.
 
-### 8.8 In one line
+### 8.9 In one line
 
 Every visitor runs their own route, every visitor is captured with consent, every pack is
 checked and sent, and nothing is claimed that the build does not do.
 
 ---
 
-Source: Avia Solutions analysis, built to `routes\W4-RULINGS.md` version 1 (19 September
-2026), `GTM-STRATEGY-ROUTES-2026.md` sections 1-6, `ROUTES-COMMERCIAL-PLAN-19Sep2026.md`
+Source: Avia Solutions analysis, built to `routes\W4-RULINGS.md` as at 21 September 2026,
+`routes\PRICING-DECISION-2026.md` v1.0 (FINAL, 20 September 2026), `GTM-STRATEGY-ROUTES-2026.md` sections 1-6, `ROUTES-COMMERCIAL-PLAN-19Sep2026.md`
 sections 2, 4, 6 and 10, `HANDOVER-ROUTES-19Sep2026.md` sections 4 and 5,
 `routes\W2-STATUS.md` version 6, `routes\W3-STATUS.md` version 1,
 `PRICING-HANDOVER-19Sep2026.md`, and Nick Oldrini's methodology note of 23 August 2026
 (internal).
 
-Project Meridian - Stand host's manual - Commercial in Confidence. 19 September 2026 - Draft 1.
+Project Meridian - Stand host's manual - Commercial in Confidence. 21 September 2026 - Draft 2.
