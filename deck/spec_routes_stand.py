@@ -1,13 +1,13 @@
 """Meridian at Routes World 2026: the ten-slide stand deck, as a renderer-agnostic spec.
 
-W3 scope item 1. The deck the host works from on stand F174 and the five pre-arranged
+W3 scope item 1. The deck the host works from on stand F124 and the five pre-arranged
 meetings run on. It is about the product, not about one route: the two worked routes are
 evidence, not the subject.
 
 Register: a pitch, not a diligence report. The case is put in the affirmative. Nothing
 about any competitor appears, here or anywhere else (commercial plan, section 10).
 
-Build state, 19 September 2026. Slides 1-6 and 9-10 carry their final structure with the
+Build state, 21 September 2026. Slides 1-6 and 9-10 carry their final structure with the
 four messaging sentences as PLACEHOLDERS, taken verbatim from
 ROUTES-CONTROLLER-QUEUE-19Sep2026.md section B, to be swapped when John and Jol settle
 them on 25 September. Slides 7 and 8 are held for two real runs; the carrier for
@@ -24,8 +24,8 @@ import deck_spec as S
 CODENAME = "Meridian"
 
 # Every figure carries a source in the same place. These are the three the deck uses.
-SRC_PRICING = ("Source: Meridian pricing, The Aviation Observatory, published grid, "
-               "PRICING-HANDOVER-19Sep2026.")
+SRC_PRICING = ("Source: Meridian pricing and the commercial offer, "
+               "PRICING-DECISION-2026.md v1.0, FINAL, 20 September 2026.")
 SRC_METHOD = ("Source: Meridian forecasting methodology, The Aviation Observatory, "
               "23 August 2026.")
 SRC_CALIB = ("Source: Meridian calibration record, 2,915 real route launches, "
@@ -38,7 +38,10 @@ SRC_CALIB = ("Source: Meridian calibration record, 2,915 real route launches, "
 P_ONELINER = ("Run your route forecast on our stand, in seconds: 25 years of QSI "
               "practice, built into a tool and calibrated against real route launches.")
 P_SUB_1 = "The best time of day to fly it, not just how many will fly it."
-P_SUB_2 = "A researched pack with your numbers in your inbox within 30 minutes."
+# "the same day", not a minutes figure: controller ruling of 19 September, carried in
+# PRICING-DECISION-2026.md v1.0 section 7. The minutes figure returns only after one pack
+# has been sent and received over a hotspot at the 11-12 October trial.
+P_SUB_2 = "A researched pack with your numbers, emailed the same day."
 P_SUB_3 = "Independent and senior: no network to sell you, no house view."
 
 # The accuracy line, verbatim and only this (W3-RULINGS v2). Umbrella item 25 is open on
@@ -224,33 +227,41 @@ def build():
              "How much traffic will this airport see over the next 25 years, and where "
              "does it come from?"),
             ("The Design Day module",
-             "What does that traffic look like on the busiest day, gate by gate and hour "
-             "by hour? Quoted per airport as an addition to a Global Forecast licence."),
+             "What does that traffic look like on the busiest day, stand by stand and "
+             "hour by hour?"),
         ],
         callout=S.callout(["All three published by The Aviation Observatory"]),
         source=SRC_PRICING))
 
     # 10 ---------------------------------------------------------- the offer
-    s.append(S.table(
+    # PRICING-DECISION-2026.md v1.0 is the only file that states a price, and W3's
+    # instruction is one pricing line quoting it, nothing more. The size bands are gone:
+    # the axis is airports covered, not airport size. No number of places: John ruled no
+    # limit. No airline price anywhere: the Sabre licence does not permit selling to
+    # airlines. The wording below is the ruled host sentence, section 7, shortened.
+    s.append(S.prose(
         section="Licensing",
-        title="Published prices, because we publish our error",
-        table={"head": ["Airport size", "A year", "What is included"],
-               "rows": [["Small", "£15,000", "Three named seats, the full tool"],
-                        ["Medium", "£20,000", "Three named seats, the full tool"],
-                        ["Large", "£25,000", "Three named seats, the full tool"]],
-               "widths": [26, 20, 54],
-               "aligns": ["left", "right", "left"]},
-        bullets=["100 generated presentations a year, across the three seats. Forecasts, "
-                 "scenarios and exports are unlimited within fair use.",
-                 "Every tier is the whole tool. The price steps with airport size, never "
-                 "with features held back.",
-                 "Airlines, consultancies and multi-airport groups are quoted on their "
-                 "portfolio. All prices exclude VAT.",
-                 "Launch places this year on request."],
+        title="Launch clients sign by the end of November",
+        paras=[
+            (None,
+             "Launch clients who sign by 30 November 2026 pay half our list price in year "
+             "one, and we hold the year two and year three prices in writing at signature. "
+             "For a single airport the list is £15,000 a year, with no limit on users or on "
+             "how much you run it. For a group it depends on how many airports you cover "
+             "and we quote it."),
+            (None,
+             "The agreement and onboarding are available immediately after Routes."),
+        ],
+        # P_SUB_1 runs four over the callout budget, so it is set as two lines rather
+        # than reworded: a placeholder is quoted, not edited.
+        callouts=[S.callout(["The best time of day to fly it,",
+                             "not just how many will fly it."]),
+                  S.callout([P_SUB_2])],
         source=SRC_PRICING,
-        notes="No discount figure, no number of places, no expiry until John rules "
-              "(umbrella, Waiting on John, items 6 and 7). Placeholder sub-messages "
-              "'%s' and '%s' land here on 25 September." % (P_SUB_1, P_SUB_2)))
+        notes="One pricing line quoting PRICING-DECISION-2026.md v1.0, nothing more "
+              "(W3-RULINGS). The host's qualifying question comes first in conversation: "
+              "is route development done here, or at group? Placeholder sub-messages in "
+              "the callouts swap on 25 September."))
 
     return spec
 

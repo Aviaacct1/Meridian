@@ -1,336 +1,157 @@
-# W3 status: presentation and pack
+# W3 status: presentation, pack and stand video
 
 Written by W3 (Opus chat). Rewritten every session, never appended. The controller does not
-edit this file; W3 does not edit W3-RULINGS.md. Session 1, 19 September 2026.
+edit this file; W3 does not edit W3-RULINGS.md. Session 2, 21 September 2026.
 
-Read and confirmed this session: W3-RULINGS.md; GTM-STRATEGY-ROUTES-2026.md (Status block
-read, not edited); ROUTES-COMMERCIAL-PLAN-19Sep2026.md sections 3, 5 and 10;
-ROUTES-CONTROLLER-QUEUE-19Sep2026.md section B; PRICING-HANDOVER-19Sep2026.md;
-ROUTES-ATTENDING-ORGANISATIONS-21Sep2026.md section 1; PROMPT-for-Fable-Routes-19Sep2026.txt;
-HANDOVER-23Aug2026.md sections 5 to 7; MASTER-TASK-LIST.md.
+Read this session: routes/README.md; W3-RULINGS.md v3 in full, including the pricing pointer,
+the sweep of 19 September and scope item 5; routes/PRICING-DECISION-2026.md v1.0 FINAL,
+sections 7, 10 and 11; the umbrella's items 25, 26, 28 and 45.
 
-Clone: DevPC `C:\AviaDev`, pulled by John 19 Sep. HEAD `7be1470` (this file, v1), pushed,
-on `ad32627` (controller, W3 rulings v1). Workstation checked the same evening.
-No git command run by W3 against the mount.
+Clone: DevPC `C:\AviaDev`. W3 runs no git against the mount; John runs every block.
 
-**Commit hashes landed this session:** `7be1470` (this file, v1), `45a5210` (the provenance
-fix in `deck/render_pptx.py`, 156 lines, with `COMMIT-MSG-19Sep2026-w3-provenance.txt`),
-`86999cc` (`deck/build_image_set.py`, `deck/routes2026_probe.json` and this file), plus the
-three-images-per-airport probe and the byte-order-mark fix committed after it.
+**Commit hashes landed.** `7be1470` status v1 - `45a5210` the provenance fix in
+`deck/render_pptx.py` - `86999cc` the fetch-set builder and the probe (this one wears
+`45a5210`'s subject line; W3's error, recorded here because the history is not rewritten for a
+subject line) - `02ed18d` three airport images per airport - `f1fa7e3` the byte-order-mark fix
+- `83d547b` the development name off every client-facing surface - `03030fc` and `aa1c25b`
+status - `3af5158` the ten-slide stand deck.
 
-**Record correction.** `86999cc` carries the imagery probe but wears the provenance commit's
-message, because W3's command block reused `COMMIT-MSG-19Sep2026-w3-provenance.txt` for a
-second batch of files. W3's error, not John's. The message that describes `86999cc` correctly
-is `COMMIT-MSG-19Sep2026-w3-imagery.txt`, committed inside it. The history is not rewritten,
-for the same reason the controller left the misdated commit messages of 19 September alone:
-a force-push on main costs more than a wrong subject line. This note is the trail.
+**Owed from this session, two commits, blocks issued:** the deck corrected to final pricing,
+and the PDF render with its print stylesheet.
 
 ## State per scope item
 
 | Item | State | Evidence | Next action |
 |---|---|---|---|
-| 1. Ten-slide stand deck | Not started, outline below | Only the 2 July `Avia_Cortex_Process_and_Methodology.pptx` exists, 6 slides, and it is not reusable as it stands (see Q1) | Build slides 1-6 and 9-10 on the outline; slides 7-8 wait on two live runs |
-| 2. HTML pack tuned for the stand | Not started; the generator exists and three required sections do not | `app/pitch_html.py`, 399 lines, sections: opportunity, forecast, traffic table, market images, connecting markets, schedule and capacity, economics slider, why this route | Add the route map, the time-of-day curve and the tail chart; add a source line to every figure, not only the research cards |
-| 3. PDF render | Not started, and now unblocked | Nothing in the repo renders a PDF (repo-wide search returns only `venv` noise). Workstation check PASSED 19 Sep, John's transcript: Chrome present at Program Files, `pikepdf` 10.10.0, `pillow` 12.3.0. Nothing to install | Build the print stylesheet and the render step on the next pull |
-| 4. Imagery, provenance and airport photography | Provenance fix BUILT and PROVEN. Airport photography: scope widened by John 19 Sep, probe built, needs one workstation run | The library holds no airport photography for any of the six airports (Q3). The provenance loss is confirmed in code, and `piexif` 1.1.3 is present on the workstation (John's transcript, 19 Sep), so the EXIF fix runs where the decks are built | Commit the fix; run the coverage probe on the workstation; second source only if the measured gap justifies one |
+| 1. Ten-slide stand deck | Slides 1-6 and 9-10 BUILT and verified; 7-8 held | `deck/spec_routes_stand.py` at `3af5158`, corrected this session to PRICING-DECISION-2026.md v1.0. Renders clean: author and last-modified-by The Aviation Observatory, en-GB the only language on every run, no em or en dashes, rights record on the cover photograph. `Meridian_Routes_Stand_Deck_DRAFT_v0.2.pptx` in John's QSI Tool folder | Swap the messaging sentences on 25 Sep; slides 7-8 from runs 29 Sep-1 Oct |
+| 2. The pitch page (HTML) | NOT STARTED. Next build | The existing pack is a scrolling document; John ruled on 19 Sep that the HTML is a page presentable in a 20-minute airline meeting, and the PDF carries the depth | Rebuild as slide-shaped sections. The three figures are NOT new work: they exist and two are live (see below) |
+| 3. PDF render | BUILT and PROVEN | `deck/pack_pdf.py` plus a print block in `app/pitch_html.py`. Two-page A4 PDF, 56.6 KB, 1.2 seconds, every page 595 x 842 points, author and producer Avia Solutions | Render one real pack on the workstation, where the server and the stores are |
+| 4. Imagery | Provenance fix BUILT and PROVEN; coverage UNKNOWN | The fix is live and the deck build proves it end to end: a 2,075 KB library PNG became a 211 KB JPEG still carrying author, copyright and the cleared line. `deck/routes2026_probe.json`, 401 airports, three airport slots each | **The probe run. Blocked on one workstation paste since 19 September.** Block re-issued |
+| 5. Stand video (NEW) | NOT STARTED | Brought under W3 by John, 21 September. Scenarios agreed 9 September | Script and shot list next, then record on the Dev PC |
 
-## Built and proven this session: the provenance fix
+## Scope item 5: the stand video, and its dates
 
-`deck/render_pptx.py`, uncommitted in the working tree, block below. Three changes, none of
-them on the engine run path and none in `cortex_app.py`.
+A silent, subtitled loop for the stand TV in the Observatory look. Three cuts: the 3-4 minute
+booth loop, a 90-second insurer cut, a 20-30 second GIF for W6's posts.
 
-1. `Assets._record` reads the rights record out of the source file, from PNG text chunks or
-   from EXIF where the ingested file was already a JPEG.
-2. `Assets._photo` writes that record into the JPEG as EXIF at save time. Where it cannot be
-   written, the method keeps the source file rather than shipping a bare image, and reports
-   the refusal. A photograph carrying no record at all is reported, never silently dropped.
-3. `verify()` now reads the built file back and fails on any JPEG in `ppt/media` with no
-   rights record, so the check runs on every build rather than on request.
+- Routes: Bordeaux (easyJet or Vueling, short haul) and Boise (Breeze or Southwest). **A third,
+  larger hub for a long-haul pitch is with John, umbrella item 45.** Never a client airport,
+  which is John's standing rule for demo and marketing material.
+- Each route: warmed off camera, one run shown live with a time-lapse caption. The accuracy line
+  verbatim once and nowhere else. "About a minute" is released (W6-RULINGS, 21 Sep) and may be
+  captioned for Run only. Nothing about any competitor; nothing labelled illustrative.
+- Recording: natively on the Dev PC with a labelled block, because the portal at
+  meridian.aviacortex.com is not reachable from this chat's environment. Post-processing in the
+  device shell with ffmpeg. The password file is never printed.
+- Delivery: the booth loop as MP4 in 16:9 for the stand TV, with W9 confirming the screen's
+  input and resolution from the exhibitor manual; the GIF to W6.
 
-Measured on `observatory_library/field/field-runway-sunrise.png`: 2,075 KB source to a 226 KB
-JPEG, so the compression that exists for a sendable deck is unchanged, and the record survives
-in full, author, copyright, the cleared line and the whole ingest record. An image with no
-record is reported. Source: W3 run on the DevPC, 19 September.
-
-**What the same check says about decks already sent.** `China Airlines TPE-SJC deck v2
-19Aug2026.pptx` holds 224 media files, 94 of them JPEG, and **all 94 carry no rights record**.
-Source: `_verify_provenance` run against that file, 19 September. Most of that imagery comes
-from `C:\assets\engagement`, which holds no record to carry in the first place (Q3), so
-re-rendering it will report rather than repair. Controller's call whether anything is owed on
-decks already out; W3's scope starts at the Routes surfaces, where the check now blocks it.
-
-## Airport photography: John's ruling of 19 September, and what W3 is doing about it
-
-**Ruling (John, 19 Sep).** Mood frames and charts are essential and stay, but an airport sales
-deck carries airport-specific photography. Draw on online sources, more than one, with paid
-stock held for the airports a search cannot cover, so a photograph exists for most of the 300
-plus airports in the room, in the deck and in the HTML pack. An airport uploading its own
-library is the eventual answer and is a later build. **This widens W3-RULINGS scope item 4,
-which reads "from the rights-managed Observatory library only". Controller to note.**
-
-**The design point that decides the build, and it is already in the code.** `avia_images.auto_ok`
-splits a confidential use from a published one. A photograph whose subject is a building, in a
-country with no freedom-of-panorama exception, is ordinary practice in a pitch deck sent to a
-named recipient and is refused on a public web page. John's 19 September ruling puts the HTML
-pack on a public unguessable URL, which is a published use, while the emailed PDF is
-confidential. So the same terminal photograph can be right in the PDF and wrong on the hosted
-page, and the pack must resolve its images per use, not once per airport. This costs nothing:
-`render_pptx.py` already takes `--use`, and the pack build must take it too.
-
-**What already exists, and has never been run.** `deck/avia_images.py` does this job against
-Wikimedia Commons and records the full licence block per file: ShareAlike files may be placed
-but never cropped or graded, a country panorama table refreshed off Commons, no more than two
-images from one photographer, a 1600 by 900 minimum, and non-free and fair-use templates
-rejected outright. `C:\assets\engagement` holds **no `manifest.json`**, so the fetcher has
-never written into it and every image in that folder was placed by hand. That is why the 94
-JPEGs in the China Airlines deck carry nothing.
-
-**W3's view: measure the coverage before signing up to anything.** Nobody knows what share of
-400 airports Commons already covers at a usable size and licence, and that number decides
-whether a second source is worth building and whether stock is worth buying. Signing contracts
-first, then finding Commons covered most of it, wastes money and a fortnight W3 does not have
-before the 10 October freeze.
-
-**Built this session, ready to run:** `deck/build_image_set.py` generates the fetch-set input
-from the engine's own airport table, ranked by size, joined to the airport reference for the
-name and city each search needs. `deck/routes2026_probe.json` is the generated probe, 401
-airports, one terminal slot each, including Genoa at 1.85m passengers precisely because a small
-airport is the case worth measuring. It is committed generated, so the workstation installs
-nothing to run it. The probe is a dry run: it searches and scores, downloads nothing.
-
-The run must happen on the workstation. Commons is unreachable from the DevPC mount's shell,
-which the egress proxy refuses with a 403, and `avia_images.py` says on its own first page that
-it runs on the workstation and not in a sandbox. Block issued. It runs unattended while John is
-away, alongside the preagg job.
-
-**Sequence after the probe reports.** Where Commons covers an airport, that is the photograph
-and it arrives with its record. Where it does not, W3 proposes one second source rather than
-several, chosen on what its terms actually say when read, with Flickr's Creative Commons filter
-the first candidate to read because aviation photography there is deep on named secondary
-airports. Paid stock is a contract, not a build: W3 recommends signing nothing before Routes
-and letting the measured gap decide it, because a gap airport still produces a good pack from
-mood frames and charts, which is what the Observatory library was made for. The airport's own
-uploaded library is the right long-term answer and already has its slot in
-`avia_slots.SlotResolver(uploads_dir=...)`; it is a post-Routes build.
-
-**The risk W3 will not trade away.** A photograph of the wrong airport, or one with no clearance,
-handed to that airport's own route development team, is worse than no photograph. So the
-pipeline refuses rather than guesses: no record, no placement, and the build check added this
-session fails the deck rather than shipping it.
-
-## Q1. The two methodology documents, and where they disagree
-
-Paths, both in the project folder `C:\Users\Carte\OneDrive\Documents\Claude\Projects\Avia QSI Tool`:
-
-- `Avia_Cortex_Process_and_Methodology.pptx`, 2 July 2026, 6 slides.
-- `Meridian_Methodology_Note_Nick_23Aug2026.docx`, 23 August 2026, with
-  `Meridian_Methodology_Process_Chart_23Aug2026.png` beside it. Marked private and confidential,
-  internal only, because it carries Avia's own calibrated coefficients.
-
-Master list 3.3b is now answered: they do contradict, in four places. W3 reports rather than
-resolves.
-
-1. **One engine or two.** The 2 July deck describes a single rebuilt engine producing the whole
-   number in seven steps. Nick's note section 5 describes a second, calibrated method, a
-   machine-learned launch model trained on real launches, running alongside the step-by-step
-   build as a cross-check on the point-to-point figure. The deck does not mention it. The
-   standing ruling in HANDOVER-23Aug2026.md section 7 reads "one engine, never a second engine".
-   The ruling and the note use the word differently, and the accuracy claim belongs to the
-   launch model, not to the step-by-step build. This is master list 2.4 and it reaches the stand:
-   a visitor who asks what the 89% describes needs one answer. **Controller and John to settle
-   the sentence; W3 will not write around it.**
-2. **The accuracy figures themselves.** Nick's note gives accuracy in words ("the large
-   majority", "a substantial share") and states that accuracy is reported separately for
-   short-haul domestic and low-cost launches against long-haul international full-service,
-   because a blended figure understates the harder segment. The ruled deck line is a single
-   blended pair, 89 and 82. Nothing in the deck line is wrong, but the note invites the segment
-   question the deck line does not answer. Nick has both documents.
-3. **Two validation figures in the 2 July deck are pre-fix and must not be reused.** Slide 3
-   claims the beyond feed reproduces the analyst's 48,115 to within circa 1% on BA London-San
-   Jose, and that BA's beyond feed came out about 2.6 times a Star carrier's. Both predate the
-   20 August each-way and two-way basis correction to the connecting layer. Either they are
-   re-run on the current build and restated, or they stay out of the deck. W3 recommends they
-   stay out: the deck has two live worked routes and does not need a July number.
-4. **Naming and style.** The 2 July deck says "Avia Cortex" on every slide, which is a
-   development name and never appears on a client surface, and it twice uses a word on John's
-   banned list. No slide is reused as it stands; slides 2, 3 and 6 are useful as structure only.
-
-Nick's note also carries a caveats list (section 6) that the stand must not contradict: weekly
-frequency is not yet allocated to days, the local and connecting split is under review, and the
-each-way or two-way basis must be stated. The deck states the basis on every passenger figure.
-
-## Q2. The ten slides, one line each
-
-1. Cover. Meridian, published by The Aviation Observatory. Route forecasting for airports and
-   airlines. Stand F124, Routes World 2026.
-2. The problem, in the buyer's words. A route development team pitches a route and is asked how
-   many passengers, at what load factor, and why the airline should believe it.
-3. What Meridian does. The seven-step build in the client's language, from two cities and an
-   airline to annual passengers and the schedule to fly, restructured from 2 July slide 2.
-4. The three classes of number: measured, calibrated, physics-capped, taken from Nick's note
-   section 2. This is the slide the host uses to answer most method questions honestly.
-5. The accuracy claim, alone on the slide, in the ruled words and nowhere else in the deck:
-   calibrated leads are within 20% of the outcome 89% of the time and within 10% 82% of the
-   time, on 2,915 real launches; blind results are reported as portfolios only, never as a
-   single route.
-6. The connecting feed, behind and beyond, and why the answer changes with the airline you
-   pitch. Structure from 2 July slide 3, both July figures removed.
-7. Worked route 1: SJC-TPE with China Airlines. Real charts from the tool, run on the current
-   build, two-way basis stated, source line on every figure.
-8. Worked route 2: one European transatlantic route, BLQ-JFK or GOA-JFK. Same layout as slide 7
-   so the two read as one method, not two studies. **John picks the route and the carrier.**
-9. The product family: Meridian, the Observatory Global Forecast, the Design Day module, and
-   what each one answers. No competitor on this slide or any other.
-10. The offer. The published structure only: 15,000, 20,000 or 25,000 pounds a year by airport
-    size, three named seats, 100 generated presentations included, sales-led quotation, and
-    "launch places this year on request". No discount figure, no number of places, no expiry
-    until John rules (umbrella, Waiting on John, items 6 and 7).
-
-Slides 7 and 8 need two runs on the frozen build to produce their charts. Everything else can
-be built now. The four messaging sentences carry as placeholders from the controller queue
-section B and swap on 25 September; they land on slides 2, 3 and 10.
-
-## Q3. What the imagery library actually holds
-
-Read at `C:\assets` on the DevPC (`ASSETS_DIR`), 19 September.
-
-**The Observatory library holds no photography of any airport, including all six.** It holds 52
-files in four families: globe (26 satellite frames by region), field (6 runway and approach
-frames), operations (6 apron and tower frames), instruments (10 sextant, telescope and chart
-still lifes). Every frame is cleared, "Observatory library, Collection 1 or 2, Avia Solutions,
-2026-08-06", with the record in `library.json` and inside the file as PNG text. The library is
-written as mood imagery, and its own note says so: "Mood only: covers, dividers, full-bleed,
-closing pages. Never an evidence plate." One frame carries a restriction: a British Airways
-livery is legible in `operations/operations-departures-gate.png`, usable only where BA is the
-subject carrier and never auto-selected.
-
-So the commercial plan's rule, hero image chosen by destination airport where the library has
-one, resolves to nothing for SJC, TPE, BLQ, GOA, JFK and EWR.
-
-There is a second folder, `C:\assets\engagement`, holding 39 files including San Jose aerials
-and named corporate campuses from the SJC engagement. **It carries no rights record of any
-kind, no manifest and no embedded record.** Nothing in it goes on a Routes surface under the
-ruling, and W3 will not use it. `deck/avia_images.py` is the tool built to fetch named-airport
-photography from Wikimedia Commons with the full licence record, and it has not been run for any
-of the six. It must run on the workstation, not here, and its `fop-refresh` step runs first or
-every country outside a twelve-country seed reads unknown, which blocks a published use.
-
-**The provenance loss is confirmed, and it is in one place.** `deck/render_pptx.py`, method
-`Assets._photo`, re-encodes photography to JPEG at quality 82 with `Image.open(path).convert
-("RGB")` then `im.save(dest, "JPEG", ...)`, passing no EXIF. The library's record lives in PNG
-text chunks, so it is dropped in that one call and every delivered deck carries images with no
-rights record. Two ways out. The existing `--no-compress` flag keeps the PNGs and their records,
-and the Liguria deck at 20MB is why the compression exists, so that is not the answer for an
-emailed deck. The fix is eight lines: write the record into the JPEG as EXIF at save time with
-`piexif`, exactly as `deck/avia_library.py::write_file_metadata` already does for JPEG inputs.
-`piexif` 1.1.3 is confirmed present on the workstation, so the fix runs where the decks are built. W3 owns it and writes it on the next pull.
-
-**What W3 needs from John on imagery.** With no cleared airport photography, there are three
-options and W3 recommends the first. (a) The deck and the packs use Observatory mood frames for
-covers and dividers, and the route slides carry charts and maps only, which is also what the
-library's own rule says. Nothing is blocked and nothing is at risk. (b) Run `avia_images.py` on
-the workstation for the six airports and take what Commons returns with its licence record,
-which costs a workstation session and returns whatever depth Commons happens to have. (c) Buy
-stock for the six. John's call.
-
-## Q4. How the PDF render will be produced
-
-Nothing exists, so this is a build from zero. Method, in W3's recommended order:
-
-1. Chrome on the workstation in headless mode, driven by the existing Windows Chrome rather than
-   a new dependency: `--headless=new --disable-gpu --no-pdf-header-footer --print-to-pdf=<out>`
-   against the pack's own URL on the local server, not a saved file, so the charts draw with
-   their data and the fonts resolve.
-2. A print stylesheet added to `app/pitch_html.py`: `@page { size: A4; margin: 14mm }`, page
-   breaks held at the section boundaries so a chart never splits, the economics slider replaced
-   in print by the figures at its current position, and the source line kept with its figure.
-3. Metadata written after the render, because Chrome stamps its own: author and last-modified-by
-   set to Avia Solutions with `pikepdf`, verified by reading the file back in the same script.
-4. The render runs as a step in the pack job on the workstation, so the PDF and the hosted HTML
-   come from one run and cannot differ. W2 owns what happens to the file after that.
-
-**Nothing needs installing.** Checked on the workstation 19 September, John's pasted transcript:
-Chrome present at `C:\Program Files\Google\Chrome\Application\chrome.exe`, `pikepdf` 10.10.0,
-`pillow` 12.3.0, `piexif` 1.1.3. The Playwright fallback is not needed and is not added.
-
-## The plan to 3 October (John's ruling, 19 Sep: all four items for the 3rd, not the 8th)
-
-John pulled the pack, the PDF and the imagery forward from 8 October to 3 October, so all four
-scope items reach Jol and Nick together. W3 works to that. The risk in it is the review, not
-the build: four artefacts read in one sitting leave a single week to fix whatever comes back
-before the 10 October freeze. So what reaches them is staggered, and the PDF is proven early.
-
-One consequence of John's own ruling helps here. The PDF is the full researched pack and the
-HTML is the short pitch, so they are two different outputs rather than one rendered twice. The
-PDF therefore renders off the long pack that already exists and does not wait for the HTML
-rebuild.
-
-| Dates | What W3 builds |
+| Date | Video milestone |
 |---|---|
-| 22-25 Sep | Stand deck slides 1-6 and 9-10. PDF render proven end to end off the existing pack: A4, print stylesheet, Avia Solutions metadata verified |
-| 25 Sep | The four messaging sentences swapped into slides 2, 3 and 10 when John and Jol settle them |
-| 25 Sep-1 Oct | The HTML pack rebuilt as a presentable 20-minute airline pitch. The largest item and the one with least slack: the route map, the time-of-day curve and the tail chart do not exist in the pack at all and are three new charts |
-| 29 Sep-1 Oct | Slides 7 and 8 from two real runs, SJC-TPE and Bologna-New York |
-| 2 Oct | The full sweep across all three: house style, en-GB, author metadata, rights records, a source on every figure |
-| 3 Oct | All of it to Jol and Nick |
+| 23 Sep | Script and shot list to the controller; John names the third route (item 45) |
+| 26-30 Sep | Record the two agreed routes on the Dev PC; rough cut |
+| 3 Oct | **First cut to Jol and Nick, with the other four items** |
+| After 10 Oct | Final cut re-recorded on the frozen build |
+| 15 Oct | On the show laptop and a USB stick; W2 loads it |
 
-**If a dependency slips, the HTML pitch page goes to review on 6 October rather than all four
-arriving half-finished on the 3rd. The 10 October freeze does not move.**
+The third route is the only hard dependency. Without it by 23 September the first cut carries
+two routes rather than three, and W3 says so rather than substituting one.
 
-**Imagery is the one item W3 will not promise a number on.** The pipeline and the provenance are
-W3's to deliver and are built. What Wikimedia Commons holds is what it holds, and only the probe
-says.
+## What changed in the deck this session
 
-## John's ruling on the two pack formats, 19 September
+The pricing ruling landed after the deck was built, so slide 10 was wrong within a day of
+being right.
 
-The PDF is the full researched pack: the visitor asked for their own numbers and the depth is
-the product. The HTML is a different artefact, a page that can be presented in a 20-minute
-airline meeting: the key information in slide-shaped sections, interactive charts rather than
-static images, two photographs, every figure carrying its source. W3's earlier proposal, a short
-read with the full pack one click below it, is superseded.
+- Slide 10 rebuilt to **one pricing line quoting PRICING-DECISION-2026.md v1.0, nothing more**,
+  in the ruled host wording of section 7. The size bands are gone, because the axis is airports
+  covered and not airport size. No number of places, because John ruled there is no limit. The
+  order-ready line is added: the agreement and onboarding are available immediately after Routes.
+- **No airline price appears anywhere.** The old slide carried "airlines, consultancies and
+  multi-airport groups are quoted on their portfolio"; Avia's Sabre licence does not permit
+  selling to airlines, so no airline is sold, quoted or priced on any W3 surface (decision 20).
+- The pack promise is now "emailed the same day" and no minutes figure, per the controller's
+  ruling of 19 September carried into the pricing file's section 7. The placeholder sentence
+  from the controller queue says thirty minutes; the ruling beats the placeholder.
+- Slide 9 loses the Design Day pricing wording, which came from the superseded handover.
+- Stand F174 corrected to F124.
 
-## What W3 needs from John
+## Correction: the pitch page's three figures already exist (John, 21 September)
 
-1. CLOSED 19 Sep: pulled, HEAD confirmed.
-2. CLOSED 19 Sep: workstation checked, Chrome and `pikepdf` and `piexif` and `pillow` all present.
-3. CLOSED 19 Sep: slide 8 is Bologna-New York. **Carrier still to name**, and the deck names an
-   airline; W3 will not pick one.
-4. CLOSED 19 Sep: mood frames and charts stay, and airport photography is added from multiple
-   online sources with stock held for the gaps.
-5. CLOSED 19 Sep: at least three images of the airport itself per airport. One looks thin.
-   The probe is regenerated to measure that, three airport slots over 401 airports.
-6. CLOSED 19 Sep: the image-source accounts are held by The Aviation Observatory, and the three
-   sign-ups wait until a mailbox on aviationobservatory.com works. Consequences below.
-7. **The coverage probe, run on the workstation, by 26 September.** Blocked twice on 19 Sep, on
-   a missing config and then on a byte-order mark, both fixed. If it has not run by the 26th,
-   W3 stops planning for airport photography and the Routes surfaces carry Observatory mood
-   frames and charts. Better decided than discovered.
-9. **The carrier for Bologna-New York, by 23 September.** It is named on slide 8 and it is an
-   input to the run that draws the slide's charts.
-10. **Two runs off the build for the worked routes, by 29 September**, so slides 7 and 8 carry
-   real charts rather than placeholders.
-8. The two July validation figures in Q1 item 3: W3 proposes they stay out. Silence to
-   26 September, they stay out.
+John asked W3 to check the SJC-TPE work before reinventing it. He was right to, and W3's own
+line in the session-1 status, that the route map, the time-of-day curve and the tail chart "do
+not exist in the pack at all", was true of the pack and wrong about the codebase. The
+difference is days of work.
+
+- **Time-of-day curve: BUILT, WIRED, LIVE.** `app/cortex_workbook.render_curve_png()`, built
+  24 August for John's EVA, China Airlines and STARLUX batch. Matplotlib rather than openpyxl's
+  native chart, because the shaded restricted-hour bands and the annotated callout cannot be
+  done in the Excel chart model without hand-editing chart XML. It is rendered before
+  `wb.save()` and embedded in the Departure curve sheet, with the raw data table and a native
+  Excel line chart beside it. Its comment carries the lesson: it rendered correctly to a
+  sibling file on the server for a while, and three real bug fixes achieved nothing until it
+  travelled inside the file John actually clicks.
+- **Route and catchment maps: BUILT and WIRED.** `deck/forecast_pack.render_maps()` through
+  `deck/avia_maps.route_map()`, both route ends, reached from `app/demo_pack.py`. A pack that
+  cannot draw a map is still a pack, by design.
+- **Tail chart: BUILT.** `drawTail()` and `tailPattern()` in `app/cortex_dashboard.html`, with
+  the day-of-week seam marked. JavaScript, which is what the pitch page is, so it lifts across.
+- **The workbook is eight sheets**, not a spreadsheet: Forecast, Connecting feed, Schedule,
+  Departure curve, Catchment, Economics, Competition, Assumptions, each with each-way and
+  two-way pairs, a method note, source lines, and Avia Solutions set as creator and
+  last-modified-by.
+
+**What this changes.** The pitch page is selection and wiring, not invention. The eight sheets
+are the content inventory already argued out, so the question is which of them earn a place in
+twenty minutes, not what the figures should be.
+
+**One judgement W3 will make unless the controller rules otherwise.** John's 19 September
+ruling asks for interactive charts on the pitch page. The curve is a proven, labelled,
+source-lined PNG whose numbers match the workbook. Building a second, interactive curve risks
+two pictures of the same run disagreeing, against the download-fidelity ruling that a download
+reproduces the run on screen. So W3 uses the proven renderers where a figure carries numbers,
+and adds interactivity only where it earns its place: the economics sliders, which already
+exist and already work.
+
+## Conflicts seen (README: W3 reports, the controller resolves)
+
+1. **The deck's author.** W3-RULINGS scope item 1 says Avia Solutions as author and
+   last-modified-by. The naming ruling and `render_pptx._metadata`'s own documented rule say a
+   product deck is published by The Aviation Observatory, and every slide is branded that way.
+   Built as the Observatory. One line to change.
+2. **The accuracy wording.** The ruled line is binding verbatim; umbrella item 25(b) states the
+   same figures in different words. Both on slide 5 would breach "no other accuracy figure
+   anywhere", so the ruled line is on the slide and 25(b) is in the speaker notes. The
+   controller rules which is the slide text when item 25 lands.
+3. **Dates inside the rulings file.** The Dates line still reads "pack tuning and PDF render by
+   8 October; imagery rights fix by 8 October", while the sweep below it records and accepts
+   John's 3 October for all items. W3 works to 3 October.
+4. **Slides 7 and 8.** Scope item 1 puts two worked routes with real charts in the deck due
+   3 October, while the controller's answer takes those runs only after the 10 October freeze.
+   W3's proposal, unchanged: the layout and the argument go to Jol and Nick on 3 October with
+   charts from the current build, and the charts are regenerated off the frozen build between
+   10 and 14 October before anything is printed. Reviewers are judging the slide, not the third
+   decimal place.
+
+## What W3 needs
+
+1. **The coverage probe, on the workstation.** Blocked since 19 September, twice on this
+   chat's own faults, both fixed. Block re-issued. If it has not run by 26 September W3 stops
+   planning for airport photography and the Routes surfaces carry Observatory mood frames and
+   charts, which is a decision rather than a discovery.
+2. **The carrier for Bologna-New York** (umbrella item 26). Named on slide 8 and an input to
+   the run.
+3. **The third video route** (umbrella item 45), by 23 September.
+4. **The accuracy sentence** (umbrella item 25), by 26 September. Slides 4 and 5 are built to
+   hold the fallback wording and swap.
+5. **Two runs off the build** for the worked routes, 29 September to 1 October.
 
 ## For the controller
 
-1. **The one-engine-or-two wording** (Q1 item 1) is a stand answer, not a document tidy, and it
-   belongs with master list 2.4 and pre-mortem item 9. W3 needs the settled sentence **by
-   26 September**, because slides 4 and 5 cannot be final without it and everything now goes to
-   review on 3 October.
-2. **W3 now depends on W2.** John's ruling puts the three image-source accounts in The Aviation
-   Observatory's name and holds them until a mailbox on that domain works. That mailbox depends
-   on whether the domain sits on the Avia Microsoft 365 tenant, which is umbrella Waiting on
-   John 9 and does not default until 26 September. Registration, approval and an API key follow
-   it. **So a second image source will not be live and tested before the 10 October freeze, and
-   W3 is planning the deck and the packs on Commons plus the Observatory mood frames.** Stated
-   now rather than in October. If the probe reports coverage weak enough to change that
-   judgement, W3 says so the day it reads the file.
-3. **Scope.** W3-RULINGS item 4 reads "from the rights-managed Observatory library only". John
-   widened it on 19 September to airport photography from multiple sources. The controller may
-   want the rulings file to say so.
-4. Two defects found outside W3's own build and fixed in passing, both reported here rather
-   than resolved quietly: the JPEG re-encode that stripped every rights record from delivered
-   decks, and `avia_fonts.py` swallowing an unparseable config into an empty dict that surfaced
-   later as a missing setting. The second is the silent-fallback shape the project has been
-   caught by four times.
+- Scope item 5 lands on the same 3 October as the other four, and it is a recording job on the
+  Dev PC rather than a build in this chat. It is the item most likely to slip, because it needs
+  the portal, a screen recorder and a quiet machine, and none of that can be proven from here.
+- The pack promise change reached the deck this session. If any other W3 surface is quoted
+  elsewhere with a minutes figure, it is out of date.
+- Item 28 closed on SJC-TPE and Bologna-New York for the deck. The video keeps the
+  never-a-client-airport rule separately, which is right: the deck's job is evidence and the
+  video's job is demonstration.

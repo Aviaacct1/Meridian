@@ -1,0 +1,31 @@
+W3: the stand deck corrected to final pricing, and the stand number
+
+PRICING-DECISION-2026.md v1.0 went FINAL on 20 September, the day after the deck
+was built, so slide 10 was wrong within a day of being right.
+
+deck/spec_routes_stand.py:
+
+- Slide 10 rebuilt to one pricing line quoting the file and its version, nothing
+  more, in the ruled host wording of section 7. The size bands are gone: the axis
+  is airports covered, not airport size. No number of places: John ruled there is
+  no limit, only the 30 November signature date. The order-ready line is added,
+  that the agreement and onboarding are available immediately after Routes.
+- No airline price appears. The slide carried "airlines, consultancies and
+  multi-airport groups are quoted on their portfolio"; Avia's Sabre licence does
+  not permit selling to airlines, so no airline is sold, quoted or priced on any
+  W3 surface (pricing decision 20).
+- The pack promise reads "emailed the same day" with no minutes figure, per the
+  controller's ruling of 19 September carried into the pricing file's section 7.
+  The placeholder sentence from the controller queue says thirty minutes; the
+  ruling beats the placeholder, and the reason is in a comment beside it.
+- Slide 9 loses the Design Day pricing wording, which came from the superseded
+  handover note.
+- Stand F174 corrected to F124.
+
+Rebuilt and verified: author and last-modified-by The Aviation Observatory, en-GB
+the only proofing language on every run, no em or en dashes, rights record on the
+cover photograph, content budgets clean.
+
+routes/W3-STATUS.md rewritten to the true state: eight landed commit hashes, the
+five scope items with scope item 5 the stand video and its dates, four conflicts
+for the controller to resolve, and what W3 needs and by when.
