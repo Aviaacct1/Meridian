@@ -279,3 +279,33 @@ exist (slot; the account is opened before the first invoice). VAT status: John s
 
 The feedback card asks "what do you pay today for your data subscriptions", not a list of
 supplier names. Same answer, no third-party name on a client-facing surface.
+
+## Controller's sweep of W5-STATUS.md v4 (21 September 2026)
+
+1. Conflict 1 (section 7 v section 11): you built to section 11, right. W8 owes v1.1.
+2. Conflict 2, the quarterly review call: RULED OUT of every band. The file's list of what a
+   licence carries is the list; a named Avia contact and one refresh call a year exist only in
+   the Programme wrap-around of the old table, which is withdrawn. Nothing recurring in a
+   person's time goes in without a price in the file. Question 5 closed. Scope item 1's line
+   is superseded.
+3. Conflict 3, the economics disclaimer naming Avia Solutions Limited: the clause names BOTH
+   ("Avia Solutions Limited, on whose analysis the service is built, and The Aviation
+   Observatory Limited"); the wording in the service itself is W1's to change before the freeze
+   (app/aircraft_economics.py DISCLAIMER_FULL) and the controller takes that. Flag to the
+   solicitor stands.
+4. Conflict 4, the band table on the one-pager: RULED. The one-pager the five meetings see
+   carries the single-airport price and "groups quoted on the airports covered"; the full
+   band table goes on the Order Form and in the quotation to a group, not on the walk-up
+   sheet. John's 3 August ruling stands over the 20 September line, which was written for
+   the withdrawn usage tiers. Two one-pager variants are not wanted: one sheet, with the
+   group line.
+5. Judgement 1, twelve months to retire the service: adopted, with the data-licence route
+   separate as you have it. Slot 2 closes at twelve months unless John objects (umbrella 47).
+6. Judgement 2, non-exclusive jurisdiction: to the solicitor as you say.
+7. Judgements 3 and 4: agreed. The licence record never comes back into the repository.
+8. Watchpoint 4 (a new company with no trading history): right, and it is John's to answer;
+   umbrella item 48 (accounts, insurance certificate, a parent-company letter of comfort from
+   Avia Solutions Limited or the Holdings company, ready before the first procurement asks).
+9. Your eight asks are umbrella items 31 (PI, bank, VAT), 34-style: solicitor slot (item 49),
+   support (item 50), known-issues sign-off (Nick, ruled unless John objects), OAG and Sabre
+   told of the party (item 51).

@@ -30,7 +30,7 @@ John pauses until Postmark approval (expected Mon 22 Sep). `Aviaacct1/tao-websit
 | W2 Stand flow | In progress (v13, 21 Sep) | Delivery PROVEN via Postmark API (aviasolutions.com, MessageID 8283ccb0); SMTP path discarded three messages silently, transport now API (3406f0a); lead_store built, 47 checks (ef6de65), app not yet rewired; capture layer widened to four record types; progressive Optimise deferred | Rewire app to lead_store; nightly export; three capture buttons; stand mode; zone move; laptop procedure after SSD | W2 chat / John | Capture demonstrable 2 Oct; laptop proof 8 Oct |
 | W3 Presentation (deck, pack, PDF, imagery, STAND VIDEO) | In progress (v2, 21 Sep) | Slides 1-6, 9-10 built and verified (3af5158), slide 10 rebuilt to final pricing; PDF render BUILT and proven (two-page A4, Avia metadata); pitch page's three figures already exist in the codebase; Commons probe still unrun (item 33); video script 23 Sep | Pitch page as slide-shaped sections; one real pack PDF on the workstation; probe by 26 Sep; video record 26-30 Sep; all five items to Jol and Nick 3 Oct | W3 chat / John | All four to Jol and Nick 3 Oct |
 | W4 Host | v2 DONE (21 Sep) | STAND-HOST-MANUAL.md v2, 862 lines, 23 slots: Suzanna's order of use, the bridge walk-through, final pricing sentence, weak-scenario list, recording section; three bridge labels flagged for W3 | v3 after 8 Oct screenshots and W5's known-issues list; items 25 and 34 from John; Word copy for print | W4 chat / John | v3 mid-Oct |
-| W5 Order-ready documents | In progress (v3, 20 Sep) | Agreement and one-pager v0.2 committed (3197c43), 17 clauses; checklist 8 of 13 DONE; BUILT ON SIZE BANDS, to be rebuilt on W8's tiers | Invoice, onboarding script, known-issues list, licence-record form; twelve slots are John's by 3 Oct; solicitor wk 6 Oct | W5 chat / John | 3 and 10 Oct |
+| W5 Order-ready documents | v0.3 DONE (21 Sep): every document exists | Standard Terms (25 clauses, 14 flags) plus Order Form; one-pager; invoice (TAO Ltd); onboarding script; known-issues v0.1; licence-record form; feedback card v0.2; checklist ticked against the pricing file; seven slots, all John's or the insurer's | Solicitor slot wk 6 Oct (whole document); PI cover and bank account are the binding constraints on 21 Oct; known-issues frozen 10 Oct | W5 chat / John | 6 and 10 Oct |
 | W6 Messaging, marketing, website, meetings | In progress (v7, 21 Sep) | Four sentences redrafted in the Observatory voice (variants v3); five invitations ask the airport to name a route; post 1 and list email ready for approval; site copy still says three seats / 100 presentations (fix queued) | John: contacts, 2.3 A or B, approvals by 25 Sep; W6: site licence-shape fix, clean-clone proof, Pages after zone move; invitations 26-29 Sep | W6 chat / John | 25-29 Sep |
 | W8 Pricing and commercial offer | DONE 20 Sep | PRICING-DECISION-2026.md v1.0 FINAL; twenty decisions answered; bands by airports covered | W3-W6 rebuild to it (pointers in place); Knock test result from John in a week or two | W8 chat closed / John | Knock by 3 Oct |
 | W9 Stand, contract, show logistics | NEW 21 Sep, gap found | Contract UNSIGNED (billing details owed to Informa today); stand number F124 per Informa v F124 in every document; graphics deadline 3 Oct; exhibitor manual follows contract | John sends billing details and the two questions today; W9 chat opens on the contract and manual | W9 chat / John | Contract 21 Sep; graphics 3 Oct |
@@ -410,6 +410,14 @@ five contacts.
   by The Aviation Observatory; slides 7-8 go to review 3 Oct on current-build charts and are
   regenerated after the freeze; the spend question names no supplier.
 
+- 21 Sep 2026: W5 v4 read: every order-ready document exists in draft (Standard Terms plus
+  Order Form, one-pager, invoice, onboarding script, known-issues, licence record, feedback
+  card). Rulings: no quarterly review call in any band; the disclaimer names both companies
+  and the in-service wording is W1's; the walk-up one-pager carries the single-airport price
+  with groups quoted, the band table on the Order Form only; twelve months' retirement notice.
+  New items 47-51. PI cover and the TAO bank account are now the binding constraints on
+  order-ready, not the drafting.
+
 ## Waiting on John
 
 1. CLOSED 19 Sep: HEAD `11a4c3f` confirmed and pushed.
@@ -607,6 +615,21 @@ five contacts.
 46. **A Suzanna session on the current build before the 16 Oct trial**, week of 29 Sep, so her
     Optimise view is current (W4 watchpoint 4; controller agrees). Book it with her on Tuesday's
     call. Silence: the 16 Oct trial is her first sight of it.
+47. **Twelve months' notice to retire the service** (W5 judgement, controller adopts; the Sabre
+    sunset shape). Silence to 3 Oct: twelve months.
+48. **TAO Ltd has no trading history**: what a procurement department gets when it asks for
+    accounts, insurance and a credit reference. Controller's view: the PI certificate once
+    extended, and a letter of comfort from Avia Solutions Limited (or the Holdings company)
+    standing behind the service; ask the accountant which. Needed before the first airport
+    asks, which could be November.
+49. **The solicitor and a slot in the week of 6 October** for the whole document set.
+50. **Support: the address, the named person who reads it every working day, and the response
+    time.** Appears in five documents. Controller's suggestion: support@aviationobservatory.com
+    once Email Routing exists (item 20), read by John, one working day.
+51. **Have OAG and Sabre been told the contracting party is The Aviation Observatory Limited?**
+    Memory says both approved launching through a separate entity verbally on 17 Sep; the
+    written confirmation is still owed and the licence record form (W5) captures the calls.
+    Known-issues sign-off: Nick, unless you say otherwise.
 13. **Pick the five meetings**: John agreed the buyer-test list 19 Sep (Birmingham, Dublin,
     Vienna, Dallas Fort Worth, Milan SEA; reserves in the organisations file, section 3).
     Open point: whether one competitor-client airport goes on the five as a deliberate test
