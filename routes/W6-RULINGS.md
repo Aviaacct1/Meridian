@@ -245,3 +245,12 @@ is rejected on that ground alone.
 6. Sentence 2.3, A or B: put to John as umbrella item 44; the controller's view is B on the
    stand and in the invitations, A where one line is all there is, as you propose.
 7. Contacts by 25 Sep and approval of post 1 and the list email: umbrella items, John's.
+
+## 21 September 2026, 16:30: "ABOUT A MINUTE" RELEASED (controller, on W1 step 2 measurements)
+
+On a freshly restarted server the forecast is on screen within 30 seconds of route entry
+(market brief 6-8s plus Run 13-20s cold, TIMING-20260921-1607; 15-20s warm), identical across
+two restarts. Sentence 1 may therefore promise the FORECAST "in about a minute" (1-HELD becomes
+1-LIVE). Optimise is "a few minutes more" and is never promised in seconds; "under five
+minutes" remains true for the whole demonstration and may be used where the pack is the
+subject. Swap the same day, as you offered.

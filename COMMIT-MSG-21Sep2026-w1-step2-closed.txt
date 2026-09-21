@@ -1,0 +1,17 @@
+W1 step 2 CLOSED: boards and catchment land paths persist across restarts; acceptance met
+
+Measured on the workstation (TIMING-20260920-1910 restart 4; TIMING-20260921-1607 restart 5;
+profiles -1545 before 2b and -1617 after): cold Run on a freshly started server SJC-TPE 16.9s,
+BRS-EWR 20.2s, DUB-DFW 13.4s, identical across the two restarts; warm 8-11s; Optimise narrowed
+38-53s. Day-one baseline (restart 1, no persistence) was 33.6 / 53.3 / 23.3s. In-process cold
+profile 118.8s to 37.5s; the remainder is route_feed.score / qsi_feed._collapse, frozen engine
+logic and the warm floor. Every saved Run payload identical to the pre-change baseline on
+restarts 2, 4 and 5 (diag_routes_timing.py --diff PASS). Brief acceptance met: Run on a
+never-run pair under 30s; Optimise under three minutes with first result inside 30s.
+
+Umbrella: W1 row, decisions log, pre-mortem 11 closed. W6-RULINGS: "about a minute" released
+for the forecast. Stand number corrected to F124 across the programme files; sweep of W2 v13
+and W6 v7; items 42-44; W9 rulings v1.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_018CkmoTUt4WcQLbhGuKfeMd

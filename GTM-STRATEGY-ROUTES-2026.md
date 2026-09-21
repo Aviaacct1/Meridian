@@ -26,7 +26,7 @@ John pauses until Postmark approval (expected Mon 22 Sep). `Aviaacct1/tao-websit
 
 | WS | State | Where it stands | Next action | Owner | Date |
 |---|---|---|---|---|---|
-| W1 Speed and caches | Step 2a PROVEN, 2b written | Boards persist across restart, diff PASS; cold Run 21-42s, warm 8-12s; profile says the rest is the catchment land-path cache | Commit 2b, restarts 3-4, r4 diff; then warm_boards over the register and the market-brief first-call cost | Controller / John | 21 Sep |
+| W1 Speed and caches | STEP 2 CLOSED 21 Sep, acceptance met restart-proof | Cold Run 16.9 / 20.2 / 13.4s (SJC-TPE, BRS-EWR, DUB-DFW), warm 8-11s, Optimise narrowed 38-53s, identical on restarts 4 and 5; diff PASS r2, r4, r5; profile: remainder is frozen feed scoring | Market-brief first-call cost (6-8s); warm_boards over the register before 20 Oct; gap cache only if time | Controller / John | Brief by 3 Oct; warm-up 19 Oct |
 | W2 Stand flow | In progress (v13, 21 Sep) | Delivery PROVEN via Postmark API (aviasolutions.com, MessageID 8283ccb0); SMTP path discarded three messages silently, transport now API (3406f0a); lead_store built, 47 checks (ef6de65), app not yet rewired; capture layer widened to four record types; progressive Optimise deferred | Rewire app to lead_store; nightly export; three capture buttons; stand mode; zone move; laptop procedure after SSD | W2 chat / John | Capture demonstrable 2 Oct; laptop proof 8 Oct |
 | W3 Presentation | In progress; STATUS STILL v1 of 19 Sep, chat not run since | Slides 1-6, 9-10 built (3af5158 per handover, unconfirmed in W3-STATUS); provenance fix proven (45a5210); Commons probe written, unrun (item 33) | W3 rewrites its STATUS; PDF render and pitch page; probe run by 26 Sep; slides 7-8 from runs 29 Sep-1 Oct | W3 chat / John | All four to Jol and Nick 3 Oct |
 | W4 Host | In progress (v1) | STAND-HOST-MANUAL.md v1, 648 lines, 27 slots; built on size-band pricing, now superseded | v2 after Suzanna's four answers (item 23) and 8 Oct screenshots; pricing slots wait on W8 FINAL | W4 chat / John | v2 mid-Oct |
@@ -387,6 +387,18 @@ five contacts.
   airport to name a route; site licence copy contradicts the pricing file (W6 fixes next);
   the named-route handover is ruled (John forwards to the controller the same day).
 
+- 21 Sep 2026: W1 STEP 2 CLOSED, MEASURED. Boards (2a, pickles under LOCAL_CACHE\boards) and
+  catchment land paths (2b, sqlite under LOCAL_CACHE\water_check) persist across restarts.
+  Cold Run on a freshly started server: SJC-TPE 16.9s, BRS-EWR 20.2s, DUB-DFW 13.4s, identical
+  on restarts 4 and 5 (TIMING-20260920-1910, -20260921-1607); day-one baseline was 33.6 / 53.3 /
+  23.3s (restart 1) and the in-process profile fell from 118.8s to 37.5s, the remainder being
+  route_feed.score / qsi_feed._collapse (frozen engine, the warm floor of 8-11s). Payloads
+  identical to the pre-change baseline on every restart (probe --diff PASS). Acceptance in the
+  brief met: Run on a never-run pair under 30s cold; Optimise narrowed 38-53s with first result
+  inside 30s. Pre-mortem 11 CLOSED. "About a minute" released to W6 for the forecast (Run).
+  Left for W1: the market brief's 6-8s first call; warm_boards over the register before the
+  show; the straight-line gap cache only if time.
+
 ## Waiting on John
 
 1. CLOSED 19 Sep: HEAD `11a4c3f` confirmed and pushed.
@@ -730,10 +742,10 @@ Written as if it happened. Each has an owner and a mitigation already in the pla
     contact; the five pre-arranged meetings are John's.
 11. **The workstation restarts and loses every pre-warmed route.** Answer: the persistent
     cache (handover 3.3) is the whole point; proven across a restart before freeze. Status
-    19 Sep: OPEN. Step 1 holds boards, MCT and the airport table in process memory only; a
-    restart loses them and the first Run on each airport pays circa 30s again. Step 2 is
-    the on-disk copy of exactly those parsed boards under LOCAL_CACHE, keyed on the OAG
-    store's vintage, plus a warm-up over the registered airports at launch.
+    21 Sep: CLOSED. Boards and catchment land paths persist on disk under LOCAL_CACHE, keyed
+    on store and rule vintage; cold Run after a restart is 13-20s on three pairs, identical
+    across two restarts, payloads identical to baseline. The register warm-up runs before
+    20 Oct so the show's airports are on disk.
 12. **The dress rehearsal does not happen.** Found 19 Sep: Boeing 13 Oct is an Atlas meeting
     with a short Meridian slot, not the Routes flow. Answer: two Meridian trials, 11-12 Oct
     (full stand flow after the freeze, timed, Plan A and Plan B, a pack sent and received on
