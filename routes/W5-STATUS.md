@@ -1,133 +1,164 @@
 # W5 order-ready documents: status
 
-Version 3, 20 September 2026. Written by the W5 chat for the programme controller; rewritten
-each session, never appended. W5-RULINGS.md v2 and routes\README.md v1 read and acted on. W5
-writes no code and edits no other workstream's file.
+Version 4, 21 September 2026. Written by the W5 chat for the programme controller; rewritten
+each session. `PRICING-DECISION-2026.md` v1.0, `W5-RULINGS.md` v2 as amended 21 September and
+`README.md` v1 read and acted on. W5 writes no code and edits no other workstream's file.
+Clone at `e0b0fd4`; W5 has not run git.
 
-ORDER-READY IS 21 OCTOBER. Every W5 document lands by 10 October, not 3 November. Agreement
-and one-pager are v0.2 today, ahead of John's figures on 3 October and the solicitor in the
-week of 6 October.
+## Live state
 
-Clone: the mounted DevPC clone reads `702d525`, with the five rulings files modified in the
-working tree by the controller. W5 has not run git. The block at the foot is John's.
+Every document in W5's scope now exists in draft. The agreement is split into Standard Terms
+signed once and an Order Form per client, on the Sabre master and work order pattern, so no
+commercial variable sits inside the terms the solicitor reviews.
 
-## State, by scope item
+| What | State | Pages |
+|---|---|---|
+| Standard Terms, 25 clauses, 14 lawyer flags | DRAFT v0.3 | 5 |
+| Order Form template, every commercial variable | v0.3 | 3 |
+| One-pager, leads with the licence | DRAFT v0.3 | 2 |
+| Invoice template, TAO Ltd | v0.1 | xlsx |
+| Onboarding script, 45 minutes | v0.1 | |
+| Known-issues list, client-facing | v0.1 for 1 Oct, frozen 10 Oct | |
+| Licence record form, OAG and Sabre | v0.1, for John to complete | 2 |
+| Feedback card | v0.2, the two spend questions added | |
 
-| # | Item | State | Evidence | Next |
-|---|---|---|---|---|
-| 1 | Agreement | v0.2 TO RULINGS v2 | `W5-AGREEMENT-19Sep2026.md`, `Meridian-Licence-Agreement-DRAFT.docx`, 17 clauses, 9 slots, 13 lawyer flags, 4 pages with the markers in | John's figures by 3 Oct, solicitor week of 6 Oct |
-| 2 | Invoice template | NOT STARTED | | Next session; needs facts 1 and 11 |
-| 3 | Onboarding script, 45 minutes | NOT STARTED | | Next session, no dependency |
-| 4 | Known-issues list | NOT STARTED | Base is `TESTERS-KNOWN-ISSUES-23Aug2026.md` plus day-of-week, fare, the uncostable types. It is now the agreement's schedule, so it is contractual | Draft 1 Oct, frozen 10 Oct |
-| 5 | Feedback card and pack-email line | DRAFTED v0.1 | `W5-FEEDBACK-CARD-19Sep2026.md` | To Jol by 8 Oct. Ruling: W5's wording is the only wording, quoted with its version by W4 and W2 |
-| 6 | Support arrangement | BLOCKED ON JOHN | | Fact 8 |
-| 7 | Licence record, OAG and Sabre | NOT STARTED | | One-page form next session; only John holds the content, fact 10 |
-| 8 | One-pager and follow-up sequence | ONE-PAGER v0.2 | `W5-ONE-PAGER-19Sep2026.md`, `Meridian-Launch-Customer-One-Pager-DRAFT.docx`, 2 pages, printed double-sided for the five meetings | The 48-hour and two-week sequence next session |
+## What W5 needs from John
 
-## The finalisation checklist, item by item
+1. **The solicitor, and the slot in the week of 6 October.** The whole document goes at once,
+   nothing piecemeal. This is the only item with someone else's diary in it.
+2. **PI cover at TAO Ltd.** No client contract is signed before it is in place, so this is now
+   the binding constraint on 21 October, not the drafting. The insurance clause is slot 3.
+3. **TAO Ltd's bank account and VAT status.** Slots 1 and 7. The first invoice cannot issue
+   without the account.
+4. **Support: the address, the person who reads it every working day, the response time.**
+   Slot 4, and it appears in five documents.
+5. **Is the quarterly review call included?** The pricing file's list of what every licence
+   carries does not mention it; W5 v0.2 promised one a quarter with an Avia director. Removed
+   from v0.3 pending your ruling. It is the only recurring cost in the licence that is a
+   person's time, so if it is in, it belongs in the pricing file.
+6. **Who signs off the known-issues list** before a client sees it. Slot 5. W5 proposes Nick.
+7. **Were OAG and Sabre told the contracting party is now TAO Ltd?** Slot 6. A buyer's
+   diligence asks which company holds the subscription and which sells the outputs.
+8. **The notice period to retire the service.** Slot 2. W5 recommends twelve months, which is
+   what Sabre gives Avia and what Avia therefore accepts as reasonable.
 
-1. **DONE.** Launch offer at 50% / 75% / 85% as three fixed cash figures, rounded to the
-   nearest £50, year 4 at the published list. Clause 4 and the one-pager's first table.
-   Small £7,500 / £11,600 / £13,550. Medium £10,000 / £15,450 / £18,050. Large £12,500 /
-   £19,300 / £22,550.
-2. **DONE.** The three-year list table at a flat 3%, labelled for illustration, with the
-   contractual mechanism named as clause 5. Clause 4.
-3. **DONE.** The banded list quoted as the reference, three seats, 100 presentations, size
-   from published passenger numbers in the quotation. Clauses 2 and 4. The internal thresholds
-   are fact 4.
-4. **DONE.** Add-ons at 50% in year 1 or 75% in year 2; new functions as priced options; a
-   core-price increase above escalation where a function is folded into core, on the renewal
-   notice, with the right not to renew. Clause 6 and the one-pager.
-5. **DONE.** Escalation at not less than UK CPI, ONS all items, twelve months to the preceding
-   December, with Avia able to set more in the renewal notice; the launch years as the express
-   exception. Clause 5, and one line on the one-pager.
-6. **DONE.** Annual automatic renewal, one month's notice from the client, Avia's notices at
-   three and two months, the conditional opt-out on a procurement-rules declaration at no
-   premium. Clause 3 and the one-pager.
-7. **DONE.** Avia ending or suspending: notice, pro-rata refund to the day within 30 days,
-   outputs kept, no further liability, the data-licence trigger named expressly. Clause 15.
-   The notice period is fact 6.
-8. **DONE.** The four launch conditions and the signature deadline of 30 November 2026, in the
-   offer and in clause 8, not in the term. The known-issues list is attached as the schedule.
-9. **PART.** Clause 7 and the one-pager carry annual in advance, invoice on signature, 14 days,
-   VAT exclusive, sterling, and the early-payment discount, as the controller's proposal and
-   marked as such. It is fact 5 until John rules it.
-10. **PART.** Both are present as slots: the overage rate (fact 3) and the review-call promise
-    (fact 7).
-11. **DONE.** Licence position (clause 9), the economics disclaimer verbatim from
-    `app/aircraft_economics.py` DISCLAIMER_FULL (clause 10), no liability for decisions taken
-    on outputs (clause 11), data handling (clause 12).
-12. **PART.** Governing law England and Wales is in clause 17. The entity is fact 1 and has no
-    default.
-13. **PART.** Thirteen lawyer flags carried, each marked in its clause and listed once at the
-    foot for the solicitor. Nine slots open in the agreement and seven on the one-pager, all
-    listed below. Author metadata and en-GB verified on both Word files by
-    `build_w5_docs.py`, which fails the build rather than report a check it did not run.
+## The finalisation checklist, ticked against PRICING-DECISION-2026.md v1.0
 
-## Every unfilled slot, and who it waits on
+Ticked against the FILE, not against the checklist's own 20 September wording, which the file
+supersedes in five places. Where the file changed the answer, the tick records the file.
 
-All twelve are John's, by 3 October, so the solicitor has the week of 6 October.
+1. **DONE, on the file.** Launch offer at 50% / 75% / 85% as three fixed cash figures, year 4
+   at list less the continuity discount. Order Form section 3 and the one-pager. Third row new:
+   £15,000 / £23,200 / £27,050.
+2. **SUPERSEDED, correctly.** The three-year illustrative table is no longer printed for the
+   client. The file states the launch figures as cash and the reference list by year lives in
+   the file; printing an inflator on a client document invited an argument the cash figures
+   already settle.
+3. **CHANGED BY THE FILE.** The axis is airports covered, not size: £15,000 one airport,
+   £22,500 two to nine, £30,000 ten or more. No passenger numbers, no thresholds. Standard
+   Terms clause 2, Order Form section 2, one-pager.
+4. **DONE.** Options at 50% in year 1 and 75% in year 2; new functions as priced options; core
+   price above escalation where a function is folded into core. Standard Terms clause 9,
+   Order Form section 6, one-pager.
+5. **DONE.** Escalation at not less than UK CPI, not more than once a calendar year, measured
+   from the later of commencement and the last adjustment, with the cash schedules as the
+   express exception. Standard Terms clause 9.
+6. **CHANGED BY THE FILE.** Cancellation is 90 days, not one month. Standard Terms clause 8,
+   Order Form section 8, one-pager. The conditional opt-out for procurement rules is in.
+7. **DONE.** Retirement on notice with replacement offered, a separate route where a data
+   licence is lost, pro-rata refund within 30 days, outputs kept, no further liability.
+   Standard Terms clause 17. Notice period is slot 2.
+8. **DONE.** The four launch conditions and 30 November 2026 in the Order Form, section 5, not
+   in the term. Continuous licensing added as the fourth, with the forfeit and the £2,500
+   re-onboarding fee in Standard Terms clause 11. Known-issues list attached.
+9. **CLOSED.** Annual in advance, invoice on signature, 14 days, VAT exclusive, sterling, and
+   no early-payment discount. Quarterly as a payment method at £4,000 / £6,000 / £8,000.
+10. **CHANGED BY THE FILE.** There is no overage rate. Fair use acts at 250 researched packs by
+    telephone, never a block and never an invoice. Standard Terms clause 5. The review call is
+    question 5 above.
+11. **DONE.** Licence position (clause 14), the economics disclaimer verbatim (clause 13), no
+    liability for decisions taken on outputs (clause 16), data handling (clause 20).
+12. **CLOSED.** The Aviation Observatory Limited, 17411365, 86-90 Paul Street, London EC2A 4NE,
+    in both documents and on the invoice. Governing law England and Wales, jurisdiction
+    non-exclusive, which is judgement call 2 below.
+13. **PART.** Fourteen lawyer flags carried and listed once for the solicitor. Seven slots open,
+    all listed below and all of them John's or the insurer's. Author metadata verified on all
+    five generated files; en-GB verified on the four Word files.
 
-1. **Contracting entity**, registered number and office. Umbrella item 31, no default.
-   Agreement SLOT 1, one-pager SLOT G.
-2. **Number of launch places**. Agreement SLOT 7, one-pager SLOT B.
-3. **Overage rate** for presentations beyond 100. No figure exists anywhere. Until it is set,
-   the 100 is a cap. Agreement SLOT 6, one-pager SLOT E.
-4. **Internal size thresholds** that place a client in the small, medium or large band. The
-   public policy is settled; the thresholds never were. Agreement SLOT 3.
-5. **Payment terms**: confirm annual in advance, invoice on signature, 14 days, and set the
-   early-payment discount. Agreement SLOT 5, one-pager SLOT F.
-6. **Avia's notice period** for ending or suspending the service. Controller's draft is three
-   months. Agreement SLOT 9, one-pager SLOT D.
-7. **The review call**: one a quarter, with an Avia director. Confirm both. Agreement SLOT 2,
-   one-pager SLOT C.
-8. **Support**: the address, the person who reads it every working day, the response time.
-   Agreement SLOT 8, one-pager SLOT G.
-9. **The Meridian route study price**, per route, invoiced on delivery, no licence. Umbrella
-   item 35. It leads the one-pager once priced. Agreement SLOT 4, one-pager SLOT A.
-10. **The licence record**: dates, participants and what was said on the OAG and Sabre calls.
-    Only John and the witnesses hold it.
-11. **Invoice detail**: VAT number, bank details, whether a purchase order is required, and
-    the numbering. Follows slot 1. Needed for the invoice template.
-12. **The solicitor**, and the slot in the week of 6 October.
+Added by the file and not on the checklist, all now drafted: the scope clause and the schedule
+of covered airports; the corporate-domain user term with no count and no consultant account;
+the machine learning restriction on onward use; the continuity discount and the re-onboarding
+fee; adding airports; multi-year locked cash schedules; the cure periods and the repeat-late-
+payment right; the effects of termination; the marketing and reference clause with the client's
+approval.
 
-## Judgement calls W5 made, for the controller to overturn if wrong
+## Every open slot
 
-1. **The illustrative list is printed to the nearest pound** (£15,914, £21,218, £26,523 in
-   year 3), not the nearest £50. A buyer with a calculator who takes 85% of a rounded list
-   arrives £50 below the printed cash price, and that argument is not worth having in a
-   meeting. The launch figures themselves follow the ruling exactly: nearest £50.
-2. **The one-pager runs to two pages**, printed double-sided. The price table, the three-year
-   schedule, the four conditions and the exit terms do not fit on one side at a size anyone
-   will read across a table.
-3. **The agreement is 17 clauses and 4 pages** with the markers in. The ruling of 19 September
-   said two pages; the rulings of 20 September added escalation, renewal, add-ons, new
-   functions and Avia's exit. Two pages is no longer achievable honestly.
+| Slot | What | Waits on |
+|---|---|---|
+| 1 | TAO Ltd VAT status | John |
+| 2 | Notice to retire the service; W5 recommends twelve months | John |
+| 3 | The insurance wording, written to the cover as extended to TAO Ltd | the insurer's proposal |
+| 4 | Support address, named person, response time | John |
+| 5 | Who signs off the known-issues list | John |
+| 6 | Whether OAG and Sabre were told the party is TAO Ltd | John |
+| 7 | TAO Ltd bank details | the account being opened |
 
-## Watchpoints
-
-1. **The step from year 3 to year 4** is from 85% of list to list, and the client meets it in
-   the same year that escalation starts applying to it. The schedule is on the one-pager and
-   in the agreement from the first meeting, which is what John asked for, but the renewal
-   conversation in year 4 is the one that decides whether a launch client stays.
-2. **Clause 9 remains the exposure.** Avia sells outputs from data licensed from OAG and
-   Sabre on verbal permission. Clause 15 now carries the consequence of a provider
-   restricting sharing, which is the right place for it, but the letters are still the answer.
-3. **The accuracy line and umbrella item 25.** Clause 10 states the ruled sentence and nothing
-   beyond it. If item 25 rules (a), the clause stands as drafted.
-4. **Prices are in a printed document before they are on the website.** The one-pager is the
-   first written price a prospect sees, which the ruling intends. It is also the version a
-   prospect will hold in November when the website publishes; the two must agree.
+Closed since v0.2, so nobody re-asks: the entity (TAO Ltd); the number of launch places (none);
+the internal size thresholds (no figure, because no size axis exists); the route study price
+(£2,500); payment terms (annual, 14 days, no early-payment discount); the overage rate (replaced
+by fair use at 250). Old slot numbers map as: agreement 1 to the entity, 2 to open question 5,
+3 to no figure, 4 to £2,500, 5 to payment, 6 to fair use, 7 to none, 8 to slot 4, 9 to slot 2;
+one-pager A to £2,500, B to none, C to question 5, D to slot 2, E to fair use, F to payment,
+G to the entity and slot 4.
 
 ## Conflicts seen
 
-None outstanding. Both conflicts raised in v2 are fixed in the umbrella: the W5 row is
-rewritten and Waiting on John item 20 is cut to one recommendation.
+1. **The pricing file's section 7 contradicts its own section 11.** Section 7 orders the
+   one-pager with the route study first and the number of places last. Decision 4 says the
+   study is on the price list and not led on, and decision 5 says there is no number of places.
+   W5 has built the licence first and no number of places, per W5-RULINGS v2. W8 owes v1.1.
+2. **The quarterly review call.** W5-RULINGS scope item 1 still lists it; the file's list of
+   what every licence carries does not. Open question 5 above.
+3. **The economics disclaimer names Avia Solutions Limited** and TAO Ltd is now the contracting
+   party. Quoted verbatim as ruled and flagged to the solicitor. Either the wording in the
+   service changes or the clause names both. It cannot stay as it is once TAO signs.
+4. **The band table on a client document.** Section 2 of the file carries John's ruling of
+   3 August that the band table is not published beside the single-airport price; W5-RULINGS v2
+   says the table goes in full. W5 has followed the later ruling, so a single-airport buyer
+   holding the one-pager sees what a forty-airport group pays. Say if that is wrong.
+
+## Judgement calls
+
+1. **Twelve months to retire the service**, against the three months carried in v0.2. The file
+   recommends the Sabre sunset shape, Avia accepts it from Sabre, and a shorter period on a
+   service an airport has built its route programme around reads as thin. A data licence lost
+   is handled separately, because Avia cannot promise notice it will not be given.
+2. **Non-exclusive jurisdiction**, from the RDC precedent the file adopts, against the exclusive
+   jurisdiction in v0.2. The solicitor rules it.
+3. **The known-issues list is rewritten, not reused.** The tester list says "please don't report
+   these", which is the right tone for a trial and the wrong one for a client paying £15,000.
+4. **The licence record is a Word form**, not markdown, because John completes it, signs it and
+   files it on Egnyte beside the licences. It names individuals at two suppliers, so the
+   completed copy does not come back into the repository.
+
+## Watchpoints
+
+1. **PI cover is now the binding constraint on 21 October**, not the drafting. Every document
+   can be finished and no contract can be signed until the cover is in place at TAO Ltd.
+2. **The scope clause is what holds the multi-airport price up.** The code check on the two
+   output endpoints is W2's and is a condition of the first multi-airport contract, not of
+   Routes.
+3. **Year 4.** A single-airport launch client pays £13,550 in year 3 and circa £15,571 in year
+   4 on list with the continuity discount, a rise of 15%. Three more years at 10% makes it
+   £14,752, a rise of 8.9%. The multi-year schedule is the answer in that conversation and both
+   W5 and W4 now carry it.
+4. **TAO Ltd is a new company with no trading history.** A procurement department will ask for
+   accounts, insurance and a credit reference. Worth having an answer ready before the first
+   airport asks, and it is not a drafting matter.
 
 ## Commits
 
-`11a4c3f..702d525` carries W5 session 1. **`3197c43`, 20 September, pushed to Aviaacct1/Meridian
-main (702d525..3197c43)**: agreement and one-pager v0.2, the builder, this file at v3 and
-`COMMIT-MSG-20Sep2026-w5-v02.txt`; the two v0.1 Word files removed, which git recorded as
-renames to the version-free names. A stale `.git/index.lock` from 21:40 on 19 September blocked
-the first attempt and was removed; nothing had committed since 21:33, so nothing was lost.
+`3197c43` carries v0.2. This session commits against `COMMIT-MSG-21Sep2026-w5-v03.txt`. The
+block removes `W5-AGREEMENT-19Sep2026.md` and `Meridian-Licence-Agreement-DRAFT.docx`, which
+the Standard Terms and the Order Form replace.

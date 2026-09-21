@@ -1,0 +1,87 @@
+W5 v0.3: Standard Terms and Order Form, and the four remaining order-ready documents
+
+Rebuilt to routes/PRICING-DECISION-2026.md v1.0, which is now the only file stating a price,
+and to W5-RULINGS.md v2 as amended 21 September. The agreement of v0.2 is retired: it carried
+nine commercial slots inside the terms the solicitor has to review, and the file's section 6a
+answers that with the Sabre master and work order pattern.
+
+THE SPLIT.
+  Standard Terms   signed once, 25 clauses, nothing that varies by client. Licence grant and
+                   scope, named users on the corporate domain with no count and no consultant
+                   account, permitted use and provenance, onward use extended expressly to
+                   training or evaluating machine learning models, fair use, term and 90 days'
+                   cancellation, escalation, payment and the cure periods, continuity discount
+                   and re-onboarding, adding airports, the accuracy record and the economics
+                   disclaimer, the data position, warranty, liability capped at fees paid with
+                   a one-year claims period, retirement and suspension, termination and what
+                   survives it, confidentiality, data handling, marketing and references,
+                   insurance, support, governing law.
+  Order Form       one per licence and per change: the client, the covered airports as the
+                   schedule, the band and the List Price, the launch or multi-year or list
+                   basis as cash, annual or quarterly payment, the options bought, the named
+                   discount and the net price against the floor, the continuity status, the
+                   renewal declaration, the signatures.
+
+WHAT THE FILE CHANGED, AND WHERE IT LANDED.
+  the axis        airports covered, not airport size: £15,000 one, £22,500 two to nine,
+                  £30,000 ten or more. The internal size thresholds close with no figure
+                  because no size axis exists
+  the third row   launch at ten or more airports, £15,000 / £23,200 / £27,050, new work; the
+                  first two rows are the arithmetic already verified at v0.2
+  places          none. The date is the only limit, so slot 2 and agreement slot 7 close
+                  "none" rather than with a number
+  packs           no overage rate. Fair use acts at 250 researched packs by telephone, never
+                  a block and never an invoice
+  cancellation    90 days on the RDC precedent, not one month
+  seats           named users on the client's own corporate email domain, no count, no charge,
+                  and no consultant account, which the solicitor is asked to make express
+  the entity      The Aviation Observatory Limited, 17411365, 86-90 Paul Street, London
+                  EC2A 4NE, in both documents and on the invoice
+  new clauses     the scope clause and the schedule of covered airports, adding airports, the
+                  continuity discount and the £2,500 re-onboarding fee, multi-year locked cash
+                  schedules, cure periods, the repeat-late-payment right, effects of
+                  termination, and the marketing clause with the client's approval on each use
+
+THE ONE-PAGER leads with the licence. The file's section 7 orders it with the route study
+first and a number of places last; decisions 4 and 5 in section 11 of the same file overrule
+both, and W5-RULINGS v2 says the licence leads. Built that way; W8 owes a v1.1 of section 7.
+The route study stays on the price list at £2,500 beside the catchment load at £3,500 and the
+template mapping at £5,000.
+
+THE FOUR REMAINING DOCUMENTS. The invoice template in TAO Ltd's name with the bank details as
+a slot, because the account does not yet exist. The 45-minute onboarding call script, built so
+that three of the client's own routes come out of it and the client hears what the pack is not
+before they find out. The client-facing known-issues list for the 1 October review, rewritten
+from the tester list rather than reused, because "please don't report these" is the right tone
+for a trial and the wrong one for a client paying £15,000. The licence record form for John to
+complete and file on Egnyte, which is the whole paper trail on OAG and Sabre until the letters
+arrive.
+
+FLAGGED, NOT FIXED. The economics disclaimer is quoted verbatim as ruled and it names Avia
+Solutions Limited while TAO Ltd now signs the contract. Either the wording in the service
+changes or the clause names both; it cannot stay as it is. Lawyer flag 6, and W5-STATUS.md v4
+carries it with three other conflicts.
+
+Fourteen lawyer flags, listed once at the foot of the Standard Terms so the solicitor can work
+from that list. Seven slots open, every one John's or the insurer's, mapped from the old
+numbering in W5-STATUS.md v4 so nothing is re-asked.
+
+  routes/W5-STANDARD-TERMS.md              source, 25 clauses
+  routes/W5-ORDER-FORM.md                  source, the template
+  routes/W5-ONE-PAGER-19Sep2026.md         v0.3, licence first
+  routes/W5-ONBOARDING-SCRIPT.md           45 minutes
+  routes/W5-KNOWN-ISSUES-DRAFT.md          client-facing, for 1 October
+  routes/W5-LICENCE-RECORD.md              form for John
+  routes/W5-FEEDBACK-CARD-19Sep2026.md     v0.2, the two spend questions, no supplier named
+  routes/build_w5_docs.py                  four Word files and the invoice, each verified
+  routes/W5-STATUS.md                      v4
+  Meridian-Standard-Terms-DRAFT.docx 5pp, Meridian-Order-Form-TEMPLATE.docx 3pp,
+  Meridian-Launch-Customer-One-Pager-DRAFT.docx 2pp, Meridian-Licence-Record-FORM.docx 2pp,
+  Meridian-Invoice-TEMPLATE.xlsx
+  removed: W5-AGREEMENT-19Sep2026.md and Meridian-Licence-Agreement-DRAFT.docx
+
+Every generated file rebuilt and verified by build_w5_docs.py: Avia Solutions as author and
+last-modified-by on all five, en-GB at the document default and in settings on the four Word
+files with no other language anywhere, and no em or en dash in any of them. The author check
+now matches the tag rather than an exact string, because openpyxl writes the namespace inline
+and the old check passed a correct file as failed.

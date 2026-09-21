@@ -1,13 +1,13 @@
 # Stand feedback card and the pack-email line
 
-Draft v0.1, 19 September 2026. Written by W5 for Jol (due to him 8 October 2026) and for the
+Draft v0.2, 21 September 2026. The two spend questions added on the pricing file's decision 13; question 7's wording is the controller's ruling of 21 September, and no supplier is named. Written by W5 for Jol (due to him 8 October 2026) and for the
 stand host. Commercial in confidence.
 
 ## The card
 
 One card for each substantive demo, filled in by the host, not by the visitor. Thirty seconds
 while the visitor walks away. The host writes what the visitor said, not what the host thought.
-Both sides print on one A6 card; the same five questions sit behind the capture front end so a
+Both sides print on one A6 card; the same questions sit behind the capture front end so a
 card can be typed in at the end of the day.
 
 Visitor, company, route run, date and session: _______________________
@@ -18,6 +18,13 @@ Visitor, company, route run, date and session: _______________________
 4. What did they ask for that we do not have?
 5. Would they pay for it? Cold, warm, or a launch candidate, and what they said that puts them
    there.
+6. How many route studies did you commission last year, and what did they cost?
+7. What do you pay today for your data subscriptions?
+
+Questions 6 and 7 are asked of the visitor, not answered by the host, and they are how the
+standard price is set in November. Ask them of anyone who got as far as a real route. Name no
+supplier in question 7: the answer is the same and no third party appears on a surface a visitor
+sees. If they will not say, write that they would not say, which is itself worth knowing.
 
 Host's own line: anything you would change about the demo you just gave.
 

@@ -2,8 +2,11 @@
 
 Run on the DevPC:  python routes\\build_w5_docs.py
 Outputs, beside the sources in routes\\:
-  Meridian-Licence-Agreement-DRAFT.docx
+  Meridian-Standard-Terms-DRAFT.docx
+  Meridian-Order-Form-TEMPLATE.docx
   Meridian-Launch-Customer-One-Pager-DRAFT.docx
+  Meridian-Licence-Record-FORM.docx
+  Meridian-Invoice-TEMPLATE.xlsx
 
 House rules enforced here, not by hand: Avia Solutions as author and last-modified-by,
 en-GB at the document default with no run-level or style-level language anywhere else,
@@ -28,14 +31,22 @@ LANG = "en-GB"
 GREY = RGBColor(0x59, 0x59, 0x59)
 
 JOBS = [
-    ("W5-AGREEMENT-19Sep2026.md",
-     "Meridian-Licence-Agreement-DRAFT.docx",
-     "Meridian licence agreement, draft v0.2",
+    ("W5-STANDARD-TERMS.md",
+     "Meridian-Standard-Terms-DRAFT.docx",
+     "Meridian Standard Terms, draft v0.3",
      "DRAFT for legal review, not for issue to a client"),
+    ("W5-ORDER-FORM.md",
+     "Meridian-Order-Form-TEMPLATE.docx",
+     "Meridian Order Form, template v0.3",
+     "TEMPLATE, commercial in confidence"),
     ("W5-ONE-PAGER-19Sep2026.md",
      "Meridian-Launch-Customer-One-Pager-DRAFT.docx",
-     "Meridian launch customer offer, draft v0.2",
+     "Meridian launch customer offer, draft v0.3",
      "DRAFT, commercial in confidence"),
+    ("W5-LICENCE-RECORD.md",
+     "Meridian-Licence-Record-FORM.docx",
+     "Data licence position, record form v0.1",
+     "Private and confidential, for completion by John Carter"),
 ]
 
 TOKEN = re.compile(r"(\*\*.+?\*\*|SLOT [0-9A-Z]+|LAWYER [0-9]+)")
@@ -66,7 +77,9 @@ def read_blocks(path):
         if line.startswith("|"):
             if para: flush()
             cells = [c.strip() for c in stripped.strip("|").split("|")]
-            if all(set(c) <= set("-: ") for c in cells):
+            if any("-" in c for c in cells) and all(set(c) <= set("-: ") for c in cells):
+                continue
+            if not any(cells):
                 continue
             table.append(cells); continue
         if line.startswith("### "):
@@ -179,7 +192,9 @@ def build(src, out, title, status):
             write_runs(par, payload, 10)
         elif kind == "table":
             rows = payload
-            table = doc.add_table(rows=len(rows), cols=len(rows[0]))
+            width = max(len(r) for r in rows)
+            rows = [r + [""] * (width - len(r)) for r in rows]
+            table = doc.add_table(rows=len(rows), cols=width)
             table.style = "Table Grid"
             for r, row in enumerate(rows):
                 for c, cell in enumerate(row):
@@ -205,10 +220,7 @@ def verify_docx(path):
     problems = []
     with zipfile.ZipFile(path) as z:
         core = z.read("docProps/core.xml").decode("utf-8")
-        if f"<dc:creator>{AUTHOR}</dc:creator>" not in core:
-            problems.append("author is not Avia Solutions")
-        if f"lastModifiedBy>{AUTHOR}<" not in core:
-            problems.append("last-modified-by is not Avia Solutions")
+        problems += _core_author_problems(core)
         for name in ("word/styles.xml", "word/document.xml", "word/settings.xml"):
             if name not in z.namelist():
                 continue
@@ -232,6 +244,128 @@ def verify_docx(path):
     return problems
 
 
+# ------------------------------------------------------------------ the invoice
+INVOICE_OUT = "Meridian-Invoice-TEMPLATE.xlsx"
+
+
+def build_invoice(path=None):
+    """The Aviation Observatory Limited invoice template. Figures are left blank on
+    purpose: the amount comes from the client's Order Form, not from this file."""
+    from openpyxl import Workbook
+    from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
+
+    path = Path(path or HERE / INVOICE_OUT)
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Invoice"
+
+    head = Font(name="Arial", size=16, bold=True)
+    bold = Font(name="Arial", size=10, bold=True)
+    body = Font(name="Arial", size=10)
+    note = Font(name="Arial", size=9, italic=True, color="595959")
+    slot = Font(name="Arial", size=10, bold=True, color="8B0000")
+    rule = Side(style="thin", color="BFBFBF")
+    box = Border(left=rule, right=rule, top=rule, bottom=rule)
+    shade = PatternFill("solid", fgColor="F2F2F2")
+
+    for column, width in zip("ABCDE", (34, 16, 12, 14, 16)):
+        ws.column_dimensions[column].width = width
+
+    def put(cell, value, font=body, **kw):
+        c = ws[cell]
+        c.value = value
+        c.font = font
+        for key, val in kw.items():
+            setattr(c, key, val)
+        return c
+
+    put("A1", "INVOICE", head)
+    put("A2", "The Aviation Observatory Limited", bold)
+    put("A3", "Company number 17411365")
+    put("A4", "86-90 Paul Street, London EC2A 4NE")
+    put("A5", "SLOT 1: VAT registration number, or the line stating TAO is not registered", slot)
+
+    put("A7", "Invoice number", bold); put("B7", "")
+    put("A8", "Invoice date", bold); put("B8", "")
+    put("A9", "Payment due", bold); put("B9", "14 days from the invoice date")
+    put("A10", "Order Form reference", bold); put("B10", "")
+    put("A11", "Client purchase order", bold); put("B11", "")
+
+    put("A13", "Billed to", bold)
+    for row, label in zip(range(14, 19),
+                          ("Client, registered name", "Registered number",
+                           "Address", "Contact for payment", "Contact email")):
+        put(f"A{row}", label); put(f"B{row}", "")
+
+    put("A20", "Description", bold, fill=shade, border=box)
+    put("B20", "Period", bold, fill=shade, border=box)
+    put("C20", "Quantity", bold, fill=shade, border=box)
+    put("D20", "Unit, £", bold, fill=shade, border=box)
+    put("E20", "Amount, £", bold, fill=shade, border=box)
+    for row in range(21, 27):
+        for column in "ABCDE":
+            cell = put(f"{column}{row}", "")
+            cell.border = box
+        ws[f"E{row}"].number_format = "#,##0.00"
+    put("A21", "Meridian licence, band and Covered Airports per the Order Form")
+
+    put("D28", "Net", bold); put("E28", "=SUM(E21:E26)").number_format = "#,##0.00"
+    put("D29", "VAT", bold); put("E29", "").number_format = "#,##0.00"
+    put("D30", "Total due", bold); put("E30", "=E28+E29", bold).number_format = "#,##0.00"
+
+    put("A32", "Payment", bold)
+    put("A33", "Annual in advance, invoiced on signature, payable within 14 days. "
+               "All amounts are exclusive of VAT and in sterling.")
+    put("A34", "Where the Order Form states quarterly payment, the licence remains annual and "
+               "the whole year is owed from signature.")
+    put("A36", "SLOT 7: bank details for The Aviation Observatory Limited. The account is not "
+               "yet open and is opened before the first invoice is issued.", slot)
+    for row in (37, 38, 39, 40):
+        put(f"A{row}", ("Account name", "Sort code", "Account number",
+                        "Reference to quote")[row - 37], bold)
+        put(f"B{row}", "")
+
+    put("A42", "Overdue invoices: TAO may suspend access where an undisputed invoice is unpaid "
+               "10 days after written notice. Standard Terms, clause 10.", note)
+    put("A43", "Prepared from PRICING-DECISION-2026.md v1.0. The amount comes from the client's "
+               "Order Form.", note)
+
+    ws["A5"].alignment = Alignment(wrap_text=False)
+    wb.properties.creator = AUTHOR
+    wb.properties.lastModifiedBy = AUTHOR
+    wb.properties.title = "Meridian invoice template"
+    wb.properties.category = "Meridian, World Routes 2026"
+    wb.save(path)
+    return path
+
+
+def _core_author_problems(core):
+    """Both writers emit the namespace inline on the tag, so match the tag, not a string."""
+    problems = []
+    creator = re.search(r"<dc:creator[^>]*>(.*?)</dc:creator>", core, re.S)
+    modified = re.search(r"<cp:lastModifiedBy[^>]*>(.*?)</cp:lastModifiedBy>", core, re.S)
+    if not creator or creator.group(1).strip() != AUTHOR:
+        problems.append("author is not Avia Solutions")
+    if not modified or modified.group(1).strip() != AUTHOR:
+        problems.append("last-modified-by is not Avia Solutions")
+    return problems
+
+
+def verify_xlsx(path):
+    problems = []
+    with zipfile.ZipFile(path) as z:
+        core = z.read("docProps/core.xml").decode("utf-8")
+        problems += _core_author_problems(core)
+        for name in z.namelist():
+            if not name.endswith(".xml"):
+                continue
+            xml = z.read(name).decode("utf-8", "ignore")
+            for dash in ("\u2014", "\u2013"):
+                if dash in xml:
+                    problems.append(f"{name}: an em or en dash reached the file")
+    return problems
+
+
 if __name__ == "__main__":
     failed = False
     for src, out, title, status in JOBS:
@@ -241,4 +375,10 @@ if __name__ == "__main__":
         for problem in problems:
             print(f"   {problem}")
             failed = True
+    path = build_invoice()
+    problems = verify_xlsx(path)
+    print(f"{INVOICE_OUT}: {'VERIFIED' if not problems else 'FAILED'}")
+    for problem in problems:
+        print(f"   {problem}")
+        failed = True
     sys.exit(1 if failed else 0)
