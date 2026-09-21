@@ -1,0 +1,52 @@
+W3: Jol's register, R1, R2 and R5 (i) on the deck, the pack and the methodology page
+
+R1, "measured" becomes "actual" where a figure is read from data. John's reason
+is that in air service development "measured" implies an estimate and "actual"
+means observed fact.
+
+app/methodology_page.py: the bridge's opening bar is "Actual market"; the bridge
+legend reads "actual starting point"; the expert legend's tag reads "actual" and
+every expert row tagged "measured" now reads "actual"; step 1 says "This is an
+actual number, not an estimate"; the page's own three-classes sentence becomes
+"either actual, calibrated against launched-route outcomes, or capped".
+
+app/pitch_html.py: the pack's opening sentence said demand was "measured from
+Sabre"; it now reads "actual origin-and-destination traffic from Sabre Global
+Demand Data".
+
+deck/spec_routes_stand.py: slide 3 said passengers were "measured from booking
+data". "Actual" does not fit that sentence grammatically, so the word that implies
+an estimate is removed rather than swapped for one that does not read: the page's
+own legend already says "read from data, not assumed".
+
+R1 CARVE-OUT, honoured and marked in the code: slide 4's three-classes framing
+keeps Nick's words until Nick agrees to "actual, calibrated, capped". R2 removes
+"physics" from every other client surface, so slide 4 is left whole rather than
+half-renamed. The tension between the two is reported to the controller in
+W3-STATUS, not resolved here.
+
+R2, "physics" goes. Seat cap where the cap is the seats offered, capped elsewhere.
+app/methodology_page.py: the bridge bar "Aircraft cap" becomes "Seat cap"; the
+expert row "Capacity cap, each way/yr" becomes "Seat cap, each way/yr"; every
+"physics" tag reads "capped"; the legend reads "capped - capacity and airfield
+limits". No visible "physics" remains on the page.
+
+The three bridge labels the controller ruled in its sweep, item 6, land in the
+same pass: "by schedule quality" becomes "won on frequency, journey time and
+connections"; "measured gross-up" becomes "what the booking data misses in this
+market"; "carried, each way / year" becomes "passengers a year, each way".
+
+R5 (i), every passenger figure carries its basis in its own label and never by
+implication. app/pitch_html.py: the forecast table's three passenger columns read
+"Base annual O&D, 000s, each way", "Grown ... each way" and "Stimulated ... each
+way"; the basis was previously only in the note below the table, which is exactly
+the implied case R5 forbids. deck/spec_routes_stand.py: the held worked-route
+slides now require the basis in each chart's own label rather than in a slide
+bullet.
+
+Deck rebuilt and verified: author and last-modified-by The Aviation Observatory,
+en-GB the only proofing language, no em or en dashes, rights record on the cover
+photograph, content budgets clean.
+
+No change to the engine, to cortex_app.py's run path, or to any demand logic.
+Nothing here recomputes a number.

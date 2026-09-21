@@ -34,7 +34,7 @@ STEPS = [
     ("1", "Measure the whole market",
      "We start with every passenger already flying between the two catchment areas, however "
      "they route today - nonstop, one-stop, via any hub - from global booking (GDS) data. "
-     "This is a measured number, not an estimate."),
+     "This is an actual number, not an estimate."),
     ("2", "Win a share of it",
      "A new nonstop competes with every existing way to make the trip. Each alternative is "
      "scored the way booking screens rank them - total journey time, schedule frequency, "
@@ -128,16 +128,16 @@ def _bridge_from_fc(fc):
     m_share = natural * share
     m_cov = m_share * cov
     bars = [
-        ("Measured market", "all routings, booking data", natural, "start"),
-        ("Capture share", f"{share*100:.1f}% by schedule quality", -(natural - m_share), "down"),
-        ("Coverage", f"x{cov:.2f} measured gross-up", m_cov - m_share, "up" if cov >= 1 else "down"),
+        ("Actual market", "all routings, booking data", natural, "start"),
+        ("Capture share", f"{share*100:.1f}% won on frequency, journey time and connections", -(natural - m_share), "down"),
+        ("Coverage", f"x{cov:.2f}, what the booking data misses in this market", m_cov - m_share, "up" if cov >= 1 else "down"),
         ("Stimulation", f"x{stim:.2f} new-service growth", captured - m_cov, "up" if captured >= m_cov else "down"),
         ("Feed behind", "connections at the origin", fb, "up"),
         ("Feed beyond", "connections past the destination", fy, "up"),
     ]
     if carried < total - 0.5:
-        bars.append(("Aircraft cap", "beyond seats x frequency", -(total - carried), "down"))
-    bars.append(("Forecast", "carried, each way / year", carried, "total"))
+        bars.append(("Seat cap", "beyond seats x frequency", -(total - carried), "down"))
+    bars.append(("Forecast", "passengers a year, each way", carried, "total"))
     return bars
 
 
@@ -166,11 +166,11 @@ def _expert_section(fc):
 
     stages = [
         ("A &middot; Base demand and data sources", [
-            ("Catchment O&D market, each way/yr", f(dem.get("natural")), "measured",
+            ("Catchment O&D market, each way/yr", f(dem.get("natural")), "actual",
              "Sabre Global Demand Data, all routings, both catchments; the season/week shown on the dashboard"),
-            ("Competing airports in the choice set", str(n_comp), "measured",
+            ("Competing airports in the choice set", str(n_comp), "actual",
              "drive-time catchment; water boundaries respected for island airports"),
-            ("Sector distance", f"{f(float(fc.get('distance_nm') or 0) * 1.852)} km", "measured",
+            ("Sector distance", f"{f(float(fc.get('distance_nm') or 0) * 1.852)} km", "actual",
              "great-circle; block time and fuel derive from it"),
         ]),
         ("B &middot; Capture (the QSI share)", [
@@ -189,7 +189,7 @@ def _expert_section(fc):
         ("E &middot; Connecting feed", [
             ("Behind the origin, each way/yr", f(dem.get("feed_behind")), "calibrated",
              "each feeder itinerary scored for connection quality (legal time, elapsed, alliance); "
-             "share of the measured connecting market"),
+             "share of the actual connecting market"),
             ("Beyond the destination, each way/yr", f(dem.get("feed_beyond")), "calibrated",
              "same method over the destination hub's onward wave; departure time moves this"),
         ]),
@@ -197,7 +197,7 @@ def _expert_section(fc):
             ("Equipment / frequency", f"{esc(str(cap.get('aircraft', '?')))} &middot; "
              f"{cap.get('freq', '?')}x/wk", "user",
              "user choice or profit-ranked within the airline's real fleet"),
-            ("Achieved load factor", f"{float(cap.get('load') or 0) * 100:.0f}%", "physics",
+            ("Achieved load factor", f"{float(cap.get('load') or 0) * 100:.0f}%", "capped",
              "demand filled against seats x frequency"),
             ("Maintenance basis", esc(str(raw.get("maint_basis", "-"))), "calibrated",
              "sector-aware reserves validated against OEM data"),
@@ -205,9 +205,9 @@ def _expert_section(fc):
              "appraiser value/lease anchors, blended by airline type and age"),
         ]),
         ("G &middot; Constraints", [
-            ("Capacity cap, each way/yr", f(cap.get("carried")), "physics",
+            ("Seat cap, each way/yr", f(cap.get("carried")), "capped",
              "the forecast never exceeds what the metal carries"),
-            ("Airfield check", esc(str(af.get("band", "not assessed"))), "physics",
+            ("Airfield check", esc(str(af.get("band", "not assessed"))), "capped",
              esc(str(af.get("note", "runway/elevation capability vs the chosen type")))[:120]),
         ]),
     ]
@@ -222,9 +222,9 @@ def _expert_section(fc):
       <summary><b>Expert detail: the engine room</b> <span class="sub">every assumption in this
       forecast, tagged by provenance - for network planners who want to challenge the number</span></summary>
       <div class="legend" style="margin:10px 0 4px">
-        <span><span class="tag measured">measured</span> read from data, not assumed</span>
+        <span><span class="tag measured">actual</span> read from data, not assumed</span>
         <span><span class="tag calibrated">calibrated</span> fitted to launched-route outcomes</span>
-        <span><span class="tag physics">physics</span> capacity and airfield limits</span>
+        <span><span class="tag physics">capped</span> capacity and airfield limits</span>
         <span><span class="tag user">user</span> analyst choice, overridable in Expert mode</span>
       </div>
       {cards}
@@ -417,8 +417,8 @@ def render(last=None):
     <a href="/trackrecord">Track Record</a></div>
   <div class="kicker">The Observatory &middot; Meridian &middot; How a forecast is built</div>
   <h1>Methodology</h1>
-  <div class="sub">Every number in a Meridian forecast is either measured, calibrated against
-  launched-route outcomes, or capped by physics - and each step below is visible in the output,
+  <div class="sub">Every number in a Meridian forecast is either actual, calibrated against
+  launched-route outcomes, or capped - and each step below is visible in the output,
   so a client can challenge any of them. Calibrated against 6,524 real route launches, the
   engine lands within 10% of actual first-year traffic 86% of the time, and within 20%
   92% of the time. Per-airport results are on the <a href="/trackrecord">Track record</a> page.</div>
@@ -430,7 +430,7 @@ def render(last=None):
     <div class="sub">{sub}</div>
     {bridge}
     <div class="legend">
-      <span><span class="sw" style="background:{NAVY}"></span>measured starting point</span>
+      <span><span class="sw" style="background:{NAVY}"></span>actual starting point</span>
       <span><span class="sw" style="background:{RED}"></span>reduces the number</span>
       <span><span class="sw" style="background:{GREEN}"></span>adds to the number</span>
       <span><span class="sw" style="background:{ACCENT}"></span>the forecast</span>

@@ -114,7 +114,7 @@ def build():
              "Every airport travellers in the origin area could use, and every airport "
              "serving the destination city."),
             ("The real market",
-             "Passengers who actually flew between those areas, measured from booking "
+             "Passengers who actually flew between those areas, read from booking "
              "data and grown to the forecast year."),
             ("Who uses which airport",
              "Each town allocated by real road driving time, flight quality and airport "
@@ -134,6 +134,11 @@ def build():
               "note of 23 August. The two July validation figures are out (ruled)."))
 
     # 4 ------------------------------------------------- three classes of number
+    # R1 CARVE-OUT (Jol feedback register, 21 Sep): "measured" becomes "actual" on every
+    # client surface EXCEPT this framing and manual section 2, which keep Nick's words
+    # until Nick agrees to "actual, calibrated, capped". John is asking him. R2 removes
+    # "physics" everywhere else; this slide is inside the same carve-out, so it is left
+    # whole rather than half-renamed. Reported to the controller as a tension, not a fix.
     s.append(S.grid(
         section="How to read a forecast",
         title="Every number is one of three kinds",
@@ -200,7 +205,8 @@ def build():
         title="San Jose to Taipei, pitched to China Airlines",
         image=None,
         bullets=["Charts held for a run off the frozen build (controller ruling).",
-                 "Passenger figures stated two way, per the standing convention.",
+                 "Every passenger figure carries \"each way\" or \"two-way\" in its own "
+                 "label, on the chart, never implied by a note (R5 i).",
                  "Every figure carries its source on the slide."],
         notes="HELD. Build after the 10 October freeze so the deck's numbers are the "
               "show's numbers. Layout goes to Jol and Nick on 3 October."))

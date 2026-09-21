@@ -279,7 +279,7 @@ $('#kpis').innerHTML=[
   ['Connecting feed',fmt(D.demand.feed_total),'behind + beyond, each way'],
 ].map(k=>`<div class="kpi"><div class="l">${k[0]}</div><div class="v">${k[1]}</div><div class="s">${k[2]}</div></div>`).join('');
 
-$('#lead').textContent=`Meridian forecasts ${fmt(D.demand.total)} passengers each way per year on a nonstop ${D.origin.city} to ${D.dest.city} service. Demand is measured from Sabre Global Demand Data origin-and-destination traffic in the ${D.origin.city} catchment, where the new nonstop captures ${Math.round(D.demand.qsi_share*100)}% of a ${fmt(D.demand.natural)} addressable market, with ${D.airline}'s connecting feed added behind ${D.origin.city} and beyond ${D.dest.city}.`;
+$('#lead').textContent=`Meridian forecasts ${fmt(D.demand.total)} passengers each way per year on a nonstop ${D.origin.city} to ${D.dest.city} service. Demand is actual origin-and-destination traffic from Sabre Global Demand Data in the ${D.origin.city} catchment, where the new nonstop captures ${Math.round(D.demand.qsi_share*100)}% of a ${fmt(D.demand.natural)} addressable market, with ${D.airline}'s connecting feed added behind ${D.origin.city} and beyond ${D.dest.city}.`;
 
 // forecast bars
 (function(){
@@ -309,7 +309,7 @@ $('#lead').textContent=`Meridian forecasts ${fmt(D.demand.total)} passengers eac
     ['Point to point', dm.natural, dm.natural, stim, dm.natural*stim, dm.qsi_share, dm.captured],
     ['Connecting behind '+D.origin.iata, dm.feed_behind_base, dm.feed_behind_base, 1, dm.feed_behind_base, (dm.feed_behind_base?dm.feed_behind/dm.feed_behind_base:0), dm.feed_behind],
     ['Connecting beyond '+D.dest.iata, dm.feed_beyond_base, dm.feed_beyond_base, 1, dm.feed_beyond_base, (dm.feed_beyond_base?dm.feed_beyond/dm.feed_beyond_base:0), dm.feed_beyond]];
-  let h='<tr><th>Market</th><th>Base annual O&D, 000s</th><th>Growth</th><th>Grown annual O&D, 000s</th><th>Stim.</th><th>Stimulated annual O&D, 000s</th><th>Capture</th><th>Forecast annual pax, 000s, each way</th><th>PTEW, each way</th></tr>';
+  let h='<tr><th>Market</th><th>Base annual O&D, 000s, each way</th><th>Growth</th><th>Grown annual O&D, 000s, each way</th><th>Stim.</th><th>Stimulated annual O&D, 000s, each way</th><th>Capture</th><th>Forecast annual pax, 000s, each way</th><th>PTEW, each way</th></tr>';
   rows.forEach(r=>{ h+=`<tr><td class="b">${r[0]}</td><td>${r[1]?k(r[1]):'-'}</td><td>0%</td><td>${r[2]?k(r[2]):'-'}</td><td>${r[3].toFixed(2)}</td><td>${r[4]?k(r[4]):'-'}</td><td>${r[5]?(r[5]*100).toFixed(1)+'%':'-'}</td><td class="b">${k(r[6])}</td><td>${pt(r[6])}</td></tr>`; });
   h+=`<tr class="tot"><td>Grand total</td><td>-</td><td></td><td>-</td><td></td><td>-</td><td></td><td>${k(dm.total)}</td><td>${pt(dm.total)}</td></tr>`;
   $('#fcTable').innerHTML=h;
