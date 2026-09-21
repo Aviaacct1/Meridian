@@ -1,6 +1,6 @@
 # W2 stand flow: status
 
-Version 7, 19 September 2026, 21:05. Written by the W2 build chat for the controller; rewritten
+Version 8, 21 September 2026. Written by the W2 build chat for the controller; rewritten
 each session, never appended. routes/README.md v1 read and followed: facts about other
 workstreams below are taken from their STATUS files and quoted with the version, never from
 memory of a chat. W2-RULINGS.md v1 read and acted on. Dates
@@ -129,7 +129,47 @@ W2-RULINGS.md. Confirm which dashboard entry paths need the GeoNames dump, then 
 it on the workstation or make the failure a visible refusal naming what it could not resolve,
 never a silent empty result. Test on the 11-12 October trial. Next: trace the entry paths.
 
-## Done this session
+## Done 21 September
+
+**THE FIRST END-TO-END SEND IS OWED, AND IT WOULD HAVE FAILED.** The controller asked for
+one real pack email through demo_mail.py. Reading it before running it found that it cannot
+send under Postmark at all: SmtpTransport set `self.sender = self.cfg["user"]` and send_pack
+puts that in the From header. Under M365 the username IS the mailbox so the two coincided;
+under Postmark the username is a 36-character Server API token, and a token in a From header
+is not a deliverable message.
+
+WHY 58 PASSING CHECKS MISSED IT, which is the part worth carrying forward: the mail fixture
+injects a FakeTransport that carries its own `sender` attribute, so the suite never reached
+the one line that resolves the real sender. The first live send would have been the test.
+
+FIXED in app/demo_mail.py: AVIA_SMTP_FROM names the sending address, falling back to
+AVIA_SMTP_USER only when that looks like an address, so M365 behaviour is unchanged.
+AVIA_SMTP_HOST is now required with no default, which closes watchpoint 2 in the same edit:
+it defaulted to smtp.office365.com and an unset variable would have sent the server at the
+wrong supplier and failed naming Microsoft. app/test_demo_flow.py gains nine checks covering
+both, including that a token never reaches a From header: 67 checks, 0 failed, run here.
+
+**app/send_first_pack.py written, not yet run.** It sends one real message through
+demo_mail.send_pack, prints the resolved host, from and credential LENGTH only, warns if the
+sender and the credential are identical, and names the three things to check in Postmark
+afterwards. Its attachment is a plainly labelled transport test, not a forecast pack, because
+a pack with invented numbers should not leave the building even once; the pack rides the same
+transport through /api/demo/request once the lead store exists. Verified here only to the
+extent of compiling and refusing cleanly with no configuration. THE SEND ITSELF IS OWED and
+needs, in order: the DevPC commit and push, a workstation pull, setx AVIA_SMTP_FROM, a new
+window, then the run.
+
+**The aviasolutions.com sender signature: DO NOT REMOVE IT YET.** The controller asked for it
+to be removed so the unauthenticated-domain banner stops slowing the review, with the caveat
+"if we need it for test sends, keep it until the first send is proven". That caveat is the
+branch that applies. While the account is in test mode Postmark restricts recipients to
+confirmed sender signatures, and john.carter@aviasolutions.com is the only one on the account,
+so it is the only address the first send can go to. Removing it first would leave no valid
+recipient and block the send it is meant to unblock. Order: send, prove, then remove the
+signature and check whether the aviasolutions.com domain row goes with it. W2 could not reach
+the Postmark tab this session to read the signature list; the browser did not respond.
+
+## Done 19 September
 
 **Ruling 16, the MCT master, BUILT AND TESTED; it speaks at the next restart.**
 connection_builder.mct_report() resolves through config exactly as the live callers do and
@@ -153,12 +193,12 @@ dependencies, so they are proven by compile and by reading. The first restart is
 
 ## Watchpoints
 
-1. POSTMARK IS IN TEST MODE. Sending is restricted until Postmark approves the account by human
-   review; John requested approval 19 Sep. Domain warming cannot start until it clears, so this
-   is the longest lead time in the mail chain. Not cleared by 1 Oct, chase it.
-2. demo_mail.py DEFAULTS AVIA_SMTP_HOST TO smtp.office365.com. With Postmark as the sender an
-   unset variable would send the server at Microsoft and fail naming the wrong supplier. The
-   same silent-fallback shape. First fix in item 3: the host becomes required and fails loudly.
+1. POSTMARK IS REVIEWING. Request in, account state "reviewing" as at 21 Sep. Sending stays
+   restricted to confirmed sender signatures until it clears, and domain warming cannot start,
+   so this is still the longest lead time in the mail chain. Not cleared by 1 Oct, chase it.
+2. CLOSED 21 Sep. AVIA_SMTP_HOST no longer defaults to smtp.office365.com; it is required and
+   says so. Fixed alongside the sender-identity fault above, since both came from the same
+   assumption that the supplier would always be Microsoft.
 3. DMARC HAS NO REPORTING ADDRESS. p=none is published and changes no delivery, but reports need
    somewhere to land and the domain cannot receive mail. Fasthosts routes inbound to a paid
    add-on, which W2 did not buy. Three routes for John: buy Fasthosts email on the domain; move

@@ -200,6 +200,71 @@ SHELL_FIXTURE = """<!DOCTYPE html>
 </div></body></html>"""
 
 
+
+# --- the sender identity (19 September 2026, the Postmark move) --------------
+# The credential and the sending address are not the same thing. Under M365 they
+# coincided, so demo_mail took the From from the username and nothing noticed. Under
+# Postmark the username is a 36-character Server API token, and a token in a From header
+# is not a deliverable message. These checks exist because the fixture transport above
+# carries its own sender, so the line that broke was the one line the fixtures never
+# reached: the first live send would have been the test.
+
+def _clear_smtp_env():
+    for var in ("AVIA_SMTP_HOST", "AVIA_SMTP_PORT", "AVIA_SMTP_USER",
+                "AVIA_SMTP_PASS", "AVIA_SMTP_FROM"):
+        os.environ.pop(var, None)
+
+
+def test_sender_identity():
+    token = "a1b2c3d4-e5f6-4a5b-8c9d-0e1f2a3b4c5d"      # a token shape, not an address
+
+    # Postmark: token as the credential, the sender named separately.
+    _clear_smtp_env()
+    os.environ["AVIA_SMTP_HOST"] = "smtp.postmarkapp.com"
+    os.environ["AVIA_SMTP_USER"] = token
+    os.environ["AVIA_SMTP_PASS"] = token
+    os.environ["AVIA_SMTP_FROM"] = "john.carter@aviationobservatory.com"
+    cfg = DM.config()
+    check("postmark: the sender is the FROM, not the token",
+          cfg["from"] == "john.carter@aviationobservatory.com")
+    check("postmark: the credential is kept separate", cfg["user"] == token)
+    check("postmark: a token never reaches the From", "@" in cfg["from"]
+          and cfg["from"] != cfg["user"])
+    t = DM.SmtpTransport(cfg=cfg)
+    check("transport takes its sender from the FROM", t.sender == cfg["from"])
+
+    # Postmark with no FROM: the username cannot stand in, so it must say so.
+    os.environ.pop("AVIA_SMTP_FROM", None)
+    try:
+        DM.config()
+        check("a token username with no FROM raises", False)
+    except DM.MailError as e:
+        check("a token username with no FROM raises", True)
+        check("the error names AVIA_SMTP_FROM", "AVIA_SMTP_FROM" in str(e))
+
+    # M365 and anything else where the login is the mailbox: unchanged behaviour.
+    _clear_smtp_env()
+    os.environ["AVIA_SMTP_HOST"] = "smtp.office365.com"
+    os.environ["AVIA_SMTP_USER"] = "meridian@aviationobservatory.com"
+    os.environ["AVIA_SMTP_PASS"] = "pw"
+    cfg = DM.config()
+    check("an address username still stands in as the sender",
+          cfg["from"] == "meridian@aviationobservatory.com")
+
+    # The host no longer defaults to Microsoft.
+    _clear_smtp_env()
+    os.environ["AVIA_SMTP_USER"] = token
+    os.environ["AVIA_SMTP_PASS"] = token
+    os.environ["AVIA_SMTP_FROM"] = "john.carter@aviationobservatory.com"
+    try:
+        DM.config()
+        check("an unset host raises rather than defaulting to Microsoft", False)
+    except DM.MailError as e:
+        check("an unset host raises rather than defaulting to Microsoft", True)
+        check("the error names AVIA_SMTP_HOST", "AVIA_SMTP_HOST" in str(e))
+    _clear_smtp_env()
+
+
 def test_refusal():
     try:
         DP.refuse_if_warned({"ok": True, "warnings": ["the feed layer crashed"]})
@@ -292,8 +357,9 @@ def test_pack_html_render(tmp):
 
 
 def main():
-    keep = {k: os.environ.get(k) for k in ("AVIA_DEMO_LEADS", "AVIA_SMTP_USER",
-                                           "AVIA_SMTP_PASS")}
+    keep = {k: os.environ.get(k) for k in ("AVIA_DEMO_LEADS", "AVIA_SMTP_HOST",
+                                           "AVIA_SMTP_PORT", "AVIA_SMTP_USER",
+                                           "AVIA_SMTP_PASS", "AVIA_SMTP_FROM")}
     try:
         with tempfile.TemporaryDirectory() as tmp:
             test_domains()
@@ -302,6 +368,7 @@ def main():
             test_history(tmp)
             test_coerce()
             test_mail(tmp)
+            test_sender_identity()
             test_refusal()
             test_run_ref()
             test_watermark()
