@@ -156,7 +156,7 @@ on Jol. The page review below replaces "what Jol must finish".
 
 | Page | What W6 does | John's part | By |
 |---|---|---|---|
-| Home | Rewrite the message to the four sentences settled on 25 Sep; add stand F174 and the dates until 23 Oct; remove the price | Approve the message | 5 Oct |
+| Home | Rewrite the message to the four sentences settled on 25 Sep; add stand F124 and the dates until 23 Oct; remove the price | Approve the message | 5 Oct |
 | Products, and products/meridian | Add the accuracy line verbatim; add one real chart from the current build with unit, period, forecast and source on it; remove the compare button; check no feature appears that is not in the frozen build | Approve the page | 5 Oct |
 | How it works, three method notes | Reconcile with Nick's methodology note; the 2 July deck and that note are known to differ in four places (W3-STATUS) | Nick reads, John approves | 8 Oct |
 | Track record | Check every figure carries a source, and that nothing identifies a client's confidential target | John rules on anything doubtful | 5 Oct |

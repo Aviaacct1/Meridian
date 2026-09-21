@@ -27,13 +27,13 @@ John pauses until Postmark approval (expected Mon 22 Sep). `Aviaacct1/tao-websit
 | WS | State | Where it stands | Next action | Owner | Date |
 |---|---|---|---|---|---|
 | W1 Speed and caches | Step 2a PROVEN, 2b written | Boards persist across restart, diff PASS; cold Run 21-42s, warm 8-12s; profile says the rest is the catchment land-path cache | Commit 2b, restarts 3-4, r4 diff; then warm_boards over the register and the market-brief first-call cost | Controller / John | 21 Sep |
-| W2 Stand flow | In progress (v7, 19 Sep) | MCT master reports at startup (2cab1b2); Postmark verified, account in TEST MODE; MateBook is Plan A only; Plan B needs SSD (item 14) | Zone move to Cloudflare wk 22 Sep; DuckDB leads table; stand mode; capture front end 2 Oct; laptop proof 8 Oct | W2 chat / John | 2 and 8 Oct |
-| W3 Presentation | In progress; STATUS file stale (v1, 19 Sep) | Slides 1-6, 9-10 built (3af5158 per handover, unconfirmed in W3-STATUS); provenance fix proven (45a5210); Commons probe written, unrun (item 33) | W3 rewrites its STATUS; PDF render and pitch page; probe run by 26 Sep; slides 7-8 from runs 29 Sep-1 Oct | W3 chat / John | All four to Jol and Nick 3 Oct |
+| W2 Stand flow | In progress (v13, 21 Sep) | Delivery PROVEN via Postmark API (aviasolutions.com, MessageID 8283ccb0); SMTP path discarded three messages silently, transport now API (3406f0a); lead_store built, 47 checks (ef6de65), app not yet rewired; capture layer widened to four record types; progressive Optimise deferred | Rewire app to lead_store; nightly export; three capture buttons; stand mode; zone move; laptop procedure after SSD | W2 chat / John | Capture demonstrable 2 Oct; laptop proof 8 Oct |
+| W3 Presentation | In progress; STATUS STILL v1 of 19 Sep, chat not run since | Slides 1-6, 9-10 built (3af5158 per handover, unconfirmed in W3-STATUS); provenance fix proven (45a5210); Commons probe written, unrun (item 33) | W3 rewrites its STATUS; PDF render and pitch page; probe run by 26 Sep; slides 7-8 from runs 29 Sep-1 Oct | W3 chat / John | All four to Jol and Nick 3 Oct |
 | W4 Host | In progress (v1) | STAND-HOST-MANUAL.md v1, 648 lines, 27 slots; built on size-band pricing, now superseded | v2 after Suzanna's four answers (item 23) and 8 Oct screenshots; pricing slots wait on W8 FINAL | W4 chat / John | v2 mid-Oct |
 | W5 Order-ready documents | In progress (v3, 20 Sep) | Agreement and one-pager v0.2 committed (3197c43), 17 clauses; checklist 8 of 13 DONE; BUILT ON SIZE BANDS, to be rebuilt on W8's tiers | Invoice, onboarding script, known-issues list, licence-record form; twelve slots are John's by 3 Oct; solicitor wk 6 Oct | W5 chat / John | 3 and 10 Oct |
-| W6 Messaging, marketing, website, meetings | In progress (v6, 20 Sep) | Competitor and prices out of the site (6d153d2); invitations v2 say "follows the same day" and carry launch terms; post 1 and list email ready for approval | Clean-clone proof; Pages project after zone move; sentences and five contacts by 25 Sep; invitations 26-29 Sep | W6 chat / John | 25-29 Sep |
+| W6 Messaging, marketing, website, meetings | In progress (v7, 21 Sep) | Four sentences redrafted in the Observatory voice (variants v3); five invitations ask the airport to name a route; post 1 and list email ready for approval; site copy still says three seats / 100 presentations (fix queued) | John: contacts, 2.3 A or B, approvals by 25 Sep; W6: site licence-shape fix, clean-clone proof, Pages after zone move; invitations 26-29 Sep | W6 chat / John | 25-29 Sep |
 | W8 Pricing and commercial offer | DONE 20 Sep | PRICING-DECISION-2026.md v1.0 FINAL; twenty decisions answered; bands by airports covered | W3-W6 rebuild to it (pointers in place); Knock test result from John in a week or two | W8 chat closed / John | Knock by 3 Oct |
-| W9 Stand, contract, show logistics | NEW 21 Sep, gap found | Contract UNSIGNED (billing details owed to Informa today); stand number F124 per Informa v F174 in every document; graphics deadline 3 Oct; exhibitor manual follows contract | John sends billing details and the two questions today; W9 chat opens on the contract and manual | W9 chat / John | Contract 21 Sep; graphics 3 Oct |
+| W9 Stand, contract, show logistics | NEW 21 Sep, gap found | Contract UNSIGNED (billing details owed to Informa today); stand number F124 per Informa v F124 in every document; graphics deadline 3 Oct; exhibitor manual follows contract | John sends billing details and the two questions today; W9 chat opens on the contract and manual | W9 chat / John | Contract 21 Sep; graphics 3 Oct |
 | W7 Rehearsal and freeze | Replanned | Boeing 13 Oct is an Atlas meeting; Meridian trials 11-12 Oct (remote, one restart) and 16 Oct with Suzanna | Controller diaries the trials; nothing until October | Controller / John | Freeze 10 Oct |
 
 Found on the 20 Sep read, not yet resolved: (a) W3-STATUS.md is still session 1, so the
@@ -276,7 +276,7 @@ five contacts.
   4. Lead store: DuckDB. A basic CRM on top of that table is a post-Routes item.
   5. Attending airports: from the delegate list (see 2).
   6. Stand host: Suzanna McIntosh, suzanna.mcintosh@gmail.com, already in Cloudflare Access.
-     Stand F174. Lands Tuesday 20 Oct afternoon; works the stand Wed-Fri 9-5. Stefan Parry
+     Stand F124. Lands Tuesday 20 Oct afternoon; works the stand Wed-Fri 9-5. Stefan Parry
      (summer intern) may join her.
   7. Website: LAUNCH before Routes; linked from the emails and the conference bio.
 - 19 Sep 2026: PREAGG IDENTITY CHECK PASSED on the workstation: 85 of 85 pinned routes
@@ -364,11 +364,28 @@ five contacts.
 
 - 21 Sep 2026: GAP FOUND. No workstream owned the exhibitor contract, stand build, manual
   deadlines, badges, kit and setup. W9 created (routes\W9-RULINGS.md v1). The contract is not
-  signed; Informa's emails say stand F124 where every document says F174; graphics close 3 Oct.
+  signed; Informa's emails say stand F124 where every document says F124; graphics close 3 Oct.
 
 - 21 Sep 2026 (John): THE CONTRACTING ENTITY IS THE AVIATION OBSERVATORY LIMITED for everything
   from day one (exhibitor contract, client agreements, invoices). Item 31 closed; W8 decision 15
   overridden; order-ready gains PI cover extension and a TAO Ltd bank account (pre-mortem 17).
+
+- 21 Sep 2026 (John): the stand is F124. F174 was a transcription error of 19 Sep carried into
+  twelve files; all corrected 21 Sep.
+
+- 21 Sep 2026: W2 FINDINGS (v13). (a) Postmark's SMTP endpoint accepted and silently discarded
+  three messages its policy forbade while the API refused the same message with the reason;
+  transport moved to the API (3406f0a). (b) W2's v9 recorded a false PASS on the evidence of a
+  script printing SENT and withdrew it; programme rule from today: no send counts without a
+  provider MessageID, and no test passes on a fake transport's own attribute. (c) Delivery
+  proven 21 Sep 14:01Z from aviasolutions.com to itself (MessageID 8283ccb0); the Observatory
+  domain is proven only after approval. (d) Blocks labelled Workstation Actual ran on the Dev
+  PC because a second clone exists at C:\src\meridian there (item 43). (e) Env vars now at
+  Machine scope on donatello. Capture layer widened by John to four record types; progressive
+  Optimise deferred to after Routes; recorder: W2 recommends against, item 42.
+- 21 Sep 2026: W6 v7 read: sentences redrafted in the Observatory voice; invitations ask the
+  airport to name a route; site licence copy contradicts the pricing file (W6 fixes next);
+  the named-route handover is ruled (John forwards to the controller the same day).
 
 ## Waiting on John
 
@@ -534,8 +551,9 @@ five contacts.
     Plan B it reaches the form on the laptop's own hotspot; W2 confirms.
 38. **TODAY, 21 Sep: billing details to Charlotte Sullivan (Informa)** so the contract is
     finalised. RULED 21 Sep (John): the exhibitor is THE AVIATION OBSERVATORY LIMITED (17411365,
-    86-90 Paul Street, London EC2A 4NE). With the details, one question: confirm the stand
-    number (her emails say F124, our documents say F174). VAT number: John's. Consequence of silence: the last shell stand is not held indefinitely and
+    86-90 Paul Street, London EC2A 4NE). Stand number CONFIRMED F124 (John, 21 Sep); every
+    programme file corrected from F174 the same day. Open until Charlotte's populated form is
+    signed. VAT number: John's. Consequence of silence: the last shell stand is not held indefinitely and
     the 3 Oct graphics deadline is missed.
 39. **Routes 360 membership, £5,000 a year** (three email campaigns, competition promotion).
     Controller's view: worth it only if the three campaigns can carry the launch offer to
@@ -547,6 +565,19 @@ five contacts.
     stand; W3 does the artwork. Silence to 30 Sep: logo only.
 41. CLOSED 21 Sep: the contract files in /Shared/Management/Management Information/A3/The
     Aviation Observatory/Legal/.
+42. RULED 21 Sep (John, with the controller's condition): the all-day recording is TESTED ON
+    THE STAND on the day, hourly files on the laptop, for general market intelligence only,
+    nothing attributed to an individual, transcribed after the show, deleted by a stated date.
+    CONDITION: a visible notice on the stand and the host's spoken line at the start of a
+    demo; nothing covert (German law, §201 StGB, and Informa condition 4.5). The host's voice
+    note and the fifteen-second card drop are the primary capture; the recording is the
+    backstop for a busy morning. Stefan as second pair of hands on the busy days. W2 and W4
+    carry it.
+43. CLOSED 21 Sep: the stray clone at C:\src\meridian on the Dev PC was inspected (clean: no
+    changes, nothing unpushed, no stash) and deleted. Test-Path False. The `hostname` line
+    comes out of the blocks.
+44. **Sentence 2.3, version A or B** (W6-MESSAGING-VARIANTS v3). Controller's view: B on the
+    stand and in the invitations, A where one line is all there is. Silence to 25 Sep: B.
 13. **Pick the five meetings**: John agreed the buyer-test list 19 Sep (Birmingham, Dublin,
     Vienna, Dallas Fort Worth, Milan SEA; reserves in the organisations file, section 3).
     Open point: whether one competitor-client airport goes on the five as a deliberate test

@@ -1,125 +1,103 @@
 # W6 status: messaging, marketing, website, meetings
 
 W6 writes this file and rewrites it each session; the controller reads it and never edits it.
-Version 6, 20 September 2026. Author: Avia Solutions. Session 2.
+Version 7, 20 September 2026. Author: Avia Solutions. Session 3.
 
-Read this session: routes/README.md; W6-RULINGS.md v2 in full, including the four rulings of
-20 September (order-ready 21 October; pricing decoupled; the launch offer; item 28 closed).
-Cross-workstream facts quoted from W2-STATUS.md v6, 19 September 2026, 20:50. The Observatory
-site repository is read and edited; no git command has been run from this chat, on any
-repository. Every commit and push is a block John runs.
+Read this session: `routes/W6-RULINGS.md` in full, including John's rulings of 20 September
+19:30 on the four sentences and on the meetings; `routes/PRICING-DECISION-2026.md` v1.0,
+sections 4, 5 and 7. No git command has been run from this chat; every commit is a block John
+runs.
 
-## What the controller asked for after session 2
+## 1. The four sentences, redrafted in the Observatory's voice
 
-**1. The repository push, confirmed.** Remote `https://github.com/Aviaacct1/tao-website.git`,
-private. HEAD at session start `e02dd1b` on branch `main`, tracking `origin/main`. The
-repository was created and pushed on 19 September (600 objects, `2df95ee`), the launch switch
-landed at `e02dd1b`, and the default branch on GitHub was moved from `master` to `main` with
-the old branch deleted. Nothing was lost: `master` pointed at `2df95ee`, an ancestor of `main`.
+`W6-MESSAGING-VARIANTS-19Sep2026.md` is at v3. Version 2's variants are withdrawn.
 
-**2. The competitor and price removals, as a file list. LANDED at `6d153d2`**, pushed to
-`origin/main` on `Aviaacct1/tao-website`: "Competitor out of the build, prices held until
-November, accuracy line on the Meridian page". The file lists below are what that commit
-contains. The clean-clone proof is still owed: it clones what is now on GitHub, builds it, and
-counts occurrences of the competitor's name and of the price figures in the built output, both
-of which must be zero.
+- **Sentence 1, two versions.** 1-LIVE: "Bring a route to stand F124 and we will build its
+  forecast while you wait, in under five minutes", with a longer form that names the
+  Observatory as the subject. 1-HELD is the same sentence on "about a minute" and is drafted
+  but NOT in use. W6 is not putting the held version in front of John or Jol as a choice while
+  it is held: the two are not interchangeable, because one describes the whole demonstration
+  and the other describes a single run. The controller releases it on W1 step 2b's
+  restart-proof cold numbers, and W6 swaps it in the same day it is released.
+- **2.1** is John's wording, adopted as it stands: "The optimal time to fly it, not just how
+  many will fly it."
+- **2.2** is version B with John's rewording: "You leave with the run you watched, and a full
+  presentation pack follows the same day."
+- **2.3, the affiliation clause, two versions for John.** A is the controller's draft. B says
+  what the affiliate does and carries the independence claim where it belongs, on Avia. W6
+  prefers B on the stand and in the invitations and A where one line is all there is, such as
+  the exhibitor listing. Neither claims independence for the Observatory in its own right,
+  which is what John rejected.
+- **Sentence 3** is quoted from `PRICING-DECISION-2026.md` v1.0 section 7 with its version,
+  the qualifying question first, and it is not edited in W6's files.
+- **Sentence 4** is unchanged and verbatim.
 
-Competitor, nine changes:
+## 2. The five invitations, rewritten
 
-| File | Change |
-|---|---|
-| `src/compare/meridian-vs-paxup/` | Moved out of the build to `withheld/compare/`, so it renders nowhere. The file is intact if the content is ever wanted; `git rm -r withheld/` removes it outright, John's call |
-| `src/_includes/partials/header.njk` | Navigation entry removed, and the `/compare/` case dropped from the Products current-page test |
-| `src/_includes/partials/footer.njk` | Footer link removed |
-| `src/insights/index.njk` | Comparison card and its read link removed |
-| `src/insights/what-is-a-route-forecasting-tool/index.njk` | Named in the lede, in the FAQ JSON-LD answer and in the closing paragraph. All three gone; the paragraph now points at the Meridian trial alone |
-| `src/products/index.njk` | The FAQ row asking how Meridian compares, removed |
-| `src/products/meridian/index.njk` | The compare button removed |
-| `src/legal/index.njk` | Named in the third-party marks line. Removed. Boeing, Airbus, the CMO and the GMF stay: they are the forecasts the Global Forecast is scored against on its own page, not a competitor to Meridian, and removing them would break the peer-set claim |
-| `src/sitemap.njk` | Nothing to change; the URL leaves the sitemap because the page leaves the build |
+`W6-INVITATIONS-AND-MEETINGS-19Sep2026.md` is at v3. Each invitation now asks the airport to
+name one route it wants to learn more about, which the Observatory forecasts ahead of the
+meeting. The route W6 had proposed per airport is demoted to an example offered only if they
+name none, and Dallas Fort Worth has no example at all, which is no longer a gap because
+asking is now the pattern. Each paragraph carries the affiliation clause, the optimal-time
+sub-message, "the pack follows the same day", and the launch-terms line closing 30 November.
+Dublin and Milan SEA are written as groups.
 
-Prices, eight files, held until November:
+**The consequence to hold, recorded so nobody is surprised.** A named route now arrives days
+before the meeting, so the pre-run cannot wait on a person: W1's pre-warm covers the five
+airports, and whoever takes the reply must forward the route to the stand build the same day.
+That handover is not written down anywhere yet. If a route lands inside 48 hours it runs live
+in the meeting instead, which the tool can do.
 
-| File | Change |
-|---|---|
-| `src/_data/site.json` | Every figure removed from the pricing block; seats, presentations and the tier labels stay, with a note in the file saying why and until when |
-| `src/pricing/index.njk` | Meta description, two FAQ answers in JSON-LD, the lede, the summary paragraph and four price tiles. The page keeps its structure, its tiers and its licence shape, and says prices are published in November 2026 |
-| `src/products/meridian/index.njk` | Meta description, three `Offer` entries in the SoftwareApplication JSON-LD, the priced FAQ answer, the priced prose and the trial paragraph |
-| `src/products/observatory-global-forecast/index.njk` | Meta description, the `Offer` in the JSON-LD, the trial paragraph and the licence sentence |
-| `src/products/index.njk` | The hero stat "£15-25k a year, published" becomes "100 presentations a year" |
-| `src/index.njk` | The home page's priced licence sentence |
+## 3. Marketing calendar
 
-The eighth place was the Meridian page's own `description` front matter, which no document
-named and which is what a search result prints. It is in the list above.
+`W6-MARKETING-CALENDAR-19Sep2026.md` is at v3. Post 1 is rebuilt on the ruled sentences: the
+Observatory's voice, "under five minutes", the affiliation clause, the optimal-time line, the
+same-day pack and the accuracy line verbatim. The list email carries the same claim. Both are
+ready for John's approval with nothing waiting on them.
 
-**Proven, not assumed.** Two builds from the edited tree, 24 pages each. In the production
-build: zero occurrences of the competitor's name in any file, zero price figures in any file,
-no comparison URL in the sitemap, the accuracy line present on the Meridian page verbatim, no
-noindex on any page, robots.txt allowing with the sitemap line. In the staging build: noindex
-on all 22 page files, `Disallow: /`, and the `X-Robots-Tag` header. The clean-clone proof the
-controller asked for is the block John runs after the commit, because this chat runs no git.
+## 4. Conflicts seen
 
-**3. Invitations updated.** All five now say "the pack follows the same day" wording where
-the promise appears, and each carries one added sentence: launch terms can be put in front of
-them at the meeting, they close on 30 November, and an agreement and onboarding are ready
-immediately after the show. The meetings logistics carries order-ready at 21 October. Item 28
-is closed, so post 1 uses the SJC-TPE curve as first ruled and the BRS-EWR alternative is
-dropped; post 1 and the list email can go to John for approval now.
+1. **The live site now contradicts the pricing decision.** Commit `6d153d2` on
+   `Aviaacct1/tao-website` says "three seats" and "100 presentations included" on the pricing
+   page, the Meridian page, the Global Forecast page and in `src/_data/site.json`. That was the
+   licence shape in `PRICING-HANDOVER-19Sep2026.md`. `PRICING-DECISION-2026.md` v1.0 section 7
+   replaces it with "no limit on users or on how much you run it". The site is not public, so
+   nothing is wrong in front of a buyer, but the copy is wrong and W6 will not leave it: the
+   fix is a pass over those four files, and W6 will make it in the next session unless the
+   controller wants it sooner.
+2. **"Limited places" survives in one sentence that no longer has any.** Section 4 of the
+   pricing decision rules NO limit on launch places, the 30 November date being the only
+   limit. Section 7's fallback sentence, if John holds the silence rule to 3 October, still
+   says "on request, limited places". W6 quotes section 7 as it stands rather than editing it,
+   and flags the line for W8: it is a published untruth sitting next to a published error
+   record, which is the argument section 4 itself makes.
+3. **The earlier year-1 figures in W6's own files were wrong and are corrected.** The
+   invitations file carried £7,500, £10,000 and £12,500 by airport size. The bands are by
+   airports covered, and the year-1 cash is £7,500, £11,250 and £15,000. No document outside
+   W6 had taken the wrong figures.
 
-## State by scope item
+## 5. Website: where it stands
 
-| # | Item | State | Evidence | Next action |
-|---|---|---|---|---|
-| 1 | Messaging | v2, sentence 3 rebuilt as the launch offer | W6-MESSAGING-VARIANTS v2: three variants of the offer carrying the steps and not the pounds; sub-message 2.2 moved to "the same day" | John picks by 25 Sep |
-| 2 | Five invitations | v2, ready to send | Launch-terms sentence in all five; pack promise corrected | Contacts from John or Suzanna by 25 Sep; unserved check on the five routes; send 26-29 Sep |
-| 3 | Marketing calendar | Post 1 and the list email ready for approval | Chart ruled: SJC-TPE. Offer deliberately absent from both | John approves; out 24-25 Sep |
-| 4 | Website | Removals landed at `6d153d2`, pushed | File lists above; two builds before commit | The clean-clone proof, then the Pages project once W2 moves the zone |
-| 5 | Meetings logistics | Updated for order-ready 21 Oct | One-pager row now carries the ruled offer | Firm slots when the five reply |
+Removals landed at `6d153d2`, pushed. The clean-clone proof is still owed and is the block
+John has not run; it clones what is on GitHub, builds it, and counts the competitor's name and
+the price figures in the built output, both of which must be zero. The Pages project waits on
+W2 moving the zone in the week of 22 September. Item 1 above is now queued in front of the
+Pages work, because the wrong licence shape should not be what goes live.
 
-## Conflicts seen
+## 6. What W6 needs from John
 
-1. **The site's candour line.** The pricing page's lede said the prices are printed because an
-   institution that publishes its errors can publish its prices. With the figures held until
-   November, that sentence cannot stand as written. W6 has changed it to say the prices will
-   be published, in November, rather than deleting the position. It is John's sentence
-   originally and he may want different words.
-2. **The pricing page stays in the navigation** with its tiers and licence shape and no
-   figures. W6 recommended removing it from the navigation in the plan; on reflection, sales
-   is led by written quotation, so a page that explains the licence and says when prices
-   publish is more use than a gap. Easy to reverse either way.
-3. **"Quoted" now appears where three prices were.** That is honest and it is the agreed
-   channel, but a visitor sees three tiers with the same word in each. In November the figures
-   drop back into the same slots.
+1. **One contact name per airport**, by 25 September. The invitations are otherwise finished
+   and the 26 to 29 September window is the date that cannot be recovered.
+2. **Sentence 2.3: version A or version B.**
+3. **Approval of post 1 and the contact-list email**, which have nothing else waiting on them.
+4. Nothing on pricing. Section 4 of the pricing decision closed item 6 in full: 50%, no limit
+   on places, 30 November 2026.
 
-## What W6 needs from John
+## 7. Risks W6 is carrying
 
-1. **The five contacts**, by 25 Sep, so the invitations go 26-29 Sep. Still the only thing
-   blocking the invitations.
-2. **The four sentences settled**, by 25 Sep, including which offer variant the host uses.
-3. **Approval of post 1 and the list email**, which have nothing left waiting on them.
-4. **The Dallas Fort Worth route.** No public statement of their target list was found; the
-   draft asks them to name it. Overrule if John knows it.
-5. **Item 6 by 3 Oct**: number of launch places, overage rate, payment terms, size thresholds,
-   and which entity contracts. The offer sentence works without them; the agreement does not.
-6. **Whether `withheld/compare/` stays in the repository** or is removed outright.
-
-## Dependencies on other workstreams
-
-- W2: the zone move to Cloudflare in the week of 22 Sep, which the Pages deployment needs;
-  then the pack hostname on the workstation tunnel by 8 Oct.
-- W3: the SJC-TPE curve image from the current build for post 1, with unit, period, forecast
-  and the source line on it; the PDF render by 8 Oct for post 3 and the printed meeting packs.
-- W5: the one-pager carries the launch offer in writing, including the year-1 pounds, which
-  appear nowhere public.
-- W4: the host's price sentence is the steps, never the list, and signing closes 30 November.
-
-## Risks W6 is carrying
-
-1. The Pages project cannot be created until the zone moves, and the zone move is W2's, in the
-   week of 22 September. Everything after it on the website dates is compressed if it slips.
-2. Five invitations name routes not yet checked against OAG for whether they are flown today.
-   That check happens before sending.
-3. The launch offer is decided but the agreement it is signed on is W5's, and order-ready is
-   now 21 October rather than 7 November, which removes seventeen days from that work.
-4. The site now says prices publish in November. That is a public commitment as soon as the
-   site is live, and it lands in the same fortnight as the show.
+1. The reply-to-forecast handover for a named route has no owner and no written step. It is
+   small, and it is the kind of small thing that fails in a week when everyone is travelling.
+2. The Pages project cannot start until the zone moves, and the site carries a licence shape
+   the pricing decision has superseded.
+3. Five invitations go out naming example routes not yet checked against OAG. The check is now
+   four routes rather than five, and it happens before sending.

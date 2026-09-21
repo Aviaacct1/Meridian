@@ -20,10 +20,9 @@ Charlotte.Sullivan@informa.com; the blank Event Space Booking Form; John's file)
 - Organiser: Informa Markets (UK) Limited. Event: Routes World 2026, Messe Frankfurt, 21-23
   October 2026.
 - Stand: the last shell-scheme stand, 12 sqm Premier Shell Scheme, adjacent to LH Consulting.
-  THE STAND NUMBER IS UNCONFIRMED: Charlotte's emails of 7 and 18 September say F124; every
-  programme document says F174. W9's first job is to confirm it from the contract, and the
-  controller then corrects every document (list at the foot). Until then no new material
-  carries a stand number.
+  STAND F124, confirmed by John 21 Sep against Charlotte's emails of 7 and 18 September; the F174
+  in earlier programme documents was a transcription error, corrected in every file on 21 Sep.
+  W9 checks the populated form carries F124 before John signs.
 - Package includes: furniture, a TV screen, logo on the fascia and the counter board, and a
   lockable welcome counter (Charlotte, 18 Sep). Lunch is served directly behind the stand; the
   neighbours run an activation at the day-one networking event; the Athens coffee stand is

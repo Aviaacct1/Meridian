@@ -91,7 +91,7 @@ Bologna-New York, is his).
   Nick 3 Oct.
 - W4 Host (Opus): STAND-HOST-MANUAL.md v1 (648 lines, 27 slots). v2 after Suzanna's answers
   (item 23, John to send W2's four questions) and the 8 Oct screenshots. Host: Suzanna
-  McIntosh, suzanna.mcintosh@gmail.com, stand F174, lands Tue 20 Oct, works Wed-Fri 9-5;
+  McIntosh, suzanna.mcintosh@gmail.com, stand F124, lands Tue 20 Oct, works Wed-Fri 9-5;
   Stefan Parry may join. Item 34: John owes second and third phone contacts, his stand hours,
   and the competitor sentence in manual 4.4.
 - W5 Order-ready documents (Opus, v0.2 committed 3197c43): agreement and one-pager v0.2 to
@@ -141,7 +141,7 @@ Sep = yes); 24 tablet; 25 the accuracy sentence, what the 89% describes, by 26 S
 route runs for W3; 2 Oct capture front end demonstrable; 3 Oct W3 four items to Jol and Nick,
 W5 agreement to solicitor, W8 hard deadline; 8 Oct laptop proof and screenshots; 10 Oct
 freeze; 11-12 Oct remote trial; 13 Oct Atlas meeting; 16 Oct trial with Suzanna; 20 Oct
-Suzanna lands; 21-23 Oct Routes, stand F174; 21 Oct order-ready; 30 Nov launch offer closes.
+Suzanna lands; 21-23 Oct Routes, stand F124; 21 Oct order-ready; 30 Nov launch offer closes.
 
 ## 8. Uncommitted at handover, and the mistakes worth not repeating
 

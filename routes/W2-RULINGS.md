@@ -178,3 +178,46 @@ understanding is the mitigation. The ruling above (separate the output group, la
 actions) stands as a "do if cheap" item, behind stand mode and the leads table.
 For clients: a clear help guide or a short video on those three controls is a W5 onboarding
 item (John); W2 supplies W5 with the screen once stand mode is built.
+
+## Controller's sweep of W2-STATUS.md v13 (21 September 2026)
+
+1. CAPTURE LAYER SCOPE (four record types, three buttons, list view, local-first, editable
+   after the moment): RULED YES. John widened it himself on 21 Sep. Progressive Optimise
+   display (scope item 5) is DEFERRED to after Routes on your reasoning; the umbrella W2 row
+   says so. Order: rewire cortex_app to lead_store, nightly Excel export, the three buttons,
+   stand mode, then the laptop procedure once the SSD exists.
+2. THE RECORDER: the controller adopts your recommendation. No continuous recording on the
+   stand. Host voice note after each conversation (record type 4) and an end-of-day note.
+   Put to John as umbrella item 42 with the measurement test as the only route back to the
+   device; if he still wants it, your six conditions apply and the exhibitor rules are read
+   first (W9 has them when the manual arrives).
+3. THE FALSE PASS (v9) AND THE SMTP DISCARD: recorded in the umbrella decisions log as a
+   finding, with credit for withdrawing it. The rule you drew from it is now a programme rule:
+   no send is "sent" without a provider identifier; no test passes on a fake transport's own
+   attribute. Delivery from aviasolutions.com is PROVEN (MessageID 8283ccb0, 21 Sep 14:01Z);
+   the Observatory domain's deliverability is proven only after approval, and the pack promise
+   stays "the same day" until the 11-12 Oct trial regardless.
+4. THE aviasolutions.com SENDER SIGNATURE: keep it until approval lands and one send from the
+   Observatory domain is proven, then remove it. Your reading of the caveat was right.
+5. THE SECOND CLONE ON THE DEV PC at C:\src\meridian: umbrella item 43, John's call; nobody
+   touches it. Until he rules, every block you hand him carries `hostname` as its first line
+   after cd, so the transcript shows which machine ran it. The controller's blocks do the same.
+6. Machine-scope environment on donatello: right call for an unmanned box; note it in the
+   runbook words for W4.
+7. Your "needed from John" 3 and 5 are closed (two emails stands, Suzanna answered; her
+   answers are in this file above). 1, 2, 6 and 7 stand. Dates for 4 are in W3-STATUS (PDF by
+   3 Oct) and W6-STATUS (site launch before Routes, Pages after the zone move).
+8. Housekeeping: yes, first screen live state and asks, history below. One screen for the
+   controller.
+
+## 21 September 2026, later: John's rulings on the recorder and the Dev PC clone
+
+- RECORDER: John will test all-day recording on the stand itself (hourly files on the laptop,
+  general intelligence only, never attributed to a person, transcribed after the show, deleted
+  by a stated date), on the controller's condition that it is NOT covert: a visible notice on
+  the stand and the host's spoken line at the start of each demo. W2 owns the mechanics
+  (a scheduled hourly recording on the stand laptop, files to the lead_files store, retention
+  date in the export) and hands W4 the notice wording and the spoken line. John's stated
+  worry is the busy morning with one host: voice note and card drop are the primary capture,
+  the recording is the backstop, and every record is editable at the 17:00 review.
+- The Dev PC clone at C:\src\meridian is deleted (clean on inspection). Drop the hostname line.

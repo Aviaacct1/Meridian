@@ -61,7 +61,7 @@ Solutions as author, en-GB, later). Contents, in this order:
 
 - Host: Suzanna McIntosh, a former OAG demo lead, has used Meridian for about four weeks and
   has Cloudflare Access. Lands Tuesday 20 October afternoon; works the stand Wednesday to
-  Friday 9 to 5. Stefan Parry (summer intern, also a user) may join her. Stand F174,
+  Friday 9 to 5. Stefan Parry (summer intern, also a user) may join her. Stand F124,
   Frankfurt. Training is REMOTE: two video sessions on the frozen build between 14 and 16
   October, and a full run-through on 16 October with Jol playing a sceptical airport; John
   is not in the country for an in-person session.

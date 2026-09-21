@@ -162,7 +162,7 @@ each-way or two-way basis must be stated. The deck states the basis on every pas
 ## Q2. The ten slides, one line each
 
 1. Cover. Meridian, published by The Aviation Observatory. Route forecasting for airports and
-   airlines. Stand F174, Routes World 2026.
+   airlines. Stand F124, Routes World 2026.
 2. The problem, in the buyer's words. A route development team pitches a route and is asked how
    many passengers, at what load factor, and why the airline should believe it.
 3. What Meridian does. The seven-step build in the client's language, from two cities and an

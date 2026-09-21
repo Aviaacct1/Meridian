@@ -41,7 +41,7 @@ before Routes. Messaging sentence 3 (the offer) drops any number of places.
    and contact list ("book ten minutes on the stand"); week of 29 Sep, the Routes exhibitor
    listing and app profile text, and post 2 (the three classes of number in plain words);
    week of 6 Oct, post 3 (a worked route, the pack as a PDF image); week of 13 Oct, the
-   final "see us at F174" note; during the show, one post a day from the stand with the
+   final "see us at F124" note; during the show, one post a day from the stand with the
    visitor's permission and no numbers that identify their pitch. Every piece goes to Jol
    for copy and to John for approval; nothing is published by a chat.
 4. WEBSITE, REWRITTEN after John's rulings in your chat. The site to launch is THE AVIATION
@@ -89,7 +89,7 @@ before Routes. Messaging sentence 3 (the offer) drops any number of places.
   aviationobservatory.com (W2's domain, Postmark).
 - Voice for copy: Avia house style, UK English, no em or en dashes, active voice, no
   consultant-generic words; short sentences on LinkedIn; "circa" not "approximately".
-- Frankfurt, 21-23 October, stand F174. Suzanna McIntosh hosts.
+- Frankfurt, 21-23 October, stand F124. Suzanna McIntosh hosts.
 
 ## Dependencies
 
@@ -225,3 +225,23 @@ is rejected on that ground alone.
   pre-run route per invitation": the route is theirs to choose, and W6 rewrites the five
   invitations accordingly (a suggested route may stay as the example if they do not name one).
 - Contacts: still John's; the platform read with the controller is the fallback.
+
+## Controller's sweep of W6-STATUS.md v7 (21 September 2026)
+
+1. Conflict 1 (site says three seats and 100 presentations): fix it in your next session,
+   before the Pages project; quote PRICING-DECISION-2026.md v1.0 section 2 ("no limit on
+   users or on how much you run it"). Ruled.
+2. Conflict 2 ("limited places" in the pricing file's section 7): already with W8 for v1.1
+   (W8-RULINGS 21 Sep). Quote v1.1 when it lands; until then omit the fallback sentence.
+3. Conflict 3: noted, closed.
+4. Risk 1, the reply-to-forecast handover for a named route: RULED. John forwards the reply
+   to the controller chat the day it arrives; the controller hands John a Workstation Remote
+   block to run the forecast on the stand build and queue the pack through the demo flow;
+   W3 checks the pack before it goes. If the route lands inside 48 hours of the meeting it
+   runs live in the meeting. Written into the umbrella diary as a standing step from 26 Sep.
+5. Stand number: F124 (John, 21 Sep); your files were corrected by the controller on 21 Sep,
+   which is the one exception to "nobody edits another's file", made for a factual error
+   across twelve files. Check your three drafts read F124 before sending anything.
+6. Sentence 2.3, A or B: put to John as umbrella item 44; the controller's view is B on the
+   stand and in the invitations, A where one line is all there is, as you propose.
+7. Contacts by 25 Sep and approval of post 1 and the list email: umbrella items, John's.

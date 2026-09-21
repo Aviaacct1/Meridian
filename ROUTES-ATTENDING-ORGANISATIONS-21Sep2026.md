@@ -3,7 +3,7 @@
 Source: the Routes World 2026 matchmaking platform (Grip), read from John's signed-in account on
 19 September 2026, 1,853 registered delegates. Organisations only, with delegate headcount in
 brackets; no delegate names are recorded here by design. Registrations grow until the show:
-re-read in the week of 12 October and add to the pre-warm set. Avia stand: F174.
+re-read in the week of 12 October and add to the pre-warm set. Avia stand: F124.
 
 ## 1. The shape of the show
 

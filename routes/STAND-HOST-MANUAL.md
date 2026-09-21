@@ -1,6 +1,6 @@
 # Meridian at World Routes 2026: stand host's brief and training manual
 
-Stand F174, Messe Frankfurt. Wednesday 21 to Friday 23 October 2026.
+Stand F124, Messe Frankfurt. Wednesday 21 to Friday 23 October 2026.
 
 Version 1, 19 September 2026. DRAFT, internal. Prepared by Avia Solutions for Suzanna
 McIntosh, with Stefan Parry as second host. Meridian is published by The Aviation
