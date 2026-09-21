@@ -192,3 +192,46 @@ deadline) and the four conditions in one line each.
 more may be added later. Build to them now; nothing waits on a route decision. The carrier
 for Bologna-New York is still item 26.
 W3: slides 7-8 and the pack examples proceed on these two routes; runs 29 Sep-1 Oct as planned.
+
+## 21 September 2026: SCOPE ITEM 5, THE STAND VIDEO (John). The stand package includes a TV screen
+
+A silent, subtitled loop of Meridian for the stand TV, 3 to 4 minutes, in the Observatory
+look. This is the 9 September video job (scripted, subtitled, silent; cuts: 3-4 minute booth
+loop, 90-second insurer cut, 20-30 second GIF for posts) brought under W3. Scenarios were
+agreed then and stand: NEVER a client airport; Bordeaux (easyJet or Vueling short-haul) and
+Boise (Breeze or Southwest); a third, larger hub for a long-haul pitch still to be named by
+John (umbrella item 45). Each route: warm it off camera, show one run live with a time-lapse
+caption; the accuracy line verbatim once; "about a minute" is released (W6-RULINGS 21 Sep) and
+may be captioned for Run only. Nothing about any competitor; nothing labelled illustrative.
+RECORDING: the portal at meridian.aviacortex.com is not reachable from the chat's own
+environment (egress); record natively on the Dev PC with a labelled block (Playwright or a
+screen recorder), post-process in the device shell (ffmpeg subtitles). Never print the
+password file. Deliver: the booth loop as MP4 in 16:9 for the stand TV (W9 confirms the
+screen's input and resolution from the exhibitor manual), the GIF to W6 for posts. Dates:
+first cut to Jol and Nick with the other four items on 3 October; final on the frozen build
+after 10 October; on the show laptop and a USB stick by 15 October (W2 loads it).
+
+## Controller's sweep of W3-STATUS.md v2 (21 September 2026)
+
+1. Conflict 1, the deck's author: RULED. Product decks are published by The Aviation Observatory;
+   author and last-modified-by "The Aviation Observatory". Scope item 1's "Avia Solutions" line
+   is superseded for product surfaces; the Avia Solutions rule stands for Avia consultancy files.
+2. Conflict 2, the accuracy wording: the ruled line is the slide text; item 25(b) stays in the
+   notes until item 25 lands. Right as built.
+3. Conflict 3, dates: 3 October for all items, as you work to. The Dates line in scope is
+   superseded by the sweep.
+4. Conflict 4, slides 7-8: your proposal adopted. Layout and argument to Jol and Nick 3 Oct with
+   charts from the current build; charts regenerated off the frozen build 10-14 Oct before print.
+5. The pitch page judgement (proven renderers where a figure carries numbers, interactivity only
+   for the economics sliders): agreed. The download-fidelity ruling outranks "interactive".
+6. The methodology bridge labels: W4 reports three that do not read to a lay visitor ("gross-up",
+   "carried, each way / year", "by schedule quality"). The page is app/methodology_page.py, on
+   the run path's display side, not demand logic. RULED: W3 owns the label text as a client
+   surface; change the three labels to plain words (what the booking data misses in this market;
+   passengers a year, each way; the share won on frequency, journey time and connections), keep
+   the numbers, before the freeze; W4 quotes the new labels in 7.6. Small change, one file.
+7. Video: 23 Sep script and shot list accepted; item 45 is with John (silence to 26 Sep:
+   Copenhagen and Denver). The Dev PC recording block is yours to issue; the controller will
+   make sure John has a quiet hour for it in the week of 29 Sep.
+8. The probe: re-issued block noted; John runs it by 26 Sep or photography is dropped. Umbrella
+   item 33 unchanged.

@@ -239,3 +239,19 @@ outcome. Two things follow for the manual:
    W4 checks the page on the workstation build (it exists: app/methodology_page.py, bridge tied
    to LAST_FC) and writes the walk-through in the host's words; if any step label is unclear
    to a lay reader, say so in W4-STATUS for the controller.
+
+## Controller's sweep of W4-STATUS.md v2 (21 September 2026)
+
+1. Watchpoint 1: RULED. Ask "what do you pay today for your data subscriptions", no supplier
+   names on the card or in the manual. W5 carries the same wording (W5-RULINGS updated).
+2. Watchpoint 2: the two button sentences follow W2's screen words; W2 hands them to you when
+   stand mode ships; the printed copy waits for them.
+3. Watchpoint 4: agreed. The controller asks John for a Suzanna session on the current build
+   before the 16 Oct trial, ideally the week of 29 Sep, so her Optimise view is current.
+4. Watchpoint 5: the F124 correction was the controller's, made across twelve files on 21 Sep
+   for a factual error and recorded in the umbrella; the README's rule stands and the exception
+   is noted. It will not happen silently again: any controller edit to a workstream's file is
+   announced in that workstream's rulings file the same day.
+5. The bridge labels: passed to W3 as a ruling (W3-RULINGS, 21 Sep); quote the new labels in
+   7.6 when W3 reports them.
+6. v2 is read and good. Items 25 and 34 remain John's.

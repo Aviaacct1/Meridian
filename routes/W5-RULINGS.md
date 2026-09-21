@@ -274,3 +274,8 @@ cover is being extended to TAO Ltd (no client contract is signed before it is in
 agreement's insurance line is worded to the cover as extended, slot until the insurer's
 proposal lands) and the invoice template carries TAO Ltd's bank details, which do not yet
 exist (slot; the account is opened before the first invoice). VAT status: John states.
+
+## 21 September 2026: the two spend questions, wording (controller, on W4's watchpoint)
+
+The feedback card asks "what do you pay today for your data subscriptions", not a list of
+supplier names. Same answer, no third-party name on a client-facing surface.

@@ -28,8 +28,8 @@ John pauses until Postmark approval (expected Mon 22 Sep). `Aviaacct1/tao-websit
 |---|---|---|---|---|---|
 | W1 Speed and caches | STEP 2 CLOSED 21 Sep, acceptance met restart-proof | Cold Run 16.9 / 20.2 / 13.4s (SJC-TPE, BRS-EWR, DUB-DFW), warm 8-11s, Optimise narrowed 38-53s, identical on restarts 4 and 5; diff PASS r2, r4, r5; profile: remainder is frozen feed scoring | Market-brief first-call cost (6-8s); warm_boards over the register before 20 Oct; gap cache only if time | Controller / John | Brief by 3 Oct; warm-up 19 Oct |
 | W2 Stand flow | In progress (v13, 21 Sep) | Delivery PROVEN via Postmark API (aviasolutions.com, MessageID 8283ccb0); SMTP path discarded three messages silently, transport now API (3406f0a); lead_store built, 47 checks (ef6de65), app not yet rewired; capture layer widened to four record types; progressive Optimise deferred | Rewire app to lead_store; nightly export; three capture buttons; stand mode; zone move; laptop procedure after SSD | W2 chat / John | Capture demonstrable 2 Oct; laptop proof 8 Oct |
-| W3 Presentation | In progress; STATUS STILL v1 of 19 Sep, chat not run since | Slides 1-6, 9-10 built (3af5158 per handover, unconfirmed in W3-STATUS); provenance fix proven (45a5210); Commons probe written, unrun (item 33) | W3 rewrites its STATUS; PDF render and pitch page; probe run by 26 Sep; slides 7-8 from runs 29 Sep-1 Oct | W3 chat / John | All four to Jol and Nick 3 Oct |
-| W4 Host | In progress (v1) | STAND-HOST-MANUAL.md v1, 648 lines, 27 slots; built on size-band pricing, now superseded | v2 after Suzanna's four answers (item 23) and 8 Oct screenshots; pricing slots wait on W8 FINAL | W4 chat / John | v2 mid-Oct |
+| W3 Presentation (deck, pack, PDF, imagery, STAND VIDEO) | In progress (v2, 21 Sep) | Slides 1-6, 9-10 built and verified (3af5158), slide 10 rebuilt to final pricing; PDF render BUILT and proven (two-page A4, Avia metadata); pitch page's three figures already exist in the codebase; Commons probe still unrun (item 33); video script 23 Sep | Pitch page as slide-shaped sections; one real pack PDF on the workstation; probe by 26 Sep; video record 26-30 Sep; all five items to Jol and Nick 3 Oct | W3 chat / John | All four to Jol and Nick 3 Oct |
+| W4 Host | v2 DONE (21 Sep) | STAND-HOST-MANUAL.md v2, 862 lines, 23 slots: Suzanna's order of use, the bridge walk-through, final pricing sentence, weak-scenario list, recording section; three bridge labels flagged for W3 | v3 after 8 Oct screenshots and W5's known-issues list; items 25 and 34 from John; Word copy for print | W4 chat / John | v3 mid-Oct |
 | W5 Order-ready documents | In progress (v3, 20 Sep) | Agreement and one-pager v0.2 committed (3197c43), 17 clauses; checklist 8 of 13 DONE; BUILT ON SIZE BANDS, to be rebuilt on W8's tiers | Invoice, onboarding script, known-issues list, licence-record form; twelve slots are John's by 3 Oct; solicitor wk 6 Oct | W5 chat / John | 3 and 10 Oct |
 | W6 Messaging, marketing, website, meetings | In progress (v7, 21 Sep) | Four sentences redrafted in the Observatory voice (variants v3); five invitations ask the airport to name a route; post 1 and list email ready for approval; site copy still says three seats / 100 presentations (fix queued) | John: contacts, 2.3 A or B, approvals by 25 Sep; W6: site licence-shape fix, clean-clone proof, Pages after zone move; invitations 26-29 Sep | W6 chat / John | 25-29 Sep |
 | W8 Pricing and commercial offer | DONE 20 Sep | PRICING-DECISION-2026.md v1.0 FINAL; twenty decisions answered; bands by airports covered | W3-W6 rebuild to it (pointers in place); Knock test result from John in a week or two | W8 chat closed / John | Knock by 3 Oct |
@@ -399,6 +399,17 @@ five contacts.
   Left for W1: the market brief's 6-8s first call; warm_boards over the register before the
   show; the straight-line gap cache only if time.
 
+- 21 Sep 2026 (John): the stand TV carries a DEMO VIDEO loop; the 9 Sep video job becomes W3
+  scope item 5 (silent, subtitled, 3-4 minutes, Bordeaux and Boise plus a third hub, item 45;
+  first cut 3 Oct, final on the frozen build, loaded by 15 Oct).
+
+- 21 Sep 2026: W3 v2 and W4 v2 read. W3: PDF render proven, slide 10 on final pricing, the
+  pitch page's three figures found already built (curve, maps, tail chart), video dated. W4:
+  manual v2 on Suzanna's answers and the bridge walk-through; three bridge labels flagged as
+  modeller's words, now W3's to change before the freeze. Rulings: product decks are authored
+  by The Aviation Observatory; slides 7-8 go to review 3 Oct on current-build charts and are
+  regenerated after the freeze; the spend question names no supplier.
+
 ## Waiting on John
 
 1. CLOSED 19 Sep: HEAD `11a4c3f` confirmed and pushed.
@@ -590,6 +601,12 @@ five contacts.
     comes out of the blocks.
 44. **Sentence 2.3, version A or B** (W6-MESSAGING-VARIANTS v3). Controller's view: B on the
     stand and in the invitations, A where one line is all there is. Silence to 25 Sep: B.
+45. **The third video scenario, a larger hub for a long-haul pitch** (never a client airport):
+    Vienna, Brussels, Lisbon or Copenhagen; Denver, Phoenix, Minneapolis or Seattle. Bordeaux
+    and Boise stand from 9 Sep. Silence to 26 Sep: Copenhagen and Denver.
+46. **A Suzanna session on the current build before the 16 Oct trial**, week of 29 Sep, so her
+    Optimise view is current (W4 watchpoint 4; controller agrees). Book it with her on Tuesday's
+    call. Silence: the 16 Oct trial is her first sight of it.
 13. **Pick the five meetings**: John agreed the buyer-test list 19 Sep (Birmingham, Dublin,
     Vienna, Dallas Fort Worth, Milan SEA; reserves in the organisations file, section 3).
     Open point: whether one competitor-client airport goes on the five as a deliberate test
