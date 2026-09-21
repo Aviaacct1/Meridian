@@ -255,3 +255,10 @@ outcome. Two things follow for the manual:
 5. The bridge labels: passed to W3 as a ruling (W3-RULINGS, 21 Sep); quote the new labels in
    7.6 when W3 reports them.
 6. v2 is read and good. Items 25 and 34 remain John's.
+
+## 21 September 2026: JOL'S FEEDBACK, for W4
+
+The dashboard's field labels, chart titles and the catchment page change in one W2 batch
+before the freeze (routes/JOL-FEEDBACK-REGISTER.md). Change the manual's screen words once,
+when W2-STATUS says the batch has landed, not before. "Measured" becomes "actual" on data
+surfaces; section 2's three classes keep Nick's words until Nick agrees the rename.

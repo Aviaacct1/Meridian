@@ -235,3 +235,12 @@ after 10 October; on the show laptop and a USB stick by 15 October (W2 loads it)
    make sure John has a quiet hour for it in the week of 29 Sep.
 8. The probe: re-issued block noted; John runs it by 26 Sep or photography is dropped. Umbrella
    item 33 unchanged.
+
+## 21 September 2026: JOL'S FEEDBACK (routes/JOL-FEEDBACK-REGISTER.md), W3's share
+
+R1: "actual" replaces "measured" wherever a figure is read from data, on the methodology page,
+in the pack, the PDF and the deck; the three-classes framing on slide 4 keeps Nick's words
+until Nick agrees to "actual, calibrated, capped" (John asks him). R2: no "physics" on any
+client surface; the bridge bar becomes "seat cap" or "hard cap" as the case is, alongside the
+three label changes already ruled. R5 (i): every passenger figure in the deck, pack and PDF
+carries "each way" or "two-way" in its own label; the workbook already does. One commit.

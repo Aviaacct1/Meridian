@@ -221,3 +221,13 @@ item (John); W2 supplies W5 with the screen once stand mode is built.
   worry is the busy morning with one host: voice note and card drop are the primary capture,
   the recording is the backstop, and every record is editable at the 17:00 review.
 - The Dev PC clone at C:\src\meridian is deleted (clean on inspection). Drop the hostname line.
+
+## 21 September 2026: JOL'S FEEDBACK BATCH (routes/JOL-FEEDBACK-REGISTER.md)
+
+Read the register. W2 owns every item marked W2. Order: the four bugs (12, 31, 32, 33); the
+each-way/two-way labelling on every figure (R5 i), then the basis switch if it is display only
+(R5 ii); the catchment page rewrite (R4) with Nick reading it; the copy batch (group B) as ONE
+commit so W4 changes the manual's screen words once; R3's two labels proposed in your STATUS;
+R7 answered in your STATUS. "Measured" becomes "actual" on data surfaces (R1); no "physics"
+anywhere (R2). All before the 10 October freeze; say in your STATUS what will not fit, in
+order of what you would drop, rather than dropping it in silence.

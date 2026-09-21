@@ -418,6 +418,13 @@ five contacts.
   New items 47-51. PI cover and the TAO bank account are now the binding constraints on
   order-ready, not the drafting.
 
+- 21 Sep 2026 (John): Jol's 43-item layman's read (3 Sep, Egnyte) triaged into
+  routes/JOL-FEEDBACK-REGISTER.md: four bugs, one copy batch, the catchment page rewritten
+  before the freeze, "actual" for "measured" on data surfaces, no "physics", and EACH-WAY /
+  TWO-WAY labelled on every figure with a display switch on the dashboard (John: the most
+  important item; the TPE work went wrong on it; US reads departing, the rest two-way).
+  W2 and W3 carry it; W4 changes screen words once. No W10.
+
 ## Waiting on John
 
 1. CLOSED 19 Sep: HEAD `11a4c3f` confirmed and pushed.
@@ -630,6 +637,13 @@ five contacts.
     Memory says both approved launching through a separate entity verbally on 17 Sep; the
     written confirmation is still owed and the licence record form (W5) captures the calls.
     Known-issues sign-off: Nick, unless you say otherwise.
+52. **Register The Aviation Observatory Limited for VAT** as an intending trader (accountant);
+    the Informa invoice is then reclaimable under the pre-registration rule; Avia pays it
+    meanwhile as an intercompany loan. The invoice template needs the VAT number.
+53. **Ask Nick** whether the three classes of number can be renamed "actual, calibrated,
+    capped" (Jol's feedback R1; John: "measured" implies an estimate in ASD). Until he answers,
+    slide 4 and manual section 2 keep his words and every data surface says "actual".
+54. **Pens as the stand giveaway**, Observatory name and site address, ordered this week (W9).
 13. **Pick the five meetings**: John agreed the buyer-test list 19 Sep (Birmingham, Dublin,
     Vienna, Dallas Fort Worth, Milan SEA; reserves in the organisations file, section 3).
     Open point: whether one competitor-client airport goes on the five as a deliberate test
