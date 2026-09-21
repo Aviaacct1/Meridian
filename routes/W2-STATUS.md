@@ -1,6 +1,6 @@
 # W2 stand flow: status
 
-Version 8, 21 September 2026. Written by the W2 build chat for the controller; rewritten
+Version 9, 21 September 2026. Written by the W2 build chat for the controller; rewritten
 each session, never appended. routes/README.md v1 read and followed: facts about other
 workstreams below are taken from their STATUS files and quoted with the version, never from
 memory of a chat. W2-RULINGS.md v1 read and acted on. Dates
@@ -149,7 +149,44 @@ it defaulted to smtp.office365.com and an unset variable would have sent the ser
 wrong supplier and failed naming Microsoft. app/test_demo_flow.py gains nine checks covering
 both, including that a token never reaches a From header: 67 checks, 0 failed, run here.
 
-**app/send_first_pack.py written, not yet run.** It sends one real message through
+**THE FIRST END-TO-END SEND HAPPENED, 21 September.** Transcript on donatello
+(donatello\aviaremote1, C:\src\meridian at b91bc48):
+
+    host     smtp.postmarkapp.com:587
+    from     john.carter@aviationobservatory.com
+    to       john.carter@aviasolutions.com
+    credential length 36 (never printed)
+    SENT from john.carter@aviationobservatory.com
+
+PROVEN: the workstation authenticates to Postmark, the message is accepted, and the From is
+the intended address rather than the Server API token. The script's warning for the case where
+the sender and the credential are identical did not fire, which is the direct evidence that the
+fault found this morning is fixed on the machine that matters. NOT YET PROVEN, and not to be
+recorded as proven until John pastes it: delivery, the DKIM result, arrival, and the headers.
+Those come from Postmark Activity and his inbox. W2 could not read them; Chrome was not
+reachable from the session.
+
+**Four machine and account faults surfaced getting there, and they are the carry-forward.**
+They cost most of the day and none of them was a code fault.
+1. Blocks labelled "Workstation Actual" were running on the DEV PC. whoami returned
+   desktop-3r7oqvj\carte. The Dev PC carries a second clone at C:\src\meridian alongside
+   C:\AviaDev, so the path looks identical on both machines and the prompt does not
+   distinguish them. The Avia tool standard's first two rules exist to stop exactly this.
+   What that second clone is for, and whether it should exist, is John's call; W2 has touched
+   nothing.
+2. A pull's summary line was read as a commit's. "4 files changed, 164 insertions(+)" was
+   git pull reporting the controller's ce0e3a6, and W2 took it for John's commit, so W2
+   believed work was pushed that was still sitting uncommitted. Every W2 block now ends with
+   git log --oneline -1, which names the commit rather than only its hash.
+3. setx writes to the SETTING account's User scope. HOST, PORT, USER and PASS were set on
+   donatello under aviaremote1; FROM was set on the Dev PC under carte, so donatello never had
+   it. All five are now at MACHINE scope on donatello, which is what an unmanned box needs: a
+   scheduled task at boot runs as neither account and would see neither User hive. Ruling 18's
+   8 October scheduled-task work can now assume they are there.
+4. A Machine-scope write does not reach a shell already running, the same trap as setx one
+   level up. The reload loop is in the block for that reason.
+
+**app/send_first_pack.py, written and now run.** It sends one real message through
 demo_mail.send_pack, prints the resolved host, from and credential LENGTH only, warns if the
 sender and the credential are identical, and names the three things to check in Postmark
 afterwards. Its attachment is a plainly labelled transport test, not a forecast pack, because
