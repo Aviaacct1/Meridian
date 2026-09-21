@@ -1,0 +1,28 @@
+W3 status: the pitch page's three figures already exist, so it is wiring not invention
+
+John asked W3 to check the SJC-TPE work before reinventing it. W3's session-1
+status said the route map, the time-of-day curve and the tail chart "do not exist
+in the pack at all". True of the pack, wrong about the codebase, and the
+difference is days of work.
+
+The time-of-day curve is built, wired and live: cortex_workbook.render_curve_png,
+matplotlib rather than openpyxl's native chart because shaded restricted-hour
+bands and an annotated callout cannot be done in the Excel chart model without
+hand-editing chart XML, rendered before wb.save() and embedded in the Departure
+curve sheet beside its own data table and a native Excel line chart.
+
+The route and catchment maps are built and wired: forecast_pack.render_maps
+through avia_maps.route_map, both route ends, reached from demo_pack.py.
+
+The tail chart is built: drawTail and tailPattern in cortex_dashboard.html, with
+the day-of-week seam marked, in the language the pitch page is written in.
+
+The workbook is eight sheets with each-way and two-way pairs, method notes and
+source lines throughout, and Avia Solutions already set as creator and
+last-modified-by.
+
+The status records one judgement W3 will make unless the controller rules
+otherwise: where a figure carries numbers, the pitch page uses the proven
+renderers rather than a second interactive chart of the same run, because two
+pictures of one run that disagree would breach the download-fidelity ruling.
+Interactivity is kept for the economics sliders, which already exist and work.
