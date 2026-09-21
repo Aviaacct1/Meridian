@@ -4,7 +4,12 @@ Version 2, 20 September 2026. Written by the W8 chat for the programme controlle
 each session, never appended. `routes/README.md` v1 and `routes/W8-RULINGS.md` v1 read and acted
 on. W8 writes no code and edits no other workstream's file.
 
-**DELIVERABLE COMPLETE. `routes/PRICING-DECISION-2026.md` is v1.0 FINAL, 20 September 2026.**
+**DELIVERABLE COMPLETE. `routes/PRICING-DECISION-2026.md` is v1.1 FINAL, 21 September 2026.**
+v1.0 was final on 20 September. v1.1 carries John's ruling of 21 September that the contracting
+entity is **The Aviation Observatory Ltd**, closing umbrella item 31, and corrects section 7,
+which still had the one-pager leading with the route study and the host saying "limited places",
+both against decisions 4 and 5. John caught that; W8 should have swept it when the decisions were
+applied.
 All twenty decisions answered by John the same day, the last two prices settled, and John ruled
 the position final for now. The controller points umbrella item 37 at the file; the four rulings
 files carry a pointer only; nothing else in the programme states a price except by quoting it
@@ -18,7 +23,9 @@ with its version. Target was 26 September and the hard deadline 3 October.
   "is route development done here, or at group?", the silence rule to 3 October, and "the same
   day" rather than any minutes figure for the pack. The host also needs the answer to why the
   catchment costs more than a study, and needs to know a group delegation may be the buyer.
-- **W5**: the size-banded table goes in full. The agreement splits into Standard Terms and an
+- **W5**: the contracting party is **The Aviation Observatory Ltd**, which closes slot 1 and
+  needs TAO's registered number, registered office, VAT number and bank details for slot 11. The
+  size-banded table goes in full. The agreement splits into Standard Terms and an
   Order Form. Cancellation moves to 90 days. Clause 2's three seats becomes the corporate-domain
   term with no count plus the no-consultant restriction; clause 6's pack cap becomes the fair-use
   wording. Slot 2 and agreement slot 7 close with "none" because there is no limit on launch
@@ -27,8 +34,8 @@ with its version. Target was 26 September and the hard deadline 3 October.
 - **W6**: prices stay unpublished until November, the group bands are never published, and the
   seven files carrying the £15,000 / £20,000 / £25,000 size grid are rewritten before the November
   publication rather than before Routes.
-- **Controller**: repoint umbrella item 37; close item 6 (50%, no places, 30 November) and item 35
-  (£2,500 study); resolve item 29's internal contradiction in favour of fixed cash; and note that
+- **Controller**: repoint umbrella item 37; close item 6 (50%, no places, 30 November), item 31
+  (The Aviation Observatory Ltd) and item 35 (£2,500 study); resolve item 29's internal contradiction in favour of fixed cash; and note that
   the five proposed meetings carry no group head office when the largest delegations at the show
   are group teams.
 

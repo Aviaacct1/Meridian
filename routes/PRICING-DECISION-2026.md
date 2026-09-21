@@ -1,10 +1,12 @@
 # Meridian: pricing and the commercial offer
 
-Version 1.0 - FINAL - 20 September 2026 - Avia Solutions - Commercial in Confidence
+Version 1.1 - FINAL - 21 September 2026 - Avia Solutions - Commercial in Confidence
 
 Written by W8. This is the only file in the Routes 2026 programme that states a price. Every
-other document quotes this file and its version. **STATUS: FINAL, 20 September 2026.** John settled the last two prices and ruled the position
-final for now. The controller now points umbrella item 37 at this file and the four rulings files
+other document quotes this file and its version. **STATUS: FINAL, v1.1, 21 September 2026.** v1.0 was final on 20 September. v1.1 carries John's
+ruling that the contracting entity is The Aviation Observatory Ltd, and corrects section 7, which
+still had the one-pager leading with the route study and the host mentioning limited places,
+against decisions 4 and 5. The controller now points umbrella item 37 at this file and the four rulings files
 carry a pointer only. Any change from here is a new version with John's ruling against its date.
 
 Target 26 September 2026. Hard deadline 3 October 2026, when W5 sends the agreement to the
@@ -508,6 +510,28 @@ section govern negotiated discounts, which is what they were for. Continuity and
 earned, published and automatic, so a three-year commitment at 10% landing on £13,500 in year one
 does not breach anything. The lowest price any client pays is the three-year prepay.
 
+**Contracting entity: THE AVIATION OBSERVATORY LTD** (John, 21 September 2026), closing umbrella
+item 31. TAO Ltd is the party to the Standard Terms, the Order Form and the invoice. W8 had
+proposed Avia Solutions Limited and the ruling supersedes it.
+
+Four consequences follow and each is for W5 and the solicitor rather than for this file. They are
+listed because a contracting party that does not itself hold the rights or the cover behind what
+it is selling has to be given them expressly.
+
+1. **The OAG and Sabre licences are held by Avia Solutions Limited.** TAO Ltd contracting to
+   supply outputs derived from that data needs the right to do so, by an intra-group licence or
+   by the suppliers' own agreement. This is the same question the data-rights work has carried
+   since July and it now has a date on it.
+2. **The professional indemnity cover sits with Avia Solutions Limited.** The cover behind a TAO
+   Ltd contract has to be arranged or the liability expressly allocated.
+3. **The published accuracy record is Avia Solutions' work.** Whoever contracts carries the
+   liability for a claim made on it, so the Standard Terms must say which entity stands behind
+   the record.
+4. **TAO Ltd's registered number, registered office, VAT number and bank details** are needed for
+   the Order Form and the invoice template, which is W5's slot 11.
+
+None of these changes a price. All four are answerable inside the solicitor's week of 6 October.
+
 ---
 
 ## 6a. Terms architecture, as the input W5 drafts from
@@ -613,8 +637,9 @@ Then, once only, and nothing further unprompted:
 > is £15,000 a year, with no limit on users or on how much you run it. For a group it depends on
 > how many airports you cover and we quote it. I will send you the one-pager with the numbers."
 
-If John holds to the silence rule to 3 October (umbrella item 6), the host says only "on request,
-limited places" and the sentence above travels in the follow-up one-pager instead.
+If John holds to the silence rule to 3 October (umbrella item 6), the host says only "on request"
+and the sentence above travels in the follow-up one-pager instead. **The host never says
+"limited places", because there is no limit** (decision 5). The pressure is the date.
 
 **The pack promise is "the same day", not thirty minutes.** John's stand flow of 20 September has
 the demo finishing on the forecast, because the research takes ten minutes, and the pack reaching
@@ -630,10 +655,17 @@ route studies did you commission last year and what did they cost; and what do y
 Cirium or RDC. That is the method already decided in July, which is to survey actual spend and
 never willingness to pay.
 
-**One-pager pricing block**, in this order: the route study first, because it is the purchase one
-person can sign; then the licence with the airports-covered bands and the year 1, 2 and 3 launch
-cash prices; then the four launch conditions and the 30 November 2026 signature date; then the
-number of places. Figures from sections 4 and 5, quoted with this file's version.
+**One-pager pricing block**, in this order, which follows decisions 4 and 5:
+
+1. **The licence**, with the airports-covered bands and the year 1, 2 and 3 launch cash prices.
+   The one-pager leads with the licence, not the study.
+2. **The four launch conditions and the 30 November 2026 signature date.** No number of places
+   anywhere, because there is no limit.
+3. **The multi-year locked schedules**, because three fixed cash figures are what a client takes
+   to a budget holder. W8 proposal; W5 may leave them for the follow-up if the page is tight.
+4. **The options**, with the £2,500 route study among them rather than above them.
+
+Figures from sections 4 and 5, quoted with this file's version.
 
 ---
 
@@ -777,6 +809,7 @@ are recorded here with his answer, and none is re-asked.
 
 | # | Decision | John's answer |
 |---|---|---|
+| 21 | Contracting entity, closing umbrella item 31 | **THE AVIATION OBSERVATORY LTD** (21 Sep 2026), superseding W8's proposal of Avia Solutions Limited. Four consequences for the solicitor are in section 6 |
 | 18 | Standard Terms signed once plus an Order Form per client, on the Sabre master-and-work-order pattern | YES |
 | 19 | Cancellation notice moves from one month to 90 days on the RDC precedent | YES, 90 days |
 

@@ -1,6 +1,6 @@
 # W2 stand flow: status
 
-Version 12, 21 September 2026. Written by the W2 build chat for the controller; rewritten
+Version 13, 21 September 2026. Written by the W2 build chat for the controller; rewritten
 each session, never appended. routes/README.md v1 read and followed: facts about other
 workstreams below are taken from their STATUS files and quoted with the version, never from
 memory of a chat. W2-RULINGS.md v1 read and acted on. Dates
@@ -447,12 +447,17 @@ scoped 8 Oct; Postmark approval checked 1 Oct.
 
 ## Commits landed
 
-**2cab1b2**, 19 September, pushed to Aviaacct1/Meridian main (89c9a02..2cab1b2). Ruling 16's MCT
-reporter, startup line and stand-mode refusal (app/connection_builder.py, app/cortex_app.py,
-app/test_mct_report.py), the .gitignore secrets patterns, and this file. John ran
-test_mct_report.py on the DevPC before committing: 14 checks, 0 failed, so the record is on the
-run host and not only in a sandbox.
+- **2cab1b2**, 19 Sep. Ruling 16's MCT reporter, the startup line and the stand-mode refusal;
+  the .gitignore secrets patterns. 14 checks on the DevPC before the commit.
+- **3406f0a**, 21 Sep. The API transport, after SMTP reported success for three messages
+  Postmark never received. 89 checks, 0 failed, run on the DevPC.
+- **ef6de65**, 21 Sep. app/lead_store.py and app/test_lead_store.py, the store for all four
+  record types. 47 checks, 0 failed, run on the DevPC against duckdb 1.5.5.
 
-Still owed against it: the first server restart, which is what makes the MCT line speak and
-which also picks up the Postmark variables. Nothing needs restarting for its own sake while
-Postmark holds the account in test mode.
+All three suites pass on the run host's own record, not only in a sandbox: 47, 89 and 14.
+
+HOUSEKEEPING OWED, first thing next session. This file is 460 lines and the README asks for
+one screen. It has earned the length over a hard day, but the controller reads the top of it,
+so the next version puts the live state and what is needed from John on the first screen and
+moves the history below it. W2 would rather restructure the controller's primary input with a
+clear head than at the end of a long day.

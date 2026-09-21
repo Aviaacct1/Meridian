@@ -1,0 +1,32 @@
+W8: pricing decision file v1.1 FINAL - entity and section 7 correction
+
+John's ruling of 21 September: the contracting entity is THE AVIATION OBSERVATORY
+LTD, superseding W8's proposal of Avia Solutions Limited and closing umbrella
+item 31. TAO Ltd is the party to the Standard Terms, the Order Form and the
+invoice.
+
+Four consequences recorded in section 6 for W5 and the solicitor, because a
+contracting party that does not itself hold the rights or the cover behind what
+it sells has to be given them expressly. The OAG and Sabre licences are held by
+Avia Solutions Limited, so TAO needs the right to supply outputs derived from
+that data, by intra-group licence or by the suppliers' own agreement. The
+professional indemnity cover sits with Avia Solutions Limited. The published
+accuracy record is Avia Solutions' work, so the terms must say which entity
+stands behind a claim made on it. TAO's registered number, registered office, VAT
+number and bank details are needed for the Order Form and the invoice template,
+which is W5's slot 11. None of these changes a price and all four are answerable
+inside the solicitor's week of 6 October.
+
+Section 7 corrected to agree with decisions 4 and 5, which John caught and W8
+should have swept when the decisions were applied. The one-pager now leads with
+the LICENCE and carries the 2,500 route study among the options rather than above
+them; the multi-year locked schedules are added as a W8 proposal because three
+fixed cash figures are what a client takes to a budget holder. The host no longer
+says "limited places", because there is no limit: the pressure is the date.
+
+W8-STATUS.md updated: the workstream lines now carry the entity for W5 and item
+31 for the controller, and the solicitor list opens with the entity and its four
+consequences.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01DtwCfEnhiXACeJawoD9cxM
