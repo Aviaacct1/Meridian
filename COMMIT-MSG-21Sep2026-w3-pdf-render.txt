@@ -1,0 +1,35 @@
+W3: the PDF render of the pack, with the print stylesheet it needs
+
+Controller's session-2 item 3. The PDF is the full researched pack (John,
+19 September), so the print rules flatten the page back into paper rather than
+photographing it.
+
+app/pitch_html.py, a print block added to the pack's own stylesheet: A4 at a 14mm
+margin; a section never splits across a page; a source line stays with the figure
+it belongs to; a long table repeats its head; the horizontal scroll becomes
+visible so a table is never clipped at the paper's edge; colour printing forced so
+the economics panel does not come out white. The interactive controls are hidden,
+and with them the wording that only makes sense beside a control: the economics
+heading reads "Route economics, move a slider" on screen and "Route economics" on
+paper, and the note loses its "adjust the sliders" sentence. Both were found by
+rendering the PDF and looking at it, not by reading the code.
+
+deck/pack_pdf.py: the render step. Headless Chrome prints the page, because the
+pack draws its charts in the browser from inline SVG its own script builds, and a
+Python HTML-to-PDF library never runs that script and would produce a pack with
+the words and none of the figures. Rendering the server's URL rather than a saved
+file is the documented default for the same reason. Chrome is given a virtual time
+budget so the charts are drawn before the print, and Chrome's own metadata is
+rewritten afterwards with pikepdf, then read back: a pack that reaches a visitor
+carries Avia Solutions as author, creator and producer, never Chromium or Skia.
+The verify step fails loud on a page that is not A4 and on metadata that did not
+take.
+
+Proven in this session: the pack template rendered to a two-page A4 PDF, 56.6 KB,
+in 1.2 seconds, every page 595 x 842 points, author and producer Avia Solutions.
+Rendered with the template's data object EMPTY, so no figure on the test page
+claims to be a number; what is proven is the pagination, the A4 geometry and the
+metadata, which is what the stylesheet is for. The render against a real pack runs
+on the workstation, where the server and the stores are.
+
+No change to the engine, to cortex_app.py, or to any run path.

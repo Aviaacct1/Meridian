@@ -169,6 +169,36 @@ table.tbl{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:4px;mi
 .tbl tr.tot td{font-weight:800;color:var(--ink);border-top:2px solid var(--navy);background:#f5f8fd}
 .subh{font-size:13px;font-weight:700;color:var(--navy);margin:18px 0 4px}
 @media(max-width:720px){.kpis{grid-template-columns:1fr 1fr}.econ{grid-template-columns:1fr}.rgrid{grid-template-columns:1fr}.hero h1{font-size:30px}.imgrow{grid-template-columns:1fr}}
+
+/* ---- print: the same pack as an A4 PDF -----------------------------------
+   The PDF is the full researched pack and the page is the short pitch, so the
+   print rules flatten the page back into paper rather than photographing it.
+   Three things matter: a section never splits across a page, a figure never
+   leaves its source line behind, and the interactive controls do not print as
+   empty boxes. Rendered by deck/pack_pdf.py through headless Chrome.        */
+@page{size:A4;margin:14mm}
+@media print{
+ :root{--bg:#fff}
+ html,body{background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+ .wrap{max-width:none;padding:0}
+ .hero{padding:26px 24px 24px;break-after:avoid;page-break-after:avoid}
+ .hero h1{font-size:28px}
+ .kpis{gap:9px}
+ .kpi{backdrop-filter:none}
+ .sec{margin:10px 0 0;padding:16px 18px;box-shadow:none;border-radius:10px;
+      break-inside:avoid;page-break-inside:avoid}
+ .sec h2{break-after:avoid;page-break-after:avoid}
+ .note,.foot{break-before:avoid;page-break-before:avoid}   /* a source line stays with its figure */
+ .bar,.rcard,.epanel,.imgrow figure,table.tbl tr{break-inside:avoid;page-break-inside:avoid}
+ .scroll{overflow:visible}
+ table.tbl{min-width:0;font-size:11px}
+ .tbl thead{display:table-header-group}                    /* a long table repeats its head */
+ .ctl input[type=range]{display:none}                      /* the slider prints as its value */
+ .screenonly{display:none}          /* wording that only makes sense with the controls */
+ .ctl label{margin-bottom:0}
+ .imgrow img{height:120px}
+ a[href]:after{content:""}
+}
 </style></head>
 <body><div class="wrap">
   <div class="hero"><div class="bg" id="heroImg"></div><div class="in">
@@ -198,7 +228,7 @@ table.tbl{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:4px;mi
     <div class="scroll"><table class="tbl" id="schedTable"></table></div>
     <div class="note">Departure and arrival are indicative local times from block time and timezone; not curfew- or slot-optimised.</div></div>
 
-  <div class="sec"><h2>Route economics, move a slider</h2>
+  <div class="sec"><h2>Route economics<span class="screenonly">, move a slider</span></h2>
     <div class="econ"><div id="sliders"></div>
       <div class="epanel">
         <div class="big">Annual operating profit</div><div class="prof" id="eProf">-</div><div class="ps" id="ePs"></div>
@@ -210,7 +240,7 @@ table.tbl{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:4px;mi
         </div>
         <div class="pl" id="ePl"></div>
       </div></div>
-    <div class="note" id="econNote">Indicative, directional guidance. Central estimate on validated type costs; not the airline's actual costs. Adjust the sliders to test fares, fuel, frequency and cabin mix.</div>
+    <div class="note" id="econNote">Indicative, directional guidance. Central estimate on validated type costs; not the airline's actual costs.<span class="screenonly"> Adjust the sliders to test fares, fuel, frequency and cabin mix.</span></div>
   </div>
 
   <div class="sec" id="resSec"><h2>Why this route</h2><div class="rgrid" id="research"></div>
