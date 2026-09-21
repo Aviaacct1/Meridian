@@ -1,6 +1,6 @@
 # W2 stand flow: status
 
-Version 10, 21 September 2026. Written by the W2 build chat for the controller; rewritten
+Version 12, 21 September 2026. Written by the W2 build chat for the controller; rewritten
 each session, never appended. routes/README.md v1 read and followed: facts about other
 workstreams below are taken from their STATUS files and quoted with the version, never from
 memory of a chat. W2-RULINGS.md v1 read and acted on. Dates
@@ -90,6 +90,70 @@ before the trial. OPEN, and it needs an answer before the 11-12 October trial: w
 how it reaches the form under Plan B, where the laptop serves only itself and there is no venue
 network.
 
+## PROPOSAL TO THE CONTROLLER: the stand capture layer (changes ruling 15's scope)
+
+John, 21 Sep, challenged W2's scope for stand capture and he is right. Item 6 covered only the
+visitor who runs a route. Three other kinds of record have no home in the current design, and
+forcing them into one form would make the fast ones as slow as the slow one.
+
+FOUR RECORD TYPES, in descending order of how much time the host has:
+1. RAN A ROUTE. Attached to the forecast on screen: what they came to look at, the route, the
+   questions asked, matters arising, pricing interest, plus the contact fields. Rich, slowest.
+2. CARD DROP. A photograph of the card and two taps for topic and interest. Nothing typed.
+   For the visitor with no time. Fifteen seconds.
+3. UNATTRIBUTED NOTE. A remark worth keeping from someone who left no details. Not a lead:
+   market intelligence, and the least collected thing at any trade stand. One box.
+4. HOST VOICE NOTE. The host's own impressions, dictated after a visitor leaves, attached to a
+   record or standing alone. Audio stored and attached; transcription after the show, not live.
+
+DESIGN: one screen in stand mode, three buttons by speed, plus a list view of everything
+captured, filterable, with a free notes field on every record. Nightly flat export to Egnyte as
+Excel, so November's CRM choice is an import rather than a migration. Two properties that are
+not obvious and are not negotiable: every record is EDITABLE AFTER THE MOMENT, because the
+useful detail arrives once the visitor has walked away; and capture is LOCAL FIRST and syncs to
+Surrey when it can, because under Plan B there is no network and the first bad morning would
+otherwise lose the day's intelligence. That second point is architectural and is cheaper to
+decide now than to retrofit.
+
+THE TRADE W2 PROPOSES: scope item 5, progressive Optimise display, slips to after Routes. Its
+whole justification was filling a ten to fifteen minute wait. W1 step 1 took narrowed Optimise
+to 38-55s (TIMING-20260920-1910), so the case for it has largely gone, and its time buys a
+capture layer the host uses on all three days. Cases 1 to 3 and host voice notes are achievable
+before the 10 October freeze. Live transcription is not, and W2 will not attempt it.
+
+## The recorder question, W2's recommendation
+
+John proposes a card-sized voice-activated recorder on the laptop screen, capturing conversation
+around the demo for three days. W2's recommendation is NOT to run it continuously, and the
+reasons are practical before they are legal.
+
+An exhibition hall is close to the worst case for this. A voice-activated device triggers on
+ambient noise and yields hours of unusable audio; three days of it will not be reviewed by
+anyone; and a poor transcript attached to a named person's record is worse than no transcript,
+because it creates a false record of what a client said. Separately, recording identifiable
+people and storing, transcribing and attaching it to records about them is processing personal
+data under UK GDPR with Avia as controller. Recording a conversation one is party to is not
+itself unlawful, but the storage and use need a lawful basis, and a visitor at a stand would not
+reasonably expect it. Passers-by, neighbouring stands and competitors get captured too. For a
+firm whose product is independent judgement, being the stand that records people quietly is a
+poor trade for extra text.
+
+WHAT W2 RECOMMENDS INSTEAD, which reaches the same goal: the host's own voice note after each
+conversation, which is already record type 4. It is her read rather than raw audio, so it is
+filtered by the one expert present, it raises no third-party consent question, the audio quality
+is controllable, and it takes thirty seconds. Plus a short end-of-day note on the day's themes.
+
+IF JOHN STILL WANTS THE DEVICE, the conditions that keep it honest: an unmissable notice at the
+stand; the host saying it out loud at the start of a demo; nothing covert; a stated short
+retention period with a named person responsible for deletion; audio never attached to an
+individual's record unless that individual was told; and the Routes exhibitor rules checked
+first, which W2 has not seen and will not guess at.
+
+SETTLE IT BY MEASUREMENT, per the standing rule. Before anything is bought, record twenty
+minutes in the noisiest room available and try to transcribe it. If the transcript is unusable
+the question answers itself and nobody has spent anything. If it is good, the consent conditions
+above are the remaining question rather than the audio.
+
 ## Scope items
 
 **1. Laptop build. IN PROGRESS.** Ruling 14: 1TB external NVMe over USB-C on John's core x86
@@ -119,10 +183,32 @@ Postmark now also gives delivery, bounce and complaint data, which is what the s
 show a failed pack rather than guess at one. Next: check against running / sent / failed,
 newest first, failure reason visible.
 
-**5. Progressive Optimise display. NOT STARTED.** Display change only; the background job and
+**5. Progressive Optimise display. PROPOSED FOR DEFERRAL to after Routes; see the
+proposal above.** Display change only; the background job and
 cancel path already exist. After stand mode.
 
-**6. Stand capture front end. NOT STARTED.** Scoped above. Demonstrable 2 Oct.
+**6. Stand capture layer. IN PROGRESS. The store is built and tested.**
+app/lead_store.py: one DuckDB table for all four record types, an append-only lead_events
+log beside it, and lead_files for card photographs, voice notes and packs. app/
+test_lead_store.py holds the seven properties that are load-bearing: 47 checks, 0 failed,
+run against duckdb 1.5.5, the version donatello pins. The other suites are unaffected:
+test_demo_flow.py 89, test_mct_report.py 14, both 0 failed.
+WHAT THE DESIGN COMMITS TO, and each is a check rather than an intention: the record exists
+from the moment the host captures it and does not depend on any pack; it stays editable
+afterwards, because the useful detail arrives once the visitor has gone; notes append rather
+than replace; the event log is append-only, so what happened stays answerable after a record
+is corrected; the PROVIDER is the authority on whether a pack went, through
+provider_message_id, provider_status and reconcile(); John's 16 August quota ruling is carried
+across unchanged, first pack free, the rest held, a failed send still free; and migrate_jsonl
+counts unreadable lines rather than dropping them, because a migration that loses records in
+silence is worse than one that refuses.
+NOT YET DONE: cortex_app is NOT rewired to it. The JSONL store is still what the running app
+uses, deliberately, so there is a working system at every point before the freeze. Rewiring,
+the nightly Excel export and the three capture buttons are next, in that order.
+
+**6a. Superseded note, scope widened by John 21 Sep.** Four record types,
+three buttons, list view, local-first, editable after the moment. See the proposal above.
+Next: the DuckDB leads table, which all four record types sit on, starts now.
 
 **7. Pre-mortem 15: a city name the workstation cannot resolve. NOT STARTED.** Newly W2's per
 W2-RULINGS.md. Confirm which dashboard entry paths need the GeoNames dump, then either install
