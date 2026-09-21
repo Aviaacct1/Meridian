@@ -34,9 +34,13 @@ can stand in for SmtpTransport.
 
 Avia Solutions Limited. All rights reserved.
 """
+import base64
+import json
 import os
 import smtplib
 import ssl
+import urllib.error
+import urllib.request
 from email.message import EmailMessage
 
 
@@ -98,6 +102,105 @@ class SmtpTransport:
                             % (c["host"], c["port"], type(e).__name__, e))
 
 
+API_ENDPOINT = "https://api.postmarkapp.com/email"
+
+
+def _api_token():
+    """The Postmark Server API token. AVIA_SMTP_USER is accepted because that is where it
+    already lives on the workstation: Postmark uses the same token as the SMTP username."""
+    return (os.environ.get("AVIA_POSTMARK_TOKEN", "").strip()
+            or os.environ.get("AVIA_SMTP_USER", "").strip())
+
+
+class ApiTransport:
+    """Postmark's HTTP API. THE DEFAULT since 21 September 2026, and here is why.
+
+    SMTP was the original transport and it lied. On 21 September Postmark's SMTP endpoint
+    accepted three messages that its own policy forbade, reported success every time, and
+    recorded none of them; its API refused the identical message with ErrorCode 412 and a
+    sentence naming the reason (recipients must share the From domain while an account is
+    pending approval). Three hours went into chasing a fault that the API would have named
+    in one call. A transport that cannot tell a refusal from a delivery has no business
+    behind a promise of a pack within thirty minutes.
+
+    It also returns a MessageID, which is what the queue view needs in order to show a pack
+    as accepted by the provider rather than merely handed to a socket.
+
+    poster is injectable for tests: anything taking (url, body_bytes, headers) and returning
+    (status_int, body_bytes) can stand in, so the checks never touch the network.
+    """
+
+    def __init__(self, token=None, sender=None, poster=None):
+        self.token = token or _api_token()
+        self.sender = sender or os.environ.get("AVIA_SMTP_FROM", "").strip()
+        if not self.token:
+            raise MailError("no Postmark token: set AVIA_POSTMARK_TOKEN, or AVIA_SMTP_USER, "
+                            "which holds the same value on the workstation")
+        if not self.sender:
+            raise MailError("AVIA_SMTP_FROM is not set, so there is no sending address")
+        self._post = poster or self._http_post
+        self.last_message_id = None
+
+    @staticmethod
+    def _http_post(url, body, headers):
+        req = urllib.request.Request(url, data=body, headers=headers, method="POST")
+        try:
+            with urllib.request.urlopen(req, timeout=60) as r:
+                return r.getcode(), r.read()
+        except urllib.error.HTTPError as e:
+            return e.code, e.read()          # Postmark puts the reason in the error body
+        except OSError as e:
+            raise MailError("could not reach %s: %s: %s" % (url, type(e).__name__, e))
+
+    @staticmethod
+    def payload_from(msg):
+        """The API's fields, taken from the same EmailMessage the SMTP transport sends, so
+        both transports carry an identical message and neither can drift from the other."""
+        text = ""
+        body = msg.get_body(preferencelist=("plain",))
+        if body is not None:
+            text = body.get_content()
+        atts = []
+        for part in msg.iter_attachments():
+            data = part.get_payload(decode=True) or b""
+            atts.append({"Name": part.get_filename() or "attachment",
+                         "Content": base64.b64encode(data).decode("ascii"),
+                         "ContentType": part.get_content_type()})
+        out = {"From": msg["From"], "To": msg["To"], "Subject": msg["Subject"],
+               "TextBody": text}
+        if atts:
+            out["Attachments"] = atts
+        return out
+
+    def send(self, msg):
+        payload = self.payload_from(msg)
+        payload["MessageStream"] = os.environ.get("AVIA_POSTMARK_STREAM", "").strip() or "outbound"
+        headers = {"X-Postmark-Server-Token": self.token,
+                   "Accept": "application/json", "Content-Type": "application/json"}
+        status, raw = self._post(API_ENDPOINT, json.dumps(payload).encode("utf-8"), headers)
+        try:
+            data = json.loads(raw.decode("utf-8", "replace"))
+        except ValueError:
+            raise MailError("Postmark answered HTTP %s with something that is not JSON: %s"
+                            % (status, raw[:200]))
+        code = data.get("ErrorCode")
+        if status >= 400 or code:
+            raise MailError("Postmark refused the message (HTTP %s, ErrorCode %s): %s"
+                            % (status, code, data.get("Message", "no reason given")))
+        self.last_message_id = data.get("MessageID")
+
+
+def default_transport():
+    """api unless told otherwise. SMTP stays available and is not the default: see
+    ApiTransport's docstring for what it cost on 21 September 2026."""
+    which = (os.environ.get("AVIA_MAIL_TRANSPORT", "").strip().lower() or "api")
+    if which == "api":
+        return ApiTransport()
+    if which == "smtp":
+        return SmtpTransport()
+    raise MailError("AVIA_MAIL_TRANSPORT must be 'api' or 'smtp', not %r" % which)
+
+
 def build_message(sender, to, subject, body, attachment_path=None, attachment_name=None):
     """A plain-text message with the pack attached as a self-contained HTML file."""
     msg = EmailMessage()
@@ -120,7 +223,7 @@ def send_pack(to, subject, body, attachment_path=None, attachment_name=None,
               transport=None):
     """Build and send. transport is injectable for tests; None means the real SMTP
     transport built from the environment. Returns the sender address used."""
-    t = transport or SmtpTransport()
+    t = transport or default_transport()
     sender = getattr(t, "sender", None)
     if not sender:
         raise MailError("the transport names no sender address")

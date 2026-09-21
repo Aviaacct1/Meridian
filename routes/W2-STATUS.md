@@ -1,6 +1,6 @@
 # W2 stand flow: status
 
-Version 9, 21 September 2026. Written by the W2 build chat for the controller; rewritten
+Version 10, 21 September 2026. Written by the W2 build chat for the controller; rewritten
 each session, never appended. routes/README.md v1 read and followed: facts about other
 workstreams below are taken from their STATUS files and quoted with the version, never from
 memory of a chat. W2-RULINGS.md v1 read and acted on. Dates
@@ -149,22 +149,54 @@ it defaulted to smtp.office365.com and an unset variable would have sent the ser
 wrong supplier and failed naming Microsoft. app/test_demo_flow.py gains nine checks covering
 both, including that a token never reaches a From header: 67 checks, 0 failed, run here.
 
-**THE FIRST END-TO-END SEND HAPPENED, 21 September.** Transcript on donatello
-(donatello\aviaremote1, C:\src\meridian at b91bc48):
+**CORRECTION TO VERSION 9, WHICH RECORDED A FALSE PASS.** Version 9 of this file said the
+first end-to-end send was PROVEN on the evidence of the script printing SENT. It was not.
+Nothing had been delivered, and nothing had even reached Postmark. The claim is withdrawn and
+replaced by what follows. W2 put that in the record and the controller could have relied on it.
 
-    host     smtp.postmarkapp.com:587
-    from     john.carter@aviationobservatory.com
-    to       john.carter@aviasolutions.com
-    credential length 36 (never printed)
-    SENT from john.carter@aviationobservatory.com
+**SMTP REPORTED SUCCESS THREE TIMES FOR MESSAGES POSTMARK NEVER RECEIVED.** The sequence,
+because the conclusion matters more than the fault:
 
-PROVEN: the workstation authenticates to Postmark, the message is accepted, and the From is
-the intended address rather than the Server API token. The script's warning for the case where
-the sender and the credential are identical did not fire, which is the direct evidence that the
-fault found this morning is fixed on the machine that matters. NOT YET PROVEN, and not to be
-recorded as proven until John pastes it: delivery, the DKIM result, arrival, and the headers.
-Those come from Postmark Activity and his inbox. W2 could not read them; Chrome was not
-reachable from the session.
+- Three sends from donatello printed SENT. smtplib raised nothing.
+- Postmark's own API, queried with the same token, returned `TotalCount 0`. No messages, on
+  any stream, ever.
+- The token was confirmed to match the server's own (John compared it; neither value was
+  written down). The API authenticated with it. So the credential was never the problem.
+- The SMTP banner on port 587 from donatello was read directly and is genuinely Postmark
+  (`p-pm-outboundg02c-aws-euwest1c.smtpservice.postmarkapp.com`), so nothing was intercepting.
+- The identical message posted to Postmark's HTTP API returned, in one call:
+  `ErrorCode 412: While your account is pending approval, all recipient addresses must share
+  the same domain as the 'From' address. The domain of the 'From' address is
+  'aviationobservatory.com', but you are attempting to send email to the following domain(s):
+  'aviasolutions.com'.`
+
+So Postmark's SMTP endpoint accepted, acknowledged and discarded three messages that its own
+policy forbade, while its API refused the same message and said why. Three hours went into a
+fault the API would have named immediately.
+
+**TRANSPORT CHANGED TO THE API, on that evidence rather than on preference.** app/demo_mail.py
+gains ApiTransport and a selector; the API is the default, SMTP stays available behind
+AVIA_MAIL_TRANSPORT=smtp. Both build the same EmailMessage, so the two cannot drift. A refusal
+now raises carrying Postmark's own wording, and acceptance returns a MessageID, which is also
+exactly what the queue view needs to show a pack as accepted by the provider rather than merely
+handed to a socket. app/test_demo_flow.py locks the 412 case as a regression: 67 checks became
+89, 0 failed.
+
+**app/send_first_pack.py no longer claims what it cannot show.** It reported SENT because
+nothing raised, and this file repeated it. It now refuses to call a send successful without a
+provider identifier, and says so plainly when it has none.
+
+**DELIVERY IS NOW PROVEN, 21 September 14:01Z.** Sent through the API from
+john.carter@aviasolutions.com to the same address, since while the account is pending approval
+the recipient domain must match the From domain. Postmark returned
+MessageID 8283ccb0-72f6-42c2-ab93-cd1da557c215 and John confirmed arrival in his inbox, headers
+showing the message as sent. WHAT IS STILL NOT PROVEN: the Observatory domain's own
+deliverability, because that test had to send as aviasolutions.com without our DKIM. That waits
+on approval, which Postmark quotes at 24 hours with weekend requests answered on the Monday.
+
+**The aviasolutions.com signature has now earned its keep twice** and still stays. While the
+account is pending, it is the only From and the only recipient that any test can use. It goes
+once approval lands, not before.
 
 **Four machine and account faults surfaced getting there, and they are the carry-forward.**
 They cost most of the day and none of them was a code fault.

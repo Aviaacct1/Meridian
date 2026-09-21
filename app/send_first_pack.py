@@ -6,9 +6,9 @@ message on the wire: the 67 checks in test_demo_flow.py run against a fake trans
 that carries its own sender, which is exactly why the sender-identity fault survived
 until the Postmark move. This script closes that gap and nothing else.
 
-WHAT IT PROVES: that the workstation can authenticate to the configured SMTP host, that
-the message is accepted, that it is signed by the verified domain, and that the From
-address is the one intended rather than the credential. WHAT IT DOES NOT PROVE: the pack
+WHAT IT PROVES: that the workstation reaches the provider, that the provider ACCEPTED the
+message and returned its own identifier for it, and that the From is the intended address
+rather than the credential. WHAT IT DOES NOT PROVE: delivery, the DKIM result, or the pack
 itself. The attachment here is a plainly labelled transport test, not a forecast pack,
 because a pack with invented numbers has no business leaving this building even once.
 The pack rides the same transport through /api/demo/request once the lead store is built.
@@ -55,20 +55,15 @@ def main():
     a = ap.parse_args()
 
     try:
-        cfg = DM.config()
+        transport = DM.default_transport()
     except DM.MailError as e:
         print("NOT SENT. %s" % e)
         return 2
 
     stamp = datetime.datetime.now().strftime("%d %B %Y at %H:%M")
-    print("host     %s:%s" % (cfg["host"], cfg["port"]))
-    print("from     %s" % cfg["from"])
-    print("to       %s" % a.to)
-    print("credential length %d (never printed)" % len(cfg["user"]))
-    if cfg["from"] == cfg["user"]:
-        print("NOTE: the sending address and the credential are identical. That is correct "
-              "for M365 and wrong for Postmark; check AVIA_SMTP_FROM before reading the "
-              "result as a pass.")
+    print("transport %s" % type(transport).__name__)
+    print("from      %s" % transport.sender)
+    print("to        %s" % a.to)
 
     tmp = tempfile.mkdtemp(prefix="meridian_first_send_")
     path = os.path.join(tmp, "Meridian_transport_test.html")
@@ -79,19 +74,34 @@ def main():
         sender = DM.send_pack(
             to=a.to,
             subject="Meridian transport test, %s" % stamp,
-            body=("This is the first message sent by the Meridian workstation through the "
+            body=("This is a message sent by the Meridian workstation through the "
                   "Observatory's sending domain. It proves the transport only and carries "
                   "no forecast figures.\n\nAvia Solutions Limited."),
             attachment_path=path,
-            attachment_name="Meridian_transport_test.html")
+            attachment_name="Meridian_transport_test.html",
+            transport=transport)
     except DM.MailError as e:
         print("NOT SENT. %s" % e)
         return 1
 
-    print("SENT from %s" % sender)
-    print("Now check three things in Postmark, Activity: that it shows as delivered, that "
-          "the DKIM column reads pass, and that the From is the address above and not a "
-          "token. Then check the message actually arrived, and look at its headers.")
+    # ACCEPTANCE IS NOT A SOCKET CLOSING WITHOUT COMPLAINT. On 21 September 2026 the SMTP
+    # transport reported three successes for messages Postmark never recorded, and this
+    # script repeated the claim because nothing had raised. It no longer claims anything
+    # the provider has not confirmed by returning an identifier for the message.
+    mid = getattr(transport, "last_message_id", None)
+    if not mid:
+        print("SENT, BUT UNCONFIRMED. The transport raised nothing and returned no provider "
+              "identifier, so there is no evidence the message was accepted. Treat this as a "
+              "failure until the provider's own record shows otherwise. If this is the SMTP "
+              "transport, that is expected: SMTP cannot confirm, which is why the API is the "
+              "default.")
+        return 3
+
+    print("ACCEPTED by the provider, from %s" % sender)
+    print("MessageID %s" % mid)
+    print("That identifier is the provider's own record of the message, so acceptance is "
+          "proven. Delivery is not: check that it arrived, and look at the headers for the "
+          "DKIM result.")
     return 0
 
 

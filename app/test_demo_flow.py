@@ -9,6 +9,8 @@ Every address, route and number here is a TEST FIXTURE.
 
 Avia Solutions Limited. All rights reserved.
 """
+import base64
+import json
 import os
 import sys
 import tempfile
@@ -265,6 +267,111 @@ def test_sender_identity():
     _clear_smtp_env()
 
 
+
+# --- the API transport (21 September 2026) -----------------------------------
+# The regression lock for the day SMTP lied. Postmark's SMTP endpoint accepted three
+# messages its own policy forbade, reported success each time, and recorded none. The API
+# refused the identical message with ErrorCode 412 and said why. These checks hold the
+# behaviour that made the difference: a refusal must raise, and must carry Postmark's own
+# words, because those words were the whole diagnosis.
+
+class FakePoster:
+    """Stands in for the HTTP call. Records what was posted; returns what it is told to."""
+
+    def __init__(self, status=200, body=None):
+        self.status, self.body = status, body or {"ErrorCode": 0, "Message": "OK",
+                                                  "MessageID": "fake-message-id"}
+        self.calls = []
+
+    def __call__(self, url, body, headers):
+        self.calls.append({"url": url, "payload": json.loads(body.decode("utf-8")),
+                           "headers": headers})
+        raw = self.body if isinstance(self.body, bytes) else json.dumps(self.body).encode()
+        return self.status, raw
+
+
+def _api_env():
+    _clear_smtp_env()
+    os.environ["AVIA_SMTP_USER"] = "a1b2c3d4-e5f6-4a5b-8c9d-0e1f2a3b4c5d"
+    os.environ["AVIA_SMTP_FROM"] = "john.carter@aviationobservatory.com"
+
+
+def test_api_transport(tmp):
+    _api_env()
+    pack = os.path.join(tmp, "apipack.html")
+    with open(pack, "w", encoding="utf-8") as fh:
+        fh.write("<html><body>fixture pack</body></html>")
+
+    # a good send
+    poster = FakePoster()
+    t = DM.ApiTransport(poster=poster)
+    sender = DM.send_pack(to="jane@evaair.com", subject="Your Meridian route forecast",
+                          body="fixture body", attachment_path=pack,
+                          attachment_name="Meridian_Forecast_DEMO.html", transport=t)
+    check("api: sends from AVIA_SMTP_FROM", sender == "john.carter@aviationobservatory.com")
+    check("api: one call made", len(poster.calls) == 1)
+    sent = poster.calls[0]
+    check("api: posts to Postmark's endpoint", sent["url"] == DM.API_ENDPOINT)
+    check("api: the token travels in the header",
+          sent["headers"].get("X-Postmark-Server-Token") == os.environ["AVIA_SMTP_USER"])
+    p = sent["payload"]
+    check("api: From carried", p["From"] == "john.carter@aviationobservatory.com")
+    check("api: To carried", p["To"] == "jane@evaair.com")
+    check("api: subject carried", p["Subject"] == "Your Meridian route forecast")
+    check("api: body carried", "fixture body" in p["TextBody"])
+    check("api: stream named", p["MessageStream"] == "outbound")
+    check("api: attachment carried with its name",
+          len(p["Attachments"]) == 1
+          and p["Attachments"][0]["Name"] == "Meridian_Forecast_DEMO.html")
+    check("api: attachment content is base64 of the file",
+          base64.b64decode(p["Attachments"][0]["Content"]).decode() ==
+          "<html><body>fixture pack</body></html>")
+    check("api: the MessageID is kept", t.last_message_id == "fake-message-id")
+
+    # THE 21 SEPTEMBER FAULT: a refusal must raise, carrying Postmark's own words.
+    refusal = {"ErrorCode": 412, "Message": ("While your account is pending approval, all "
+                                             "recipient addresses must share the same domain "
+                                             "as the 'From' address.")}
+    t = DM.ApiTransport(poster=FakePoster(status=422, body=refusal))
+    try:
+        DM.send_pack(to="jane@evaair.com", subject="s", body="b", transport=t)
+        check("api: a refused message raises rather than reporting success", False)
+    except DM.MailError as e:
+        check("api: a refused message raises rather than reporting success", True)
+        check("api: the error carries Postmark's ErrorCode", "412" in str(e))
+        check("api: the error carries Postmark's own words",
+              "must share the same domain" in str(e))
+        check("api: no MessageID is invented on failure", t.last_message_id is None)
+
+    # a body that is not JSON is reported, not swallowed
+    t = DM.ApiTransport(poster=FakePoster(status=502, body=b"<html>bad gateway</html>"))
+    try:
+        DM.send_pack(to="jane@evaair.com", subject="s", body="b", transport=t)
+        check("api: a non-JSON answer raises", False)
+    except DM.MailError as e:
+        check("api: a non-JSON answer raises", True)
+        check("api: the error names the HTTP status", "502" in str(e))
+
+    # the selector
+    _api_env()
+    check("the default transport is the api",
+          isinstance(DM.default_transport(), DM.ApiTransport))
+    os.environ["AVIA_MAIL_TRANSPORT"] = "smtp"
+    os.environ["AVIA_SMTP_HOST"] = "smtp.postmarkapp.com"
+    os.environ["AVIA_SMTP_PASS"] = os.environ["AVIA_SMTP_USER"]
+    check("smtp is still selectable",
+          isinstance(DM.default_transport(), DM.SmtpTransport))
+    os.environ["AVIA_MAIL_TRANSPORT"] = "carrier pigeon"
+    try:
+        DM.default_transport()
+        check("an unknown transport raises", False)
+    except DM.MailError as e:
+        check("an unknown transport raises", True)
+        check("the error names the variable", "AVIA_MAIL_TRANSPORT" in str(e))
+    _clear_smtp_env()
+    os.environ.pop("AVIA_MAIL_TRANSPORT", None)
+
+
 def test_refusal():
     try:
         DP.refuse_if_warned({"ok": True, "warnings": ["the feed layer crashed"]})
@@ -359,7 +466,8 @@ def test_pack_html_render(tmp):
 def main():
     keep = {k: os.environ.get(k) for k in ("AVIA_DEMO_LEADS", "AVIA_SMTP_HOST",
                                            "AVIA_SMTP_PORT", "AVIA_SMTP_USER",
-                                           "AVIA_SMTP_PASS", "AVIA_SMTP_FROM")}
+                                           "AVIA_SMTP_PASS", "AVIA_SMTP_FROM",
+                                           "AVIA_MAIL_TRANSPORT", "AVIA_POSTMARK_TOKEN")}
     try:
         with tempfile.TemporaryDirectory() as tmp:
             test_domains()
@@ -369,6 +477,7 @@ def main():
             test_coerce()
             test_mail(tmp)
             test_sender_identity()
+            test_api_transport(tmp)
             test_refusal()
             test_run_ref()
             test_watermark()
