@@ -125,3 +125,11 @@ payment terms; 5 the host sentence and the one-pager pricing block verbatim; 6 w
 deliberately not offered before 2027; 7 what each other workstream must change (W3, W4, W5,
 W6) as one line each. When FINAL, the controller updates umbrella item 37 to point at it and
 the four rulings files carry only a pointer.
+
+## 21 September 2026: decision 15 OVERRIDDEN (John)
+
+The contracting entity is The Aviation Observatory Limited (17411365, 86-90 Paul Street,
+London EC2A 4NE), not Avia Solutions Limited; John: settled long ago, the business is
+self-contained from day one. Issue PRICING-DECISION-2026.md v1.1 correcting section 4's
+entity paragraph and decision 15, and while there correct section 7's one-pager block to agree
+with decisions 4 and 5 (the licence leads; no number of places). Nothing else changes.

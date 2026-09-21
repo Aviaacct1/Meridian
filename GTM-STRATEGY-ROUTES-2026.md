@@ -33,6 +33,7 @@ John pauses until Postmark approval (expected Mon 22 Sep). `Aviaacct1/tao-websit
 | W5 Order-ready documents | In progress (v3, 20 Sep) | Agreement and one-pager v0.2 committed (3197c43), 17 clauses; checklist 8 of 13 DONE; BUILT ON SIZE BANDS, to be rebuilt on W8's tiers | Invoice, onboarding script, known-issues list, licence-record form; twelve slots are John's by 3 Oct; solicitor wk 6 Oct | W5 chat / John | 3 and 10 Oct |
 | W6 Messaging, marketing, website, meetings | In progress (v6, 20 Sep) | Competitor and prices out of the site (6d153d2); invitations v2 say "follows the same day" and carry launch terms; post 1 and list email ready for approval | Clean-clone proof; Pages project after zone move; sentences and five contacts by 25 Sep; invitations 26-29 Sep | W6 chat / John | 25-29 Sep |
 | W8 Pricing and commercial offer | DONE 20 Sep | PRICING-DECISION-2026.md v1.0 FINAL; twenty decisions answered; bands by airports covered | W3-W6 rebuild to it (pointers in place); Knock test result from John in a week or two | W8 chat closed / John | Knock by 3 Oct |
+| W9 Stand, contract, show logistics | NEW 21 Sep, gap found | Contract UNSIGNED (billing details owed to Informa today); stand number F124 per Informa v F174 in every document; graphics deadline 3 Oct; exhibitor manual follows contract | John sends billing details and the two questions today; W9 chat opens on the contract and manual | W9 chat / John | Contract 21 Sep; graphics 3 Oct |
 | W7 Rehearsal and freeze | Replanned | Boeing 13 Oct is an Atlas meeting; Meridian trials 11-12 Oct (remote, one restart) and 16 Oct with Suzanna | Controller diaries the trials; nothing until October | Controller / John | Freeze 10 Oct |
 
 Found on the 20 Sep read, not yet resolved: (a) W3-STATUS.md is still session 1, so the
@@ -361,6 +362,14 @@ five contacts.
   in the build (methodology_page.py, tied to the last run); the controller checks it renders on
   the workstation build and reads for a lay visitor before the freeze.
 
+- 21 Sep 2026: GAP FOUND. No workstream owned the exhibitor contract, stand build, manual
+  deadlines, badges, kit and setup. W9 created (routes\W9-RULINGS.md v1). The contract is not
+  signed; Informa's emails say stand F124 where every document says F174; graphics close 3 Oct.
+
+- 21 Sep 2026 (John): THE CONTRACTING ENTITY IS THE AVIATION OBSERVATORY LIMITED for everything
+  from day one (exhibitor contract, client agreements, invoices). Item 31 closed; W8 decision 15
+  overridden; order-ready gains PI cover extension and a TAO Ltd bank account (pre-mortem 17).
+
 ## Waiting on John
 
 1. CLOSED 19 Sep: HEAD `11a4c3f` confirmed and pushed.
@@ -475,9 +484,14 @@ five contacts.
     contract, not the second.
 30. CLOSED 19 Sep by the controller: the pack promise reads "follows the same day" everywhere
     until proven at the 11-12 Oct trial.
-31. **Contracting entity** for the agreement and invoices: Avia Solutions Limited or The
-    Aviation Observatory Ltd, with registered number and office. No default; the solicitor
-    cannot start without it (W5 fact 1).
+31. CLOSED 21 Sep (John; "settled ages ago"): THE AVIATION OBSERVATORY LIMITED, company number
+    17411365, registered office 86-90 Paul Street, London EC2A 4NE, contracts and invoices for
+    everything from day one, so the business is self-contained. This overrides W8 decision 15
+    (Avia Solutions Limited); W8 issues v1.1 with the correction. Two formalities outstanding,
+    now on the order-ready checklist: PI insurance extended to TAO Ltd (the insurer owes a
+    proposal; no client contract is signed before it is in place) and a TAO Ltd bank account
+    (needed before the first invoice). Egnyte: /Shared/Management/Management Information/A3/
+    The Aviation Observatory/.
 32. CLOSED 19 Sep: `Aviaacct1/tao-website` pushed at 2df95ee; W6 edits it through John's
     blocks; C:\src\avia-website read.
 35. CLOSED 20 Sep: Meridian route study £2,500 per route (PRICING-DECISION-2026.md v1.0, decision
@@ -518,6 +532,21 @@ five contacts.
     accuracy is the question she expects. Offers a call Tue 22 Sep.
 24. **Which tablet for the capture front end**, and whether it is yours or bought. Under
     Plan B it reaches the form on the laptop's own hotspot; W2 confirms.
+38. **TODAY, 21 Sep: billing details to Charlotte Sullivan (Informa)** so the contract is
+    finalised. RULED 21 Sep (John): the exhibitor is THE AVIATION OBSERVATORY LIMITED (17411365,
+    86-90 Paul Street, London EC2A 4NE). With the details, one question: confirm the stand
+    number (her emails say F124, our documents say F174). VAT number: John's. Consequence of silence: the last shell stand is not held indefinitely and
+    the 3 Oct graphics deadline is missed.
+39. **Routes 360 membership, £5,000 a year** (three email campaigns, competition promotion).
+    Controller's view: worth it only if the three campaigns can carry the launch offer to
+    the registered list before and after the show; ask Charlotte for the send dates and
+    audience size before deciding. Silence to 3 Oct: not bought.
+40. **Graphics by 3 Oct**: full inlay circa EUR 3,740 or overlay circa EUR 3,980 plus VAT, or
+    fascia and counter logo only (included). Controller's view: one printed back wall with
+    the one-liner and the accuracy line is what makes a 12 sqm shell read as a product
+    stand; W3 does the artwork. Silence to 30 Sep: logo only.
+41. CLOSED 21 Sep: the contract files in /Shared/Management/Management Information/A3/The
+    Aviation Observatory/Legal/.
 13. **Pick the five meetings**: John agreed the buyer-test list 19 Sep (Birmingham, Dublin,
     Vienna, Dallas Fort Worth, Milan SEA; reserves in the organisations file, section 3).
     Open point: whether one competitor-client airport goes on the five as a deliberate test
@@ -589,6 +618,9 @@ never left as a surprise. Avia is never the delay in signing someone up.
   finds out is a lost one.
 - Monitoring and a restart procedure for the workstation and tunnel, with an alert to John's
   phone (handover, section 5).
+- ADDED 21 Sep: PI insurance cover extended to The Aviation Observatory Limited (insurer's
+  proposal awaited; a formality, but no client contract is signed without it) and a bank
+  account in TAO Ltd's name for the first invoice. Owner: John. Pre-mortem 17.
 
 ---
 
@@ -689,6 +721,12 @@ Written as if it happened. Each has an owner and a mitigation already in the pla
     which entry paths on the dashboard need it (code entry should not); install the dump on
     the workstation or make the message a visible, honest refusal; test with a city-name
     entry on 13 October. Owner: W2. Status: open.
+17. **A client wants to sign in the week after Routes and the PI cover or the bank account is
+    not in TAO Ltd's name.** Found 21 Sep. Answer: the insurer's proposal is chased now and
+    accepted before 21 Oct; the bank account is opened in October so the first invoice carries
+    TAO Ltd's details; if either slips, the agreement is signed with a stated effective date on
+    the cover and the invoice waits, and the client is told which, never surprised. Owner:
+    John. Status: open.
 16. **The live server has been running without the MCT master and nobody knew.** Found by
     W2, 19 Sep: a server started in a session without the Z: mapping resolves MCT_MASTER to a
     missing path and cascades every connection to 90 minutes in silence. Answer: 2cab1b2 makes

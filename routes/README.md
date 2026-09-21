@@ -27,7 +27,7 @@ STATUS file, never from memory of a chat, and quoted with the file's version.
 | app/wave_cache.py, route_feed.py, catchment.py, water_check.py, preagg.py, backtest.py, config.py cache paths | W1 | nobody |
 | app/demo_*.py, connection_builder.py, cortex_dashboard.html, the lead store, queue view, stand mode, laptop build, launcher | W2 | nobody |
 | deck/, app/pitch_html.py, imagery, PDF render | W3 | nobody |
-| routes/*.md documents | W4, W5, W6, W8 each their own | nobody |
+| routes/*.md documents | W4, W5, W6, W8, W9 each their own | nobody |
 | diag_routes_timing.py | W1 | anyone runs it |
 | engine demand logic (route_forecast, qsi_*, capture, feed levels) | FROZEN before Routes | nobody |
 

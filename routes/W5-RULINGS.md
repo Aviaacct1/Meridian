@@ -263,3 +263,14 @@ each of these is present, in these terms, and lists them ticked in W5-STATUS.md:
 12. Contracting entity, registered number and office; governing law England and Wales.
 13. Every lawyer flag resolved or carried to the solicitor with a note; every slot filled or
     the fallback applied; author metadata and en-GB verified on the Word files.
+
+## 21 September 2026: CONTRACTING ENTITY SETTLED (John). Overrides PRICING-DECISION-2026.md v1.0 decision 15
+
+The Aviation Observatory Limited, company number 17411365, registered office 86-90 Paul
+Street, London EC2A 4NE, is the party to every client agreement and issues every invoice.
+Not Avia Solutions Limited. Slot 1 and one-pager slot G close with it; the solicitor gets the
+Standard Terms in that name. Two order-ready facts the agreement must not contradict: PI
+cover is being extended to TAO Ltd (no client contract is signed before it is in place; the
+agreement's insurance line is worded to the cover as extended, slot until the insurer's
+proposal lands) and the invoice template carries TAO Ltd's bank details, which do not yet
+exist (slot; the account is opened before the first invoice). VAT status: John states.
