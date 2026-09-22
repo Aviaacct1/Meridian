@@ -16,34 +16,33 @@ The detail lives in two companions and this document points at them rather than 
 ## Status
 
 Rewritten every session by the programme controller; John reads this on a phone. As at
-Tuesday 22 September 2026, 07:30 BST (John in Doha): controller chat 2 (Fable). The calibrated
-engine test ran this morning: bt2_claimset.py reproduced the 13 Aug baseline exactly; the
-server on donatello is running on `--engine bt2` (restart 06:2x), Run cold 16.8 / 16.6 / 12.1s,
-warm 9.2 / 9.5 / 7.2s, Optimise 42.5 / 40.6 / 34.4s, faster than QSI. Item 25 is settled in
-substance on John's sentence; the open half (which published pair) goes to W10, a new
-workstream (FINAL CALIBRATION TEST, Opus) created today with routes\W10-RULINGS.md v1; John
-opens it from the prompt in this chat. Jol's 43 items are in the workstreams. Order-ready is
-21 Oct. Files: `routes\Wn-STATUS.md` (chat writes), `routes\Wn-RULINGS.md` (controller
-writes), `routes\README.md`.
+Tuesday 22 September 2026, evening (John in Doha): controller chat 3 (Fable) opened on HEAD
+201510f, one commit past the handover's expected subject (30e3e78 handover, 201510f the
+item 1 re-ruling; both read). Chat 2 is closed. The on-screen engine is the calibrated model
+(BT2) since the 06:2x restart; W1 job 1 (launcher default bt2) is edited and awaits John's
+DevPC commit and the workstation restart, so until then a restart still reverts to QSI.
+W10's evening claim (radius not a calibration input) is not yet verified by the controller's
+grep and John has not confirmed the re-ruling. Order-ready is 21 Oct. Files:
+`routes\Wn-STATUS.md` (chat writes), `routes\Wn-RULINGS.md` (controller writes),
+`routes\README.md`.
 
 | WS | State | Where it stands | Next action | Owner | Date |
 |---|---|---|---|---|---|
-| W1 Speed and caches | STEP 2 CLOSED 21 Sep; BT2 engine test done 22 Sep | Cold Run 16.9 / 20.2 / 13.4s on QSI; on `--engine bt2` cold 16.8 / 16.6 / 12.1s, warm 9.2 / 9.5 / 7.2s, Optimise 42.5 / 40.6 / 34.4s; claimset baseline reproduced exactly; server left on BT2 | Launcher default `--engine bt2` and the stale "not re-measured" warning replaced by the 22 Sep date; payload `engine` label fix; disclaimer naming both companies; market-brief first-call cost; warm_boards over the register before 20 Oct | Controller / John | Launcher by 26 Sep; brief by 3 Oct; warm-up 19 Oct |
-| W2 Stand flow | In progress (v13, 21 Sep) | Delivery PROVEN via Postmark API (aviasolutions.com, MessageID 8283ccb0); SMTP path discarded three messages silently, transport now API (3406f0a); lead_store built, 47 checks (ef6de65), app not yet rewired; capture layer widened to four record types; progressive Optimise deferred | Rewire app to lead_store; nightly export; three capture buttons; stand mode; zone move; laptop procedure after SSD | W2 chat / John | Capture demonstrable 2 Oct; laptop proof 8 Oct |
-| W3 Presentation (deck, pack, PDF, imagery, STAND VIDEO) | In progress (v2, 21 Sep) | Slides 1-6, 9-10 built and verified (3af5158), slide 10 rebuilt to final pricing; PDF render BUILT and proven (two-page A4, Avia metadata); pitch page's three figures already exist in the codebase; Commons probe still unrun (item 33); video script 23 Sep | Pitch page as slide-shaped sections; one real pack PDF on the workstation; probe by 26 Sep; video record 26-30 Sep; all five items to Jol and Nick 3 Oct | W3 chat / John | All four to Jol and Nick 3 Oct |
-| W4 Host | v2 DONE (21 Sep) | STAND-HOST-MANUAL.md v2, 862 lines, 23 slots: Suzanna's order of use, the bridge walk-through, final pricing sentence, weak-scenario list, recording section; three bridge labels flagged for W3 | v3 after 8 Oct screenshots and W5's known-issues list; items 25 and 34 from John; Word copy for print | W4 chat / John | v3 mid-Oct |
-| W5 Order-ready documents | v0.3 DONE (21 Sep): every document exists | Standard Terms (25 clauses, 14 flags) plus Order Form; one-pager; invoice (TAO Ltd); onboarding script; known-issues v0.1; licence-record form; feedback card v0.2; checklist ticked against the pricing file; seven slots, all John's or the insurer's | Solicitor slot wk 6 Oct (whole document); PI cover and bank account are the binding constraints on 21 Oct; known-issues frozen 10 Oct | W5 chat / John | 6 and 10 Oct |
-| W6 Messaging, marketing, website, meetings | In progress (v7, 21 Sep) | Four sentences redrafted in the Observatory voice (variants v3); five invitations ask the airport to name a route; post 1 and list email ready for approval; site copy still says three seats / 100 presentations (fix queued) | John: contacts, 2.3 A or B, approvals by 25 Sep; W6: site licence-shape fix, clean-clone proof, Pages after zone move; invitations 26-29 Sep | W6 chat / John | 25-29 Sep |
-| W8 Pricing and commercial offer | DONE 20 Sep | PRICING-DECISION-2026.md v1.0 FINAL; twenty decisions answered; bands by airports covered | W3-W6 rebuild to it (pointers in place); Knock test result from John in a week or two | W8 chat closed / John | Knock by 3 Oct |
-| W9 Stand, contract, show logistics | NEW 21 Sep, gap found | Contract UNSIGNED (billing details owed to Informa today); stand number F124 per Informa v F124 in every document; graphics deadline 3 Oct; exhibitor manual follows contract | John sends billing details and the two questions today; W9 chat opens on the contract and manual | W9 chat / John | Contract 21 Sep; graphics 3 Oct |
-| W10 Final calibration test | OPEN, STATUS v1 (22 Sep) | Item 1 re-ruled to W2 (radius is not a calibration input); W10-RULINGS v1 plus evening ruling; 22 Sep baseline reproduced; 92/86 on 6,524 reproduced or replaced; ONE figure set to John. Interim on every surface: 89/82 on 2,915 | John opens the W10 chat (prompt in controller chat 22 Sep); baseline rerun; radius search | W10 chat / John | Record v1 by 3 Oct; say by 29 Sep if not |
-| W7 Rehearsal and freeze | Replanned | Boeing 13 Oct is an Atlas meeting; Meridian trials 11-12 Oct (remote, one restart) and 16 Oct with Suzanna | Controller diaries the trials; nothing until October | Controller / John | Freeze 10 Oct |
+| W1 Speed and caches | Job 1 EDITED 22 Sep, uncommitted | Server on `--engine bt2` since 22 Sep 06:2x (Run cold 16.8 / 16.6 / 12.1s, warm 9.2 / 9.5 / 7.2s, Optimise 42.5 / 40.6 / 34.4s, TIMING-20260922-0628); warm_demo.py default now bt2 and the stale warning replaced, on the DevPC only | John commits (COMMIT-MSG-22Sep2026-w1-launcher-bt2.txt), workstation pulls, 8010 listener stopped, restart, paste shows "calibrated model"; then payload `engine` label, disclaimer, market-brief cost, warm_boards | Controller / John | Commit and restart 23 Sep (diary said 26 Sep); brief by 3 Oct; warm-up 19 Oct |
+| W2 Stand flow | In progress (v14, 22 Sep) | Delivery proven by Postmark API (MessageID 8283ccb0); lead_store built (ef6de65), app not yet rewired; friction raster never resolved on the workstation, catchment ran on straight-line distance silently, fixed through config, no behaviour change (30e3e78); item 1 radius now W2's under R6 | Sweep: R6 radius plan and lead_store rewiring; data-store freeze line and stale-RDP runbook line owed to W2-RULINGS by the controller | W2 chat / John | Capture demonstrable 2 Oct; laptop proof 8 Oct; radius before 10 Oct or not at all |
+| W3 Presentation | In progress (v2, 21 Sep) | Slides 1-6, 9-10 built (3af5158); PDF render proven; Commons probe unrun (item 33); 92/86 coming off the methodology and track record pages | Video script 23 Sep; probe by 26 Sep; video record 26-30 Sep; sweep after the methodology page change | W3 chat / John | Five items to Jol and Nick 3 Oct |
+| W4 Host | v2 DONE (21 Sep) | STAND-HOST-MANUAL.md v2, 23 slots; three bridge labels flagged for W3 | v3 after 8 Oct screenshots and W5's known-issues list; John's item 34 | W4 chat / John | v3 mid-Oct |
+| W5 Order-ready documents | v0.3 DONE (21 Sep) | Every document exists in draft; seven slots John's or the insurer's; PI cover and TAO bank account bind 21 Oct | Solicitor slot wk 6 Oct; known-issues frozen 10 Oct; disclaimer wording to W1 for item 3 | W5 chat / John | 6 and 10 Oct |
+| W6 Messaging, marketing, website, meetings | In progress (v7, 21 Sep) | Sentences in the Observatory voice (variants v3); invitations drafted; post 1 and list email await approval; site still says three seats / 100 presentations | John: five contact names, 2.3 A or B, post 1 and list email by 25 Sep; invitations 26-29 Sep | W6 chat / John | 25-29 Sep |
+| W8 Pricing | DONE 20 Sep; v1.1 owed | PRICING-DECISION-2026.md v1.0 FINAL; v1.1 for the TAO Ltd entity line not yet issued | Controller issues v1.1 (entity line only) | Controller | 26 Sep |
+| W9 Stand, contract, logistics | NOT OPENED | Contract unsigned pending Charlotte Sullivan's revised form; F124; graphics deadline 3 Oct; pens (item 54) | John opens W9 when the form is back; graphics decision by 30 Sep or logo only | John | Graphics 3 Oct |
+| W10 Final calibration test | OPEN, STATUS v1 (22 Sep) | Item 1 re-ruled to W2 (John to confirm); items 2 and 3 proceed: 22 Sep baseline rerun, then 92/86 on 6,524 reproduced or replaced; interim on every surface 89/82 on 2,915 | Controller verifies the radius claim by grep; sweep on the baseline paste; W10 says by 29 Sep whether 3 Oct holds | W10 chat / John | Record v1 by 3 Oct; John rules item 55 |
+| W7 Rehearsal and freeze | Diaried | Trials 11-12 Oct remote, 16 Oct with Suzanna; 13 Oct is an Atlas meeting | Nothing until October; controller confirms a named person at the workstation for 11-12 Oct | Controller / John | Freeze 10 Oct |
 
-Found on the 20 Sep read, not yet resolved: (a) W3-STATUS.md is still session 1, so the
-slide build at 3af5158 is recorded only in the handover; (b) W4 and W5 built their pricing
-sections to the size-band offer of 20 Sep 13:00 and both rebuild to PRICING-DECISION-2026.md v1.0; (c) Waiting on
-John items 8 and 9 are overtaken by John's Postmark ruling and are closed below.
-
+Still open from earlier reads: (a) W3-STATUS.md v2 is behind the slide build at 3af5158;
+(b) W2-RULINGS owes the data-store freeze line (no OAG or Sabre refresh 10 Oct to after
+Routes) and the stale-RDP runbook line; (c) Atlas has no row in this table (same stand, same
+freeze; Jess); (d) the first Friday note is due 26 Sep and is not written.
 ## What is left, by owner, as at 19 September, 22:45
 
 **John, this week (dates are the chats' dates, not mine):**

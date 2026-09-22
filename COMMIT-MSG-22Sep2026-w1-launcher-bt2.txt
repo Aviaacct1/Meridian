@@ -1,0 +1,12 @@
+Controller 22 Sep (chat 3): W1 launcher defaults to the calibrated engine
+
+app/warm_demo.py: --engine default qsi -> bt2. The "accuracy NOT re-measured since the
+13 Aug rebuild" start-up warning is replaced by "claimset reproduced 22 Sep 2026"; --engine
+qsi now prints as the rollback. Meridian-run.bat passes no engine flag, so it follows the
+default unchanged. Umbrella Status block rewritten for controller chat 3.
+
+Evidence: bt2/bt2_claimset.py reproduced the 13 Aug baseline on the workstation on 22 Sep
+(E:\Avia\probe\claimset-22Sep.log); umbrella decision of 22 Sep (John): ONE model.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_013UJS2WR1LYy7JdejgdnMiC

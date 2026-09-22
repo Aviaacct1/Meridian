@@ -78,12 +78,13 @@ def _server_env(a):
     # The calibrated model was wired behind AVIA_FORECAST_ENGINE on 13 August 2026, and on the same
     # evening the shell used to test it carried AVIA_FORECAST_ENGINE=bt2. A server started from that
     # shell would have served model numbers to a client with no announcement, and the model rebuilt
-    # that night under the pinned scikit-learn HAS NOT HAD ITS ACCURACY MEASURED: every published
-    # figure describes an artefact fitted under a different release.
+    # that night under the pinned scikit-learn had not had its accuracy measured. On 22 September
+    # 2026 bt2/bt2_claimset.py reproduced the 13 August baseline exactly on the workstation
+    # (E:\Avia\probe\claimset-22Sep.log) and the calibrated model became the default engine.
     #
     # So the demo server takes the engine from THIS FLAG and nowhere else. A stale export in the
-    # launching shell cannot reach a client. --engine bt2 opts in, deliberately and visibly, and the
-    # value is printed at start-up either way.
+    # launching shell cannot reach a client. The default is bt2, the calibrated model; --engine qsi
+    # is the rollback and is printed at start-up as such.
     env["AVIA_FORECAST_ENGINE"] = a.engine
     if a.sabre:
         env["AVIA_SABRE"] = a.sabre
@@ -164,10 +165,10 @@ def main():
     ap.add_argument("--password", default=(os.environ.get("QSI_PASSWORD")
                                            or os.environ.get("AVIA_PASSWORD")
                                            or "aviacortex2026"))
-    ap.add_argument("--engine", choices=("qsi", "bt2"), default="qsi",
-                    help="which engine answers. DEFAULT qsi, the shipped one, and the shell cannot "
-                         "override it: the model rebuilt on 13 August has not had its accuracy "
-                         "measured, so bt2 must be asked for on this line and nowhere else")
+    ap.add_argument("--engine", choices=("qsi", "bt2"), default="bt2",
+                    help="which engine answers. DEFAULT bt2, the calibrated model (claimset "
+                         "reproduced 22 Sep 2026), and the shell cannot override it; "
+                         "--engine qsi is the rollback and must be asked for on this line")
     ap.add_argument("--no-browser", action="store_true", help="warm only; do not open browser tabs")
     a = ap.parse_args()
     base = f"http://127.0.0.1:{a.port}"
@@ -180,8 +181,8 @@ def main():
     # cannot be trusted to carry it. _shell names what was inherited so a surprise is visible.
     _shell = (os.environ.get("AVIA_FORECAST_ENGINE") or "unset").strip().lower()
     print(f"  forecast engine: {a.engine.upper()}"
-          + ("  (the shipped QSI engine)" if a.engine == "qsi" else
-             "  *** CALIBRATED MODEL, accuracy NOT re-measured since the 13 Aug rebuild ***")
+          + ("  *** QSI engine: ROLLBACK, not the calibrated model ***" if a.engine == "qsi" else
+             "  (calibrated model; claimset reproduced 22 Sep 2026)")
           + (f"   [shell said {_shell}, overridden]" if _shell not in ("unset", a.engine) else ""))
 
     proc = None
