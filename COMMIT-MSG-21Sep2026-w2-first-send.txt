@@ -1,0 +1,44 @@
+W2: the first end-to-end send, and the four machine faults that delayed it
+
+The mail transport has now put a message on the wire for the first time. On
+donatello (donatello\aviaremote1, C:\src\meridian at b91bc48):
+
+    host     smtp.postmarkapp.com:587
+    from     john.carter@aviationobservatory.com
+    to       john.carter@aviasolutions.com
+    SENT from john.carter@aviationobservatory.com
+
+PROVEN: the workstation authenticates to Postmark, the message is accepted, and the
+From carries the intended address rather than the Server API token. The script's
+warning for a sender identical to the credential did not fire, which is the direct
+evidence that this morning's fault is fixed on the machine that serves clients.
+
+NOT PROVEN, and not recorded as proven: delivery, the DKIM result, arrival and the
+headers. Those come from Postmark Activity and John's inbox.
+
+FOUR MACHINE AND ACCOUNT FAULTS, none of them code, cost most of the day. They are
+written into the status file because each will recur otherwise.
+
+1. Blocks labelled "Workstation Actual" ran on the DEV PC. The Dev PC carries a second
+   clone at C:\src\meridian beside C:\AviaDev, so the prompt is identical on both
+   machines. The tool standard's first two rules exist to stop precisely this split.
+   W2 has touched nothing; what that clone is for is John's call.
+2. A pull's summary was read as a commit's, so W2 believed work was pushed that was
+   still uncommitted. Every W2 block now ends with git log --oneline -1, which names
+   the commit rather than only its hash.
+3. setx writes to the setting account's User scope. Four variables were set on
+   donatello as aviaremote1, the fifth on the Dev PC as carte. All five are now at
+   MACHINE scope on donatello, which is what an unmanned workstation needs: a
+   scheduled task at boot runs as neither account and would see neither User hive.
+   Ruling 18's 8 October work can assume they are present.
+4. A Machine-scope write does not reach an already-running shell, the same trap as
+   setx one level up.
+
+Still deliberately not done: the aviasolutions.com sender signature stays until John
+confirms the message arrived, because in test mode it is the only address Postmark
+will accept as a recipient and removing it forecloses a retest.
+
+W2's own file, per routes/README.md.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01YYBfPojqHJ5EmQipR1awfH

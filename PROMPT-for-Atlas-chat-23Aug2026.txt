@@ -1,0 +1,36 @@
+Status check against NOTE-Atlas-QSI-current-method-16Aug2026.md, section 4 (the process
+changes list). I'm leaving for a week from about 26 August, so I need to know exactly
+where this stands before I go.
+
+Please confirm, item by item, what has actually been done versus what's still open:
+
+1. Does the BUM load bt2_model_v1_2.pkl via forecast_v12()? If it was bumped, has the
+   three-airport ratio check and the validation suite been re-run since?
+2. Is the meridian repo now pulled directly for BT2 artefacts and claim files, rather
+   than carrying private copies?
+3. Has the accuracy card been rebuilt on the model's own artefacts: calibrated 88.8%
+   within +/-20% and 82.4% within +/-10% (n=2,915) as the headline with the
+   distribution chart, blind portfolios (80% of ten routes, 94% of twenty) second, the
+   basis named beside every figure, no single-route blind figure anywhere on the
+   surface, and the old schedule-test card removed?
+4. THE ONE I NEED MOST: has anyone put the current Atlas wording and the ruling-
+   compliant wording in front of me for a decision yet? If not, don't decide it
+   yourselves. Show me both, side by side, verbatim, right now in this chat, so I can
+   rule before I leave. If it has already been shown to me and I haven't responded,
+   say so and repost it.
+5. Is the segment rule (short-haul under 2,500 km, domestic or LCC: 70.4% blind within
+   +/-20%, n=1,432; long-haul international full-service: 36.5%, n=1,090) the
+   confidence shape on route output, with tier-A only ever shown as a band?
+6. Is the US grading rule applied wherever Atlas grades or displays US-domestic route
+   accuracy (trained and graded against DB1B, DOT wins over Sabre where they disagree),
+   with the outturn source named?
+7. Does any route-level growth Atlas states follow the pre-COVID trend ruling (2015-2019,
+   two-way pair sum, thin pairs to an assumed 3%), and does it respect the
+   Sabre 2013/2015 point-of-origin directionality trap rather than measuring growth
+   across the 2015/2016 boundary one-directionally?
+8. Does a warned run still render with its warning stated, and get refused for any
+   client artefact, matching Meridian's own refusal rule?
+
+For anything marked done, tell me which commit or file proves it. For anything not
+done, say so plainly rather than describing intent, I want the real state, not the
+plan.

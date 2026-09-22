@@ -1,0 +1,49 @@
+Connecting-leg market size doubled to two-way: the basis mix Jol caught live
+
+Jol's finding, reviewing the SJC-TPE packs with John: "connecting market over
+Taipei 719,500 both directions... but this says each way" and "connecting over
+SJC 185 two-way but this is 185 one-way... there's definitely a mix in there."
+Traced to Deck Generator/deck_contract.py's build_contract(): natural, p2p_carried,
+cnx_carried and p2p_demand are all explicitly doubled to a two-way basis a few
+lines apart in that function, but cnx["hub_market"]/["dest_market"] - which arrive
+each way from connecting_from_forecast (dem["feed_beyond_base"]/["feed_behind_base"],
+the figure verify_connecting_build.py itself names "each way") - were used
+undoubled. One each-way number left in an otherwise two-way contract.
+
+Two measured consequences, both fixed:
+- The process-visual chart's "Connecting market over [hub/origin]... both
+  directions" boxes printed the each-way figure under a two-way caption.
+- The connecting legs' capture rate divided a two-way carried figure by this
+  each-way market, reading roughly double the true rate (circa 8.1% shown where
+  circa 4.0% is correct on the TPE-beyond leg, verified against the fixture).
+
+Fixed by doubling cnx["hub_market"]/["dest_market"] once, at the top of
+build_contract(), and using the doubled figures everywhere the each-way ones
+were used before: route_metadata.catchment_headline, summary_and_schedule (the
+process-visual chart's own source), and segment_forecast.summary's two
+connecting-leg blocks. The destination leg's demand fields were missing
+entirely (forecast only) before this fix; added on the same two-way basis as
+the hub leg, so the printed table no longer shows a number for one connecting
+leg's market size and a dash for the other with no reason behind it.
+
+NOT touched: the Excel workbook (app/cortex_workbook.py) and the self-serve HTML
+report (app/pitch_html.py). Both read the raw forecast payload directly, not this
+contract, are each-way throughout by deliberate design, and were checked again
+today and found correct and self-consistent - this defect is PPTX-only. The BA
+LHR-SJC acceptance reference (ba_lhr_sjc_reference(), the hand-curated 2015 deck
+numbers) is untouched, checked explicitly in the new test.
+
+- Deck Generator/deck_contract.py: build_contract(), _hub_mkt2/_dest_mkt2 added,
+  used in catchment_headline, summary_and_schedule, connecting_at_hub_total,
+  connecting_at_destination_total (new demand fields).
+- Deck Generator/test_connecting_market_basis.py: new, 8 checks, all passing.
+- Existing suites re-run clean, no regressions: app/test_contract_p2p_row.py (13),
+  deck/test_forecast_pack_maps.py (32), app/test_workbook_table.py (22) - none of
+  these call build_contract() directly, they hand-build contract fixtures, so
+  none needed changing; this confirms the fix is isolated to the contract-builder.
+
+The three PITCH_SJC-TPE_*_contract.json files and their PPTX packs (China_Airlines,
+EVA_Air, Starlux) were built before this fix and need regenerating:
+  python deck_from_cases.py cases_sjc_tpe_pitch.json --out <folder>
+  python ../deck/forecast_pack.py <folder>/PITCH_SJC-TPE_CI_A359_306_5x_2027_contract.json --out <folder>/China_Airlines_pack.pptx --codename SJC-TPE --prepared-for "San Jose International Airport"
+  (repeat for the BR and JX contracts)

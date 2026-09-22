@@ -1,0 +1,74 @@
+Three more each-way/departures basis bugs, found checking for domestic/international logic
+
+John, 22 August: while checking route_deck.py and deck_contract.py for any existing US-domestic-
+vs-international basis handling (there was none - a separate piece of work, not started here), found
+three live instances of defects already fixed elsewhere today. Fixing as spotted, per instruction.
+
+1. DECK_CONTRACT.PY's PDEW FLAT-728 BUG. pdew() divided every figure by a hardcoded DAYS_2WAY = 728
+(52 weeks x 7 daily x 2 directions), regardless of the route's real frequency - the same shape as
+route_feed.py's PTEW fix from earlier today. On a non-daily route the two were never going to agree:
+CI/SJC-TPE at 5x/week has 520 scheduled departures a year, two-way, not the assumed 728, so this
+under-read PDEW by roughly 29% on every figure the function touched. Fixed: pdew(annual_two_way,
+freq=None, weeks=52.0) now divides by the route's real departures when freq is supplied; falls back
+to 728 only when it isn't. Threaded through all seven live call sites in build_contract() and the
+four hardcoded Excel formula cells in emit_workbook(). ba_lhr_sjc_reference() - the validated 2015 BA
+deck acceptance-test fixture - left untouched: it's already daily service (freq=7), so 7x52x2=728
+exactly, zero numeric change either way, and an acceptance test against published numbers is not the
+place to introduce even a no-op edit.
+
+forecast_to_contract.py carried its own copy of the same 728 constant as a fallback
+(`_pdew = lambda x: round((x or 0) / 728.0, 1)`) for when deck_contract can't be imported. Fixed the
+same way, reading the route's freq from fc["capacity"]["freq"] first.
+
+2. A SECOND EACH-WAY FIGURE LEFT IN AN OTHERWISE TWO-WAY CONTRACT. deck_contract.py is deliberately
+built two-way throughout (natural*2, p2p_carried, cnx_carried, and the 20 August _hub_mkt2/_dest_mkt2
+fix, all doubled once at a single point each). The per-city connecting_at_hub/connecting_at_destination
+tables were missed: hub_cities/dest_cities arrive from connecting_from_forecast RAW, each way, by
+design (that module's job is to pass the payload through unmodified), and nothing in build_contract()
+ever doubled them. Measured effect: connecting_at_hub.total.annual_forecast sat at roughly half of
+segment_forecast.summary.connecting_at_hub_total.forecast in the SAME contract - two "connecting at
+hub" numbers a page apart in one deck, a factor of two off each other, which is exactly the shape of
+confusion the whole EW/two-way project this week exists to close. Fixed at the three points these
+figures reach: the cities list (annual_demand, annual_forecast, pdew, both hub and destination -
+destination was previously passed straight through unrebuilt, now built the same way as hub so both
+legs double at one point each, not by two different mechanisms), the leg total (cnx_hub_fc/cnx_dest_fc,
+doubled at definition), and top_markets_beyond_hub (same source, same fix).
+
+3. ROUTE_DECK.PY's PDEW-TO-ANNUAL CONVERSION, A THIRD INSTANCE. The connecting-feed slide takes a
+(now correctly departures-based) PTEW figure and reconstructs an annual column by multiplying it back
+out - but by a flat CALENDAR-day count (_days = 365, or season weeks x 7), not by the route's actual
+scheduled departures, reintroducing the same defect at the point of display even though the PTEW input
+itself is now correct upstream. Fixed: _days now uses meta["frequency"] x season weeks when a
+frequency is set (which this module's own docstring says it always is), falling back to the calendar
+count only for a caller with no route defined yet.
+
+LABELS. route_deck.py's connecting-feed slide and deck_contract.py's Excel headers/console output
+still said "PDEW"; both swept to "PTEW", following the same convention as the earlier sweep (dict keys
+stay "pdew" internally; only what's printed or labelled changed).
+
+VERIFICATION. test_deck_contract_ptew.py (new): a synthetic 5x/week route through build_contract()
+directly, no DB needed. Confirms PTEW now uses the real departures basis (13.7 vs the old formula's
+9.8 on the same figures); confirms connecting_at_hub.total and its own leg total are now the same
+order of magnitude (ratio 0.70, a believable top-15-of-a-fuller-market subtotal) rather than roughly
+half from the stray each-way figure; confirms per-city annual_demand/annual_forecast are correctly
+doubled; confirms contract_legs_check.py's existing LEGS SUM and SUBTOTAL invariants still hold, so
+this is not a regression on the 14 August fix. 9/9 checks pass, run in the sandbox.
+
+route_deck.py verified directly: the departures-based annual multiplier for a 5x/week route is 260
+(5 x 52), not 365; PHX's connecting-feed annual figure comes out 1,456 (5.6 x 260) against the old
+formula's 2,044 (5.6 x 365) on the same input. A full build_deck() run needs a fuller P&L fixture than
+built here to reach the unrelated economics slide; the code actually changed was verified directly.
+
+NOT TOUCHED: contract_legs_check.py itself needs real *_contract.json files (E:\Avia\contracts) to
+run and could not be exercised here; worth a run against a regenerated CI/SJC-TPE contract to see the
+SUBTOTAL check with real numbers now that it is checking a meaningful comparison for the first time
+(before this fix, comparing an each-way subtotal to a two-way leg meant it could never usefully fail).
+
+STILL OPEN: the domestic/international EW-default design itself (keying the deck's basis off whether
+both route endpoints are in the US) has not been started - this commit is entirely the bugs found
+while checking for existing logic to hook it onto. Separate piece of work, next.
+
+Run:
+    py -3.12 test_deck_contract_ptew.py
+
+Avia Solutions Limited. All rights reserved.

@@ -1,0 +1,14 @@
+Controller 22 Sep: W10 (final calibration test) created; item 25 settled; BT2 engine test logged
+
+- routes/W10-RULINGS.md v1: why W10 exists; scope (bt2/ and search_adjustments.py, no app/
+  edits, demand logic opened for the catchment radius only, by 3 Oct or not at all); item 1
+  catchment radius (John's spec, restated); item 2 reproduce the 22 Sep baseline; item 3
+  reproduce or replace 92/86 on 6,524; reporting and the 3 Oct target.
+- GTM-STRATEGY-ROUTES-2026.md: Status rewritten 22 Sep; W1 and W10 rows; decisions log (the
+  calibrated engine test with the three-route comparison, item 25 settled, W10 created);
+  item 25 amended; items 55 and 56 added; "What is left" line 3 updated.
+- routes/README.md: W10 ownership rows; the one ruled exception to the demand-logic freeze.
+- routes/W3-RULINGS.md: methodology and track record pages to the ruled pair; the slide
+  sentence; no internal claimset figures client-facing.
+- Also carries the uncommitted controller edits since 5d107e4 (Jol register and the W2/W3/W4
+  Jol sections, umbrella items 52-54).

@@ -1,0 +1,38 @@
+Add diag_p2p_connecting_split_check.py - does the catchment bug touch the headline split?
+
+John, 21 August: after diag_tpe_sjc_catchment_decomp.py's run 2 showed the Taipei beyond
+market is 68x inflated by catchment scope versus a filter effect of 0.95x, reading
+route_forecast.py more closely showed the aircraft capacity cap means that inflation
+cannot change the route's TOTAL carried passengers (fixed at 139,230 two-way by the
+aircraft/frequency). What it CAN do is move how that fixed total splits between P2P and
+connecting, via a re-split block whose own comment states it "takes P2P from 62% of the
+carried total to 45%" on this exact route - a big, named, already-documented effect.
+
+That re-split takes the MAX of two independent estimates: the engine's own feed-driven
+split (which does carry the catchment inflation, via feed_beyond) and split_share's
+connectivity-table estimate (p2p_share("SJC","TPE") - static, does not touch the feed
+engine at all). Whichever is larger sets the actual split. This script establishes, with
+production's own live numbers, which one is actually binding today, and whether fixing
+the beyond-side catchment scope would change which one wins.
+
+Two outcomes this can report:
+  - if the connectivity floor was already binding, the catchment bug is real but does NOT
+    explain the 62%->45% move or affect today's headline P2P/connecting numbers - it would
+    only move slide 51's Taipei-vs-San-Jose breakdown inside the connecting total.
+  - if the engine's own feed-driven split was binding, the catchment bug DOES explain the
+    move, and the 2026 top-line P2P/connecting numbers need correcting before this pitch
+    presents, not just slide 51's methodology table.
+
+Built on the same proven pattern as today's two earlier scripts: monkeypatch route_
+forecast.forecast() and read its OWN return dict directly (feed_beyond, feed_behind,
+connecting_feed, total_demand, carried_forecast, p2p_carried, connecting_carried - key
+names confirmed from the source, not guessed), not any wrapping layer. Non-negotiable
+sanity check: reconstructing today's connecting_carried from engine_conn/resplit_conn
+must match the actual returned figure within 2% before the verdict is trusted.
+
+NOT RUN by me - no Sabre/OAG access in this sandbox.
+
+Run:
+    py -3.12 diag_p2p_connecting_split_check.py
+
+Avia Solutions Limited. All rights reserved.

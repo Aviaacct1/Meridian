@@ -257,31 +257,18 @@ def main():
           f"factor to ITS service year, FY2028, is not known here and may differ, so treat this one "
           f"comparison as illustrative, not exact): {cell_D*2:,.0f}\n")
 
-    # ================= WHAT WOULD THE CARRIED FORECAST LOOK LIKE, SYMMETRIC TREATMENT =================
-    # John's 21 August ask: not just the market-size effect, show what happens to the actual CARRIED
-    # passenger forecast if beyond/Taipei used the same restriction behind_feed already applies to
-    # San Jose (narrow origin only), i.e. mirror the existing, already-approved design rather than
-    # invent a new discount with no calibration basis. captured_A_raw/captured_B_raw are feed_side's
-    # OWN first return value - its actual capture/conn_coeff/hub-dominance math, unmodified. Only the
-    # origin_airports argument changes between them.
-    captured_A = captured_A_raw * g
-    captured_B = captured_B_raw * g
-    KNOWN_HUB_FORECAST_1WAY = 58126   # connecting_at_hub_total.forecast, same contract file
-    diff_cap_pct = abs(captured_A - KNOWN_HUB_FORECAST_1WAY) / KNOWN_HUB_FORECAST_1WAY * 100
-    print("=== WHAT WOULD CHANGE: carried forecast, beyond/Taipei leg, one-way ===")
-    print(f"  Second sanity check - captured A (fresh, wide, current production math): {captured_A:,.0f} "
-          f"vs contract forecast {KNOWN_HUB_FORECAST_1WAY:,.0f} ({diff_cap_pct:.1f}% difference)")
-    if diff_cap_pct > 2:
-        print("  MISMATCH > 2% on the CAPTURED figure specifically - stop and find out why before "
-              "trusting the comparison below.\n")
-    else:
-        print(f"  Captured B - same capture math, SJC-only origin (mirrors behind_feed's existing "
-              f"restriction, no new assumption): {captured_B:,.0f}")
-        print(f"  That is {captured_B / captured_A * 100:.1f}% of the current production figure - a "
-              f"{'reduction' if captured_B < captured_A else 'increase'} of "
-              f"{abs(captured_A - captured_B):,.0f} one-way passengers "
-              f"({abs(captured_A - captured_B) * 2:,.0f} two-way) if beyond were restricted the same "
-              f"way behind already is.\n")
+    # ================= superseded, 21 August =================
+    # An earlier version of this section compared captured_A_raw * g directly to the contract's
+    # connecting_at_hub_total.forecast (58,126) and found a 67.4% "mismatch". That was this script's
+    # own error, not the model's: 58,126 is downstream of the aircraft's capacity cap AND a P2P/
+    # connecting re-split (deck_contract.py's cnx_hub_carried = cnx_carried * feed_beyond_ew /
+    # (feed_beyond_ew + feed_behind_ew) - a capped, ratio-allocated figure), not feed_side's raw
+    # captured total, which is uncapped. The two are different pipeline stages and were never going
+    # to match. That question - does the catchment effect measured above actually reach the carried
+    # forecast, or is it absorbed by the capacity cap and the connectivity floor - is answered
+    # properly in diag_p2p_connecting_split_check.py, which reconstructs the actual re-split block
+    # instead of comparing across it.
+    print("(carried-forecast comparison moved to diag_p2p_connecting_split_check.py - see there)\n")
 
     # ================= BEHIND / SAN JOSE SIDE =================
     cell_Ap = KNOWN_DEST_MKT_1WAY   # production figure, already known, no need to recompute here

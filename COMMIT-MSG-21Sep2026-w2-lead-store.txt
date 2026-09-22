@@ -1,0 +1,53 @@
+W2: the lead store, built to the four record types John set out on 21 September
+
+Adds app/lead_store.py and app/test_lead_store.py. Ruling 15 called for a DuckDB
+leads table to replace the JSONL; John widened the scope on 21 September to the four
+kinds of record a stand actually produces, and this is that store.
+
+  route   someone ran a forecast: what they came to look at, the questions asked, what
+          arose, pricing interest, and the exact run shown
+  card    a business card drop, a photograph and two taps
+  note    a remark worth keeping from someone who left no details. Not a lead at all:
+          market intelligence, and the least collected thing at any trade stand
+  voice   the host's own dictated impressions
+
+One table with a kind column rather than four tables, because the records share a spine
+and have to leave together as one flat sheet: the follow-up work after Routes is sorting
+and filtering, not joining. An append-only lead_events log sits beside the rows, keeping
+the one real virtue of the JSONL it replaces, and lead_files carries photographs, voice
+notes and packs.
+
+SEVEN PROPERTIES, each a check rather than an intention:
+
+  the record survives the pack   capture happens first and depends on no send
+  editable after the moment      the useful detail arrives once the visitor has gone
+  notes append, never replace    a second thought does not erase the first
+  the log is append-only         what happened stays answerable after a correction
+  the provider is the authority  provider_message_id, provider_status, reconcile()
+  the quota is John's 16 Aug     first pack free, the rest held, a failure stays free
+  migration refuses to lose      unreadable lines are counted, not dropped
+
+The fifth exists because of this morning. On 21 September our own data would have said
+three packs were sent and the provider had never heard of them, and nothing we stored
+could have contradicted it, because we only stored what we believed. reconcile() takes a
+fetcher, asks the provider about every message we think we sent, writes the answer back,
+and returns the ones the provider does not recognise. A stand promising a pack within
+thirty minutes has to be able to tell sent from believed-sent.
+
+47 checks, 0 failed, against duckdb 1.5.5, which is the version donatello pins. The other
+suites are untouched: test_demo_flow.py 89, test_mct_report.py 14, both 0 failed.
+
+NOT DONE DELIBERATELY: cortex_app is not rewired to this store. The JSONL remains what the
+running app uses until the new store is proven on the workstation, so there is a working
+system at every point before the freeze. Rewiring, the nightly Excel export to Egnyte and
+the three capture buttons follow, in that order.
+
+Also in routes/W2-STATUS.md v12: the proposal to the controller on the capture layer, the
+trade of scope item 5 (progressive Optimise display) to after Routes now that W1 has taken
+narrowed Optimise to 38-55s, and W2's recommendation against a continuously recording
+device on the stand, with the twenty-minute noise test that would settle it by measurement.
+
+W2's own files, per routes/README.md.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01YYBfPojqHJ5EmQipR1awfH

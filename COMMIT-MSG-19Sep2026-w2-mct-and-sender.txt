@@ -1,0 +1,78 @@
+W2: the MCT master reports itself, the sender moves to Postmark, W2 status file
+
+Three things, all from John's rulings of 19 September.
+
+RULING 16: THE MCT MASTER STATES ITSELF AT START.
+A missing MCT master has been invisible. connection_builder.load_mct_data returns
+an empty dict when the file is not there, without a message, and lookup_mct then
+cascades every airport to the flat default, so a server without the master builds
+every connection on 90 minutes. That changes which connections are feasible, which
+moves route_qsi's scores, which moves route_forecast.dest_metro_share, which moves
+the forecast on any multi-airport metro. Nothing on either screen says so.
+
+This matters beyond the laptop build, which is where it was found. Z: is per logon
+and invisible in ssh sessions, and config._resolve_egnyte_root falls back to the
+nominal Z: path when it finds no marker folder, so a server started over ssh has
+been resolving MCT_MASTER to a path that does not exist. Whether the workstation
+portal has ever been started that way is not knowable from a code read. The next
+restart answers it.
+
+  app/connection_builder.py  mct_report() resolves through config exactly as the
+                             live callers do, and returns path, exists, rows, error.
+  app/cortex_app.py          the startup event prints the row count and the path, or
+                             names the reason it did not load and states the
+                             consequence; stand mode (AVIA_STAND_MODE) raises rather
+                             than start, so the stand never demonstrates a silent
+                             difference from the live tool.
+  app/test_mct_report.py     holds missing, unusable and loaded apart, because they
+                             are three different faults: 14 checks, 0 failed.
+
+Verified here: both modules compile and the 14 checks pass against a workbook
+written for the test. The four inline startup lines cannot run without the server's
+dependencies, so they are proven by compile and by reading. The first restart is
+their real test, and it is the same restart that picks up the Postmark variables.
+
+THE SENDER MOVED TO POSTMARK.
+Ruling 15 put the pack email on the Avia Microsoft 365 tenant through Graph. John
+holds no admin rights there, his IT firm does, and the same is true of the
+aviasolutions.com fallback, so both routes sat behind a queue he does not control
+three weeks before the freeze. John ruled to set up aviationobservatory.com clean.
+Verified 19 September by Postmark, not by reading a form:
+
+  DKIM          Verified   20260919185744pm._domainkey   TXT
+  Return-Path   Verified   pm-bounces  CNAME  pm.mtasv.net
+  SPF           not required; Postmark aligns through the Return-Path
+  DMARC         v=DMARC1; p=none;   at _dmarc, no reporting address yet
+
+The domain held zero records of any type beforehand, so nothing was overwritten.
+Postmark's SMTP endpoint takes the Server API token as both username and password,
+so app/demo_mail.py needs a credentials change rather than the Graph rewrite, which
+was the largest piece of new code in ruling 15. Its fail-loudly behaviour and its 58
+fixture checks survive. No token is in this repo or in any transcript; it lives in
+the workstation environment, which is what demo_mail.py already reads, and
+.gitignore now carries secrets patterns so a file holding it cannot be added by
+accident.
+
+STATUS FILE.
+routes/W2-STATUS.md, version 5, rewritten each session per the controller's
+instruction. It answers the three questions W2-RULINGS.md asked of W2: the four
+questions for Suzanna written out to send as they stand; that aviationobservatory.com
+cannot be verified on the Avia tenant by John, because verification needs Global
+Administrator and his IT firm holds it, which is why Postmark replaced Graph; and the
+scope and date for the stand capture front end, demonstrable 2 October.
+
+Rulings 18 and 19 taken in: the unmanned workstation and its restart procedure in the
+controller's own words, the scheduled-task alternative scoped for 8 October, and
+Suzanna's separate lead file. Pre-mortem 15, the unresolvable city name with no
+GeoNames dump on the workstation, is recorded as W2 scope item 7.
+
+An unmanned workstation is also the reason the MCT startup line above matters more
+than it looked: with nobody at the screen it is the only thing that will ever say the
+master did not load.
+
+First fix still owed in item 3: demo_mail.py defaults AVIA_SMTP_HOST to
+smtp.office365.com, which after today would send the server at the wrong supplier in
+silence. The host becomes required and fails loudly.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01YYBfPojqHJ5EmQipR1awfH

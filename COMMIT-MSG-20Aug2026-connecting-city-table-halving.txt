@@ -1,0 +1,44 @@
+Connecting-city detail table: halve the now-two-way market total before it meets
+the each-way city rows
+
+Second-order consequence of this morning's connecting-basis fix, caught by
+checking the three regenerated packs before they went back to Mark, not by a
+fresh finding on a call.
+
+deck/forecast_pack.py's _connecting() (the "Passengers connecting at TPE/SJC"
+city-detail pages) completes the demand column's All-other/Total rows from
+route_metadata.catchment_headline.connecting_market_over_hub/_destination. Until
+this morning that field was each way, additive with the printed cities' own
+each-way "annual_demand" figures with no conversion needed - correct at the time.
+The connecting-basis fix doubled it to two-way at the source (Deck Generator/
+deck_contract.py), to fix the mix Jol caught on the summary page. This page's
+own arithmetic was never updated to match, so it went on subtracting an each-way
+subtotal (the fifteen shown cities) from a now-two-way total: on the regenerated
+China Airlines pack, "All other connecting markets" printed 901,037 and "Total"
+printed 1,438,972 for the TPE leg, both roughly double the true each-way figures,
+confirmed against the fifteen printed cities summing to 537,935 each way.
+
+Fixed the same way the forecast column already handles this exact shape: leg_ew
+halves the two-way carried figure two lines below, so mkt_leg now takes the same
+/2.0 immediately after it is read, before any of the downstream arithmetic in
+this function runs. Comment updated; it described the old (correct at the time)
+each-way basis and would otherwise mislead the next person here.
+
+- deck/forecast_pack.py: _connecting(), mkt_leg halved to each way.
+- deck/test_forecast_pack_maps.py: test_connecting_demand_column_completes()'s
+  fixture updated to state connecting_market_over_hub two-way (1,438,972, matching
+  the source post-fix), expected each-way outputs unchanged. 32 checks, all
+  passing. test_connecting_all_other_row() untouched and still passing: its
+  fixture carries no catchment_headline at all, exercising the honest-blank path,
+  which this fix does not touch.
+- Full battery re-run clean: app/test_contract_p2p_row.py (13), app/
+  test_workbook_table.py (22), Deck Generator/test_connecting_market_basis.py (8),
+  deck/test_forecast_pack_maps.py (32). 75 checks, 0 failed.
+
+The three PPTX packs uploaded this afternoon (post the first basis fix, pre this
+one) have the correct summary-page forecast table but the overstated city-detail
+demand totals described above; they need one more regenerate before anything
+goes to Mark:
+  python deck_from_cases.py cases_sjc_tpe_pitch.json --out <folder>
+  python ../deck/forecast_pack.py <folder>/PITCH_SJC-TPE_CI_A359_306_5x_2027_contract.json --out <folder>/China_Airlines_pack.pptx --codename SJC-TPE --prepared-for "San Jose International Airport"
+  (repeat for the BR and JX contracts)

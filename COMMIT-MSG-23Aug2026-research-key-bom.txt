@@ -1,0 +1,27 @@
+Fix the researched-pitch key load: a UTF-8 BOM was reaching the Authorization
+header
+
+Task 2 of the readiness push (John's live test_research.py run, 23 August):
+provider available, model resolved to claude-sonnet-5 (yesterday's fix
+confirmed working), but every block still returned 0 findings, this time
+with a visible cause: "'ascii' codec can't encode character U+FEFF in
+position 0". A different bug from yesterday's, same symptom.
+
+- app/research_provider.py   _load_api_key() opened anthropic_key.txt with
+  plain "utf-8". If that file was ever saved with a UTF-8 BOM, which
+  Notepad's "UTF-8" option and PowerShell's Out-File/Set-Content both do by
+  default on Windows, the BOM survives as a literal U+FEFF at the start of
+  the key string; str.strip() does not remove it, it isn't whitespace. The
+  corrupted key reached client.messages.create() and the SDK failed
+  building the Authorization header, HTTP headers must be ASCII and U+FEFF
+  is not representable in it. This hit every block on every route, not just
+  "Economic context" - the key load is upstream of all of them, John's
+  transcript just happened to show the first block tried. Fixed to
+  "utf-8-sig" (strips a leading BOM if present, identical to "utf-8" if
+  not) plus a defensive lstrip("\ufeff") on both the file path and the
+  env-var path, so a BOM in ANTHROPIC_API_KEY itself would not reintroduce
+  the same failure.
+
+Verified offline: py_compile clean. NOT yet proven against the live API,
+that needs a workstation pull and a re-run of test_research.py - it costs
+money per run so wasn't re-run from the sandbox, which has no key regardless.

@@ -1,0 +1,59 @@
+Workbook tabs carry EW / 2-way pairs, so the basis is in the tab name
+
+John, 22 August: today's PTEW fix closed one basis mismatch (Jol's email). The
+deeper fix is not having to state a basis at all - every tab that carries a
+passenger count now exists twice, an "EW" tab at the native each-way figure and
+a "2-way" tab at the same figure x2, named plainly so a reader picks whichever
+they want without reading a footnote first.
+
+app/cortex_workbook.py: Forecast, Connecting feed, Schedule, Departure curve,
+Catchment and Competition are each built in a loop over (("EW", 1, "each way"),
+("2-way", 2, "two way")), writing to two sheets, e.g. "Forecast EW" and
+"Forecast 2-way". Every count is computed once, natively each way, from the
+same variables the single tab used before; the multiplier is applied only at
+the point a count cell is written, never a second, independent calculation -
+the same discipline as deck_contract.py's one hub-market conversion, and the
+same discipline that would have stopped the connecting-basis bug in July. Rate
+columns (capture rate, CAGR, share, PTEW, seat factor) are written unchanged on
+both tabs; PTEW in particular nets to the same figure either way, since
+passengers and departures scale together, and doubling it would itself be a
+bug of exactly this kind.
+
+TWO THINGS THE OLD CODE GOT WRONG BY OMISSION, FOUND WHILE BUILDING THIS.
+Departure curve was already built entirely two-way (every column already
+carried a x2) - its existing content is now the "2-way" tab, unchanged; the new
+"EW" tab is built alongside it from the same undoubled figures. Schedule's
+Total row was already doubled while its outbound/inbound detail rows sat above
+it each showing one direction - resolved by leaving the detail rows identical
+on both tabs (they are inherently per-direction, doubling one makes no sense)
+and only varying the Total row: one direction on the EW tab, both combined
+(today's existing figure) on the 2-way tab.
+
+CATCHMENT AND COMPETITION carry a share of catchment demand and a share of
+seats respectively - percentages, no passenger count - so their EW and 2-way
+tabs are identical by construction. Built as a pair anyway, for the same
+predictable 16-tab structure across every workbook, with a note on the tab
+itself so an identical pair reads as intended, not as a bug.
+
+ECONOMICS WAS NOT PAIRED. Checked aircraft_economics.py before deciding: a
+rotation's cost lines are priced per rotation, not per passenger - pax_turn
+= 2 x (econ_ow + bus_ow), and fuel, maintenance, landing and ground handling
+are block-hour or per-turn charges with no coherent each-way half. Halving only
+the passenger-linked lines (revenue, catering, per-pax charges) while leaving
+block-hour and per-turn costs whole would set halved revenue against a full
+rotation's cost and understate profit - a wrong P&L, not a basis choice. That
+tab stays single; its title now states "two way" explicitly rather than
+leaving the basis to be inferred.
+
+VERIFICATION. diag_ewtw_workbook_check.py builds one CI/SJC-TPE workbook and
+checks: the old unsuffixed tab names are gone; 2-way count cells are exactly
+2x the matching EW cells on Forecast, Connecting feed and Schedule; rate cells
+(capture rate, PTEW, seat factor) are unchanged between the two; Catchment and
+Competition are identical EW to 2-way; Departure curve's 2-way total is 2x its
+EW total; Economics stays a single tab labelled two way. Not run here - no
+Sabre/OAG access in this sandbox.
+
+Run:
+    py -3.12 diag_ewtw_workbook_check.py
+
+Avia Solutions Limited. All rights reserved.

@@ -1,0 +1,54 @@
+W2: SMTP reported success for messages Postmark never received; transport moves to the API
+
+WHAT HAPPENED. Three sends from donatello printed SENT and smtplib raised nothing.
+Postmark's own API, queried with the same token, returned TotalCount 0: no messages,
+on any stream, ever. The token was confirmed to match the server's own and the API
+authenticated with it, so the credential was never the problem. The SMTP banner on
+port 587 was read directly from donatello and is genuinely Postmark
+(p-pm-outboundg02c-aws-euwest1c.smtpservice.postmarkapp.com), so nothing was
+intercepting. The identical message posted to the HTTP API came back in one call:
+
+  ErrorCode 412: While your account is pending approval, all recipient addresses must
+  share the same domain as the 'From' address. The domain of the 'From' address is
+  'aviationobservatory.com', but you are attempting to send email to the following
+  domain(s): 'aviasolutions.com'.
+
+Postmark's SMTP endpoint accepted, acknowledged and discarded three messages its own
+policy forbade. Its API refused the same message and said why. Three hours went into
+a fault one API call would have named.
+
+THE CHANGE, on that evidence rather than on preference.
+  app/demo_mail.py       ApiTransport plus a selector. The API is the default; SMTP
+                         stays available behind AVIA_MAIL_TRANSPORT=smtp. Both build
+                         the same EmailMessage, so the two transports cannot drift. A
+                         refusal raises carrying Postmark's own wording. Acceptance
+                         returns a MessageID, which is also what the queue view needs
+                         to show a pack as accepted by the provider rather than merely
+                         handed to a socket. Standard library only; no new dependency.
+  app/test_demo_flow.py  the 412 case is locked as a regression, along with the
+                         payload shape, the base64 attachment, the non-JSON answer and
+                         the selector. 67 checks became 89, 0 failed.
+  app/send_first_pack.py it printed SENT because nothing raised, and W2 repeated that
+                         claim in the status file. It now refuses to call a send
+                         successful without a provider identifier, and says so when it
+                         has none.
+
+A CORRECTION W2 OWES. Version 9 of routes/W2-STATUS.md recorded the first send as
+PROVEN on the strength of that SENT line. It was not: nothing had been delivered and
+nothing had reached Postmark. Version 10 withdraws the claim and states what actually
+happened. The controller could have relied on it.
+
+DELIVERY IS NOW PROVEN, 21 September 14:01Z. Sent through the API from
+john.carter@aviasolutions.com to the same address, since the pending-approval rule
+requires the recipient domain to match the From domain. MessageID
+8283ccb0-72f6-42c2-ab93-cd1da557c215, and John confirmed arrival. Still not proven:
+the Observatory domain's own deliverability, because that test had to send as
+aviasolutions.com without our DKIM. That waits on approval.
+
+The aviasolutions.com sender signature therefore stays. While the account is pending
+it is the only From and the only recipient any test can use.
+
+W2's own files, per routes/README.md.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01YYBfPojqHJ5EmQipR1awfH

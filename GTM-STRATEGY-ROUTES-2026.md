@@ -16,17 +16,19 @@ The detail lives in two companions and this document points at them rather than 
 ## Status
 
 Rewritten every session by the programme controller; John reads this on a phone. As at
-Sunday 20 September 2026, 13:45 BST (the handover and W8-RULINGS say 15:00; the files were
-written at 13:33-13:34, a clock slip, contents unaffected): controller chat 2 open (Fable); reads done; W1 step 2
-starts once John confirms the DevPC pull and HEAD (handover HEAD `e38f76a` plus the uncommitted
-controller edits at handover). Order-ready is 21 Oct. Pricing is W8's; item 37 provisional.
-John pauses until Postmark approval (expected Mon 22 Sep). `Aviaacct1/tao-website` HEAD
-`6d153d2` (W6-STATUS v6). Files: `routes\Wn-STATUS.md` (chat writes), `routes\Wn-RULINGS.md`
-(controller writes), `routes\README.md`.
+Tuesday 22 September 2026, 07:30 BST (John in Doha): controller chat 2 (Fable). The calibrated
+engine test ran this morning: bt2_claimset.py reproduced the 13 Aug baseline exactly; the
+server on donatello is running on `--engine bt2` (restart 06:2x), Run cold 16.8 / 16.6 / 12.1s,
+warm 9.2 / 9.5 / 7.2s, Optimise 42.5 / 40.6 / 34.4s, faster than QSI. Item 25 is settled in
+substance on John's sentence; the open half (which published pair) goes to W10, a new
+workstream (FINAL CALIBRATION TEST, Opus) created today with routes\W10-RULINGS.md v1; John
+opens it from the prompt in this chat. Jol's 43 items are in the workstreams. Order-ready is
+21 Oct. Files: `routes\Wn-STATUS.md` (chat writes), `routes\Wn-RULINGS.md` (controller
+writes), `routes\README.md`.
 
 | WS | State | Where it stands | Next action | Owner | Date |
 |---|---|---|---|---|---|
-| W1 Speed and caches | STEP 2 CLOSED 21 Sep, acceptance met restart-proof | Cold Run 16.9 / 20.2 / 13.4s (SJC-TPE, BRS-EWR, DUB-DFW), warm 8-11s, Optimise narrowed 38-53s, identical on restarts 4 and 5; diff PASS r2, r4, r5; profile: remainder is frozen feed scoring | Market-brief first-call cost (6-8s); warm_boards over the register before 20 Oct; gap cache only if time | Controller / John | Brief by 3 Oct; warm-up 19 Oct |
+| W1 Speed and caches | STEP 2 CLOSED 21 Sep; BT2 engine test done 22 Sep | Cold Run 16.9 / 20.2 / 13.4s on QSI; on `--engine bt2` cold 16.8 / 16.6 / 12.1s, warm 9.2 / 9.5 / 7.2s, Optimise 42.5 / 40.6 / 34.4s; claimset baseline reproduced exactly; server left on BT2 | Launcher default `--engine bt2` and the stale "not re-measured" warning replaced by the 22 Sep date; payload `engine` label fix; disclaimer naming both companies; market-brief first-call cost; warm_boards over the register before 20 Oct | Controller / John | Launcher by 26 Sep; brief by 3 Oct; warm-up 19 Oct |
 | W2 Stand flow | In progress (v13, 21 Sep) | Delivery PROVEN via Postmark API (aviasolutions.com, MessageID 8283ccb0); SMTP path discarded three messages silently, transport now API (3406f0a); lead_store built, 47 checks (ef6de65), app not yet rewired; capture layer widened to four record types; progressive Optimise deferred | Rewire app to lead_store; nightly export; three capture buttons; stand mode; zone move; laptop procedure after SSD | W2 chat / John | Capture demonstrable 2 Oct; laptop proof 8 Oct |
 | W3 Presentation (deck, pack, PDF, imagery, STAND VIDEO) | In progress (v2, 21 Sep) | Slides 1-6, 9-10 built and verified (3af5158), slide 10 rebuilt to final pricing; PDF render BUILT and proven (two-page A4, Avia metadata); pitch page's three figures already exist in the codebase; Commons probe still unrun (item 33); video script 23 Sep | Pitch page as slide-shaped sections; one real pack PDF on the workstation; probe by 26 Sep; video record 26-30 Sep; all five items to Jol and Nick 3 Oct | W3 chat / John | All four to Jol and Nick 3 Oct |
 | W4 Host | v2 DONE (21 Sep) | STAND-HOST-MANUAL.md v2, 862 lines, 23 slots: Suzanna's order of use, the bridge walk-through, final pricing sentence, weak-scenario list, recording section; three bridge labels flagged for W3 | v3 after 8 Oct screenshots and W5's known-issues list; items 25 and 34 from John; Word copy for print | W4 chat / John | v3 mid-Oct |
@@ -34,6 +36,7 @@ John pauses until Postmark approval (expected Mon 22 Sep). `Aviaacct1/tao-websit
 | W6 Messaging, marketing, website, meetings | In progress (v7, 21 Sep) | Four sentences redrafted in the Observatory voice (variants v3); five invitations ask the airport to name a route; post 1 and list email ready for approval; site copy still says three seats / 100 presentations (fix queued) | John: contacts, 2.3 A or B, approvals by 25 Sep; W6: site licence-shape fix, clean-clone proof, Pages after zone move; invitations 26-29 Sep | W6 chat / John | 25-29 Sep |
 | W8 Pricing and commercial offer | DONE 20 Sep | PRICING-DECISION-2026.md v1.0 FINAL; twenty decisions answered; bands by airports covered | W3-W6 rebuild to it (pointers in place); Knock test result from John in a week or two | W8 chat closed / John | Knock by 3 Oct |
 | W9 Stand, contract, show logistics | NEW 21 Sep, gap found | Contract UNSIGNED (billing details owed to Informa today); stand number F124 per Informa v F124 in every document; graphics deadline 3 Oct; exhibitor manual follows contract | John sends billing details and the two questions today; W9 chat opens on the contract and manual | W9 chat / John | Contract 21 Sep; graphics 3 Oct |
+| W10 Final calibration test | NEW 22 Sep | W10-RULINGS v1: catchment radius (item 1, John's spec) settled first on the current calibration; 22 Sep baseline reproduced; 92/86 on 6,524 reproduced or replaced; ONE figure set to John. Interim on every surface: 89/82 on 2,915 | John opens the W10 chat (prompt in controller chat 22 Sep); baseline rerun; radius search | W10 chat / John | Record v1 by 3 Oct; say by 29 Sep if not |
 | W7 Rehearsal and freeze | Replanned | Boeing 13 Oct is an Atlas meeting; Meridian trials 11-12 Oct (remote, one restart) and 16 Oct with Suzanna | Controller diaries the trials; nothing until October | Controller / John | Freeze 10 Oct |
 
 Found on the 20 Sep read, not yet resolved: (a) W3-STATUS.md is still session 1, so the
@@ -46,8 +49,8 @@ John items 8 and 9 are overtaken by John's Postmark ruling and are closed below.
 **John, this week (dates are the chats' dates, not mine):**
 1. Item 28 CLOSED 20 Sep: SJC-TPE and Bologna-New York stay.
 2. Item 26, by 23 Sep: the carrier for Bologna-New York (if item 28 keeps it).
-3. Item 25, by 26 Sep: what the 89% describes. Scope route (a), wire the BT2 band beside the
-   QSI forecast, or rule the fallback sentence; Nick signs either.
+3. Item 25 SETTLED 22 Sep (John's sentence; the calibrated model is the on-screen engine).
+   Item 55, by 3 Oct: which accuracy pair, on W10's record. Item 56, today: open the W10 chat.
 4. Item 33, by 26 Sep: run W3's coverage probe on the workstation (block in W3's chat).
 5. The four messaging sentences: pick from W6-MESSAGING-VARIANTS-19Sep2026.md by 25 Sep.
 6. The five meeting contacts by 25 Sep; invitations out 26-29 Sep (drafts in
@@ -423,7 +426,44 @@ five contacts.
   before the freeze, "actual" for "measured" on data surfaces, no "physics", and EACH-WAY /
   TWO-WAY labelled on every figure with a display switch on the dashboard (John: the most
   important item; the TPE work went wrong on it; US reads departing, the rest two-way).
-  W2 and W3 carry it; W4 changes screen words once. No W10.
+  W2 and W3 carry it; W4 changes screen words once. (No W10 for Jol's items; W10 was
+  created 22 Sep for the calibration, below.)
+
+- 22 Sep 2026 (controller, W1): THE CALIBRATED ENGINE TEST. bt2/bt2_claimset.py on the
+  workstation reproduced the 13 Aug baseline exactly (calibrated 83.2 / 70.0, blind 60.9,
+  tier A 88.2, portfolios 87.7 / 93.2, segments 72.6 / 39.8, sample 6,524 Sabre-only; log
+  E:\Avia\probe\claimset-22Sep.log). Server restarted on `--engine bt2`: Run cold 16.8 /
+  16.6 / 12.1s (SJC-TPE, BRS-EWR, DUB-DFW), warm 9.2 / 9.5 / 7.2s, Optimise 42.5 / 40.6 /
+  34.4s, all faster than QSI (TIMING-20260922-0628). Demand each way, QSI to BT2: BRS-EWR
+  captured 215,554 to 42,708 and total 314,524 to 134,598; DUB-DFW 36,495 to 81,592; SJC-TPE
+  54,151 to 61,090. John: the Dublin rise is partly Ryanair positioning traffic from the UK
+  buying Dublin-originating tickets; Nick confirmed the figures are correct. Ruling (John):
+  ONE model; the calibrated model is the core product and the QSI switch was only ever left
+  default-off pending re-measurement. The controller's earlier line that item 25 needed a
+  two-day build was wrong; the wiring exists in calibrated_forecast(). W1 flips the launcher
+  default to `--engine bt2` and replaces the stale "accuracy NOT re-measured since 13 Aug"
+  warning with the 22 Sep date. The server stays on BT2 from today; the rollback is the
+  launcher flag. Defect found: the payload's top-level `engine` string reads "route_forecast
+  (calibrated)" on both engines while provenance.local_leg is right; W1 fixes the label.
+- 22 Sep 2026 (John): ITEM 25 SETTLED IN SUBSTANCE. The stand sentence: this forecast uses
+  the model tested on real launches; 89% were within 20% and 82% within 10%; we cannot say
+  that of a single route, but it is the same model; the record is republished yearly. The open
+  half is which pair the product publishes. Interim: 89/82 on 2,915 on every surface (the
+  ruled line). The 92/86 on 6,524 (V1.3-MIXED, 9 Aug) comes off the methodology and track
+  record pages now (W3 instructed) because nobody can say what built it. John's inclination:
+  the larger sample, if it reproduces. W10 produces the evidence; John rules by 3 Oct.
+- 22 Sep 2026 (John): W10 CREATED, "final calibration test", an Opus chat, routes/
+  W10-RULINGS.md v1. Order of work: catchment radius first (John's specification, item 1:
+  Birmingham inside London at the flat 220 km; narrowing banded by haul and carrier type,
+  radius and capture fitted together in search_adjustments.py with cross-validation; ships on
+  by default inside the definitive calibration or is rejected; the fitted radius is the
+  default a supplied catchment overrides; no sixth default-off switch), then the 22 Sep
+  baseline reproduced, then the 92/86 pair reproduced or replaced, ending in ONE figure set.
+  This opens the frozen demand logic for that one item only, on condition it lands by 3 Oct
+  with the accuracy re-measured, or not at all. W10 owns bt2/ and search_adjustments.py; any
+  app/ change goes through W1 as a one-line diff. Flag: the controller restated John's
+  catchment text from notes after a context compaction lost the original; John can paste the
+  original into the W10 chat and the controller will replace the section verbatim.
 
 ## Waiting on John
 
@@ -470,22 +510,13 @@ five contacts.
     the Cloudflare tunnel runs as a service.
 19. **Suzanna's practice runs**: they write to the lead store and use the one-pack quota. Give
     her a separate lead file (AVIA_DEMO_LEADS) on the stand build. Silence: separate file.
-25. **WHAT THE 89% DESCRIBES, the stand sentence.** The 89/82 figures belong to the
-    calibrated launch model (BT2, 2,915 launches, memory qsi-bt2-programme, settled 5 Aug).
-    Meridian's on-screen forecast is the step-by-step QSI build; nothing in app imports
-    BT2 (estate index), and the QSI build's own calibrated band is the 0.40-2.15 interval.
-    Nick's note section 5 describes the launch model running alongside as a cross-check;
-    the app does not do that today. So a visitor who asks "is the forecast on this screen
-    89% within 20%?" cannot be told yes. Three honest routes: (a) wire the BT2 point and
-    band beside the QSI forecast before the freeze (Jess's Atlas team already runs
-    forecast_v12 live from the OAG reference week, so the code exists; a display-and-call
-    change, not demand logic; two days to scope); (b) the sentence: "Meridian builds the
-    forecast step by step from measured demand. The calibration record behind it, 2,915
-    real launches, is within 20% 89% of the time and within 10% 82% of the time; every
-    forecast carries its own calibrated range"; (c) both. Controller recommends (a) scoped
-    by 26 Sep, (b) as the fallback wording, and Nick signs whichever ships. W3 needs it by
-    3 Oct. Master list 2.4 and pre-mortem 9 close on this. Silence to 26 Sep: (b), with
-    Nick's sign-off.
+25. **WHAT THE 89% DESCRIBES, the stand sentence.** SETTLED IN SUBSTANCE 22 Sep (decisions
+    log). John's sentence stands: this forecast uses the model tested on real launches; 89%
+    within 20%, 82% within 10%; we cannot say that of a single route; the record is
+    republished yearly. The calibrated model IS the on-screen engine from 22 Sep (`--engine
+    bt2`), so the earlier worry that the screen ran a different model is closed. What remains
+    is item 55. Nick signs the sentence (John asks him with item 53). Master list 2.4 and
+    pre-mortem 9 close on this.
 26. **Carrier for slide 8, Bologna-New York.** No default; W3 will not pick an airline.
 27. **Decks already sent without rights records** (the 94 JPEGs in the CI deck): the
     controller's ruling is that nothing is re-sent; the exposure is an internal provenance
@@ -644,6 +675,13 @@ five contacts.
     capped" (Jol's feedback R1; John: "measured" implies an estimate in ASD). Until he answers,
     slide 4 and manual section 2 keep his words and every data surface says "actual".
 54. **Pens as the stand giveaway**, Observatory name and site address, ordered this week (W9).
+55. **Which accuracy pair the product publishes.** Interim, on every surface: 89/82 on 2,915.
+    W10 reproduces the 22 Sep baseline, tests the catchment radius, and reproduces or replaces
+    92/86 on 6,524; John rules on ONE figure set by 3 Oct. Silence to 3 Oct: the interim pair
+    ships and the 92/86 pair stays off every surface.
+56. **Open the W10 chat** from the prompt in the controller chat of 22 Sep, and paste the
+    original catchment radius text into it if you still have it (the controller restated it).
+    Silence: W10 does not start and item 55 defaults to the interim pair.
 13. **Pick the five meetings**: John agreed the buyer-test list 19 Sep (Birmingham, Dublin,
     Vienna, Dallas Fort Worth, Milan SEA; reserves in the organisations file, section 3).
     Open point: whether one competitor-client airport goes on the five as a deliberate test

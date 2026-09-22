@@ -1,0 +1,69 @@
+US domestic routes state passenger counts each way, international stays two way
+
+John, 22 August: US domestic route traffic is conventionally quoted each way, the DOT/T-100
+enplanement basis every US carrier and airport already reports in. International traffic, SJC-TPE
+included, is conventionally quoted two way, the basis deck_contract.py was already built on. The two
+conventions were never going to sit on one document without confusion, so the basis is now keyed off
+the route itself and applied once, never re-decided market by market inside a table - the design
+constraint John set before any code was written: "if we key it off the route then we need to make the
+basis of the data super clear."
+
+CLASSIFIER. forecast_to_contract.case_and_outputs sets case["domestic"] = both fc.origin.country and
+fc.dest.country equal "US". One comparison, one place. A caller that doesn't supply it (build_contract
+used directly, without going through this adapter) gets today's existing two-way behaviour by default,
+so nothing already live changes unless it opts in.
+
+WHAT ACTUALLY CHANGES. build_contract() is left computing everything two way, exactly as it always
+has, proven correct through the 14 and 20 August fixes - natural, p2p_carried, cnx_carried, carried,
+the connecting city figures, none of that maths moved. A new _disp() wrapper is applied ONLY at the
+points that print a passenger count into the contract's demand-summary fields: segment_forecast's
+four blocks, connecting_at_hub/connecting_at_destination's cities and totals, top_markets_beyond_hub,
+and the catchment/summary market-size headlines. On a domestic contract these come out at exactly
+half; on international, unchanged.
+
+WHAT DELIBERATELY DOES NOT CHANGE. Capacity (annual_seats/annual_capacity), the physical schedule
+(outbound/inbound/total rows), revenue (pax_rev_y1, cargo, total_rev_y1), yield (ASK, PRASK, TRASK,
+CASK, RPK) and average fares stay two way regardless of route type. These are operational and
+financial facts, not a passenger-count accounting convention - the exact reasoning that held
+cortex_workbook.py's Economics tab out of the EW/2-way tab pairing earlier the same day. Wrapping
+proven two-way maths at the display edge, rather than re-deriving it two ways in parallel, was the
+deliberate choice: one set of numbers, one place they could go wrong, not two.
+
+PDEW/PTEW STAYS A RATE. pdew() takes a new mult parameter (default 2, unchanged for every existing
+caller) so its own departures denominator scales with the SAME basis as the passenger figure it
+divides - domestic calls pass mult=1. Confirmed by test: PTEW is identical whether the same route is
+built domestic or international, exactly as a rate should read, matching capture_rate, CAGR and
+every other ratio in the tool.
+
+LABELLED, NOT LEFT IMPLICIT. contract["_demand_basis"] states "each way (US domestic)" or "two way"
+at the contract root, so any consumer reads one canonical field rather than re-deriving domestic-ness
+itself. The same string is repeated on route_metadata.catchment_headline, summary_and_schedule,
+connecting_at_hub and connecting_at_destination, and grand_total's own _basis note - every block that
+carries a _disp()'d figure says so on itself.
+
+FOUND WHILE BUILDING THIS, TWO BUGS ALREADY FIXED EARLIER TODAY UNDER SEPARATE COMMITS: pdew()'s
+flat-728 departures assumption (deck_contract-basis-fixes commit) and the each-way cities-list left
+out of the "everything doubles here" rule (same commit). This commit is the domestic/international
+feature itself, building on both.
+
+VERIFICATION. test_deck_contract_ptew.py extended: builds the SAME route twice, once domestic once
+international, and checks every _disp()'d field comes out at exactly half; PTEW and capture_rate are
+identical between the two (rates, unaffected by basis); annual_capacity, revenue_forecast.passengers,
+avg_ow_fare_blended and the physical schedule are byte-identical between the two (the deliberate
+carve-out); _demand_basis states correctly on both; the 14 August LEGS SUM and SUBTOTAL invariants
+hold on both. 27/27 pass. Both a domestic and an international workbook were built end to end through
+emit_workbook() with no error. The ba_lhr_sjc_reference() acceptance-test fixture was rebuilt and
+re-checked against its own published figures (82,708 P2P forecast, PDEW 113.6) - byte-identical,
+confirming zero regression to the validated 2015 deck numbers this whole file is graded against.
+
+NOT DONE: route_deck.py's own labelling has not been wired to this. Its forecast dict shape (market/
+market_2w/total/total_2w) does not obviously map onto this contract's structure, and its docstring
+does not mention deck_contract.py at all - unconfirmed whether it is even fed by the contract this
+commit touches, versus forecast_pack.py or pitch_report.py, the other documented consumers. Needs
+tracing which renderer actually builds a live domestic-route deck before wiring labels in, rather
+than guessing at a shape that may not be the live path.
+
+Run:
+    py -3.12 test_deck_contract_ptew.py
+
+Avia Solutions Limited. All rights reserved.

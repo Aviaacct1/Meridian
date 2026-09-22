@@ -154,6 +154,64 @@ regeneration and a check against Jol's own cited cells.** Do not reply to him un
 is done - this is the fifth distinct PTEW fix today; each one has been real and each one
 has needed a live check before being trusted.
 
+**EIGHTH ADDENDUM, 24 August 2026, same day, PTEW THREAD NOW CLOSED**: the seventh fix
+was verified live and sent. John then flagged what looked like a further discrepancy
+(a screenshot pairing Connecting feed's SJC behind Total=35.6 against a highlighted 35.7
+sub-row on the Forecast 2-way tab) - traced by hand (2.1+33.5=35.6 behind; 35.7+76.1=111.8
+beyond) and found to foot correctly; no bug, no fix made. John confirmed: "Seems to not be
+an issue." The PTEW thread that ran through today - five real fixes plus this one false
+alarm - is now closed with nothing further owed to Jol.
+
+**NINTH ADDENDUM, 24 August 2026, same day, CLOSED**: John asked for the China Airlines
+787-9 (30J/28W/230Y, 288 seats, delivering winter 2026) to be selectable in the tool live,
+for a client meeting - OAG has no schedule data for CI flying the type yet, so the
+picker's normal OAG-observed fleet logic can't offer it. Added `airlines.CI.B789` to
+`app/lopa_store.json` (John's own seat map, sourced as such) and a small, deliberately
+named `KNOWN_UPCOMING` exception in `airline_fleets.py`, unioned into whatever OAG
+actually shows - not a return to the old hand-maintained FLEETS table that
+`fleet_observed()`'s own docstring records was wrong on every carrier checked on
+10 August. Remove the CI entry once OAG shows the 787-9 in China Airlines' real schedule.
+Committed at `584ae22`. Confirmed live and working (John's own screenshot, SJC-TPE, CI,
+787-9, run completed).
+
+**TENTH ADDENDUM, 24 August 2026, same day, CODE DONE AND TESTED, LIVE WORKSTATION CHECK
+OWED**: John is running a batch of EVA/CI/JX forecasts at 4x/5x/7x weekly plus the CI
+787-9, and asked for the departure-time curve as a picture alongside each workbook rather
+than a chart he has to screenshot - and asked directly whether to build that in now or
+generate it afterward from the finished excels. Recommended building it into
+`build_workbook()` so it is automatic on every run; taken. He then asked whether the
+native Excel chart could be made to look like a polished reference image he had generated
+(shaded restricted-hour bands, an annotated "Chosen Dep" callout, a data-driven insight
+line) - "I suspect that is difficult." Confirmed: openpyxl's native chart object cannot do
+shaded regions or annotated callouts without hand-editing chart XML. Built with
+matplotlib instead (already a declared, actively-used dependency via the Observatory deck
+generator - see `app/requirements.txt` line 80 - not a new one).
+
+Two additions to `cortex_workbook.py`: `_curve_series(fc)`, a single shared calculation
+of the departure curve on the carried allocation (mirrors the dashboard slider's own
+transform; returns `None` if there is no optimiser curve, never a fabricated one); and
+`render_curve_png(fc, meta, out_path)`, which builds the picture and saves it as
+`<workbook name>_curve.png` beside the xlsx. The insight caption is computed from the
+route's own curve each time (capacity-bound versus a stated passenger cost at the least
+favourable permitted departure), not John's caption text copied over. Wired into
+`build_workbook()` as a side effect, wrapped in try/except so a rendering problem can
+never break the primary xlsx delivery; the function's return value is unchanged, so no
+existing caller is affected. Deliberately NOT wired into the Excel sheet's own existing
+"Departure curve" tab, which keeps its separately-computed variables exactly as they
+were - a conscious choice to avoid regression risk on a working, tested sheet under
+today's time pressure, flagged as a tradeoff worth revisiting, not an oversight.
+
+`test_workbook_table.py`: two new checks mirroring the sheet's own never-fabricated rule
+(PNG exists when curve data exists, absent when it does not). 33/33 pass. Rendered and
+visually inspected two test cases directly (evening and morning departures), caught and
+fixed a first-draft overlap between the callout box and the insight text. Full detail:
+`COMMIT-MSG-24Aug2026-curve-png-alongside-workbook.txt`. **Not done: a live workstation
+regeneration confirming the PNG is actually produced on a real run** - sandbox fixtures
+only so far. Needed before John's batch this afternoon; if it silently fails to render
+(the try/except swallows the error deliberately, so the xlsx still delivers), the batch
+would produce workbooks with no PNGs and no visible error - worth an explicit eyeball
+check on the first file out of the batch, not an assumption it worked.
+
 ---
 
 ## 1. The clock

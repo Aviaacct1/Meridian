@@ -244,3 +244,21 @@ until Nick agrees to "actual, calibrated, capped" (John asks him). R2: no "physi
 client surface; the bridge bar becomes "seat cap" or "hard cap" as the case is, alongside the
 three label changes already ruled. R5 (i): every passenger figure in the deck, pack and PDF
 carries "each way" or "two-way" in its own label; the workbook already does. One commit.
+
+## 22 September 2026: ACCURACY, the interim pair and W10
+
+- Your conflict on the methodology page (6,524 / 92% / 86% against the ruled 2,915 / 89% /
+  82%) is upheld. Change app/methodology_page.py and the track record page to the ruled pair
+  now; the 92/86 pair comes off every surface until W10 (new, FINAL CALIBRATION TEST) either
+  reproduces it or replaces it. Umbrella item 55; John rules on ONE figure set by 3 Oct.
+- Item 25 is settled in substance (decisions log 22 Sep). Slide 4-5 text is John's sentence:
+  this forecast uses the model tested on real launches; 89% were within 20% and 82% within
+  10%; we cannot say that of a single route, but it is the same model; the record is
+  republished yearly. Build to it now; the figures may change once, on W10's record.
+- The on-screen engine is the calibrated model from 22 Sep (`--engine bt2`), so the slide can
+  say the forecast on screen and the calibration record are the same model. Evidence: bt2/
+  bt2_claimset.py reproduced the 13 Aug baseline exactly; three-route comparison in the
+  umbrella decisions log. Do not quote the 83.2 / 70.0 / 60.9 figures anywhere client-facing;
+  those are the internal claimset, not the ruled line.
+- Bologna-New York (item 26), the video third route (item 45) and sentence 2.3 A/B (item 44)
+  are still John's; unchanged.

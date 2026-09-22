@@ -1,0 +1,31 @@
+W6 session 3: the four sentences in the Observatory's voice, invitations ask for the route
+
+To John's rulings of 20 September 19:30 and PRICING-DECISION-2026.md v1.0.
+
+routes/W6-MESSAGING-VARIANTS-19Sep2026.md (v3)
+  Rewritten in The Aviation Observatory's voice; v2's variants are withdrawn. Sentence 1 in two
+  versions: "under five minutes", cleared on the 20 September timings, and "about a minute",
+  drafted and held until the controller releases it on W1 step 2b's restart-proof cold numbers.
+  2.1 adopts John's "the optimal time to fly it". 2.2 takes his pack clause, "and a full
+  presentation pack follows the same day". 2.3 becomes the affiliation clause in two versions,
+  both attaching the credential to Avia rather than claiming independence for the Observatory.
+  Sentence 3 is quoted from the pricing decision, section 7, with its version and the
+  qualifying question, and is not edited here. Sentence 4 unchanged and verbatim.
+
+routes/W6-INVITATIONS-AND-MEETINGS-19Sep2026.md (v3)
+  Every invitation now asks the airport to name one route it wants to learn more about, which
+  the Observatory forecasts ahead of the meeting; the route W6 proposed per airport is demoted
+  to an example offered only if they name none, and Dallas Fort Worth has none, which is no
+  longer a gap. Dublin and Milan SEA are written as groups. Logistics updated: the one-pager
+  row quotes the pricing decision, the host's spoken answer is section 7's sentence after the
+  qualifying question, and the year-1 cash figures are corrected to the airports-covered bands,
+  £7,500, £11,250 and £15,000, replacing the wrong by-airport-size figures W6 carried.
+
+routes/W6-MARKETING-CALENDAR-19Sep2026.md (v3)
+  Post 1 rebuilt on the ruled sentences, in the Observatory's voice, with "under five minutes",
+  the affiliation clause and the same-day pack. The held claim goes in no copy.
+
+routes/W6-STATUS.md (v7)
+  Session 3 status, with three conflicts seen. The first matters: commit 6d153d2 on the site
+  says three seats and 100 presentations, and the pricing decision replaces that with no limit
+  on users or on how much you run it, so four files need a pass before the site goes live.

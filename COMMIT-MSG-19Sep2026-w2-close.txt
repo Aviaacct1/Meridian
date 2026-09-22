@@ -1,0 +1,25 @@
+W2 status: session close, 19 September 20:50
+
+routes/W2-STATUS.md to version 6. Adds the closing state the controller reads
+without John pasting anything: what W2 is waiting on, in the order it bites, and
+what proceeds without waiting.
+
+Waiting: Postmark approval, which holds the account in test mode and gates every
+real send and all domain warming; the two spec blocks for the laptop and its
+external drive; John's approval to send Suzanna the four questions, which shape
+stand mode's defaults.
+
+Not waiting: stand mode, and the DuckDB leads table with its JSONL migration.
+Neither needs anything from anyone. If Postmark approves first, the demo_mail.py
+host fix comes forward ahead of both, since it must land before anything real is
+sent.
+
+Also records commit 2cab1b2, and that the next server restart does two jobs at
+once: it makes the MCT line speak for the first time, answering whether the live
+portal has been running without the master, and it picks up the Postmark
+variables. Nothing needs restarting for its own sake meanwhile.
+
+Documentation only.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01YYBfPojqHJ5EmQipR1awfH

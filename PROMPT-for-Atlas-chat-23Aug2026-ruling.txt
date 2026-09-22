@@ -1,0 +1,27 @@
+Ruling on the wording, and three things to close out before I leave on the 26th.
+
+WORDING: Text A ships. It's the one that actually implements my 5 August ruling,
+calibrated leads (88.8% within +/-20%, 82.4% within +/-10%, distribution chart
+alongside), blind evidence appears second and only as portfolios (94% of twenty routes,
+80% of ten), basis named beside the figure. Text B leads with the portfolio numbers and
+puts calibrated second "(in sample)", which is the exact ordering my ruling exists to
+stop, a reader anchors on the bigger blind number before reaching the caveat. Your own
+finding was that the wording let "calibrated" read as "unseen"; Text A fixes that
+without reopening the order. Verify 88.8 and 82.4 against master_backtest_scored.csv
+once the meridian pull is done, then ship it. Nothing else about the ruling is open for
+debate.
+
+ITEM 8, THE EXPORT REFUSAL GAP: be precise about what "fail-closed auth" actually
+closed. Auth controls who can reach the writers; it says nothing about whether a warned
+run gets stopped once someone authorised is in. Answer directly: does a mechanism exist
+today that refuses to export a warned run to a client artefact (Excel or Word, Zagreb),
+separate from and in addition to the auth fix? If not, that is still open, and I want it
+treated as a client-safety priority, not folded into the 1.3/1.4/1.9 build queue behind
+two other items. Tell me plainly where it actually stands.
+
+THE OTHER TWO OPEN ITEMS: confirm the meridian `git pull` has now run on both machines,
+and confirm the "Atlas Forecast" scheduled task is registered on Donatello. If either is
+still outstanding, do it now rather than carrying it into next week.
+
+Once all four of the above are actually done, not planned, give me one final state
+summary so I have a clean point to leave on.

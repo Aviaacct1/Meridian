@@ -1,0 +1,28 @@
+Curve PNG: add the uncapped total demand line (John Carter, 24 Aug 2026)
+
+John, once the picture was finally landing: the two-line chart (connecting demand,
+route total carried) hides how much demand a poor departure time actually spills,
+because the total line is capped at the aircraft ceiling (87.5% plan load factor in
+this run) while P2P itself is never capped anywhere in the engine - only the route
+total is. Asked whether a third line, the uncapped total, was easy to add.
+
+It was: _curve_series() already computed p2p_carried + connecting_ew before applying
+the capacity cap, then discarded it. Now stored on each point as demand_ew alongside
+the existing total_ew (still the capped figure everything else reads). render_curve_png()
+plots it as a third, dashed amber line under the two solid lines, so wherever demand
+sits at or under the ceiling the lines read exactly as before, and wherever a departure
+would spill demand the gap between the dashed line and the solid navy total line shows
+it directly.
+
+Y-axis headroom calc extended to include the new line (it can now be the chart's own
+highest point). No change to the callout, the insight caption or any other reader of
+total_ew - those all still read the capped figure, which is what is actually carried
+and what the headline numbers state.
+
+Verified: 34/34 regression checks still pass (no test touches the new field, so this
+needed a visual check, not just the suite) - rendered against a reconstructed version
+of today's live SJC-TPE/CI/B789/5x curve and confirmed by eye: the amber line clearly
+separates from the navy line in the small hours and around midnight (where uncapped
+demand runs to circa 250,000 two-way against a circa 131,000 ceiling) and rejoins it
+through the middle of the day and at the chosen 20:59 departure, where the route is at
+or near the ceiling regardless.

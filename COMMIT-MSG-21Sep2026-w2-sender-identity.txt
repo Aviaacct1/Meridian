@@ -1,0 +1,52 @@
+W2: demo_mail could not have sent under Postmark, and the tests could not have caught it
+
+The controller asked for the first real pack email through demo_mail.py. Reading it
+before running it found it cannot send at all under the new supplier.
+
+THE FAULT. SmtpTransport set self.sender = self.cfg["user"] and send_pack puts that
+value in the From header. Under M365 the username IS the mailbox, so the credential
+and the sending address coincided and nothing noticed the assumption. Under Postmark
+the username is a 36-character Server API token. A token in a From header is not a
+deliverable message.
+
+WHY 58 PASSING CHECKS MISSED IT, which is the part worth carrying forward. The mail
+fixture injects a FakeTransport carrying its own sender attribute, so the suite never
+reached the line that resolves the real sender. Every check passed and the first live
+send would have been the test. A fixture that supplies the value under test proves
+only that the rest of the path can carry it.
+
+THE FIX.
+  app/demo_mail.py       AVIA_SMTP_FROM names the sending address. It falls back to
+                         AVIA_SMTP_USER only when that looks like an address, so M365
+                         behaviour is unchanged. AVIA_SMTP_HOST is now required with
+                         no default: it defaulted to smtp.office365.com, so after the
+                         move to Postmark an unset variable would have sent the server
+                         at the wrong supplier and failed naming Microsoft. Same
+                         assumption, two faults, one edit.
+  app/test_demo_flow.py  nine checks over both, including that a token never reaches a
+                         From header and that an address username still stands in.
+                         58 checks became 67, 0 failed.
+  app/send_first_pack.py the send itself, which has never happened. Prints the resolved
+                         host, from, and the credential LENGTH only; warns when the
+                         sender and the credential are identical, which is correct for
+                         M365 and wrong for Postmark; names the three things to check
+                         in Postmark afterwards. Its attachment is a plainly labelled
+                         transport test rather than a forecast pack, because a pack
+                         with invented numbers should not leave the building even once.
+                         The pack rides the same transport through /api/demo/request
+                         once the lead store is built.
+
+NOT DONE, and deliberately. The aviasolutions.com sender signature stays for now. The
+controller asked for its removal to stop the unauthenticated-domain banner slowing the
+review, with the caveat "if we need it for test sends, keep it until the first send is
+proven". That caveat applies: in test mode Postmark restricts recipients to confirmed
+sender signatures, and it is the only one on the account, so removing it first would
+leave the first send with nowhere to go. Send, prove, then remove.
+
+Nothing has been sent. The send needs a workstation pull, AVIA_SMTP_FROM set by setx,
+and a new window, in that order.
+
+W2's own files, per routes/README.md.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01YYBfPojqHJ5EmQipR1awfH
