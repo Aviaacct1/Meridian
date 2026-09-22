@@ -1,47 +1,100 @@
 # W2 stand flow: status
 
-Version 13, 21 September 2026. Written by the W2 build chat for the controller; rewritten
-each session, never appended. routes/README.md v1 read and followed: facts about other
-workstreams below are taken from their STATUS files and quoted with the version, never from
-memory of a chat. W2-RULINGS.md v1 read and acted on. Dates
-corrected from the "21 September" paste. Out of scope and untouched: engine demand logic, and
-W1's preagg, caches and pre-warm.
+Version 14, 22 September 2026. Written by the W2 build chat for the controller; rewritten each
+session, never appended. routes/README.md v1 read and followed: facts about other workstreams
+are taken from their STATUS files and quoted with the version, never from memory of a chat.
+W2-RULINGS.md v1 read and acted on. Restructured this version at the controller's request: live
+state and asks on the first screen, history below. Out of scope and untouched: engine demand
+logic, and W1's preagg, caches and pre-warm.
 
-## Where this stands at close
+## Live state
 
-John stopped the session at 20:50 to wait on Postmark. W2 is NOT blocked: the two largest
-remaining build items need nothing from anyone and are next session's work.
+Nothing blocks W2's own build. The mail half waits on Postmark; everything else is W2's to do.
 
-WAITING ON, in the order it bites:
-1. POSTMARK APPROVAL. The account is in test mode, so sending is restricted and no real pack can
-   go anywhere. Human review at Postmark's end, requested 19 Sep. This gates the email half of
-   item 3 and all domain warming. Chase it if it has not cleared by 1 Oct.
-2. THE TWO SPEC BLOCKS from John: the DevPC C:\Avia store inventory with sizes and dates, and
-   the core laptop's make, RAM, architecture, free disk and Python. These gate the load
-   procedure for the external drive and therefore the 8 Oct laptop proof. The 1 Oct hardware
-   go/no-go stands whatever happens.
-3. JOHN'S APPROVAL to send Suzanna the four questions in this file. They shape what stand mode
-   defaults to, so the longer they wait the more of item 2 is built on W2's guess rather than on
-   four weeks of her use.
-4. Not blocking today: the DMARC reporting route, W3's PDF date, W6's website date, which tablet
-   the capture front end runs on, and John's 40-60 route panel.
+| Item | State | Next |
+|---|---|---|
+| 1 Laptop build | Plan A closed, Plan B waiting on two spec blocks from John | Load procedure once the SSD and the spec arrive |
+| 2 Stand mode | Not built | Next session, then a commit block |
+| 3 Lead flow | Store built and tested, app not rewired | Rewire cortex_app, migrate the JSONL, nightly Excel export |
+| 4 Queue view | Exists as an approval page | Running / sent / failed, newest first, reason visible |
+| 5 Progressive Optimise | Proposed for deferral to after Routes | Controller's ruling |
+| 6 Stand capture layer | Store built for all four record types, 47 checks | Three capture buttons after the rewire |
+| 7 Pre-mortem 15, city names | Not started | Trace the dashboard entry paths |
 
-PROCEEDING WITHOUT WAITING, next session: stand mode (item 2), then the DuckDB `leads` table and
-the JSONL migration (the half of item 3 with no external dependency). If Postmark approves in
-the meantime, the demo_mail.py host fix (watchpoint 2) comes forward ahead of both, because it
-is the one change that must land before anything real is sent.
+Delivery is proven end to end: one real message through the Postmark API on 21 Sep, MessageID
+8283ccb0-72f6-42c2-ab93-cd1da557c215, John confirmed arrival. The Observatory domain's own
+deliverability is NOT proven and cannot be until the account clears review, because a pending
+account restricts the recipient to the From domain.
 
-THE NEXT RESTART, whenever it happens and for whatever reason, does two jobs at once: it makes
-the MCT line speak for the first time, answering whether the live portal has been running
-without the master, and it picks up the Postmark variables. Nothing needs restarting for its own
-sake while the account is in test mode.
+## Owed to the controller today
 
-UNCOMMITTED: the commit-hash paragraph at the foot of this file, and this section. Everything
-else W2 has produced is on main at 2cab1b2. The next block clears both.
+A commit block is with John and not yet run: the catchment distance report
+(COMMIT-MSG-22Sep2026-w2-catchment-distance.txt). Everything else W2 has produced is on main at
+ef6de65.
 
-## Answers to the three questions the controller asked
+## Needed from John
 
-**1. The four questions for Suzanna, ready to send as they stand.**
+1. The two spec blocks: DevPC C:\Avia store inventory with sizes and dates, and the core laptop's
+   make, RAM, architecture, free disk and Python. These gate the 8 Oct laptop proof.
+2. Approval to send Suzanna the four questions (below). They shape what stand mode defaults to.
+3. A view on watchpoint 4, one email rather than two, and watchpoint 5, the public pack URL.
+4. Which of the three DMARC reporting routes in watchpoint 3.
+5. Which tablet for the capture front end, and how it reaches the form under Plan B.
+6. The 40-60 route panel, early October.
+
+## Waiting on, in the order it bites
+
+1. POSTMARK APPROVAL. Account in review since 19 Sep. Gates the email half of item 3 and all
+   domain warming. Chase on 1 October.
+2. The two spec blocks above.
+3. Not blocking: the DMARC reporting route, which tablet, and the route panel.
+
+The next restart of the portal, whenever it happens, does three jobs at once: it makes the MCT
+line speak for the first time, it makes the new catchment distance line speak, and it picks up
+the Postmark variables. Nothing needs restarting for its own sake while the account is in review.
+
+## The catchment finding, 22 September, for W10
+
+Found while tracing Jol item 33, Birmingham inside a London catchment. It is reported here
+because it bears on W10's calibration record, not because W2 has changed any engine behaviour.
+
+The catchment allocates population to airports by road time where the friction raster is present
+and by great circle where it is not, and it chose between the two in silence. Proven on
+donatello: C:\Avia absent, FRICTION_PATH resolving to C:\Avia\friction_2019.tif which does not
+exist, drive engine None, and the raster present the whole time at
+E:\Avia\2020_motorized_friction_surface.geotiff. Every catchment run has been great circle. A
+second layer sat under it: DriveTimes.available() tested only that the file existed, never that
+rasterio, numpy and scikit-image were installed, so a machine without the read libraries would
+report ready and then return great-circle times for every route.
+
+Fixed as a REPORT, with no behaviour change. config.py resolves FRICTION_RASTER and publishes it
+in ALL_PATHS; route_forecast.friction_report() opens the raster for its band count and names each
+failure separately; drive_times.available() now means usable; cortex_app states on every start
+whether the catchment is measuring in road time or straight lines. Road times stay off behind
+AVIA_DRIVE_TIMES, defaulting off, because switching them on moves every forecast and that is
+W10's call, not a variable set the week before Routes. Not a silent default-off switch: the
+server says which setting is in force every time it starts. test_friction_report.py, 28 checks,
+0 failed; MCT 14, lead store 47, demo flow 89, all unchanged.
+
+THE LINE W10 NEEDS. The friction raster is an undeclared environment dependency of the same class
+as the airportsdata version already tracked in CALIBRATION-RECORD-2026.md section 2. The engine's
+catchment measurement changed when C:\Avia stopped existing, with no code change and no log
+entry, so runs from either side of that moment are not one comparable series. It belongs in the
+environment rows and in the yearly republication in section 7. It does not move the claim
+figures: no file in the BT2 training chain (bt2_claimset, bt2_capture, bt2_base, bt2_build_v13,
+bt2_gbm) references the catchment or drive times, which agrees with the controller's own finding
+in section 4. It does move the live product: the market built over the competing airports, the
+catchment the user sees, and any run on the QSI engine.
+
+BIRMINGHAM ITSELF STAYS for Routes, on John's ruling of 22 September that he would rather live
+with the oddity than change catchment for every airport. His preferred route is a per-airport
+catchment override, the same mechanism an airport would use to supply its own measured
+catchment, set at the start of a client's use rather than after they have a baseline to compare
+against. W2 notes that app/airport_capture.py already holds the capture half of that design
+(AIRPORT_CAPTURE, one entry, SJC 0.32, sourced) and that the catchment half does not exist.
+Design and ruling belong to W10.
+
+## The four questions for Suzanna, ready to send as they stand
 
 > Suzanna, four questions before I finish the stand version of the screen. Answer from how you
 > have actually been using it, not how you think it should work.
@@ -51,108 +104,28 @@ else W2 has produced is on main at 2cab1b2. The next block clears both.
 > 4. What did you expect to find and could not?
 > One line each is plenty. Anything that annoyed you is useful.
 
-Ask about speed separately and only after her next session: W1 step 1 (1012c29) took Run from
-42s to 9s and Optimise from 196s to 35s, so anything she says about speed before that is out of
-date, and asking now would bank a stale complaint.
+Ask about speed separately and only after her next session: W1 step 1 (1012c29) took Run from 42s
+to 9s and Optimise from 196s to 35s, so anything she says about speed before that is out of date.
 
-**2. Can aviationobservatory.com be verified on the Avia Microsoft 365 tenant, and what does
-John click? No, and he clicks nothing.** Verifying a domain needs Global Administrator on that
-tenant. John holds an ordinary user account; his IT firm holds the admin rights. The same is
-true of the mailbox, the DKIM toggle, and the Entra app registration with admin consent that
-Graph sending needs, so every step of ruling 15's sender route ran through a queue he does not
-control, three weeks before the freeze. The aviasolutions.com fallback failed for the same
-reason. John ruled to set the domain up clean instead, and it is DONE, verified by Postmark:
+## Dates
 
-    DKIM          Verified   20260919185744pm._domainkey   TXT
-    Return-Path   Verified   pm-bounces  CNAME  pm.mtasv.net
-    SPF           not required; Postmark aligns through the Return-Path
-    DMARC         v=DMARC1; p=none;  at _dmarc, no reporting address yet
+Ruling 17: 1 Oct hardware go/no-go, 8 Oct laptop proof, show machine loaded by 10 Oct, freeze
+10 Oct, hard stop 15 Oct. W2 adds: capture front end demonstrable 2 Oct; pack URL rule to W6 by
+3 Oct; scheduled-task restart scoped 8 Oct; Postmark approval checked 1 Oct.
 
-The domain held zero records of any type beforehand, so nothing was overwritten. Postmark's SMTP
-endpoint takes the Server API token as both username and password, so demo_mail.py needs a
-credentials change rather than the Graph rewrite, which was the largest piece of new code in
-ruling 15. Its fail-loudly behaviour and its 58 fixture checks survive. Workstation environment
-set and confirmed: host smtp.postmarkapp.com, port 587, both token variables 36 characters. No
-token is in the repo or in any transcript. If the controller still wants M365 mailboxes for the
-Observatory later, that is a separate request to the IT firm and it is not on the Routes path.
+## Commits landed
 
-**3. Stand capture front end: scope, and the day it is demonstrable.**
-One page in stand mode, reached from the run on screen, finished in 60 seconds on a tablet held
-by the host. Name, company, role, email, phone, plus route and airline pre-filled from the run
-just shown, and the run signature carried invisibly so the pack is provably the forecast the
-visitor watched. Airline and airport by pick list, never free text. Everything past email is
-optional and the form says so, because a host who must complete fields will stop using it by
-the second morning. Consent tick and privacy line on the page, Observatory branding, big touch
-targets, one screen with no scrolling, and a visible confirmation naming the person and the
-route so the host knows it landed. It writes to the `leads` table, so item 3 lands first.
-DEMONSTRABLE 2 OCTOBER on the portal, which leaves it a week before the freeze and a fortnight
-before the trial. OPEN, and it needs an answer before the 11-12 October trial: which tablet, and
-how it reaches the form under Plan B, where the laptop serves only itself and there is no venue
-network.
+- **2cab1b2**, 19 Sep. Ruling 16's MCT reporter, the startup line and the stand-mode refusal; the
+  .gitignore secrets patterns.
+- **3406f0a**, 21 Sep. The API transport, after SMTP reported success for three messages Postmark
+  never received. 89 checks, 0 failed.
+- **ef6de65**, 21 Sep. app/lead_store.py and app/test_lead_store.py, the store for all four record
+  types. 47 checks, 0 failed against duckdb 1.5.5.
+- OWED, block with John: the catchment distance report. 28 new checks, 0 failed.
 
-## PROPOSAL TO THE CONTROLLER: the stand capture layer (changes ruling 15's scope)
+---
 
-John, 21 Sep, challenged W2's scope for stand capture and he is right. Item 6 covered only the
-visitor who runs a route. Three other kinds of record have no home in the current design, and
-forcing them into one form would make the fast ones as slow as the slow one.
-
-FOUR RECORD TYPES, in descending order of how much time the host has:
-1. RAN A ROUTE. Attached to the forecast on screen: what they came to look at, the route, the
-   questions asked, matters arising, pricing interest, plus the contact fields. Rich, slowest.
-2. CARD DROP. A photograph of the card and two taps for topic and interest. Nothing typed.
-   For the visitor with no time. Fifteen seconds.
-3. UNATTRIBUTED NOTE. A remark worth keeping from someone who left no details. Not a lead:
-   market intelligence, and the least collected thing at any trade stand. One box.
-4. HOST VOICE NOTE. The host's own impressions, dictated after a visitor leaves, attached to a
-   record or standing alone. Audio stored and attached; transcription after the show, not live.
-
-DESIGN: one screen in stand mode, three buttons by speed, plus a list view of everything
-captured, filterable, with a free notes field on every record. Nightly flat export to Egnyte as
-Excel, so November's CRM choice is an import rather than a migration. Two properties that are
-not obvious and are not negotiable: every record is EDITABLE AFTER THE MOMENT, because the
-useful detail arrives once the visitor has walked away; and capture is LOCAL FIRST and syncs to
-Surrey when it can, because under Plan B there is no network and the first bad morning would
-otherwise lose the day's intelligence. That second point is architectural and is cheaper to
-decide now than to retrofit.
-
-THE TRADE W2 PROPOSES: scope item 5, progressive Optimise display, slips to after Routes. Its
-whole justification was filling a ten to fifteen minute wait. W1 step 1 took narrowed Optimise
-to 38-55s (TIMING-20260920-1910), so the case for it has largely gone, and its time buys a
-capture layer the host uses on all three days. Cases 1 to 3 and host voice notes are achievable
-before the 10 October freeze. Live transcription is not, and W2 will not attempt it.
-
-## The recorder question, W2's recommendation
-
-John proposes a card-sized voice-activated recorder on the laptop screen, capturing conversation
-around the demo for three days. W2's recommendation is NOT to run it continuously, and the
-reasons are practical before they are legal.
-
-An exhibition hall is close to the worst case for this. A voice-activated device triggers on
-ambient noise and yields hours of unusable audio; three days of it will not be reviewed by
-anyone; and a poor transcript attached to a named person's record is worse than no transcript,
-because it creates a false record of what a client said. Separately, recording identifiable
-people and storing, transcribing and attaching it to records about them is processing personal
-data under UK GDPR with Avia as controller. Recording a conversation one is party to is not
-itself unlawful, but the storage and use need a lawful basis, and a visitor at a stand would not
-reasonably expect it. Passers-by, neighbouring stands and competitors get captured too. For a
-firm whose product is independent judgement, being the stand that records people quietly is a
-poor trade for extra text.
-
-WHAT W2 RECOMMENDS INSTEAD, which reaches the same goal: the host's own voice note after each
-conversation, which is already record type 4. It is her read rather than raw audio, so it is
-filtered by the one expert present, it raises no third-party consent question, the audio quality
-is controllable, and it takes thirty seconds. Plus a short end-of-day note on the day's themes.
-
-IF JOHN STILL WANTS THE DEVICE, the conditions that keep it honest: an unmissable notice at the
-stand; the host saying it out loud at the start of a demo; nothing covert; a stated short
-retention period with a named person responsible for deletion; audio never attached to an
-individual's record unless that individual was told; and the Routes exhibitor rules checked
-first, which W2 has not seen and will not guess at.
-
-SETTLE IT BY MEASUREMENT, per the standing rule. Before anything is bought, record twenty
-minutes in the noisiest room available and try to transcribe it. If the transcript is unusable
-the question answers itself and nobody has spent anything. If it is good, the consent conditions
-above are the remaining question rather than the audio.
+Everything below is the record behind the state above. The controller need not read it to act.
 
 ## Scope items
 
@@ -426,38 +399,3 @@ either account.
   replacing it); the request form and queue view design, which W4 has already written sections
   3.5, 5.5 and 6.1 against; the tablet answer; and the Postmark approval date, which W2 chases
   on 1 October. W4-STATUS.md confirms it has read this file at v6.
-
-## Needed from John
-
-1. The two spec blocks: DevPC C:\Avia store inventory with sizes and dates, and the core
-   laptop's make, RAM, architecture, free disk and Python.
-2. Which of the three DMARC reporting routes in watchpoint 3.
-3. A view on watchpoint 4 (one email rather than two) and watchpoint 5 (the public pack URL).
-4. Dates from W3 for the PDF render and from W6 for the website decision.
-5. Approval to send Suzanna the four questions above.
-6. Which tablet for the capture front end, and how it reaches the form under Plan B.
-7. The 40-60 route panel, John's choice, not due until early October. The panel page reads a
-   list from a file and says plainly that it is empty until one exists.
-
-## Dates
-
-Ruling 17: 1 Oct hardware go/no-go, 8 Oct laptop proof, show machine loaded by 10 Oct, hard stop
-15 Oct, freeze 10 Oct. W2 adds: capture front end demonstrable 2 Oct; scheduled-task restart
-scoped 8 Oct; Postmark approval checked 1 Oct.
-
-## Commits landed
-
-- **2cab1b2**, 19 Sep. Ruling 16's MCT reporter, the startup line and the stand-mode refusal;
-  the .gitignore secrets patterns. 14 checks on the DevPC before the commit.
-- **3406f0a**, 21 Sep. The API transport, after SMTP reported success for three messages
-  Postmark never received. 89 checks, 0 failed, run on the DevPC.
-- **ef6de65**, 21 Sep. app/lead_store.py and app/test_lead_store.py, the store for all four
-  record types. 47 checks, 0 failed, run on the DevPC against duckdb 1.5.5.
-
-All three suites pass on the run host's own record, not only in a sandbox: 47, 89 and 14.
-
-HOUSEKEEPING OWED, first thing next session. This file is 460 lines and the README asks for
-one screen. It has earned the length over a hard day, but the controller reads the top of it,
-so the next version puts the live state and what is needed from John on the first screen and
-moves the history below it. W2 would rather restructure the controller's primary input with a
-clear head than at the end of a long day.

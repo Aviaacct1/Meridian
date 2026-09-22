@@ -1,0 +1,6 @@
+Controller 22 Sep: handover to controller chat 3 and its brief
+
+- HANDOVER-CONTROLLER-22Sep2026.md: what changed since 20 Sep, the ten workstreams, W1's
+  owed code in order, machines and traps, open items, diary, chat 2's mistakes.
+- PROMPT-for-Fable-Controller3-22Sep2026.txt: the chat 3 brief, with a bounded read list,
+  the rolling-handover rule and the same-turn rule for John's specifications.

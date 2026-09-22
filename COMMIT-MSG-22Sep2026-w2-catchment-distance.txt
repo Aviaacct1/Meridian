@@ -1,0 +1,56 @@
+W2: the catchment has been measuring distance in straight lines, and now says so
+
+Found while tracing Jol item 33 (Birmingham inside a London catchment). The engine
+allocates population to airports by ROAD TIME where the friction raster is present and
+by great circle where it is not, and it chose between the two in silence.
+
+Proven on donatello, 22 September 2026:
+
+  C:\Avia                                    absent
+  FRICTION_PATH                              C:\Avia\friction_2019.tif
+  exists                                     False
+  drive engine                               None
+  raster on disk                             E:\Avia\2020_motorized_friction_surface.geotiff
+
+The raster was on the data drive throughout. _resolve_friction() looked only in a
+hardcoded C:\Avia, which stopped existing on the workstation, so every catchment run
+reverted to great circle without a word. This breaks the first rule in config.py's own
+docstring: nothing in this project hardcodes a file path.
+
+A second layer of the same fault sat underneath it. DriveTimes.available() tested only
+that the file existed, never that rasterio, numpy and scikit-image were installed, so a
+machine without the read libraries would report ready and then return great-circle times
+for every route.
+
+Fourth instance of the silent-fallback shape in this project. Same remedy as the MCT
+master: resolve through config, then state which of the two measures is in force.
+
+  config.py          FRICTION_RASTER resolves through _env_store across LOCAL_CACHE,
+                     DATA_ROOT and the legacy C:\Avia, AVIA_FRICTION still wins, and it
+                     joins ALL_PATHS so the config print and the laptop build proof both
+                     show it.
+  route_forecast.py  _resolve_friction() reads config. friction_report() resolves, opens
+                     the raster for its band count and names every failure separately.
+  drive_times.py     available() now means usable: raster on disk AND read libraries
+                     present.
+  cortex_app.py      startup prints "catchment distance: ROAD TIME from <path>" or
+                     "catchment distance: STRAIGHT LINE (<reason>)" with a line saying
+                     what straight line costs.
+
+NO BEHAVIOUR CHANGE, deliberately. Road times stay OFF behind AVIA_DRIVE_TIMES, which
+defaults off, because the calibration behind the current results was fitted with a
+great-circle catchment. Switching road times on moves every forecast, so it belongs to
+W10's calibration and not to a variable set in the week before Routes. This is not a
+default-off switch of the kind that has cost us before: the server states the setting on
+every start, so it cannot be forgotten.
+
+For W10: the engine's catchment behaviour changed when C:\Avia stopped existing, with no
+code change and no record. Runs from before and after that moment were fitted under
+different catchment measurement and are not one comparable series.
+
+Tests: test_friction_report.py new, 28 checks, 0 failed. test_mct_report.py 14, 0 failed.
+test_lead_store.py 47, 0 failed. test_demo_flow.py 89, 0 failed.
+
+Also in this commit: routes/W2-STATUS.md rewritten to version 14. Live state, what is
+owed and what is needed from John now sit on the first screen, with the record below,
+per the README. 463 lines to 401.

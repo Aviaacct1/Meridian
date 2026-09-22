@@ -1,0 +1,8 @@
+W10 session 1: status v1, calibration record v0.1 draft, item 1 conflict for the controller
+
+routes/W10-STATUS.md v1: documents read, local HEAD, the structural finding that the catchment
+radius does not enter the claimset and that search_adjustments.py cannot fit a radius, W10's
+recommendation (A) for item 1, and the blocks for items 2 and 3.
+routes/CALIBRATION-RECORD-2026.md v0.1: the three figure sets with sample, fit config, basis,
+environment and log line; sections 3, 5, 6, 7 open pending runs.
+No runs made; bt2_experiments.log unchanged.

@@ -200,6 +200,28 @@ AIRCRAFT_ECON_TABLE = _env_path("AVIA_AIRCRAFT_ECON_TABLE",
                                 APP_DIR / "reference_tables" / "aircraft_econ.csv")
 
 # ----------------------------------------------------------------------------
+# Friction raster (drive-time catchment)
+# ----------------------------------------------------------------------------
+# The catchment allocates a locale to an airport by ROAD TIME where this raster is
+# present and falls back to a straight line where it is not (Genoa to Milan is 3.5
+# hours by road against great circle's 1.5). It was resolved from a hardcoded
+# C:\Avia, which no longer exists on the workstation, so the engine looked on C:
+# while the raster sat on the data drive and every catchment reverted to great
+# circle without saying so. Proven on donatello 22 September 2026. Resolved here
+# now, like every other path in the tool.
+FRICTION_RASTER = _env_store(
+    "AVIA_FRICTION",
+    LOCAL_CACHE / "2020_motorized_friction_surface.geotiff",
+    LOCAL_CACHE / "2020_motorized_friction_surface.tif",
+    LOCAL_CACHE / "friction_2019.tif",
+    LOCAL_CACHE / "friction_2019.geotiff",
+    DATA_ROOT / "2020_motorized_friction_surface.geotiff",
+    DATA_ROOT / "friction_2019.tif",
+    Path("C:/Avia/2020_motorized_friction_surface.geotiff"),
+    Path("C:/Avia/friction_2019.tif"),
+)
+
+# ----------------------------------------------------------------------------
 # Document authorship (applied to every generated Excel, Word, PowerPoint)
 # ----------------------------------------------------------------------------
 DOC_AUTHOR = "Avia Solutions"
@@ -229,6 +251,7 @@ ALL_PATHS = {
     "CITY_LOOKUP": CITY_LOOKUP,
     "MCT_MASTER": MCT_MASTER,
     "AIRCRAFT_ECON_TABLE": AIRCRAFT_ECON_TABLE,
+    "FRICTION_RASTER": FRICTION_RASTER,
 }
 
 

@@ -321,6 +321,23 @@ def _load():
                 "AVIA_MCT_MASTER to the maintained 'MCT Master List.xlsx', or clear "
                 "AVIA_STAND_MODE to run without it deliberately." % (_mct_path, _why))
 
+    # CATCHMENT DISTANCE MEASURE. The catchment allocates population to airports by road time where
+    # the friction raster is present and by straight line where it is not, and it used to choose
+    # between them in silence. Say which one is running. Proven 22 September 2026: the raster was
+    # resolved from a hardcoded C:\Avia that no longer existed, so every run was great circle.
+    import route_forecast as _RFC
+    _fr = _RFC.friction_report()
+    if _fr["available"]:
+        print("[cortex] catchment distance: ROAD TIME from %s" % _fr["path"])
+    else:
+        if not _fr["enabled"]:
+            _why2 = "road times not switched on (AVIA_DRIVE_TIMES)"
+        else:
+            _why2 = _fr["error"] or "raster unreadable"
+        print("[cortex] catchment distance: STRAIGHT LINE (%s)" % _why2)
+        print("[cortex] catchment radius and airport allocation are great-circle; a route whose "
+              "drive is longer than the straight line will read a wider catchment than it has")
+
 
 @app.get("/", response_class=HTMLResponse)
 def home():

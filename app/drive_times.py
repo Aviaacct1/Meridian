@@ -29,13 +29,34 @@ WINDOW_KM = 450.0          # half-box read around an airport (>> the 220km catch
 NODATA_MIN_PER_M = 0.06    # impassable / sea fallback friction (slow), keeps MCP finite
 
 
+def _libs_present():
+    """rasterio, numpy and scikit-image are the read path. Without them times_from returns None on
+    every call and the catchment quietly reverts to great circle, so presence of the raster alone was
+    never enough to say road times are running (22 September 2026)."""
+    global _LIBS
+    if _LIBS is None:
+        try:
+            import numpy, rasterio                      # noqa: F401
+            from skimage.graph import MCP_Geometric     # noqa: F401
+            _LIBS = True
+        except Exception:
+            _LIBS = False
+    return _LIBS
+
+
+_LIBS = None
+
+
 class DriveTimes:
     def __init__(self, friction_path, window_km=WINDOW_KM):
         self.path = friction_path
         self.window_km = window_km
-        self._ok = os.path.exists(friction_path)
+        self._ok = bool(friction_path) and os.path.exists(friction_path) and _libs_present()
 
     def available(self):
+        """True only when a run would actually produce road times: the raster is on disk AND the
+        read libraries are installed. It used to test the file alone, so a machine without rasterio
+        reported ready and then returned great-circle for every route without saying so."""
         return self._ok
 
     def times_from(self, code, ap_lat, ap_lon, points):

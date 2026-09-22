@@ -70,27 +70,37 @@ STEP_NOTES = {
 DEMAND_RADIUS_KM = 110.0          # the origin's OWN residence catchment (tight; the hub is a
                                   # competitor it leaks to, not part of its demand)
 def _resolve_friction():
-    """Find the friction raster: AVIA_FRICTION env wins, else the known MAP filenames in C:\\Avia."""
-    if os.environ.get("AVIA_FRICTION"):
-        return os.environ["AVIA_FRICTION"]
-    for c in (r"C:\Avia\2020_motorized_friction_surface.geotiff",
-              r"C:\Avia\2020_motorized_friction_surface.tif",
-              r"C:\Avia\friction_2019.tif", r"C:\Avia\friction_2019.geotiff"):
-        if os.path.exists(c):
-            return c
-    return r"C:\Avia\friction_2019.tif"
+    """Find the friction raster through config, the single source of truth for paths. It was hardcoded
+    to C:\\Avia until 22 September 2026. C:\\Avia no longer exists on the workstation, so the engine
+    looked there while the raster sat on the data drive, and every catchment reverted to great circle
+    without saying so. AVIA_FRICTION still wins; config reads it."""
+    try:
+        import config as _CFG
+        return str(_CFG.FRICTION_RASTER)
+    except Exception:
+        return os.environ.get("AVIA_FRICTION") or r"C:\Avia\friction_2019.tif"
 
 
 FRICTION_PATH = _resolve_friction()
+
+# Road times are a CALIBRATION-AFFECTING setting, not a convenience. The engine ran on great circle
+# throughout the calibration behind the current results (proven on donatello 22 September 2026:
+# C:\Avia absent, drive engine None), so switching road times on moves every forecast. It is therefore
+# explicit and OFF until a calibration decides it. This is NOT a silent default: the server states
+# which of the two measures is in force every time it starts, and config prints the resolved path.
+DRIVE_TIMES = os.environ.get("AVIA_DRIVE_TIMES", "").strip().lower() in ("1", "true", "yes", "on")
 _DRIVE = None
 _DT_CACHE = {}                    # (origin, radius, airport, n_locs) -> [minutes]; drive times are
                                   # att/logit-independent, so cache across calibration sweeps
 
 
 def _drive_engine():
-    """Lazy global friction-raster drive-time engine; None if the raster/libs are absent so the
-    catchment falls back to great-circle cleanly. Built once per process."""
+    """Lazy global friction-raster drive-time engine; None if road times are not switched on, or if
+    the raster or libraries are absent, so the catchment falls back to great-circle cleanly. Built
+    once per process."""
     global _DRIVE
+    if not DRIVE_TIMES:
+        return None
     if _DRIVE is None:
         try:
             from drive_times import DriveTimes
@@ -99,6 +109,38 @@ def _drive_engine():
         except Exception:
             _DRIVE = False
     return _DRIVE or None
+
+
+def friction_report():
+    """What the catchment is actually measuring distance with. Mirrors connection_builder.mct_report():
+    resolve, test, and report which of the two measures is in force, rather than falling back in
+    silence. Read by the server at startup. Never raises."""
+    path = FRICTION_PATH or ""
+    try:
+        exists = bool(path) and os.path.exists(path)
+    except Exception:
+        exists = False
+    err, ok = None, False
+    if DRIVE_TIMES and not exists:
+        err = "raster not found"
+    elif DRIVE_TIMES:
+        try:
+            from drive_times import DriveTimes, _libs_present
+            if not _libs_present():
+                err = "read libraries missing (rasterio, numpy, scikit-image)"
+            elif not DriveTimes(path).available():
+                err = "raster present but the drive-time engine reports unavailable"
+            else:
+                # Metadata only, no pixel read: cheap, and it is the difference between a raster and
+                # a file with the right name. A startup line that claims road times has to be true.
+                import rasterio
+                with rasterio.open(path) as src:
+                    ok = src.count >= 1
+                if not ok:
+                    err = "raster has no readable band"
+        except Exception as e:
+            err = str(e)
+    return {"path": path, "exists": exists, "enabled": DRIVE_TIMES, "available": ok, "error": err}
 
 
 def _con(db):
