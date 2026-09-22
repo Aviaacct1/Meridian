@@ -110,3 +110,20 @@ blocked, the commit block. Target: calibration record v1 to John by 3 October so
 the figure on the slides, the pack and the site before the 10 October freeze. If 3 October
 is not achievable, say so by 29 September; the interim pair then ships and W10 continues for
 the yearly republication.
+
+## 22 September 2026, evening: ITEM 1 RE-RULED on W10-STATUS v1 (controller; John to confirm)
+
+W10's conflict is upheld. The catchment radius does not enter the BT2 claimset, so the test
+in item 1 cannot measure what it was written to measure, and a "no worsening" result would
+be false. Ruling: (A). Item 1 moves to W2 under JOL-FEEDBACK-REGISTER R6 as a competing-set
+and display question on the cortex_app competing-airport radius; John's rules (b) and (c)
+apply there unchanged (on by default or rejected outright; a supplied catchment overrides).
+W10 records in CALIBRATION-RECORD-2026.md, with the greps, that the radius does not enter
+the published figures. The freeze exception in the umbrella (22 Sep) is withdrawn: the
+engine demand logic stays frozen with no exception. W10 proceeds with items 2 and 3 now.
+Option (B), the QSI back-test arms, is not run unless John asks for it. W2's finding on the
+friction raster (COMMIT-MSG-22Sep2026-w2-catchment-distance.txt, in commit 30e3e78) is
+evidence for the record: catchment measurement changed silently when C:\Avia stopped
+existing, so pre- and post- runs are not one series; state the date if it can be found.
+Announced here the same day. Commit 30e3e78 carried W10's session 1 files under the
+controller's subject; W10's own message is routes/COMMIT-MSG-22Sep2026-w10-session1.txt.

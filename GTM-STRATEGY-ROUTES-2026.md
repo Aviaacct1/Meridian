@@ -36,7 +36,7 @@ writes), `routes\README.md`.
 | W6 Messaging, marketing, website, meetings | In progress (v7, 21 Sep) | Four sentences redrafted in the Observatory voice (variants v3); five invitations ask the airport to name a route; post 1 and list email ready for approval; site copy still says three seats / 100 presentations (fix queued) | John: contacts, 2.3 A or B, approvals by 25 Sep; W6: site licence-shape fix, clean-clone proof, Pages after zone move; invitations 26-29 Sep | W6 chat / John | 25-29 Sep |
 | W8 Pricing and commercial offer | DONE 20 Sep | PRICING-DECISION-2026.md v1.0 FINAL; twenty decisions answered; bands by airports covered | W3-W6 rebuild to it (pointers in place); Knock test result from John in a week or two | W8 chat closed / John | Knock by 3 Oct |
 | W9 Stand, contract, show logistics | NEW 21 Sep, gap found | Contract UNSIGNED (billing details owed to Informa today); stand number F124 per Informa v F124 in every document; graphics deadline 3 Oct; exhibitor manual follows contract | John sends billing details and the two questions today; W9 chat opens on the contract and manual | W9 chat / John | Contract 21 Sep; graphics 3 Oct |
-| W10 Final calibration test | NEW 22 Sep | W10-RULINGS v1: catchment radius (item 1, John's spec) settled first on the current calibration; 22 Sep baseline reproduced; 92/86 on 6,524 reproduced or replaced; ONE figure set to John. Interim on every surface: 89/82 on 2,915 | John opens the W10 chat (prompt in controller chat 22 Sep); baseline rerun; radius search | W10 chat / John | Record v1 by 3 Oct; say by 29 Sep if not |
+| W10 Final calibration test | OPEN, STATUS v1 (22 Sep) | Item 1 re-ruled to W2 (radius is not a calibration input); W10-RULINGS v1 plus evening ruling; 22 Sep baseline reproduced; 92/86 on 6,524 reproduced or replaced; ONE figure set to John. Interim on every surface: 89/82 on 2,915 | John opens the W10 chat (prompt in controller chat 22 Sep); baseline rerun; radius search | W10 chat / John | Record v1 by 3 Oct; say by 29 Sep if not |
 | W7 Rehearsal and freeze | Replanned | Boeing 13 Oct is an Atlas meeting; Meridian trials 11-12 Oct (remote, one restart) and 16 Oct with Suzanna | Controller diaries the trials; nothing until October | Controller / John | Freeze 10 Oct |
 
 Found on the 20 Sep read, not yet resolved: (a) W3-STATUS.md is still session 1, so the
@@ -464,6 +464,16 @@ five contacts.
   app/ change goes through W1 as a one-line diff. Flag: the controller restated John's
   catchment text from notes after a context compaction lost the original; John can paste the
   original into the W10 chat and the controller will replace the section verbatim.
+
+- 22 Sep 2026, evening (controller; John to confirm): W10-STATUS v1 shows the catchment
+  radius does not enter the BT2 claimset; item 1 as specified measures nothing. Re-ruled:
+  item 1 goes to W2 under R6 as the competing-airport radius in cortex_app (on by default or
+  rejected; supplied catchment overrides; before 10 Oct or not at all). The freeze exception
+  of this morning is WITHDRAWN; demand logic frozen, no exception. W10 proceeds with items 2
+  and 3. W2 found the friction raster was never resolved on the workstation (hardcoded
+  C:\Avia), so catchment has run on straight-line distance silently; fixed through config,
+  no behaviour change, road times stay off (30e3e78). Commit 30e3e78 carried W2's and W10's
+  uncommitted work under the controller's subject; their message files are in the commit.
 
 ## Waiting on John
 

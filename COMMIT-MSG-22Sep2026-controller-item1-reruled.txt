@@ -1,0 +1,7 @@
+Controller 22 Sep evening: W10 item 1 re-ruled to W2 (R6); freeze exception withdrawn; 30e3e78 logged
+
+- routes/W10-RULINGS.md: evening ruling on W10-STATUS v1; option (A); items 2 and 3 proceed.
+- routes/W2-RULINGS.md: R6 widened to the competing-airport radius with John's rules and
+  starting values; the friction-raster commit logged.
+- GTM-STRATEGY-ROUTES-2026.md: decision, W10 row. routes/README.md: exception withdrawn.
+- HANDOVER-CONTROLLER-22Sep2026.md: section 6a for chat 3.

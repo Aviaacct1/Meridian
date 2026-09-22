@@ -125,6 +125,16 @@ warm_boards over the register; 13 Oct Atlas meeting (not a Meridian trial); 16 O
 Suzanna; 19 Oct warm-up; 20 Oct Suzanna lands; 21-23 Oct Routes, F124; 21 Oct order-ready;
 30 Nov launch offer closes.
 
+## 6a. Added 22 Sep evening, after the commit
+
+30e3e78 swept W2's catchment-distance fix and W10's session 1 into the controller's commit.
+W10 found the catchment radius is not a calibration input; item 1 re-ruled to W2 under R6
+(W10-RULINGS evening section, W2-RULINGS, umbrella decision). Freeze exception withdrawn.
+W10 is OPEN and proceeds with items 2 and 3; John has not yet confirmed the re-ruling.
+W2 is on STATUS v14. First sweep in chat 3: W10 (baseline paste), W2 (R6 radius plan).
+Verify W10's claim with one grep before relying on it: haul_radius_km and DEMAND_RADIUS_KM
+must not appear in bt2/ or in the claimset's feature build.
+
 ## 7. Mistakes in chat 2 worth not repeating
 
 - Ran `git -C . status` (read-only) against the mount once. Do not.

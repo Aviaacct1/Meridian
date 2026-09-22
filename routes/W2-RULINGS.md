@@ -231,3 +231,20 @@ commit so W4 changes the manual's screen words once; R3's two labels proposed in
 R7 answered in your STATUS. "Measured" becomes "actual" on data surfaces (R1); no "physics"
 anywhere (R2). All before the 10 October freeze; say in your STATUS what will not fit, in
 order of what you would drop, rather than dropping it in silence.
+
+## 22 September 2026, evening: R6 widened; the friction fix logged (controller)
+
+- W10-RULINGS item 1 (John's catchment radius specification, Birmingham inside London) is
+  yours under R6, on W10's finding that the radius is a competing-set and display constant
+  in cortex_app, not a calibration input. Rules that bind: the change ships ON by default or
+  is rejected outright (no sixth default-off switch); a catchment the user supplies
+  overrides it; the demand logic in route_forecast stays frozen; land it before 10 Oct or
+  not at all; John's starting values are FSC short haul circa 100 km, LCC short haul and all
+  long haul circa 150 km, banded by haul and carrier type; the principle is that willingness
+  to drive is real for a secondary airport and must not merge separate primary-metro
+  markets. Report the before and after on the London, Milan and New York competing sets in
+  W2-STATUS.
+- Your catchment-distance commit (config, route_forecast._resolve_friction, drive_times,
+  the startup line) went in under the controller's subject at 30e3e78 with your message file
+  beside it; logged, no further action. route_forecast.py is frozen demand logic: path
+  resolution only, as you did, and say so in the status each time.

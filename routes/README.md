@@ -30,7 +30,7 @@ STATUS file, never from memory of a chat, and quoted with the file's version.
 | routes/*.md documents | W4, W5, W6, W8, W9, W10 each their own | nobody |
 | bt2/ (scripts, logs, CALIBRATION-RECORD-2026.md), search_adjustments.py | W10 | nobody; W1 applies any app/ diff W10 writes up |
 | diag_routes_timing.py | W1 | anyone runs it |
-| engine demand logic (route_forecast, qsi_*, capture, feed levels) | FROZEN before Routes | nobody; one exception ruled 22 Sep, the catchment radius (W10-RULINGS item 1), by 3 Oct with accuracy re-measured or not at all |
+| engine demand logic (route_forecast, qsi_*, capture, feed levels) | FROZEN before Routes | nobody (the 22 Sep catchment exception was withdrawn the same day; the radius is a cortex_app display constant, W2 under R6) |
 
 A merge conflict on pull is reported in the STATUS file and to John, never resolved by a
 chat on its own.
