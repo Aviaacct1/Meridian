@@ -248,3 +248,21 @@ order of what you would drop, rather than dropping it in silence.
   the startup line) went in under the controller's subject at 30e3e78 with your message file
   beside it; logged, no further action. route_forecast.py is frozen demand logic: path
   resolution only, as you did, and say so in the status each time.
+
+## 22 September 2026, late: the Optimise button stays one button (John, verbatim)
+
+John, on the finding that the dashboard's Optimise runs the full sweep (all seasons, all
+carrier types, airline open) and took 240s on TIF-AUH against 36s with the airline named on
+the narrowed default: "i would prefer not to remove things as that make a simple button
+into a a journey toward needin to learn a system."
+
+Rules that bind W2: the Optimise button keeps calling the full sweep; no narrowed default,
+no second button, no option the visitor must understand. The speed work is W1's, inside
+api_optimise (parallel candidates, no demand-logic change). What W2 owns from this: the
+progressive Optimise deferred in W2-STATUS v13 comes back onto the list, as the honest
+answer to a three-minute run on the stand (best-so-far shown while it runs; the final
+answer replaces it; nothing shown that the final could contradict without saying so).
+Size it in your STATUS before building; if it does not fit before 10 Oct, say so.
+Measured tonight, TIMING-20260922-2046 on the workstation (d607d22, bt2): TIF-AUH Run
+3.8-7.8s; Optimise narrowed default 36.2s named / 88.7s open; full sweep 257-260s.
+

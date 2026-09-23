@@ -16,19 +16,24 @@ The detail lives in two companions and this document points at them rather than 
 ## Status
 
 Rewritten every session by the programme controller; John reads this on a phone. As at
-Tuesday 22 September 2026, evening (John in Doha): controller chat 3 (Fable) opened on HEAD
-201510f, one commit past the handover's expected subject (30e3e78 handover, 201510f the
-item 1 re-ruling; both read). Chat 2 is closed. The on-screen engine is the calibrated model
-(BT2) since the 06:2x restart; W1 job 1 (launcher default bt2) is edited and awaits John's
-DevPC commit and the workstation restart, so until then a restart still reverts to QSI.
-W10's evening claim (radius not a calibration input) is not yet verified by the controller's
-grep and John has not confirmed the re-ruling. Order-ready is 21 Oct. Files:
+Tuesday 22 September 2026, late evening (John in Doha): controller chat 3 (Fable). W1 job 1
+is DONE and CONFIRMED BY PASTE: d607d22 (launcher default bt2) is on the DevPC, pushed, pulled
+on the workstation and the server restarted; the launcher printed "forecast engine: BT2
+(calibrated model; claimset reproduced 22 Sep 2026)". Found on the way: the workstation had
+been on 66455af (21 Sep) throughout 22 Sep, so nothing committed on 22 Sep had run there until
+tonight; the pull was blocked by three generated files under app/ that the repo tracks (now
+stashed on the workstation, untracking is W1 job 7); and one restart tonight ran on QSI for
+circa fifteen minutes before the fix reached the workstation. The payload diff of the new
+server against this morning's bt2 baseline is still owed, because the pull also brought W2's
+30e3e78 changes to config.py, cortex_app.py, drive_times.py and route_forecast.py, recorded
+as no behaviour change but not yet measured on the workstation. W10's radius claim verified by
+grep; John has not yet confirmed the re-ruling. Order-ready is 21 Oct. Files:
 `routes\Wn-STATUS.md` (chat writes), `routes\Wn-RULINGS.md` (controller writes),
 `routes\README.md`.
 
 | WS | State | Where it stands | Next action | Owner | Date |
 |---|---|---|---|---|---|
-| W1 Speed and caches | Job 1 EDITED 22 Sep, uncommitted | Server on `--engine bt2` since 22 Sep 06:2x (Run cold 16.8 / 16.6 / 12.1s, warm 9.2 / 9.5 / 7.2s, Optimise 42.5 / 40.6 / 34.4s, TIMING-20260922-0628); warm_demo.py default now bt2 and the stale warning replaced, on the DevPC only | John commits (COMMIT-MSG-22Sep2026-w1-launcher-bt2.txt), workstation pulls, 8010 listener stopped, restart, paste shows "calibrated model"; then payload `engine` label, disclaimer, market-brief cost, warm_boards | Controller / John | Commit and restart 23 Sep (diary said 26 Sep); brief by 3 Oct; warm-up 19 Oct |
+| W1 Speed and caches | Job 1 CLOSED 22 Sep 22:30 (d607d22, diff PASS) | Server on BT2 by default on d607d22; payloads IDENTICAL to the morning's engine-bt2 save on all three pairs (W2's 30e3e78 confirmed no behaviour change); Run cold 17.5 / 21.1 / 14.7s, warm 12.2 / 11.1 / 9.6s; Optimise narrowed 57 / 51 / 44s, FULL SWEEP (the button) 460 / 429 / 334s, TIF-AUH 257s (TIMING-20260922-2230, -2046) | JOB 0: parallel cells in api_optimise (config workers, --workers 1 control), three-pair probe at 1 / 8 / 12 and diff; then launcher refuses empty password and prints the source; payload `engine` label; disclaimer; untrack app/ generated files; market-brief cost; warm_boards | Controller / John | Job 0 code 23-24 Sep, measured by 26 Sep; rest by 3 Oct; warm-up 19 Oct |
 | W2 Stand flow | In progress (v14, 22 Sep) | Delivery proven by Postmark API (MessageID 8283ccb0); lead_store built (ef6de65), app not yet rewired; friction raster never resolved on the workstation, catchment ran on straight-line distance silently, fixed through config, no behaviour change (30e3e78); item 1 radius now W2's under R6 | Sweep: R6 radius plan and lead_store rewiring; data-store freeze line and stale-RDP runbook line owed to W2-RULINGS by the controller | W2 chat / John | Capture demonstrable 2 Oct; laptop proof 8 Oct; radius before 10 Oct or not at all |
 | W3 Presentation | In progress (v2, 21 Sep) | Slides 1-6, 9-10 built (3af5158); PDF render proven; Commons probe unrun (item 33); 92/86 coming off the methodology and track record pages | Video script 23 Sep; probe by 26 Sep; video record 26-30 Sep; sweep after the methodology page change | W3 chat / John | Five items to Jol and Nick 3 Oct |
 | W4 Host | v2 DONE (21 Sep) | STAND-HOST-MANUAL.md v2, 23 slots; three bridge labels flagged for W3 | v3 after 8 Oct screenshots and W5's known-issues list; John's item 34 | W4 chat / John | v3 mid-Oct |
@@ -474,6 +479,34 @@ five contacts.
   no behaviour change, road times stay off (30e3e78). Commit 30e3e78 carried W2's and W10's
   uncommitted work under the controller's subject; their message files are in the commit.
 
+- 22 Sep 2026, late (John): THE OPTIMISE BUTTON STAYS ONE BUTTON. Verbatim: "i would prefer
+  not to remove things as that make a simple button into a a journey toward needin to learn a
+  system." Context: on TIF-AUH (Taif-Abu Dhabi, airline open) the dashboard's Optimise ran the
+  full sweep (all seasons, all carrier types, candidates open, frequency-sensitive re-runs
+  per frequency) in 240s on the stand flow and 257-260s in the harness; the narrowed default
+  took 36.2s with Etihad named and 88.7s open; Run 3.8-7.8s (TIMING-20260922-2046, d607d22,
+  bt2). Mechanism read in api_optimise: candidates x types x seasons x eight forecasts each.
+  Consequence: no narrowed default and no second button; W1 makes the full sweep faster in
+  api_optimise (parallel candidates, no demand logic touched, same payload diff); W2 brings
+  progressive Optimise back onto its list. Until measured, "about a minute" is a Run claim
+  only; Optimise on the stand is "a few minutes, the host talks through the methodology page
+  while it runs" (W4 manual, W6 script). The 38-53s Optimise figures of 22 Sep morning are
+  to be read as the narrowed default with the airline named until the three-pair full-probe
+  table says otherwise.
+- 22 Sep 2026, late (controller): tonight's workstation findings. (a) The workstation was
+  on 66455af (21 Sep) all day; nothing committed on 22 Sep ran there until d607d22 was pulled
+  at circa 20:00. (b) The pull was blocked by three generated files under app/ that the repo
+  tracks (Network_PnL_Genoa.xlsx, Route_Economics_slide.pptx, Route_Economics_test.xlsx);
+  stashed on the workstation; untracking is W1 job 7. (c) One restart ran on QSI for circa
+  fifteen minutes before the launcher fix arrived. (d) The server's password comes from
+  $env:QSI_PASSWORD in the launching window only; app\access_password.txt does not exist on
+  the workstation; an unset variable starts the server with the shared password OFF behind
+  Cloudflare Access alone. W1: the launcher refuses an empty password and prints the source,
+  never the value. W2: the runbook's restart procedure starts with the set line. Pre-mortem
+  18. (e) W1 job 1 CLOSED 22:30: server on BT2 by default on d607d22; payload diff against the
+  morning's engine-bt2 save PASS, all three Run payloads IDENTICAL (my --skip-full made the
+  first diff void; the second was run in full).
+
 ## Waiting on John
 
 1. CLOSED 19 Sep: HEAD `11a4c3f` confirmed and pushed.
@@ -878,6 +911,25 @@ Written as if it happened. Each has an owner and a mitigation already in the pla
     without it; the first restart after the workstation pulls it settles whether the testers'
     weeks ran on the master or the default. If they did not, the tester known-issues list
     gets a line and Nick is told. Status: open until that restart.
+18. **A restart from a fresh window starts the server with no password.** Found 22 Sep: the
+    password is read from $env:QSI_PASSWORD in the launching window, there is no password
+    file on the workstation, and an empty value turns the shared password OFF in silence
+    behind Cloudflare Access. Answer: the launcher refuses to start on an empty password and
+    prints where the password came from (never the value); the runbook's restart procedure
+    begins with the set line; rehearsed in the 11-12 Oct trial. Owner: W1 (launcher), W2
+    (runbook). Status: open.
+19. **The Optimise button takes four to eight minutes on the stand.** Found 22 Sep, measured
+    on the workstation (d607d22, bt2, TIMING-22Sep-d607d22-full): the dashboard's Optimise
+    runs the full sweep (all seasons, all carrier types, airline open, eight forecasts per
+    cell) and took 460s on SJC-TPE, 429s on BRS-EWR, 334s on DUB-DFW, 257-260s on TIF-AUH; the narrowed
+    default with the airline named is 36-57s, which is what the 22 Sep morning figures
+    measured. No pair has been under four minutes on the flow a visitor drives. John's
+    ruling: one button, nothing removed. Answer: W1 runs the sweep's independent forecasts
+    in parallel processes in api_optimise (no demand logic touched, same payload diff), then
+    re-measures; W2 shows best-so-far while it runs (progressive Optimise, must fit before
+    10 Oct); until measured, "about a minute" is a Run claim only and the host says "a few
+    minutes; let me show you the methodology page while it runs". Owner: W1, W2, W4, W6.
+    Status: OPEN, the largest risk on this list.
 ---
 
 ## 7. Who owns what, in one line each

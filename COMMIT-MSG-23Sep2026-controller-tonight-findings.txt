@@ -1,0 +1,15 @@
+Controller 23 Sep 00:30: W1 job 1 closed (diff PASS); Optimise full sweep measured 334-460s; one-button ruling; handover
+
+- GTM-STRATEGY-ROUTES-2026.md: Status block for chat 3; W1 row closed on the diff; decisions
+  22 Sep late (John: one button, nothing removed, verbatim; controller: tonight's workstation
+  findings); pre-mortem 18 (empty password starts an open server) and 19 (Optimise button
+  four to eight minutes on every pair measured).
+- routes/W2-RULINGS.md: 22 Sep late section (one button; progressive Optimise back on the
+  list, must fit before 10 Oct).
+- HANDOVER-CONTROLLER-23Sep2026.md: rolling handover; W1 job 0 (parallel Optimise) design and
+  acceptance; queue; owed rulings; step C list.
+Evidence: TIMING-20260922-2043 / -2046 / -2230 on the workstation; --diff engine-bt2 v
+TIMING-22Sep-d607d22-full PASS (John's paste, 22 Sep 22:3x).
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_013UJS2WR1LYy7JdejgdnMiC
