@@ -2699,6 +2699,7 @@ def _optimise_map(fn, tasks):
                 raise _RF.OptimiseCancelled("optimisation stopped by user")
             yield fn(t)
         return
+    from concurrent.futures.process import BrokenProcessPool
     pool = _opt_pool(workers)
     futs = [pool.submit(fn, t) for t in tasks]
     try:
@@ -2709,6 +2710,20 @@ def _optimise_map(fn, tasks):
                     g.cancel()
                 raise _RF.OptimiseCancelled("optimisation stopped by user")
             yield f.result()
+    except BrokenProcessPool as e:
+        # A WORKER DIED (found 23 Sep 2026 at twelve workers: Windows killed one for memory).
+        # The executor is unusable from here on, and without this block every later Optimise
+        # failed in two seconds until somebody restarted the server. So: discard the broken
+        # pool, say so on the console, and fail THIS job honestly; the next Optimise starts a
+        # fresh pool. No retry here, because the cause (memory at that worker count) would
+        # kill the retry too, and no fallback to sequential, because a four-minute answer
+        # nobody asked for is the silent-default shape.
+        _opt_pool_discard()
+        print("optimise: worker pool BROKEN (%s); discarded; the next Optimise starts a new pool "
+              "with %d workers. If this repeats, lower AVIA_OPT_WORKERS or AVIA_OPT_WORKER_MEMORY."
+              % (e, workers))
+        raise RuntimeError("Optimise failed: a worker process was terminated (memory or crash); "
+                           "the pool has been rebuilt, run Optimise again") from e
     finally:
         for g in futs:
             g.cancel()
@@ -2737,6 +2752,17 @@ def _opt_pool_init(mem, thr):
     # workers hold 24GB of the workstation's 64GB) and AVIA_OPT_WORKER_THREADS (default 2).
     os.environ["AVIA_DUCKDB_MEMORY"] = mem
     os.environ["AVIA_DUCKDB_THREADS"] = thr
+
+
+def _opt_pool_discard():
+    """Drop the current pool without waiting for its (possibly dead) workers."""
+    global _OPT_POOL
+    pool, _OPT_POOL = _OPT_POOL, None
+    if pool is not None:
+        try:
+            pool.shutdown(wait=False, cancel_futures=True)
+        except Exception:                                   # noqa: BLE001
+            pass
 
 
 def _opt_pool(workers):
