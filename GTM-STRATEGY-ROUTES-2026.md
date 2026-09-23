@@ -33,7 +33,7 @@ grep; John has not yet confirmed the re-ruling. Order-ready is 21 Oct. Files:
 
 | WS | State | Where it stands | Next action | Owner | Date |
 |---|---|---|---|---|---|
-| W1 Speed and caches | Job 1 CLOSED 22 Sep 22:30 (d607d22, diff PASS) | Server on BT2 by default on d607d22; payloads IDENTICAL to the morning's engine-bt2 save on all three pairs (W2's 30e3e78 confirmed no behaviour change); Run cold 17.5 / 21.1 / 14.7s, warm 12.2 / 11.1 / 9.6s; Optimise narrowed 57 / 51 / 44s, FULL SWEEP (the button) 460 / 429 / 334s, TIF-AUH 257s (TIMING-20260922-2230, -2046) | JOB 0: parallel cells in api_optimise (config workers, --workers 1 control), three-pair probe at 1 / 8 / 12 and diff; then launcher refuses empty password and prints the source; payload `engine` label; disclaimer; untrack app/ generated files; market-brief cost; warm_boards | Controller / John | Job 0 code 23-24 Sep, measured by 26 Sep; rest by 3 Oct; warm-up 19 Oct |
+| W1 Speed and caches | Job 0 MEASURED and PASSED 23 Sep (4e5dd3c, 8 workers) | Full sweep 96.9 / 117.3 / 91.0s at 8 workers v 491.6 / 523.4 / 404.6s sequential, every Optimise and Run payload IDENTICAL (OPT-23Sep-fix-w1 v -w8); departure-cache key fixed (freq) on John's ruling; named single-cell case 54.6 / 76.3 / 55.2s, unchanged by the pool; server left on 8 workers, BT2, 4e5dd3c | Split cells by frequency so the named case parallelises, then re-test at 8 and 12; then launcher refuses empty password; payload `engine` label; disclaimer; untrack app/ generated files; market-brief cost; warm_boards | Controller / John | Split code 24 Sep, measured 25 Sep; rest by 3 Oct |
 | W2 Stand flow | In progress (v14, 22 Sep) | Delivery proven by Postmark API (MessageID 8283ccb0); lead_store built (ef6de65), app not yet rewired; friction raster never resolved on the workstation, catchment ran on straight-line distance silently, fixed through config, no behaviour change (30e3e78); item 1 radius now W2's under R6 | Sweep: R6 radius plan and lead_store rewiring; data-store freeze line and stale-RDP runbook line owed to W2-RULINGS by the controller | W2 chat / John | Capture demonstrable 2 Oct; laptop proof 8 Oct; radius before 10 Oct or not at all |
 | W3 Presentation | In progress (v2, 21 Sep) | Slides 1-6, 9-10 built (3af5158); PDF render proven; Commons probe unrun (item 33); 92/86 coming off the methodology and track record pages | Video script 23 Sep; probe by 26 Sep; video record 26-30 Sep; sweep after the methodology page change | W3 chat / John | Five items to Jol and Nick 3 Oct |
 | W4 Host | v2 DONE (21 Sep) | STAND-HOST-MANUAL.md v2, 23 slots; three bridge labels flagged for W3 | v3 after 8 Oct screenshots and W5's known-issues list; John's item 34 | W4 chat / John | v3 mid-Oct |
@@ -526,6 +526,18 @@ five contacts.
   before 3 Oct; (d) the three-run pool test repeats with a fresh control, since today's
   control carries the cached figure; (e) a cell now runs a departure optimisation per
   frequency, so the sweep is slower per cell and the worker count matters more; measured next.
+- 23 Sep 2026, evening (controller): W1 JOB 0 PASSED. Three-run test on 4e5dd3c: sequential
+  control after the cache fix 491.6 / 523.4 / 404.6s (SJC-TPE, BRS-EWR, DUB-DFW full sweep;
+  named 72.9 / 97.0 / 67.3s); eight workers 96.9 / 117.3 / 91.0s (named 54.6 / 76.3 / 55.2s);
+  --diff OPT-23Sep-fix-w1 v OPT-23Sep-fix-w8 PASS on all nine payloads. The fixed
+  sequential run also matched the 22 Sep eight-worker full sweep on SJC-TPE exactly, which
+  confirms the cache diagnosis from the sequential side. Both pre-fix saves (OPT-23Sep-w1,
+  -w8) are superseded. Twelve workers not run: nine cells cannot use them. Next: split a
+  cell by frequency so the single-airline case parallelises; same test, same diff.
+  Server left on eight workers, BT2, 4e5dd3c. Also 23 Sep: ssh to donatello as aviaremote1
+  refused the password (RustDesk route used instead); the launching window on 22-23 Sep was
+  elevated ("Administrator" title) and E: was present, but the restart procedure says
+  non-elevated; a click inside a running probe's console pauses it (QuickEdit), do not.
 ## Waiting on John
 
 1. CLOSED 19 Sep: HEAD `11a4c3f` confirmed and pushed.
@@ -948,7 +960,9 @@ Written as if it happened. Each has an owner and a mitigation already in the pla
     re-measures; W2 shows best-so-far while it runs (progressive Optimise, must fit before
     10 Oct); until measured, "about a minute" is a Run claim only and the host says "a few
     minutes; let me show you the methodology page while it runs". Owner: W1, W2, W4, W6.
-    Status: OPEN, the largest risk on this list.
+    Status 23 Sep: full sweep MEASURED at 96.9 / 117.3 / 91.0s on eight workers with every
+    payload identical to the sequential run (after the departure-cache fix); the named
+    single-airline case is still 55-76s and is next; W2's progressive display still needed.
 ---
 
 ## 7. Who owns what, in one line each

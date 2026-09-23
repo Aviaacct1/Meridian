@@ -1,0 +1,12 @@
+Controller 23 Sep evening: W1 job 0 PASSED (8 workers, all payloads identical); Postmark rulings; handover
+
+- GTM-STRATEGY-ROUTES-2026.md: W1 row, pre-mortem 19 status, decision 23 Sep evening (the
+  three-run numbers, the diff, the traps).
+- routes/W2-RULINGS.md: Postmark approved 23 Sep 17:33 (free plan); John's ruling on plan,
+  warm-up and the exit condition, verbatim; decision date 3 Oct.
+- HANDOVER-CONTROLLER-23Sep2026.md: 19:00 rolling update, section 1a; the frequency split
+  is the next W1 job.
+Evidence: E:\Avia\probe\OPT-23Sep-fix-w1, OPT-23Sep-fix-w8, John's pastes 23 Sep.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_013UJS2WR1LYy7JdejgdnMiC

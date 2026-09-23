@@ -1,4 +1,4 @@
-# HANDOVER: programme controller, 23 September 2026, 00:30 BST (rolling)
+# HANDOVER: programme controller, 23 September 2026, 19:00 BST (rolling)
 
 For controller chat 3 (Fable) after a compaction, or chat 4. Read after
 `PROMPT-for-Fable-Controller3-22Sep2026.txt` and instead of HANDOVER-CONTROLLER-22Sep2026.md,
@@ -33,6 +33,26 @@ the workstation is d607d22 plus that pull.
   shown beside an addressable market that is local only; capture share 17.5% "of the
   catchment market" against P2P 55,925 of 123,373 (45%), two denominators, neither named.
   Goes to W1 (which is right) then W3/W4 wording. Feed is the flat capture: known-issues.
+
+## 1a. 23 Sep daytime, one screen
+
+- W1 job 0 BUILT (345e2e3), the diff exposed a pre-existing defect (departure-optimum cache
+  key omitted freq), John ruled the fix in (4e5dd3c, verbatim in the umbrella), and the
+  three-run test PASSED: full sweep 96.9 / 117.3 / 91.0s at 8 workers v 491.6 / 523.4 /
+  404.6s sequential, all nine payloads identical. Server left on 8 workers, BT2, 4e5dd3c.
+  Evidence: E:\Avia\probe\OPT-23Sep-fix-w1 and -w8 (+ .log), TIMING-20260923-*.md.
+- Named single-airline Optimise (one cell) is 55-76s and gets nothing from the pool: NEXT
+  W1 job is splitting a cell by frequency (task = cand x type x season x freq; the base 7x
+  forecast supplies econ_share, so stage 1 = 9 base forecasts in parallel, stage 2 = 63
+  frequency forecasts in parallel, then selection and final unchanged). Same three-run test
+  (1 / 8 / 12), diff against OPT-23Sep-fix-w1 is the acceptance.
+- W3-RULINGS 23 Sep: SJC-TPE and BLQ-JFK figures provisional until re-run on the fixed code.
+- Postmark APPROVED 23 Sep 17:33 (free plan, 100/month); John's ruling on plan and exit in
+  W2-RULINGS (upgrade only if the domain tests are clean; any issue = switch; decide 3 Oct).
+- Traps today: a PowerShell window on the DevPC was mistaken for the workstation (no
+  C:\src\meridian, no E:); ssh aviaremote1@donatello refused the password (RustDesk used);
+  a placeholder in a block was pasted literally into $env:QSI_PASSWORD (never hand a
+  pasteable placeholder); clicking in a console pauses the probe (QuickEdit).
 
 ## 2. W1 job 0: parallel Optimise (controller's own code)
 

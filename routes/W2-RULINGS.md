@@ -266,3 +266,36 @@ Size it in your STATUS before building; if it does not fit before 10 Oct, say so
 Measured tonight, TIMING-20260922-2046 on the workstation (d607d22, bt2): TIF-AUH Run
 3.8-7.8s; Optimise narrowed default 36.2s named / 88.7s open; full sweep 257-260s.
 
+## 23 September 2026, 17:33: Postmark account APPROVED (controller, from John's forward)
+
+Postmark support (Ignacio) manually reviewed and approved the account; username TheAO;
+sending to any address is now allowed. The account is on the FREE DEVELOPER PLAN, 100 emails
+a month. Consequences for W2: (a) the "account reviewing" line closes; (b) 100 a month does
+not cover the stand (packs, queued sends, invitations, the list email), so the plan is
+upgraded before the first external send that is not a test; W2 states in STATUS which plan
+and what it costs, from Postmark's own pricing page, and John approves the upgrade (Waiting
+on John); (c) the sender domain for the stand is aviationobservatory.com, whose DNS moves to
+Cloudflare in the week of 22 Sep (umbrella item 20); the four Postmark records are recreated
+there and re-verified, and delivery is re-proven by API with a MessageID from that domain
+before any invitation goes; (d) the programme rule stands: no send counts without a provider
+MessageID.
+
+## 23 September 2026, later: Postmark plan and the exit condition (John, verbatim)
+
+"sO FAR i HAVENT been hugely impressed with Postmark but you recommended them and I have no
+reason to no different, so the plan is to test the thing is working with the test emails,
+warm the email account and if everything is working smoothly upgrase the account fro the
+conferece, If we have any issues at all, we change from Postmark to something else"
+
+Rules that bind W2: (a) the free plan is used for the tests and the warm-up sends only;
+(b) the upgrade is bought only if every test send from aviationobservatory.com is delivered
+with a MessageID and lands in the inbox at a Microsoft 365 address and a Gmail address, with
+no silent loss of any kind; (c) ANY issue in that period, including anything of the 21 Sep
+SMTP silent-discard shape, and W2 switches provider; the transport is behind one module so
+the switch is a provider change, not a rebuild; W2 names the fallback provider in STATUS
+now, with the record of what its API needs, so a switch on 3 Oct costs a day, not a week;
+(d) decision date 3 Oct: Postmark upgraded or replaced, so the provider is settled a week
+before the 10 Oct freeze and tested at the 11-12 Oct trials; (e) "warm the account" means a
+small number of real sends from the domain over several days before Routes (the invitations
+are the natural warm-up), not bulk test traffic.
+
