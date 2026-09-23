@@ -1,4 +1,4 @@
-# HANDOVER: programme controller, 23 September 2026, 19:00 BST (rolling)
+# HANDOVER: programme controller, 23 September 2026, 21:00 BST (rolling)
 
 For controller chat 3 (Fable) after a compaction, or chat 4. Read after
 `PROMPT-for-Fable-Controller3-22Sep2026.txt` and instead of HANDOVER-CONTROLLER-22Sep2026.md,
@@ -53,6 +53,23 @@ the workstation is d607d22 plus that pull.
   C:\src\meridian, no E:); ssh aviaremote1@donatello refused the password (RustDesk used);
   a placeholder in a block was pasted literally into $env:QSI_PASSWORD (never hand a
   pasteable placeholder); clicking in a console pauses the probe (QuickEdit).
+
+## 1b. 23 Sep evening
+
+- Frequency split SHIPPED (6065e18): full sweep 66.5 / 109.3 / 64.7s, named 30.3 / 32.6 /
+  18.4s at 8 workers, all payloads identical to OPT-23Sep-fix-w1. Evidence: OPT-23Sep-split-w1,
+  -w8 (+ .log), TIMING-20260923-1859 / -1928.
+- 12 workers FAILED (worker killed, pool broken, OPT-23Sep-split-w12 has only the named
+  SJC-TPE payload). Default stays 8. Rebuild fix written on the DevPC
+  (COMMIT-MSG-23Sep2026-w1-pool-rebuild.txt), NOT pushed, NOT on the workstation: first job
+  24 Sep, then the kill test (Stop-Process one worker mid-sweep; expect a reported error,
+  then a clean Optimise) and the worker peak-memory reading (Get-Process python during a
+  sweep; the one reading taken so far, 2,012 MB, was the server alone with no sweep running).
+- Workstation state at close: 6065e18, 8 workers, BT2, QSI_PASSWORD set in the launching
+  window (non-elevated, aviaremote1 over RustDesk). Server was found DOWN at 20:15 and
+  relaunched; "Failed to fetch" on the public dashboard is the symptom of no listener.
+- Still unsent: step C (the week's decisions in one message). Still unwritten: W4 and W6
+  wording lines; W2 data-store freeze and runbook lines; W8 v1.1.
 
 ## 2. W1 job 0: parallel Optimise (controller's own code)
 
