@@ -1,0 +1,18 @@
+W1: Optimise sweep split into a sizing stage and a per-frequency stage so the single-airline case uses the pool
+
+app/cortex_app.py: _optimise_cell becomes _optimise_base (stage 1, the 7x sizing forecast per
+cell, returns econ_share and 7x demand or None) and _optimise_freq (stage 2, one cell at one
+frequency: the frequency-sensitive re-read and the gauge selection, returns one row or None).
+_optimise_map(fn, tasks) runs either stage in order, in-process at AVIA_OPT_WORKERS=1 or in
+the pool otherwise; rows are collected in (cell, frequency) order, which is the order the
+inline loop produced, and empty cells are skipped as its continues skipped them. The payload's
+optimise block gains sweep_tasks. No demand logic touched.
+
+diag_routes_timing.py: note column reports tasks; sweep_tasks is volatile for --diff.
+
+Acceptance: three-pair probe at 1 / 8 / 12 workers; --diff against OPT-23Sep-fix-w1 PASS at
+every setting (the 1-worker run is the refactor's own control); the named single-airline
+Optimise falls from 55-76s.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_013UJS2WR1LYy7JdejgdnMiC

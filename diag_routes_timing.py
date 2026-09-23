@@ -98,7 +98,7 @@ def _optimise(op, base, q, timeout=1800, save=None):
                 note = ""
                 o = res.get("optimised") if isinstance(res.get("optimised"), dict) else res
                 if isinstance(o, dict) and o.get("sweep_workers") is not None:
-                    note = "cells %s, workers %s, sweep %ss" % (o.get("sweep_cells"), o.get("sweep_workers"), o.get("sweep_elapsed_s"))
+                    note = "cells %s, tasks %s, workers %s, sweep %ss" % (o.get("sweep_cells"), o.get("sweep_tasks"), o.get("sweep_workers"), o.get("sweep_elapsed_s"))
                 if save:
                     try:
                         os.makedirs(os.path.dirname(save), exist_ok=True)
@@ -131,7 +131,7 @@ def _walk(a, b, path, out, limit=60):
 
 
 VOLATILE = ("elapsed", "when", "started", "job_id", "run_id", "timestamp", "generated",
-            "sweep_workers", "sweep_cells")   # how the Optimise sweep ran, not what it found
+            "sweep_workers", "sweep_cells", "sweep_tasks")   # how the Optimise sweep ran, not what it found
 
 
 def diff_json(path_a, path_b):
