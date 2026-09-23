@@ -184,6 +184,12 @@ def main():
           + ("  *** QSI engine: ROLLBACK, not the calibrated model ***" if a.engine == "qsi" else
              "  (calibrated model; claimset reproduced 22 Sep 2026)")
           + (f"   [shell said {_shell}, overridden]" if _shell not in ("unset", a.engine) else ""))
+    # Optimise sweep workers (23 Sep 2026): said at start-up so a paste records the setting the
+    # server ran with. Unset means the server's default of 8; 1 is the single-process path.
+    _w = (os.environ.get("AVIA_OPT_WORKERS") or "").strip()
+    print(f"  optimise workers: {_w or '8 (default)'}  DuckDB per worker: "
+          f"{(os.environ.get('AVIA_OPT_WORKER_MEMORY') or '3GB').strip()} / "
+          f"{(os.environ.get('AVIA_OPT_WORKER_THREADS') or '2').strip()} threads")
 
     proc = None
     if _port_open("127.0.0.1", a.port):

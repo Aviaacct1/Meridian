@@ -1,0 +1,24 @@
+W1 job 0: Optimise sweep cells run in a worker pool (AVIA_OPT_WORKERS); harness saves and diffs Optimise payloads
+
+app/cortex_app.py: the per-candidate x type x season loop of api_optimise is now
+_optimise_cell(), module-level and picklable; _optimise_map() runs the cells in order in a
+ProcessPoolExecutor (spawn) sized by AVIA_OPT_WORKERS (default 8, capped at the core count;
+1 = in-process, the pre-23-Sep path exactly). Rows are collected in cell order, so the
+selection and the payload are unchanged. Workers pin DuckDB to AVIA_OPT_WORKER_MEMORY
+(default 3GB) and AVIA_OPT_WORKER_THREADS (default 2) so eight workers cannot repeat the
+97%/OOM freeze. STOP is honoured between cells; running cells finish and are discarded. No
+silent fallback: a pool failure raises and the job reports it. The payload's optimise block
+gains sweep_cells / sweep_workers / sweep_elapsed_s.
+
+app/warm_demo.py: prints the worker setting at start-up.
+
+diag_routes_timing.py: with --save-json, the two Optimise payloads are saved as
+opt_<pair>_named.json and opt_<pair>_full.json and --diff compares them alongside the Run
+payloads; the sweep_* keys are volatile. The note column reports cells, workers and sweep
+seconds from the payload.
+
+No demand logic touched. Acceptance: three-pair probe at 1 / 8 / 12 workers, --diff PASS
+between every pair of settings, full sweep time recorded.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_013UJS2WR1LYy7JdejgdnMiC

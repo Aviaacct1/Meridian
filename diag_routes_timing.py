@@ -78,8 +78,10 @@ def _timed(op, url, timeout=1800):
     return round(time.perf_counter() - t0, 1), status, err
 
 
-def _optimise(op, base, q, timeout=1800):
-    """Start the background sweep and poll until done. Returns (seconds, state, error)."""
+def _optimise(op, base, q, timeout=1800, save=None):
+    """Start the background sweep and poll until done. Returns (seconds, state, note).
+    With save=<path>, the finished payload is written there for --diff (23 Sep 2026), and
+    the note reports how the sweep ran (cells, workers, sweep seconds from the payload)."""
     t0 = time.perf_counter()
     try:
         _, body = _get(op, base + "/api/optimise/start?" + urllib.parse.urlencode(q), 60)
@@ -92,7 +94,19 @@ def _optimise(op, base, q, timeout=1800):
             j = json.loads(body)
             st = j.get("state")
             if st == "done":
-                return round(time.perf_counter() - t0, 1), "done", ""
+                res = j.get("result") or {}
+                note = ""
+                o = res.get("optimise") if isinstance(res.get("optimise"), dict) else res
+                if isinstance(o, dict) and o.get("sweep_workers") is not None:
+                    note = "cells %s, workers %s, sweep %ss" % (o.get("sweep_cells"), o.get("sweep_workers"), o.get("sweep_elapsed_s"))
+                if save:
+                    try:
+                        os.makedirs(os.path.dirname(save), exist_ok=True)
+                        open(save, "w", encoding="utf-8", newline="\n").write(json.dumps(res, indent=1, sort_keys=True))
+                        note = (note + "; " if note else "") + "saved " + os.path.basename(save)
+                    except Exception as e:                   # noqa: BLE001
+                        note = (note + "; " if note else "") + "save failed: " + str(e)[:40]
+                return round(time.perf_counter() - t0, 1), "done", note
             if st in ("error", "cancelled"):
                 return round(time.perf_counter() - t0, 1), st, str(j.get("error", ""))[:80]
         return round(time.perf_counter() - t0, 1), "TIMEOUT", ""
@@ -116,7 +130,8 @@ def _walk(a, b, path, out, limit=60):
         out.append(f"{path}: {str(a)[:60]} -> {str(b)[:60]}")
 
 
-VOLATILE = ("elapsed", "when", "started", "job_id", "run_id", "timestamp", "generated")
+VOLATILE = ("elapsed", "when", "started", "job_id", "run_id", "timestamp", "generated",
+            "sweep_workers", "sweep_cells")   # how the Optimise sweep ran, not what it found
 
 
 def diff_json(path_a, path_b):
@@ -167,11 +182,12 @@ def measure_pair(op, base, origin, dest, airline, skip_full, save_dir=None):
     rows.append(("Run, fixed departure 10:00 (no departure sweep)",
                  *_timed(op, base + "/api/forecast?" + urllib.parse.urlencode(dict(qa, dep_time="10:00")))))
     rows.append(("catchment profile, origin", *_timed(op, base + "/api/catchment?" + urllib.parse.urlencode({"origin": origin}))))
+    _sv = (lambda tag: os.path.join(save_dir, f"opt_{origin}-{dest}_{airline or 'NA'}_{tag}.json")) if save_dir else (lambda tag: None)
     rows.append(("Optimise, narrowed default (airline named, annual)",
-                 *_optimise(op, base, dict(qa, freq=0))))
+                 *_optimise(op, base, dict(qa, freq=0), save=_sv("named"))))
     if not skip_full:
         rows.append(("Optimise, full sweep (nothing fixed)",
-                     *_optimise(op, base, dict(q, airline="", aircraft="", season="", freq=0))))
+                     *_optimise(op, base, dict(q, airline="", aircraft="", season="", freq=0), save=_sv("full"))))
     return rows
 
 
@@ -221,7 +237,7 @@ def main():
     a = ap.parse_args()
     if a.diff:
         before, after = a.diff
-        names = sorted(f for f in os.listdir(before) if f.startswith("run_") and f.endswith(".json"))
+        names = sorted(f for f in os.listdir(before) if f.startswith(("run_", "opt_")) and f.endswith(".json"))
         bad = 0
         for f in names:
             fb = os.path.join(after, f)

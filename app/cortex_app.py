@@ -2572,6 +2572,178 @@ def api_hubbank(origin: str = "", dest: str = "", airline: str = ""):
 
 
 @app.get("/api/optimise")
+def _optimise_cell(c):
+    """ONE CELL of the Optimise sweep: one candidate airline, one carrier type, one season,
+    every frequency in the list. Returns the candidate rows for that cell, in frequency order.
+    Module-level and picklable so the cells can run in worker processes (AVIA_OPT_WORKERS,
+    23 September 2026); the body is the loop that ran inline in api_optimise until then,
+    unchanged, and with AVIA_OPT_WORKERS=1 it is called in this process in the same order,
+    so the rows, the selection and the payload are byte-for-byte what they were."""
+    import aircraft_select as ASsel
+    origin = c["origin"]; dest = c["dest"]; cand = c["cand"]; ct_i = c["ct_i"]; sea_i = c["sea_i"]
+    _freqs = c["freqs"]; _dep_fixed = c["dep_fixed"]; turnaround = c["turnaround"]
+    curfew_origin = c["curfew_origin"]; curfew_dest = c["curfew_dest"]; partners = c["partners"]
+    forecast_year = c["forecast_year"]; split_floor = c["split_floor"]; econ_share = c["econ_share"]
+    dist_nm = c["dist_nm"]; plan_lf = c["plan_lf"]; fare = c["fare"]; bus_fare = c["bus_fare"]
+    _fixed_ac = c["fixed_ac"]
+    rows = []
+    sea_weeks = 28.0 if sea_i == "summer" else 24.0 if sea_i == "winter" else 52.0
+    fc = calibrated_forecast(origin, dest, airline=(cand or None), carrier_type=ct_i,
+                             aircraft="A21N", freq=7, with_econ=False, season=sea_i,
+                             induced_floor=False, dep_time_mins=_dep_fixed,
+                             turnaround_min=(turnaround or None),
+                             restricted_hours=(curfew_origin or None),
+                             restricted_hours_dest=(curfew_dest or None), partner_carriers=(partners or None), forecast_year=(forecast_year or None), split_floor=bool(split_floor))   # measured demand for this operator + model + schedule
+    if not fc.get("ok"):
+        return rows
+    # econ_share of 0 from the caller means "measure it". The gauge is chosen on how the
+    # demand splits between the cabins, so the split has to be this market's own rather
+    # than a flat 15% front cabin applied to Silicon Valley and to a leisure route alike.
+    es_i = econ_share if (econ_share and econ_share > 0) else \
+        (fc["demand"].get("econ_share") or 0.85)
+    demand = fc["demand"].get("total_demand") or fc["demand"]["total"]   # TRUE demand, not the capacity-bound total
+    if demand <= 0:
+        return rows
+    # The demand above is measured at SEVEN weekly and, with AVIA_FREQ_SENSITIVE off, it is
+    # the demand at every frequency, so sizing the whole sweep on it is correct. With the
+    # switch ON it is not: capture moves with frequency, so a single daily reading would
+    # size a 4x schedule on daily demand and a 14x schedule on the same, overstating the
+    # low end and understating the high end. The optimiser would then choose a schedule the
+    # forecast disagrees with, which is the /api/forecast against /api/optimise divergence
+    # this file has already been caught by twice. Re-read demand per frequency when the
+    # switch is on, and only then, so the default path costs nothing.
+    _freq_sensitive = os.environ.get("AVIA_FREQ_SENSITIVE", "").strip() in ("1", "true", "on")
+    _demand_7 = demand
+    for f in _freqs:
+        demand = _demand_7
+        if _freq_sensitive:
+            _fcf = calibrated_forecast(origin, dest, airline=(cand or None), carrier_type=ct_i,
+                                       aircraft="A21N", freq=f, with_econ=False, season=sea_i,
+                                       induced_floor=False, dep_time_mins=_dep_fixed,
+                                       turnaround_min=(turnaround or None),
+                                       restricted_hours=(curfew_origin or None),
+                                       restricted_hours_dest=(curfew_dest or None), partner_carriers=(partners or None), forecast_year=(forecast_year or None), split_floor=bool(split_floor))
+            if not _fcf.get("ok"):
+                continue
+            demand = _fcf["demand"].get("total_demand") or _fcf["demand"]["total"]
+            if demand <= 0:
+                continue
+        try:
+            # THE CARRIER IS NAMED EVEN WHEN THE GAUGE IS FIXED, corrected 14 August 2026.
+            # airline_iata does two jobs in select_aircraft and they were being confused:
+            # candidates() uses it to BUILD a pool, and only when no explicit fleet is
+            # given (line 54, pool = fleet, then `if pool is None and airline_iata`), while
+            # select_aircraft uses it a second time to read the carrier's OWN cabin out of
+            # capacity_frame.config_for. Suppressing it whenever the client fixed a gauge
+            # therefore threw away the configuration as well as the pool it was not being
+            # asked for. Measured: China Airlines and Starlux fly the A350-900 at 306 seats
+            # against the generic table's 336, so a fixed A350-900 was sized on 10% more
+            # capacity than the carrier flies. Passing both is safe because the explicit
+            # fleet still takes precedence for the pool.
+            code, ranked = ASsel.select_aircraft(dist_nm, demand, f, plan_lf=plan_lf,
+                            econ_share=es_i, econ_fare_ow=fare, bus_fare_ow=bus_fare,
+                            airline_type=ct_i, weeks=sea_weeks,
+                            airline_iata=(cand or None),
+                            fleet=([_fixed_ac] if _fixed_ac else None))   # honour a client-fixed gauge, else search
+        except Exception:
+            continue
+        prof = ranked[0]["annual_profit"]; lf = ranked[0].get("total_lf") or 0.0
+        rows.append({"airline": cand, "aircraft": code, "freq": f, "ctype": ct_i,
+                     "season": sea_i, "annual_profit": prof, "demand": demand,
+                     "lf": float(lf),
+                     # The seat count the gauge was CHOSEN on, carried through so the
+                     # forecast fills the same aeroplane the optimiser sized. Sizing on
+                     # one configuration and filling on another is the mismatch the plan
+                     # load factor cap already had across three modules.
+                     "seats": ranked[0].get("seats"),
+                     "seats_source": ranked[0].get("seats_source")})
+    return rows
+
+
+def _optimise_map(cells):
+    """Run the cells, in order, and yield each cell's rows in the same order, so the caller's
+    row list is identical whether the cells ran here or in a pool.
+
+    AVIA_OPT_WORKERS (default 8; 1 = in this process, exactly the pre-23-Sep path) sizes a
+    process pool that is started on first use and kept for the life of the server. Each
+    worker imports cortex_app once (circa 1.5s) and holds its own store handles; each worker's
+    DuckDB is pinned to AVIA_DUCKDB_THREADS (default 2 in a worker) so N workers do not each
+    take every core. A cell is independent of every other cell: the only shared state is the
+    on-disk boards (atomic per-pid temp + os.replace) and the land-path sqlite (WAL, 30s
+    timeout), both already process-safe.
+
+    Cancel (the STOP button) is honoured between cells in this process: pending cells are
+    cancelled, the running ones finish on their own (at most one round of the pool) and their
+    rows are discarded. No silent fallback: if the pool cannot be started or breaks, the error
+    is raised and the job reports it; it does not quietly run sequentially."""
+    import route_feed as _RF
+    n = len(cells)
+    workers = _opt_workers()
+    if workers <= 1 or n <= 1:
+        for c in cells:
+            _cc = _RF.CANCEL_CHECK.get()
+            if _cc and _cc():
+                raise _RF.OptimiseCancelled("optimisation stopped by user")
+            yield _optimise_cell(c)
+        return
+    pool = _opt_pool(workers)
+    futs = [pool.submit(_optimise_cell, c) for c in cells]
+    try:
+        for f in futs:
+            _cc = _RF.CANCEL_CHECK.get()
+            if _cc and _cc():
+                for g in futs:
+                    g.cancel()
+                raise _RF.OptimiseCancelled("optimisation stopped by user")
+            yield f.result()
+    finally:
+        for g in futs:
+            g.cancel()
+
+
+def _opt_workers():
+    """AVIA_OPT_WORKERS as an int; unset or unparsable -> 8; never above the machine's cores."""
+    raw = (os.environ.get("AVIA_OPT_WORKERS") or "").strip()
+    try:
+        w = int(raw) if raw else 8
+    except ValueError:
+        w = 8
+    return max(1, min(w, os.cpu_count() or 1))
+
+
+_OPT_POOL = None
+_OPT_POOL_LOCK = None
+
+
+def _opt_pool_init(mem, thr):
+    # Runs once in each worker at start. A worker keeps the launcher's environment (the engine
+    # flag, the store paths, the password) because spawn copies os.environ; the DuckDB memory
+    # cap and thread count are SET (not defaulted) in the worker, because DuckDB's own default
+    # is 80% of physical RAM per connection and eight workers at 80% each is the 97%/OOM freeze
+    # db_registry records. Budget: AVIA_OPT_WORKER_MEMORY per worker (default 3GB, so eight
+    # workers hold 24GB of the workstation's 64GB) and AVIA_OPT_WORKER_THREADS (default 2).
+    os.environ["AVIA_DUCKDB_MEMORY"] = mem
+    os.environ["AVIA_DUCKDB_THREADS"] = thr
+
+
+def _opt_pool(workers):
+    global _OPT_POOL, _OPT_POOL_LOCK
+    import threading
+    if _OPT_POOL_LOCK is None:
+        _OPT_POOL_LOCK = threading.Lock()
+    with _OPT_POOL_LOCK:
+        if _OPT_POOL is None:
+            from concurrent.futures import ProcessPoolExecutor
+            import multiprocessing as mp
+            mem = (os.environ.get("AVIA_OPT_WORKER_MEMORY") or "3GB").strip()
+            thr = (os.environ.get("AVIA_OPT_WORKER_THREADS") or "2").strip()
+            _OPT_POOL = ProcessPoolExecutor(max_workers=workers, mp_context=mp.get_context("spawn"),
+                                            initializer=_opt_pool_init, initargs=(mem, thr))
+            print("optimise: worker pool started, %d workers, %s DuckDB memory and %s threads each "
+                  "(AVIA_OPT_WORKERS / AVIA_OPT_WORKER_MEMORY / AVIA_OPT_WORKER_THREADS)" % (workers, mem, thr))
+        return _OPT_POOL
+
+
 def api_optimise(origin: str, dest: str, airline: str = "", carrier_type: str = "FSC",
                  econ_share: float = 0.0, plan_lf: float = 0.875, bus_fare: float = 1400.0,
                  season: str = "annual", aircraft: str = "", freq: int = 0,
@@ -2623,80 +2795,23 @@ def api_optimise(origin: str, dest: str, airline: str = "", carrier_type: str = 
     import schedule_viability as _SV
     VIABLE_LF = _SV.VIABLE_LF
     TARGET_LF = _SS.PLANNING_LF
+    # THE SWEEP, one cell per candidate x carrier type x season, each cell every frequency.
+    # The cells run in order (in a worker pool when AVIA_OPT_WORKERS > 1) and their rows are
+    # collected in that same order, so the selection below sees exactly the list the inline
+    # loop built before 23 September 2026.
+    cells = [{"origin": origin, "dest": dest, "cand": cand, "ct_i": ct_i, "sea_i": sea_i,
+              "freqs": list(_freqs), "dep_fixed": _dep_fixed, "turnaround": turnaround,
+              "curfew_origin": curfew_origin, "curfew_dest": curfew_dest, "partners": partners,
+              "forecast_year": forecast_year, "split_floor": split_floor, "econ_share": econ_share,
+              "dist_nm": dist_nm, "plan_lf": plan_lf, "fare": fare, "bus_fare": bus_fare,
+              "fixed_ac": _fixed_ac}
+             for cand in cands for ct_i in _types for sea_i in _seasons]
+    import time
+    _t_sweep = time.perf_counter()
     rows = []
-    for cand in cands:
-        for ct_i in _types:
-            for sea_i in _seasons:
-                sea_weeks = 28.0 if sea_i == "summer" else 24.0 if sea_i == "winter" else 52.0
-                fc = calibrated_forecast(origin, dest, airline=(cand or None), carrier_type=ct_i,
-                                         aircraft="A21N", freq=7, with_econ=False, season=sea_i,
-                                         induced_floor=False, dep_time_mins=_dep_fixed,
-                                         turnaround_min=(turnaround or None),
-                                         restricted_hours=(curfew_origin or None),
-                                         restricted_hours_dest=(curfew_dest or None), partner_carriers=(partners or None), forecast_year=(forecast_year or None), split_floor=bool(split_floor))   # measured demand for this operator + model + schedule
-                if not fc.get("ok"):
-                    continue
-                # econ_share of 0 from the caller means "measure it". The gauge is chosen on how the
-                # demand splits between the cabins, so the split has to be this market's own rather
-                # than a flat 15% front cabin applied to Silicon Valley and to a leisure route alike.
-                es_i = econ_share if (econ_share and econ_share > 0) else \
-                    (fc["demand"].get("econ_share") or 0.85)
-                demand = fc["demand"].get("total_demand") or fc["demand"]["total"]   # TRUE demand, not the capacity-bound total
-                if demand <= 0:
-                    continue
-                # The demand above is measured at SEVEN weekly and, with AVIA_FREQ_SENSITIVE off, it is
-                # the demand at every frequency, so sizing the whole sweep on it is correct. With the
-                # switch ON it is not: capture moves with frequency, so a single daily reading would
-                # size a 4x schedule on daily demand and a 14x schedule on the same, overstating the
-                # low end and understating the high end. The optimiser would then choose a schedule the
-                # forecast disagrees with, which is the /api/forecast against /api/optimise divergence
-                # this file has already been caught by twice. Re-read demand per frequency when the
-                # switch is on, and only then, so the default path costs nothing.
-                _freq_sensitive = os.environ.get("AVIA_FREQ_SENSITIVE", "").strip() in ("1", "true", "on")
-                _demand_7 = demand
-                for f in _freqs:
-                    demand = _demand_7
-                    if _freq_sensitive:
-                        _fcf = calibrated_forecast(origin, dest, airline=(cand or None), carrier_type=ct_i,
-                                                   aircraft="A21N", freq=f, with_econ=False, season=sea_i,
-                                                   induced_floor=False, dep_time_mins=_dep_fixed,
-                                                   turnaround_min=(turnaround or None),
-                                                   restricted_hours=(curfew_origin or None),
-                                                   restricted_hours_dest=(curfew_dest or None), partner_carriers=(partners or None), forecast_year=(forecast_year or None), split_floor=bool(split_floor))
-                        if not _fcf.get("ok"):
-                            continue
-                        demand = _fcf["demand"].get("total_demand") or _fcf["demand"]["total"]
-                        if demand <= 0:
-                            continue
-                    try:
-                        # THE CARRIER IS NAMED EVEN WHEN THE GAUGE IS FIXED, corrected 14 August 2026.
-                        # airline_iata does two jobs in select_aircraft and they were being confused:
-                        # candidates() uses it to BUILD a pool, and only when no explicit fleet is
-                        # given (line 54, pool = fleet, then `if pool is None and airline_iata`), while
-                        # select_aircraft uses it a second time to read the carrier's OWN cabin out of
-                        # capacity_frame.config_for. Suppressing it whenever the client fixed a gauge
-                        # therefore threw away the configuration as well as the pool it was not being
-                        # asked for. Measured: China Airlines and Starlux fly the A350-900 at 306 seats
-                        # against the generic table's 336, so a fixed A350-900 was sized on 10% more
-                        # capacity than the carrier flies. Passing both is safe because the explicit
-                        # fleet still takes precedence for the pool.
-                        code, ranked = ASsel.select_aircraft(dist_nm, demand, f, plan_lf=plan_lf,
-                                        econ_share=es_i, econ_fare_ow=fare, bus_fare_ow=bus_fare,
-                                        airline_type=ct_i, weeks=sea_weeks,
-                                        airline_iata=(cand or None),
-                                        fleet=([_fixed_ac] if _fixed_ac else None))   # honour a client-fixed gauge, else search
-                    except Exception:
-                        continue
-                    prof = ranked[0]["annual_profit"]; lf = ranked[0].get("total_lf") or 0.0
-                    rows.append({"airline": cand, "aircraft": code, "freq": f, "ctype": ct_i,
-                                 "season": sea_i, "annual_profit": prof, "demand": demand,
-                                 "lf": float(lf),
-                                 # The seat count the gauge was CHOSEN on, carried through so the
-                                 # forecast fills the same aeroplane the optimiser sized. Sizing on
-                                 # one configuration and filling on another is the mismatch the plan
-                                 # load factor cap already had across three modules.
-                                 "seats": ranked[0].get("seats"),
-                                 "seats_source": ranked[0].get("seats_source")})
+    for _cell_rows in _optimise_map(cells):
+        rows.extend(_cell_rows)
+    _sweep_s = round(time.perf_counter() - _t_sweep, 1)
     if not rows:
         return JSONResponse({"ok": False, "error": _explain_infeasible(origin, dest, dist_km, plan_lf)})
 
@@ -2775,7 +2890,11 @@ def api_optimise(origin: str, dest: str, airline: str = "", carrier_type: str = 
                               "selected_lf": (round(float(_sel_lf), 3) if _sel_lf is not None else None),
                               "lf_basis_note": _lf_note,
                               "not_viable": not_viable,
-                              "candidates": len(rows)}
+                              "candidates": len(rows),
+                              # How the sweep ran (23 Sep 2026): cells, workers, seconds. The
+                              # timing harness ignores these keys when diffing payloads.
+                              "sweep_cells": len(cells), "sweep_workers": _opt_workers(),
+                              "sweep_elapsed_s": _sweep_s}
     _record_run(origin, dest, best.get("season") or "annual")   # feeds the welcome-screen counter + recent runs
     return JSONResponse(final)
 
