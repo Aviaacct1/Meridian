@@ -1,0 +1,10 @@
+W1: a pool broken between jobs is rebuilt at the next submit (second half of the rebuild fix)
+
+app/cortex_app.py _optimise_map: pool.submit is now inside the BrokenProcessPool handling. A
+worker that dies while idle leaves the executor broken and the death surfaces at the next
+job's first submit, which the first fix did not cover; now the pool is discarded and rebuilt
+once for that job, with a console line. A death during the job still fails that job with the
+reported message and rebuilds for the next.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_013UJS2WR1LYy7JdejgdnMiC

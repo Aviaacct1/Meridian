@@ -2701,7 +2701,16 @@ def _optimise_map(fn, tasks):
         return
     from concurrent.futures.process import BrokenProcessPool
     pool = _opt_pool(workers)
-    futs = [pool.submit(fn, t) for t in tasks]
+    try:
+        futs = [pool.submit(fn, t) for t in tasks]
+    except BrokenProcessPool:
+        # A worker died BETWEEN jobs (the executor notices a dead child at the next submit).
+        # Discard it and start a fresh pool for this job, once; a second failure raises below.
+        _opt_pool_discard()
+        print("optimise: worker pool was broken before this job (a worker died idle); "
+              "rebuilt with %d workers" % workers)
+        pool = _opt_pool(workers)
+        futs = [pool.submit(fn, t) for t in tasks]
     try:
         for f in futs:
             _cc = _RF.CANCEL_CHECK.get()
