@@ -1,0 +1,9 @@
+Controller 23 Sep close: frequency split shipped and measured; 12-worker failure; handover 21:00
+
+- GTM-STRATEGY-ROUTES-2026.md: W1 row, pre-mortem 19 evening status, decision 23 Sep late
+  evening (split numbers, the 12-worker failure, server found down at 20:15).
+- HANDOVER-CONTROLLER-23Sep2026.md: 21:00 rolling update, section 1b.
+Evidence: E:\Avia\probe\OPT-23Sep-split-w1 / -w8 / -w12; John's pastes 23 Sep.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_013UJS2WR1LYy7JdejgdnMiC
