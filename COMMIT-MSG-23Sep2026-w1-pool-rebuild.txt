@@ -1,0 +1,15 @@
+W1: a broken Optimise worker pool is discarded and rebuilt on the next call; the failed job reports it
+
+app/cortex_app.py: _optimise_map catches BrokenProcessPool (a worker killed mid-sweep; seen
+23 Sep at twelve workers, memory), discards the executor (_opt_pool_discard, shutdown
+wait=False), prints the cause on the console and raises a RuntimeError naming it, so the
+job shows "error" with a reason and the next Optimise starts a fresh pool. Before this,
+every Optimise after a worker death failed in two seconds until the server was restarted.
+No retry and no sequential fallback, by design.
+
+Test on the workstation: start an Optimise (airline blank), Stop-Process one worker python
+PID during the sweep; the job must fail with the worker-terminated message within seconds;
+the next Optimise must complete and its payload diff clean against OPT-23Sep-fix-w1.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_013UJS2WR1LYy7JdejgdnMiC
