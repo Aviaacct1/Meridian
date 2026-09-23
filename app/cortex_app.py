@@ -1162,9 +1162,21 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
             # one must never read a cached optimum taken without it.
             # No restriction is assumed at either end. A curfew is a fact about an airport that
             # somebody has to know, so it is entered rather than inferred.
+            #
+            # THE WEEKLY FREQUENCY IS PART OF THE KEY (John's ruling, 23 September 2026). The
+            # optimiser is handed freq and the QSI connection quality takes the lower of the two
+            # legs' frequencies (qsi_feed, itinerary frequency), so the feed curve and the shares
+            # it returns are different at 4x and at 7x. Without freq in the key, the first call on
+            # a pair in a server process (the Optimise sizing pass, always 7x) answered for every
+            # later call on that pair at any frequency, the final Optimise forecast included, and
+            # the same route gave different feed figures depending on what had run before it in
+            # the process. Found 23 Sep by the payload diff between a one-worker and an
+            # eight-worker sweep on SJC-TPE (beyond feed 5.8% cached at 7x against 4.7% computed at
+            # the chosen frequency); John had seen the Taif result move between runs the day
+            # before. The fifth instance of the missing-key silent-default shape.
             _rh, _rd = _rh_disp, _rd_disp
             _dk = ("dep", home, dest_airport, airline, ctx["week"], ctx["year"], str(_rh), str(_rd),
-                   ",".join(_partners), str(_turn_min))
+                   ",".join(_partners), str(_turn_min), str(freq))
             if _dk not in S:
                 import route_feed as _RFD
                 try:

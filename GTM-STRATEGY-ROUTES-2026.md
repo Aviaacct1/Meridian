@@ -507,6 +507,25 @@ five contacts.
   morning's engine-bt2 save PASS, all three Run payloads IDENTICAL (my --skip-full made the
   first diff void; the second was run in full).
 
+- 23 Sep 2026 (John): FREQUENCY GOES INTO THE DEPARTURE-OPTIMUM CACHE KEY, inside the freeze.
+  Verbatim: "I have been noticing odd results on occasion in the last 23 houts. The Taif result
+  optimised changed a couple of times as I ran it. Our model should be consistent It sounds
+  like this is the cause of that inconsisteny so we should absolutely fix it and inclde freq
+  in the opt method." Context: W1 job 0 (parallel Optimise, 345e2e3) measured 5.5-6x (full
+  sweep 78.6 / 85.2 / 58.7s at 8 workers against 466.7 / 429.0 / 332.3s at 1) with Run
+  payloads identical, but the SJC-TPE full-sweep payload differed in 57 fields, all in the
+  final forecast's departure block (beyond feed 0.058 -> 0.047, the curve). Cause, read in
+  code: the departure-optimum cache S[_dk] in calibrated_forecast omitted the weekly
+  frequency, which optimise_departure receives and qsi_feed uses (itinerary frequency = the
+  lower leg); the 7x sizing pass filled the cache and every later call on the pair in the
+  same process, the final Optimise forecast and any later Run included, read the 7x curve.
+  The eight-worker figure was the fresh one. Fifth instance of the missing-key silent default.
+  Consequences: (a) W1 adds freq to the key (one line; no demand logic changed); (b) feed
+  figures move on any route whose chosen or entered frequency is not 7x; (c) W3 re-runs every
+  SJC-TPE and Bologna-New York figure in the deck, pack and video after the fix and compares,
+  before 3 Oct; (d) the three-run pool test repeats with a fresh control, since today's
+  control carries the cached figure; (e) a cell now runs a departure optimisation per
+  frequency, so the sweep is slower per cell and the worker count matters more; measured next.
 ## Waiting on John
 
 1. CLOSED 19 Sep: HEAD `11a4c3f` confirmed and pushed.

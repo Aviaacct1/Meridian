@@ -262,3 +262,16 @@ carries "each way" or "two-way" in its own label; the workbook already does. One
   those are the internal claimset, not the ruled line.
 - Bologna-New York (item 26), the video third route (item 45) and sentence 2.3 A/B (item 44)
   are still John's; unchanged.
+
+## 23 September 2026: SJC-TPE and BLQ-JFK figures are provisional until re-run (controller)
+
+A cache defect in calibrated_forecast (the departure-optimum cache omitted the weekly
+frequency; umbrella decisions log, 23 Sep) means any Optimise result, and any Run made after
+another run on the same pair in the same server process, may carry the connecting-feed curve
+computed at 7x rather than at the schedule shown. John ruled the fix in on 23 Sep. Once the
+controller confirms the fix is on the workstation (W1-STATUS / the umbrella Status block),
+re-run every SJC-TPE and Bologna-New York figure that appears in the deck, the pack, the PDF
+and the video script, on a freshly restarted server, and record old against new in
+W3-STATUS with the run's frequency. Where a figure moved, the surface is rebuilt before it
+goes to Jol and Nick on 3 Oct. Nothing on any of those surfaces is final until this is done.
+

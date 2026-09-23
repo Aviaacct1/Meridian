@@ -96,7 +96,7 @@ def _optimise(op, base, q, timeout=1800, save=None):
             if st == "done":
                 res = j.get("result") or {}
                 note = ""
-                o = res.get("optimise") if isinstance(res.get("optimise"), dict) else res
+                o = res.get("optimised") if isinstance(res.get("optimised"), dict) else res
                 if isinstance(o, dict) and o.get("sweep_workers") is not None:
                     note = "cells %s, workers %s, sweep %ss" % (o.get("sweep_cells"), o.get("sweep_workers"), o.get("sweep_elapsed_s"))
                 if save:

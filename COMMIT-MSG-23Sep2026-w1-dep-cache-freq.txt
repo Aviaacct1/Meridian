@@ -1,0 +1,18 @@
+W1: weekly frequency joins the departure-optimum cache key (John's ruling 23 Sep); harness note reads the optimised block
+
+app/cortex_app.py calibrated_forecast: S[_dk] now includes str(freq). optimise_departure is
+handed freq and qsi_feed's itinerary frequency is the lower leg, so the feed curve and shares
+differ by frequency; without freq in the key the 7x sizing pass answered for every later
+call on the pair in the process (the final Optimise forecast and later Runs included). Found
+23 Sep by the one-worker v eight-worker payload diff on SJC-TPE (beyond 0.058 cached v 0.047
+fresh); John had seen Taif move between runs. Fifth missing-key instance. No demand logic
+changed; the engine is now asked at the frequency it reports.
+
+diag_routes_timing.py: the note column reads the payload's "optimised" block (cells,
+workers, sweep seconds).
+
+Consequence: feed figures move where the frequency is not 7x; W3 re-runs SJC-TPE and BLQ-JFK
+(W3-RULINGS 23 Sep). Pool test repeats with a fresh control.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_013UJS2WR1LYy7JdejgdnMiC
