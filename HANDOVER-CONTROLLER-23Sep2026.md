@@ -1,4 +1,4 @@
-# HANDOVER: programme controller, 24 September 2026, 11:00 BST (rolling; started 23 Sep)
+# HANDOVER: programme controller, 24 September 2026, 15:00 BST (rolling; started 23 Sep)
 
 For controller chat 3 (Fable) after a compaction, or chat 4. Read after
 `PROMPT-for-Fable-Controller3-22Sep2026.txt` and instead of HANDOVER-CONTROLLER-22Sep2026.md,
@@ -101,11 +101,23 @@ the workstation is d607d22 plus that pull.
   figure; unrestricted runs unchanged; approved freeze exception confined to restricted runs.
 - Market background shows "Direct service today: None" for SJC-TPE (two nonstop operators
   in the OAG week). W2 to check the market-brief query against the OAG store.
-- Pool kill test NOT yet completed (idle-worker kill happened once with no observed
-  outcome; mid-sweep kill not done). Blocked on the Enter key of John's HP Envy work laptop (not the MateBook), which
-  fails in consoles and at the Windows sign-in but works in Word, since two days ago;
-  Restart did not clear it; John suspects the two simultaneous RustDesk sessions. Full
-  shutdown / external keyboard next.
+- Pool kill test DONE 24 Sep afternoon on 19d94df, eight workers, MCT master loaded:
+  mid-sweep kill (worker 60684) gave the panel "Optimise failed: a worker process was
+  terminated (memory or crash); the pool has been rebuilt, run Optimise again" and the next
+  Optimise completed; idle kill (worker 69492) took the other seven down with it (Python's
+  pool manager does that itself, count went to 0), the next Optimise completed and the count
+  came back to 8. Both cases PASS. Cosmetic for W1: strip "RuntimeError:" from the panel.
+- RULING 24 Sep (verbatim in the umbrella decisions log): season blank means the headline
+  is the annual row carrying the most two-way passengers within the viable load factor band
+  (limits John's to set, 65-85% working assumption); one line names a seasonal row that
+  fills better ("select Winter and Optimise again"), nothing otherwise; explicit season
+  honoured as today. Cause found: api_optimise ranks all rows by nearest-to-80% LF and
+  economics never enter the choice, so EVA B789 5x winter 51,196 beats CI 7x A359 annual
+  172,216 on SJC-TPE. Ships with the curfew must-fix; acceptance three-pair diff plus a
+  blank-form SJC-TPE run three times identical with the annual row as headline. Panel
+  wording ("optimised" = best-supported by demand, not most profitable) to W4.
+- HP Envy Enter/Backspace: intermittent (came back on its own 24 Sep 14:30); on-screen
+  keyboard works, so an external keyboard (wired or wireless) bypasses it. Not RustDesk.
 - Runbook facts: a server launched from one window is stopped only from a window with at
   least its rights (elevated stop, normal launch); "re-warming (no relaunch)" in the
   launcher output means the stop did not happen; QSI_PASSWORD is set by

@@ -1,0 +1,11 @@
+Controller 24 Sep: pool kill test passed both cases; Optimise headline ruling
+
+- Umbrella decisions log: John's ruling on the blank-form Optimise headline (annual
+  row by passengers within the LF band; one-line seasonal note; explicit season
+  honoured), the cause (nearest-to-80% ranking, economics not in the choice), the
+  build spec and acceptance; kill test result on 19d94df.
+- Handover rewritten 15:00: kill test closed, ruling, HP Envy keyboard finding.
+- W2-RULINGS: 24 Sep launcher edits and runbook lines (already written, now committed).
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_013UJS2WR1LYy7JdejgdnMiC

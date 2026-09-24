@@ -568,6 +568,31 @@ five contacts.
   curve at the chosen departure. Wording on the page and in the pack: W3, W4 informed.
 - 24 Sep 2026 (John): "the optimise times have all been super wuick" on the eight-worker
   server with the MCT master loaded, recorded as the first user-side reading of job 0.
+- 24 Sep 2026 (John): RULING, Optimise headline with nothing selected. Kill test step 2
+  completed on the rebuilt pool (pass) but returned EVA B789 5x winter 51,196 for SJC-TPE
+  with season and airline blank, the same result John called nonsense on 23 Sep; the
+  annual China Airlines 7x A359 row (172,216) only appears when season is set to annual.
+  Cause: api_optimise ranks every row, seasonal included, by nearest-to-80% load factor;
+  economics never enter the choice, so a thin winter schedule beats a 7x annual one.
+  Verbatim: "to paraphrase we will change to do the optimised annual if nothing is
+  selected.  but if there is an optimised seasonal case that is better that emerges, it
+  will put a note in the result that a X service winter summer would achive a higher LF if
+  they were to run that (i.e. select summer and optimise again.  Then we have told them and
+  they can decide what they want to do". Build (W1): season blank means the headline is the
+  annual row carrying the most two-way passengers within the viable load factor band (band
+  limits to be set by John; 65-85% is the working assumption until then); seasonal rows
+  stay in the sweep table; when a seasonal row beats the chosen annual row on load factor
+  the result carries one line naming it ("A 5x weekly B789 winter-only service would run at
+  76.7% load factor; select Winter and Optimise again to see it") and no line otherwise; an
+  explicit Annual, Summer or Winter selection is honoured as today and the line is
+  suppressed. Ships with the curfew must-fix (same selection code), acceptance is the
+  three-pair diff plus a blank-form SJC-TPE run whose headline is the annual row, run three
+  times with identical output. Panel wording that "optimised" means the best-supported
+  schedule by demand, not the most profitable, goes to W4.
+- 24 Sep 2026: kill test on 19d94df, eight workers. Mid-sweep worker kill: panel showed
+  "Optimise failed: a worker process was terminated (memory or crash); the pool has been
+  rebuilt, run Optimise again" (PASS); the next Optimise completed (PASS). Idle-worker case
+  not yet run. Cosmetic for W1: the panel prefixes "RuntimeError:", strip the class name.
 ## Waiting on John
 
 1. CLOSED 19 Sep: HEAD `11a4c3f` confirmed and pushed.
