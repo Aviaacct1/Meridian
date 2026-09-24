@@ -1,0 +1,33 @@
+W1: a binding curfew moves the headline; Optimise headline is the annual schedule with most passengers in band
+
+Curfew (John's must-fix, 24 Sep): calibrated_forecast passes score/unrestricted_score
+from the departure optimiser as feed_cfg restriction_factor when the permitted departure
+is not the unrestricted optimum; route_forecast scales the flat feed level (beyond,
+behind, PTEW maps, detail rows) by it before season share, split floor and capacity cap.
+Unrestricted runs set no factor and are unchanged. schedule.optimised gains
+restriction_factor and unrestricted_connecting_carried only when a restriction bound;
+the dashboard curfew line says the headline is at the permitted departure and what the
+route would have carried unrestricted (the curve's unrestricted peak already shows it,
+because the curve is anchored on the carried figure at the chosen departure).
+
+Selection (John's ruling, 24 Sep, verbatim in the umbrella): with season blank the
+headline is the ANNUAL row carrying the most passengers within [VIABLE_LF, PRESENT_LF_CAP]
+(cap 0.85 is a working assumption until John sets it); seasonal rows stay in the sweep and
+one seasonal_note names a seasonal schedule that fills better and says to select that
+season and Optimise again; an explicit season runs the same rule over its own rows with no
+note; no row in band falls to most passengers above the floor (selection_note); no annual
+row viable but a seasonal one is falls to that seasonal row (selection_note); nothing
+viable keeps the not_viable report. Replaces nearest-to-80% ranking. Payload optimised
+block: objective text, present_lf_cap, selection_note, seasonal_note; dashboard shows both
+notes on the basis line.
+
+Panel error text: a RuntimeError raised for the panel (pool rebuild) is shown without
+the class name.
+
+Acceptance: three-pair probe --diff against OPT-23Sep-split-w8, full_ and named_ payloads
+IDENTICAL, opt_ payloads differ only by the selection; blank-form SJC-TPE Optimise three
+times identical with the annual row as headline; SJC-TPE CI 7x A359 with origin curfew
+21:00-06:00, headline equals the curve at the chosen departure.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_013UJS2WR1LYy7JdejgdnMiC

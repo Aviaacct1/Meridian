@@ -1825,7 +1825,7 @@ function render(d){
   // wrong objective is worse than one that names none, because a reader takes it on trust.
   if(d.optimised){ const op=d.optimised;
     const _obj = op.objective ? ("Optimised for "+op.objective
-                   +(op.target_lf?" (target "+Math.round(op.target_lf*100)+"%, floor "+Math.round(op.viable_lf*100)+"%)":""))
+                   +((op.target_lf && !op.present_lf_cap)?" (target "+Math.round(op.target_lf*100)+"%, floor "+Math.round(op.viable_lf*100)+"%)":""))
                 : "Optimised";
     // Name beside the code (19 Aug 2026): "DE (auto-chosen)" told nobody DE is Condor.
     const _aldisp = op.airline ? ((op.airline_name?op.airline_name+" ("+op.airline+")":op.airline)
@@ -1834,6 +1834,11 @@ function render(d){
     // Both notes are things the run knows and a reader would otherwise have to infer.
     if(op.lf_basis_note) $("#basis").textContent += "  Load factor "+op.lf_basis_note+".";
     if(op.not_viable) $("#basis").textContent += "  "+op.not_viable;
+    // 24 Sep 2026 (John's ruling): the headline is the annual schedule with the most passengers
+    // in the band; a seasonal schedule that fills better is NAMED in one line, never shown in
+    // its place, and the user chooses whether to run it.
+    if(op.selection_note) $("#basis").textContent += "  Selection: "+op.selection_note+".";
+    if(op.seasonal_note) $("#basis").textContent += "  "+op.seasonal_note;
   }
   // WHAT THIS RUN ANSWERED. The same city pair returns a different number depending
   // on whether an airline is attached, and both answers are right: the market on its
@@ -1974,8 +1979,18 @@ function render(d){
       // the opposite of what it says. On a page an airport takes to a curfew review, that
       // sentence is the one they stop on.
       `Restricted ${_win.join(", ")}  ·  best permitted departure ${_sc.outbound.dep}  ·  `+
-      `would depart ${_op.unrestricted_dep} if unrestricted  ·  cost ${fmt(_cost)} connecting demand`);
+      `would depart ${_op.unrestricted_dep} if unrestricted  ·  cost ${fmt(_cost)} connecting demand`+
+      (_op.restriction_factor && _op.unrestricted_connecting_carried
+        ? `  ·  the forecast above carries the restricted departure; unrestricted, connecting `+
+          `${fmt(_op.unrestricted_connecting_carried)} two-way (${Math.round((1-_op.restriction_factor)*100)}% lost to the restriction)`
+        : ""));
     _cbz.textContent =
+      (_op.restriction_factor
+        ? "The headline forecast is at the permitted departure: the connecting feed is the flat "+
+          "level scaled by the permitted departure's score against the unrestricted optimum "+
+          "(24 September 2026). The chart's unrestricted peak shows what the route would have "+
+          "carried without the restriction.  "
+        : "")+
       "The cost is the connecting demand the route wins at the permitted time against the "+
       "unrestricted time, measured before capture scaling, before the local and connecting re-split "+
       "and before the aircraft's capacity. It is not a carried-passenger figure."+

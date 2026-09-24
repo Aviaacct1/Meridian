@@ -704,6 +704,37 @@ def forecast(sabre_db, oag_db, week, origin, dest_codes, competing_airports, *, 
             _feed_err = ("feed layer: %s: %s" % (type(_e).__name__, _e))[:300]
             if feed_cfg is not None:
                 feed_cfg["_feed_error"] = _feed_err
+    # A RESTRICTION THAT MOVES THE DEPARTURE MOVES THE HEADLINE (John's must-fix, 24 September
+    # 2026). Since 15 August the feed LEVEL is the V1 flat capture and only the TIMING comes from
+    # the departure optimiser, so a curfew that pushed the outbound off its optimum changed the
+    # schedule line and left the connecting figure exactly where it was: on SJC-TPE a 21:00-06:00
+    # origin curfew moved the departure from 00:15 to 20:59 and the headline stayed 172,216.
+    # The optimiser already scores every departure and returns the permitted best beside the
+    # unrestricted best; the caller passes the ratio of the two as restriction_factor (1.0 or
+    # absent when nothing binds) and the flat level is scaled by it here, before the season
+    # share, the split floor and the capacity cap, so every downstream figure moves with it.
+    # The chart anchors its curve on the carried figure at the chosen departure, so the
+    # unrestricted peak on the chart reads as what the route would have carried. Unrestricted
+    # runs pass no factor and are unchanged (acceptance: the three-pair payload diff).
+    _rfac = None
+    if feed_cfg is not None:
+        try:
+            _rfac = float(feed_cfg.get("restriction_factor") or 0.0) or None
+        except (TypeError, ValueError):
+            _rfac = None
+    if _rfac is not None and 0.0 < _rfac < 1.0 and (feed_beyond or feed_behind):
+        feed_beyond *= _rfac
+        feed_behind *= _rfac
+        beyond_pdew = {c: round(v * _rfac, 1) for c, v in beyond_pdew.items()}
+        behind_pdew = {c: round(v * _rfac, 1) for c, v in behind_pdew.items()}
+        for _dm in (beyond_detail, behind_detail):
+            for _c in _dm.values():
+                if _c.get("captured") is not None:
+                    _c["captured"] *= _rfac
+                if _c.get("pdew") is not None:
+                    _c["pdew"] *= _rfac
+    else:
+        _rfac = None
     # Item 9: capped market-size discount on the P2P capture, keyed off the MEASURED market (natural),
     # so a thin-market over-read is trimmed while mid/large markets (already unbiased) are untouched.
     # Applied to captured only (the P2P over-read); the feed carries its own calibration.
@@ -976,6 +1007,8 @@ def forecast(sabre_db, oag_db, week, origin, dest_codes, competing_airports, *, 
         "p2p_carried": round(p2p_carried), "connecting_carried": round(conn_carried),
         "p2p_share": round(p2p_share_v, 3),
         "feed_beyond": round(feed_beyond), "feed_behind": round(feed_behind),
+        # The factor a binding restriction applied to the feed level (None when none bound).
+        "restriction_factor": (round(_rfac, 4) if _rfac is not None else None),
         # None on a clean run. A string here means the feed layer CRASHED and the zeros
         # above are a fault, not a market: the portal warns, deck_from_cases refuses.
         "feed_error": _feed_err,

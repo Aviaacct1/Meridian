@@ -1236,6 +1236,16 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
             # behind side to the bare 0.06 default by a different route.
             if qsi_k_behind is not None:
                 feed_cfg["qsi_k_behind"] = float(qsi_k_behind)
+            # A BINDING RESTRICTION SCALES THE FEED LEVEL (John's must-fix, 24 September 2026).
+            # The optimiser returns the permitted best beside the unrestricted best; when they
+            # differ, the ratio of their scores is the share of the connecting demand the
+            # permitted departure keeps, and route_forecast applies it to the flat level. When
+            # nothing binds (no curfew, or the curfew leaves the optimum alone) the two scores
+            # are equal and no factor is set, so unrestricted runs are byte-for-byte unchanged.
+            _rf_num = (feed_opt or {}).get("score")
+            _rf_den = (feed_opt or {}).get("unrestricted_score")
+            if _rf_num is not None and _rf_den and float(_rf_den) > 0 and float(_rf_num) < float(_rf_den):
+                feed_cfg["restriction_factor"] = float(_rf_num) / float(_rf_den)
     # SEASONAL: scale annual demand by the season's share (haul + type profile) and run capacity over the
     # season's weeks. season='annual' leaves everything unchanged.
     import seasonality_engine as SE
@@ -1495,7 +1505,16 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
                          # columns and could only print the grown figure with growth 0.
                          growth_rate=round(growth or 0.0, 5), growth_years=growth_years,
                          base_year=base_year,
-                         optimised=(feed_opt or {}) if feed_opt else None,
+                         # The two restriction keys are added ONLY when a restriction bound, so
+                         # an unrestricted payload is byte-for-byte what it was before 24 Sep.
+                         optimised=((dict(feed_opt, restriction_factor=r.get("restriction_factor"),
+                                          # what the headline would have carried unrestricted, on
+                                          # the same carried basis as the figures above it
+                                          unrestricted_connecting_carried=(
+                                              round(float(r["connecting_carried"]) / float(r["restriction_factor"]))
+                                              if r.get("connecting_carried") else None))
+                                     if r.get("restriction_factor") else feed_opt)
+                                    if feed_opt else None),
                          indicative=(dep_mins is None)),
         # THE FEED LEVEL, REPORTED RATHER THAN ASSUMED. A connecting figure built at k=1.0 and one
         # built at k=0.06 are different forecasts and the page said nothing about which it was.
@@ -2885,16 +2904,46 @@ def api_optimise(origin: str, dest: str, airline: str = "", carrier_type: str = 
     if not rows:
         return JSONResponse({"ok": False, "error": _explain_infeasible(origin, dest, dist_km, plan_lf)})
 
-    # SELECTION. The schedule whose planned fill sits nearest the target, among those clearing the
-    # viable floor. The tie-break is the HIGHER frequency, which is schedule_sizing._closest's own
-    # documented rule and is used here rather than reinvented: two schedules the same distance from
-    # the target are not equally good to propose, and the one with more flights carries more people
-    # and leaves more room in a soft season.
-    _closest = lambda rs: min(rs, key=lambda r: (abs(r["lf"] - TARGET_LF), -r["freq"]))
-    viable = [r for r in rows if r["lf"] >= VIABLE_LF]
-    if viable:
-        best = _closest(viable)
-        not_viable = None
+    # SELECTION (John's ruling, 24 September 2026, verbatim in the umbrella decisions log). The
+    # 8 August objective above is passengers subject to the load factor reaching the planning
+    # band, but what ran until today was "nearest to 80%", which is a fill objective: it ranked
+    # every row, seasonal rows included, by distance from the target and economics never entered
+    # the choice, so on SJC-TPE with nothing selected a 5x winter-only B789 at 76.7% (51,196
+    # two-way) beat a 7x annual A359 carrying 172,216. Now:
+    #   1. With the season BLANK the headline is the ANNUAL schedule carrying the most passengers
+    #      within the presentable band [VIABLE_LF, PRESENT_LF_CAP]. Seasonal rows stay in the
+    #      sweep and, when one fills better than the chosen annual schedule, the result carries
+    #      ONE line naming it and telling the user to select that season and Optimise again.
+    #   2. With a season CHOSEN the same rule runs over that season's rows and no note is written.
+    #   3. No row in the band: the most passengers among rows clearing the floor, said so. No row
+    #      clearing the floor at all: the not_viable report below, unchanged.
+    # Passengers are the row's measured demand at its frequency (TRUE demand, the figure the gauge
+    # was sized on); within the band that is what the schedule carries. Ties go to the higher
+    # load factor, then the higher frequency.
+    PRESENT_LF_CAP = 0.85   # WORKING ASSUMPTION until John sets the band's upper limit (24 Sep 2026)
+    _season_blank = season not in ("annual", "summer", "winter")
+    _pool = [r for r in rows if r.get("season", "annual") == "annual"] if _season_blank else list(rows)
+    _most_pax = lambda rs: max(rs, key=lambda r: (r["demand"], r["lf"], r["freq"]))
+    band = [r for r in _pool if VIABLE_LF <= r["lf"] <= PRESENT_LF_CAP]
+    viable = [r for r in _pool if r["lf"] >= VIABLE_LF]
+    not_viable = None
+    selection_note = None
+    seasonal_note = None
+    if band:
+        best = _most_pax(band)
+    elif viable:
+        best = _most_pax(viable)
+        selection_note = ("no schedule plans between %.0f%% and %.0f%%; the most passengers among "
+                          "those clearing the floor is shown, planning at %.0f%%"
+                          % (VIABLE_LF * 100, PRESENT_LF_CAP * 100, best["lf"] * 100))
+    elif _season_blank and any(r["lf"] >= VIABLE_LF for r in rows):
+        # No annual schedule is a proposition but a seasonal one is: show it and say why.
+        _sea = [r for r in rows if r["lf"] >= VIABLE_LF]
+        _sb = [r for r in _sea if r["lf"] <= PRESENT_LF_CAP] or _sea
+        best = _most_pax(_sb)
+        selection_note = ("no annual schedule in the search reaches a %.0f%% planned load; the "
+                          "%s-only schedule shown is the best-supported seasonal service"
+                          % (VIABLE_LF * 100, best.get("season")))
     else:
         # NOT a silent fallback to profit-max, which is what this did before and is how a 33% fill
         # became the recommended answer. Report the closest any schedule gets and say plainly that
@@ -2906,6 +2955,16 @@ def api_optimise(origin: str, dest: str, airline: str = "", carrier_type: str = 
                       "%d a week, planning at %.0f%%. Reported so the route can be screened out on "
                       "the evidence; it is not a recommendation."
                       % (VIABLE_LF * 100, best["aircraft"], best["freq"], best["lf"] * 100))
+    if _season_blank and best.get("season", "annual") == "annual":
+        _sea_better = [r for r in rows if r.get("season") in ("summer", "winter")
+                       and r["lf"] >= VIABLE_LF and r["lf"] > best["lf"]]
+        if _sea_better:
+            _sb = max(_sea_better, key=lambda r: (r["lf"], r["demand"], r["freq"]))
+            seasonal_note = ("A %dx weekly %s %s-only service would plan at %.0f%% load factor "
+                             "against %.0f%% for the annual schedule shown; select %s and "
+                             "Optimise again to see it."
+                             % (_sb["freq"], _sb["aircraft"], _sb["season"], _sb["lf"] * 100,
+                                best["lf"] * 100, _sb["season"].capitalize()))
     final = calibrated_forecast(origin, dest, airline=(best["airline"] or None), carrier_type=best.get("ctype", carrier_type),
                                 aircraft=best["aircraft"], freq=best["freq"],
                                 econ_share=(econ_share if (econ_share and econ_share > 0) else None),
@@ -2955,8 +3014,12 @@ def api_optimise(origin: str, dest: str, airline: str = "", carrier_type: str = 
                               # carrier does not fly and the store therefore cannot describe.
                               "seats": best.get("seats"), "seats_source": best.get("seats_source"),
                               # what it optimised FOR, so the output says which question it answered
-                              "objective": "passengers at the planning load factor",
+                              "objective": ("most passengers within the %.0f-%.0f%% planning band"
+                                            % (VIABLE_LF * 100, PRESENT_LF_CAP * 100)),
                               "target_lf": TARGET_LF, "viable_lf": VIABLE_LF,
+                              "present_lf_cap": PRESENT_LF_CAP,
+                              "selection_note": selection_note,
+                              "seasonal_note": seasonal_note,
                               "selected_lf": (round(float(_sel_lf), 3) if _sel_lf is not None else None),
                               "lf_basis_note": _lf_note,
                               "not_viable": not_viable,
@@ -3377,8 +3440,12 @@ def api_optimise_start(request: Request, origin: str, dest: str):
         except _RF.OptimiseCancelled:
             OPT_JOBS[job_id] = {"state": "cancelled"}
         except Exception as e:                               # noqa: BLE001
+            # A RuntimeError raised by this module carries a sentence written for the panel
+            # (the pool-rebuild report, 23 Sep 2026); the class name in front of it is noise
+            # to a client. Any other exception keeps its class, which is the diagnosis.
             OPT_JOBS[job_id] = {"state": "error",
-                                "error": "%s: %s" % (type(e).__name__, e)}
+                                "error": (str(e) if isinstance(e, RuntimeError) and str(e).startswith("Optimise failed")
+                                          else "%s: %s" % (type(e).__name__, e))}
         finally:
             _RF.CANCEL_CHECK.reset(token)
 
