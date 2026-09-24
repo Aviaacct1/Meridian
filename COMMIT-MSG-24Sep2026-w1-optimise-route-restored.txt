@@ -1,0 +1,10 @@
+W1: GET /api/optimise route restored (decorator had landed on _cell_kw in the 23 Sep split)
+
+The 23 Sep split inserted _cell_kw, _optimise_base, _optimise_freq and _optimise_map
+between the @app.get("/api/optimise") decorator and api_optimise, so the direct GET
+returned 422 ("query c: field required") since 6065e18. The dashboard and the timing
+harness use /api/optimise/start, which calls the function directly, so neither saw it.
+Found 24 Sep by a direct Invoke-RestMethod call.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_013UJS2WR1LYy7JdejgdnMiC

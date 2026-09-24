@@ -2602,7 +2602,6 @@ def api_hubbank(origin: str = "", dest: str = "", airline: str = ""):
                          "total_daily_deps": round(sum(b["daily_deps"] for b in banks), 1)})
 
 
-@app.get("/api/optimise")
 def _cell_kw(c):
     """The calibrated_forecast keyword set a cell's forecasts share (everything but freq)."""
     return dict(airline=(c["cand"] or None), carrier_type=c["ct_i"], aircraft="A21N",
@@ -2827,6 +2826,7 @@ def _opt_pool(workers):
         return _OPT_POOL
 
 
+@app.get("/api/optimise")
 def api_optimise(origin: str, dest: str, airline: str = "", carrier_type: str = "FSC",
                  econ_share: float = 0.0, plan_lf: float = 0.875, bus_fare: float = 1400.0,
                  season: str = "annual", aircraft: str = "", freq: int = 0,
