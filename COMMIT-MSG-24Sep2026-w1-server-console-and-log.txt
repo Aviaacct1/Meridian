@@ -1,0 +1,11 @@
+W1: the server console stays open after an exit and its output is written to app\logs
+
+The server died mid-request during the DUB-DFW probe (16:59, 24 Sep) and its console
+closed with it, so the line that said why was lost; same shape as the server found down
+on 23 Sep. warm_demo now runs the server inside a PowerShell window with -NoExit and
+tees every line to app\logs\server-<stamp>.log (PYTHONUNBUFFERED so the log is current
+at a crash). app/logs/ is gitignored. The launcher's closing line no longer says
+"Meridian has stopped" while the server is running.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_013UJS2WR1LYy7JdejgdnMiC

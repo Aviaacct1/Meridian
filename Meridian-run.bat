@@ -37,6 +37,7 @@ echo  close the old server window first, then run this again.
 echo.
 py -3.12 warm_demo.py
 echo.
-echo  Meridian has stopped. This window stays open so any error above
-echo  can be read rather than vanishing with the window.
+echo  The launcher has finished. The server keeps running in its own window
+echo  (its output is also in app\logs\server-*.log). This window stays open so
+echo  anything above can be read; if the server window shows an error, read it there.
 pause

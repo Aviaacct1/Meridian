@@ -122,3 +122,6 @@ secrets.json
 postmark_token.txt
 .env
 .env.*
+
+# server console logs written by warm_demo (24 Sep 2026)
+app/logs/

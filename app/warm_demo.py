@@ -98,6 +98,25 @@ def _server_env(a):
 def _start_server(py, port, env):
     print(f"  launching server: {py} -m uvicorn cortex_app:app --port {port}")
     creation = subprocess.CREATE_NEW_CONSOLE if os.name == "nt" else 0
+    if os.name == "nt":
+        # THE SERVER CONSOLE STAYS OPEN AND ITS OUTPUT IS ON DISK (24 September 2026). The server
+        # died mid-request during the DUB-DFW probe and its console closed with it, so the one
+        # line that said why was gone before anyone could read it; the same shape as the server
+        # found down on 23 September. The server now runs inside a PowerShell window that does
+        # not exit when the server does (-NoExit) and every line it prints is also written to
+        # app\logs\server-<stamp>.log through Tee-Object. PYTHONUNBUFFERED so the log is
+        # current at the moment of a crash rather than a block behind it. Stop-Process on the
+        # python process still works; the window then shows its last output.
+        env = dict(env)
+        env["PYTHONUNBUFFERED"] = "1"
+        logs = os.path.join(HERE, "logs")
+        os.makedirs(logs, exist_ok=True)
+        log = os.path.join(logs, time.strftime("server-%Y%m%d-%H%M%S.log"))
+        print(f"  server log: {log}")
+        cmd = ('& "%s" -m uvicorn cortex_app:app --port %d 2>&1 | Tee-Object -FilePath "%s"'
+               % (py, int(port), log))
+        return subprocess.Popen(["powershell", "-NoLogo", "-NoExit", "-Command", cmd],
+                                cwd=HERE, env=env, creationflags=creation)
     return subprocess.Popen([py, "-m", "uvicorn", "cortex_app:app", "--port", str(port)],
                             cwd=HERE, env=env, creationflags=creation)
 
