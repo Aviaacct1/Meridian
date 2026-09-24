@@ -1,0 +1,13 @@
+Controller 24 Sep close: consolidated handover, chat 4 prompt, W9 opens, Status rewritten
+
+- HANDOVER-CONTROLLER-24Sep2026.md: consolidates the 22 and 23 Sep handovers; W1's build
+  day and acceptance, the W1 queue, workstation procedure, every workstream's state and
+  what is due, W9's opening, Postmark, step C, diary, traps.
+- PROMPT-for-Fable-Controller4-25Sep2026.txt: paste-ready prompt for controller chat 4.
+- routes/W9-RULINGS.md: Informa named Full Vision as the shell scheme contractor 24 Sep;
+  W9's first five jobs; graphics decision by 30 Sep.
+- Umbrella: Status prose and the W9 row rewritten for the close of chat 3.
+- HANDOVER-CONTROLLER-23Sep2026.md: last rolling edits (superseded by the 24 Sep file).
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_013UJS2WR1LYy7JdejgdnMiC

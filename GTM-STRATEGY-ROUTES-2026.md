@@ -16,20 +16,20 @@ The detail lives in two companions and this document points at them rather than 
 ## Status
 
 Rewritten every session by the programme controller; John reads this on a phone. As at
-Tuesday 22 September 2026, late evening (John in Doha): controller chat 3 (Fable). W1 job 1
-is DONE and CONFIRMED BY PASTE: d607d22 (launcher default bt2) is on the DevPC, pushed, pulled
-on the workstation and the server restarted; the launcher printed "forecast engine: BT2
-(calibrated model; claimset reproduced 22 Sep 2026)". Found on the way: the workstation had
-been on 66455af (21 Sep) throughout 22 Sep, so nothing committed on 22 Sep had run there until
-tonight; the pull was blocked by three generated files under app/ that the repo tracks (now
-stashed on the workstation, untracking is W1 job 7); and one restart tonight ran on QSI for
-circa fifteen minutes before the fix reached the workstation. The payload diff of the new
-server against this morning's bt2 baseline is still owed, because the pull also brought W2's
-30e3e78 changes to config.py, cortex_app.py, drive_times.py and route_forecast.py, recorded
-as no behaviour change but not yet measured on the workstation. W10's radius claim verified by
-grep; John has not yet confirmed the re-ruling. Order-ready is 21 Oct. Files:
-`routes\Wn-STATUS.md` (chat writes), `routes\Wn-RULINGS.md` (controller writes),
-`routes\README.md`.
+Thursday 24 September 2026, evening (John in the UAE): controller chat 3 (Fable) closes
+tonight after one compaction; chat 4 opens 25 Sep on HANDOVER-CONTROLLER-24Sep2026.md. W1
+shipped its whole build day and passed acceptance: the pool kill test, the curfew must-fix,
+the Optimise headline rule (three rulings from John, verbatim in the decisions log), the
+GET endpoint repair, the server console kept open and logged, and the ranking on carried
+passengers. The workstation runs the carried commit on eight workers with the MCT master;
+E:\Avia\probe\OPT-24Sep-final-w8 is the baseline; three-pair timing on it is full 52.5 /
+86.9 / 52.6s and named 24.3 / 22.3 / 16.2s, so "about a minute" is measured. Informa named
+the stand contractor (Full Vision) on 24 Sep, so W9 opens 25 Sep. Postmark is approved
+(John's ruling in W2-RULINGS: test, warm, upgrade if smooth, switch on any issue). W2 to W8
+and W10 have not been swept since 22 Sep and every one of them has work due this week; the
+week's decisions (step C) have still not been put to John in one message. Order-ready is
+21 Oct. Files: `routes\Wn-STATUS.md` (chat writes), `routes\Wn-RULINGS.md` (controller
+writes), `routes\README.md`.
 
 | WS | State | Where it stands | Next action | Owner | Date |
 |---|---|---|---|---|---|
@@ -40,7 +40,7 @@ grep; John has not yet confirmed the re-ruling. Order-ready is 21 Oct. Files:
 | W5 Order-ready documents | v0.3 DONE (21 Sep) | Every document exists in draft; seven slots John's or the insurer's; PI cover and TAO bank account bind 21 Oct | Solicitor slot wk 6 Oct; known-issues frozen 10 Oct; disclaimer wording to W1 for item 3 | W5 chat / John | 6 and 10 Oct |
 | W6 Messaging, marketing, website, meetings | In progress (v7, 21 Sep) | Sentences in the Observatory voice (variants v3); invitations drafted; post 1 and list email await approval; site still says three seats / 100 presentations | John: five contact names, 2.3 A or B, post 1 and list email by 25 Sep; invitations 26-29 Sep | W6 chat / John | 25-29 Sep |
 | W8 Pricing | DONE 20 Sep; v1.1 owed | PRICING-DECISION-2026.md v1.0 FINAL; v1.1 for the TAO Ltd entity line not yet issued | Controller issues v1.1 (entity line only) | Controller | 26 Sep |
-| W9 Stand, contract, logistics | NOT OPENED | Contract unsigned pending Charlotte Sullivan's revised form; F124; graphics deadline 3 Oct; pens (item 54) | John opens W9 when the form is back; graphics decision by 30 Sep or logo only | John | Graphics 3 Oct |
+| W9 Stand, contract, logistics | OPENS 25 Sep (Informa named the contractor 24 Sep) | Participation confirmed by Informa 24 Sep; Full Vision builds the shell scheme and quotes wall graphics; contract paperwork pending the revised form; F124; graphics deadline 3 Oct in the umbrella, to be confirmed against Full Vision | John opens the W9 chat with the prompt in the 24 Sep handover; brief to Full Vision drafted for John; graphics decision by 30 Sep or logo only | John / W9 chat | Brief 26 Sep; graphics 30 Sep |
 | W10 Final calibration test | OPEN, STATUS v1 (22 Sep) | Item 1 re-ruled to W2 (John to confirm); items 2 and 3 proceed: 22 Sep baseline rerun, then 92/86 on 6,524 reproduced or replaced; interim on every surface 89/82 on 2,915 | Controller verifies the radius claim by grep; sweep on the baseline paste; W10 says by 29 Sep whether 3 Oct holds | W10 chat / John | Record v1 by 3 Oct; John rules item 55 |
 | W7 Rehearsal and freeze | Diaried | Trials 11-12 Oct remote, 16 Oct with Suzanna; 13 Oct is an Atlas meeting | Nothing until October; controller confirms a named person at the workstation for 11-12 Oct | Controller / John | Freeze 10 Oct |
 

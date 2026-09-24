@@ -93,3 +93,27 @@ Charlotte.Sullivan@informa.com; the blank Event Space Booking Form; John's file)
 GTM-STRATEGY-ROUTES-2026.md; HANDOVER-CONTROLLER-20Sep2026.md; routes/STAND-HOST-MANUAL.md;
 routes/W3-STATUS.md (slide 1); routes/W4-RULINGS.md; routes/W6-RULINGS.md; W6-STATUS.md and the
 three W6 drafts (invitations, calendar, messaging); ROUTES-ATTENDING-ORGANISATIONS-21Sep2026.md.
+
+## 24 September, evening: the stand contractor is named; W9 opens now
+
+- Informa (Alison Browne, exhibitor services) wrote to John on 24 Sep 17:51, subject "Routes
+  World: Stand F124 - The Aviation Observatory Limited": participation confirmed; Full Vision
+  (routes@fullvision.co.uk) will construct the shell scheme stand and provide the agreed
+  inclusions; Full Vision can quote for wall graphics at additional cost; Informa has asked
+  Full Vision to liaise with John directly. John holds the email; W9 quotes it, does not
+  repeat it into any AI beyond this line, and names no delegate (Informa Condition 5.3).
+- W9's first job, in this order: (1) the deadline table from the exhibitor manual with the
+  graphics artwork date confirmed against Full Vision's own deadline (the umbrella carries
+  3 Oct; Full Vision may run earlier); (2) a one-page brief John sends to Full Vision asking
+  for the shell scheme inclusions list, the wall graphic sizes and file specification, the
+  price per panel, and their artwork deadline; John sends it, never the chat; (3) the
+  graphics decision for John by 30 Sep: full wall graphics or the Observatory logo panel
+  only, with Full Vision's price in the sentence; (4) what travels with whom (workstation
+  clone, laptop, spare keyboard, pens item 54); (5) setup Tuesday 20 Oct in step with the
+  W4 manual section 8.
+- Graphics content comes from W6 (the Observatory voice, the four sentences John picks) and
+  W3 (the visual language of the slides); W9 owns the sizes, the file specification and the
+  deadline, nothing else. Nothing about any competitor on the wall.
+- The stand contract itself is still unsigned pending the revised form (Charlotte Sullivan);
+  Informa's email treats participation as confirmed, so W9 records the contract as a
+  paperwork item, not a risk to the stand.
