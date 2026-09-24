@@ -1,0 +1,10 @@
+W1: blank-form Optimise searches 3x to 7x weekly (John's ruling, 24 Sep); umbrella records the ruling
+
+10x and 14x leave the blank sweep: the calibrated model rewards capacity, so the
+passengers-in-band rule reached for 14x (Starlux 14x A359, 163,061 each way at 73.2%
+on SJC-TPE). A client-fixed frequency of any value runs as before. Sweep is two tasks
+per cell shorter. Selection rule unchanged. Umbrella decisions log carries the ruling
+verbatim, the two concerns raised and answered, and the 422 finding on GET /api/optimise.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_013UJS2WR1LYy7JdejgdnMiC

@@ -2853,7 +2853,16 @@ def api_optimise(origin: str, dest: str, airline: str = "", carrier_type: str = 
     fare = max(180, round(dist_nm * 0.11))
     _fixed_ac = (aircraft or "").strip().upper()
     _fixed_ac = _fixed_ac if _fixed_ac not in ("", "AUTO", "UNSELECTED") else None   # client-fixed gauge, else search
-    _freqs = [int(freq)] if (freq and int(freq) > 0) else [3, 4, 5, 6, 7, 10, 14]     # client-fixed freq, else sweep
+    # A NEW LONG-HAUL SERVICE LAUNCHES AT UP TO DAILY (John, 24 September 2026): the blank sweep
+    # searches 3x to 7x weekly. 10x and 14x were in the list and, because the calibrated model
+    # rewards capacity (the largest single predictor of new-route demand in the calibration, and
+    # partly self-fulfilling as airlines discount to fill what they add), "most passengers in the
+    # band" reached for 14x on SJC-TPE (Starlux 14x A359, 163,061 each way at 73.2%) the first time
+    # it ran. A headline above daily is one an airport cannot take to an airline. A client-fixed
+    # frequency of any value, 10 and 14 included, runs exactly as before. Verbatim: "I 100% agree
+    # that a new long haul route on a new service will almost only ever launch a 3x 4x 5x or 7x
+    # and providing numbers beyond that just makes the tool look foolish."
+    _freqs = [int(freq)] if (freq and int(freq) > 0) else [3, 4, 5, 6, 7]     # client-fixed freq, else sweep
     _types = [carrier_type if carrier_type in ("FSC", "LCC", "ULCC") else "FSC"]   # type follows the operator, not swept (can't fly AA as a ULCC)
     _seasons = [season] if season in ("annual", "summer", "winter") else ["annual", "summer", "winter"]  # unselected = sweep schedule
     # OBJECTIVE, changed 8 August 2026 (John). Passengers subject to the load factor reaching the

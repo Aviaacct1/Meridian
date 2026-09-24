@@ -592,7 +592,26 @@ five contacts.
 - 24 Sep 2026: kill test on 19d94df, eight workers. Mid-sweep worker kill: panel showed
   "Optimise failed: a worker process was terminated (memory or crash); the pool has been
   rebuilt, run Optimise again" (PASS); the next Optimise completed (PASS). Idle-worker case
-  not yet run. Cosmetic for W1: the panel prefixes "RuntimeError:", strip the class name.
+  Idle-worker case run 14:30: the pool manager took the other seven down with the killed
+  worker (count 0), the next Optimise rebuilt it (count 8) and completed in 74s. PASS both.
+- 24 Sep 2026 (John): RULING, the blank-form Optimise searches 3x to 7x weekly only. First run
+  of the passengers-in-band rule returned Starlux 14x A359 (163,061 each way, 73.2%): demand
+  rises with frequency (7x 91,639, 10x 124,131, 14x 163,061 on the sweep table) so the biggest
+  schedule inside the band always wins. Verbatim: "I 100% agree that a new long haul route on
+  a new service will almost only ever launch a 3x 4x 5x or 7x and providing numbers beyond
+  that just makes the tool look foolish.  One of the relationships that emerged in the
+  calibration is that the biggest predictor of a new route demand is the capacity that is put
+  on.  Partly self fulfilling as the airlines discount to fill the capacity they have added,
+  but when looking at forecasts that was one of the bigger vairables in being accurate but is
+  not really the same as forecasting demand from usual factors.  I agree that an optimisednew
+  route should be capped to look at 7x max and everything before." Two concerns raised and
+  answered: the departure curve is per rotation and is unchanged by the cap; on a route with
+  direct service the headline is an additional service in a market already served (W4 wording
+  line, W2 first fixes "Direct service today: None" on SJC-TPE). Build: 10x and 14x removed
+  from the blank sweep (a fixed frequency runs as before); selection rule of the morning
+  unchanged. Also found 24 Sep: GET /api/optimise had returned 422 since the 23 Sep split
+  (decorator landed on _cell_kw); restored. The sweep table is now in the payload
+  (optimised.sweep). W10 question queued: 7x to 14x adding 78% demand on one gauge.
 ## Waiting on John
 
 1. CLOSED 19 Sep: HEAD `11a4c3f` confirmed and pushed.
