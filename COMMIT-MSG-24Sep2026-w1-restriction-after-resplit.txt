@@ -1,0 +1,13 @@
+W1: a binding restriction is applied after the connectivity re-split, to the connecting leg only
+
+First curfew run on the fix (SJC-TPE, CI 7x A359, origin 21:00-06:00): the headline moved
+from 172,216 to 140,584, but local fell from 77,414 to 63,194 alongside connecting
+(94,802 to 77,390), both by 18%. The split floor reports local and connecting as shares
+of the carried total (45/55 on this pair) and re-derived local from the smaller total.
+The factor now scales the connecting leg after the re-split; local is unchanged, which is
+what the page says and what the departure chart draws. Freed seats refill from any spill
+in the legs' carried proportion. Feed aggregates, PTEW maps and detail rows follow. The
+market-build record carries the step.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_013UJS2WR1LYy7JdejgdnMiC

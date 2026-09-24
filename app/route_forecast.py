@@ -722,19 +722,12 @@ def forecast(sabre_db, oag_db, week, origin, dest_codes, competing_airports, *, 
             _rfac = float(feed_cfg.get("restriction_factor") or 0.0) or None
         except (TypeError, ValueError):
             _rfac = None
-    if _rfac is not None and 0.0 < _rfac < 1.0 and (feed_beyond or feed_behind):
-        feed_beyond *= _rfac
-        feed_behind *= _rfac
-        beyond_pdew = {c: round(v * _rfac, 1) for c, v in beyond_pdew.items()}
-        behind_pdew = {c: round(v * _rfac, 1) for c, v in behind_pdew.items()}
-        for _dm in (beyond_detail, behind_detail):
-            for _c in _dm.values():
-                if _c.get("captured") is not None:
-                    _c["captured"] *= _rfac
-                if _c.get("pdew") is not None:
-                    _c["pdew"] *= _rfac
-    else:
+    if not (_rfac is not None and 0.0 < _rfac < 1.0 and (feed_beyond or feed_behind)):
         _rfac = None
+    # The factor is applied AFTER the connectivity re-split below, to the connecting leg only.
+    # Applied here, before the re-split, it moved the local leg too: the re-split reports local
+    # and connecting as shares of the carried total (45/55 on SJC-TPE), so a smaller total gave
+    # a smaller local, and the page says in words that local does not vary with departure time.
     # Item 9: capped market-size discount on the P2P capture, keyed off the MEASURED market (natural),
     # so a thin-market over-read is trimmed while mid/large markets (already unbiased) are untouched.
     # Applied to captured only (the P2P over-read); the feed carries its own calibration.
@@ -971,6 +964,35 @@ def forecast(sabre_db, oag_db, week, origin, dest_codes, competing_airports, *, 
                             _c["pdew"] *= _sc
     except Exception:
         pass
+    # A BINDING RESTRICTION TAKES ITS COST FROM THE CONNECTING LEG (John's must-fix, 24 September
+    # 2026). Local is untouched; connecting is scaled by the permitted departure's score against
+    # the unrestricted optimum, which is the arithmetic the departure chart already draws, so the
+    # headline and the chart agree by construction. Seats the restriction frees are refilled from
+    # any spill the unrestricted run had, in the legs' carried proportion, so a capacity-bound
+    # route does not lose passengers it never lost. The feed aggregates and detail rows follow the
+    # connecting leg so every connecting figure on the page is on one basis.
+    if _rfac is not None and conn_carried > 0:
+        _conn_r = conn_carried * _rfac
+        _refill = min(spill, conn_carried - _conn_r)
+        _p2p_sh = (p2p_carried / carried) if carried else 0.0
+        p2p_carried = p2p_carried + _refill * _p2p_sh
+        conn_carried = _conn_r + _refill * (1.0 - _p2p_sh)
+        carried = p2p_carried + conn_carried
+        spill = max(spill - _refill, 0.0)
+        load = (carried / annual_capacity) if annual_capacity else 0.0
+        p2p_share_v = (p2p_carried / carried) if carried else p2p_share_v
+        feed *= _rfac
+        total_demand = captured + feed
+        feed_beyond *= _rfac
+        feed_behind *= _rfac
+        beyond_pdew = {c: round(v * _rfac, 1) for c, v in beyond_pdew.items()}
+        behind_pdew = {c: round(v * _rfac, 1) for c, v in behind_pdew.items()}
+        for _dm in (beyond_detail, behind_detail):
+            for _c in _dm.values():
+                if _c.get("captured") is not None:
+                    _c["captured"] *= _rfac
+                if _c.get("pdew") is not None:
+                    _c["pdew"] *= _rfac
 
     # The connectivity re-split is the last thing that moves point to point, and it can move it a long
     # way: on SJC-TPE it takes P2P from 62% of the carried total to 45%, because a route into a hub
@@ -979,6 +1001,9 @@ def forecast(sabre_db, oag_db, week, origin, dest_codes, competing_airports, *, 
         _bld.append(("Re-split between local and connecting passengers; the total does not change",
                      p2p_carried, None))
     _bld.append(("Point to point passengers carried each year", p2p_carried, None))
+    if _rfac is not None:
+        _bld.append(("Connecting passengers lost to the departure restriction; local unchanged",
+                     conn_carried, _rfac))
 
     rec = "demand fits the aircraft"
     if spill > 0.02 * max(total_demand, 1):
