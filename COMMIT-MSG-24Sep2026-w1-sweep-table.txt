@@ -1,0 +1,10 @@
+W1: Optimise payload carries the sweep table (every row the selection chose from)
+
+First run of the 24 Sep selection rule on SJC-TPE returned Starlux 14x A359 annual,
+354,518 two-way at 79.6%: "most passengers in band" is monotone in frequency when
+demand responds to frequency, so it reaches for the biggest schedule that still plans
+inside the band. The rows are added to optimised.sweep so the rule is chosen on the
+evidence rather than guessed from the headline.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_013UJS2WR1LYy7JdejgdnMiC

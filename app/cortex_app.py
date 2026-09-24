@@ -3020,6 +3020,14 @@ def api_optimise(origin: str, dest: str, airline: str = "", carrier_type: str = 
                               "present_lf_cap": PRESENT_LF_CAP,
                               "selection_note": selection_note,
                               "seasonal_note": seasonal_note,
+                              # THE SWEEP TABLE (24 Sep 2026): every row the selection chose from,
+                              # so a result can be read against its alternatives instead of guessed
+                              # at. 63 rows on an open sweep; small.
+                              "sweep": [{"airline": r_["airline"], "aircraft": r_["aircraft"],
+                                         "freq": r_["freq"], "season": r_.get("season"),
+                                         "lf": round(float(r_["lf"]), 3), "demand": round(r_["demand"]),
+                                         "seats": r_.get("seats"), "chosen": (r_ is best)}
+                                        for r_ in rows],
                               "selected_lf": (round(float(_sel_lf), 3) if _sel_lf is not None else None),
                               "lf_basis_note": _lf_note,
                               "not_viable": not_viable,
