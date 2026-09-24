@@ -187,6 +187,15 @@ def main():
     # Optimise sweep workers (23 Sep 2026): said at start-up so a paste records the setting the
     # server ran with. Unset means the server's default of 8; 1 is the single-process path.
     _w = (os.environ.get("AVIA_OPT_WORKERS") or "").strip()
+    # Which scikit-learn the server will load (24 Sep 2026): the model is pickled under the pinned
+    # version and a per-user folder can shadow it; the launcher sets PYTHONNOUSERSITE, said here.
+    try:
+        import importlib.metadata as _md
+        _skv = _md.version("scikit-learn")
+    except Exception:                                   # noqa: BLE001
+        _skv = "not found"
+    print(f"  scikit-learn: {_skv}  user site-packages: "
+          f"{'ignored' if os.environ.get('PYTHONNOUSERSITE') else 'IN USE (per-logon shadowing possible)'}")
     print(f"  optimise workers: {_w or '8 (default)'}  DuckDB per worker: "
           f"{(os.environ.get('AVIA_OPT_WORKER_MEMORY') or '3GB').strip()} / "
           f"{(os.environ.get('AVIA_OPT_WORKER_THREADS') or '2').strip()} threads")

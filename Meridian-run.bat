@@ -17,6 +17,10 @@ rem The MCT master lives on the product drive too (John, 24 Sep 2026): nothing t
 rem server needs may depend on a per-logon network letter such as Z:. Copied from
 rem Egnyte by hand when it changes; the server refuses to start in stand mode without it.
 set AVIA_MCT_MASTER=%AVIA_ROOT%\Reference Tables\MCT Master List.xlsx
+rem Per-user Python package folders are IGNORED (24 Sep 2026): a roaming scikit-learn 1.7.2 in
+rem one logon was loading in front of the machine's pinned 1.9.0 (app\requirements.txt) and
+rem unpickling the calibrated model with a version warning. Every logon runs the machine install.
+set PYTHONNOUSERSITE=1
 rem The shipped configuration, stated rather than remembered:
 rem   frequency-sensitive capture ON (the deck ladder needs it),
 rem   feed level V1 (John's 15 August decision; timing stays QSI).

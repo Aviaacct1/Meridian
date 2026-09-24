@@ -33,7 +33,7 @@ grep; John has not yet confirmed the re-ruling. Order-ready is 21 Oct. Files:
 
 | WS | State | Where it stands | Next action | Owner | Date |
 |---|---|---|---|---|---|
-| W1 Speed and caches | Job 0 SHIPPED 23 Sep (6065e18 on the workstation, 8 workers); pool-rebuild fix WRITTEN, not yet pushed | Split sweep (9 cells, 63 tasks): full sweep 66.5 / 109.3 / 64.7s, named 30.3 / 32.6 / 18.4s at 8 workers, every payload IDENTICAL to the fixed sequential control (OPT-23Sep-fix-w1 v split-w1 v split-w8 all PASS); sequential now 370 / 410 / 323s; 12 workers FAILED (a worker killed for memory, pool left broken); default stays 8 | DevPC push and workstation pull of the rebuild fix first thing 24 Sep, then the kill test; worker peak-memory reading during a sweep; launcher refuses empty password; payload `engine` label; disclaimer; untrack app/ generated files; market-brief cost; warm_boards | Controller / John | Rebuild fix live 24 Sep; rest by 3 Oct |
+| W1 Speed and caches | Job 0 SHIPPED 23 Sep (6065e18 on the workstation, 8 workers); pool-rebuild fix WRITTEN, not yet pushed | Split sweep (9 cells, 63 tasks): full sweep 66.5 / 109.3 / 64.7s, named 30.3 / 32.6 / 18.4s at 8 workers, every payload IDENTICAL to the fixed sequential control (OPT-23Sep-fix-w1 v split-w1 v split-w8 all PASS); sequential now 370 / 410 / 323s; 12 workers FAILED (a worker killed for memory, pool left broken); default stays 8 | MUST FIX (John 24 Sep): curfew-bound headline follows the permitted departure; kill test to finish; worker peak-memory reading during a sweep; launcher refuses empty password; payload `engine` label; disclaimer; untrack app/ generated files; market-brief cost; warm_boards | Controller / John | Rebuild fix live 24 Sep; rest by 3 Oct |
 | W2 Stand flow | In progress (v14, 22 Sep) | Delivery proven by Postmark API (MessageID 8283ccb0); lead_store built (ef6de65), app not yet rewired; friction raster never resolved on the workstation, catchment ran on straight-line distance silently, fixed through config, no behaviour change (30e3e78); item 1 radius now W2's under R6 | Sweep: R6 radius plan and lead_store rewiring; data-store freeze line and stale-RDP runbook line owed to W2-RULINGS by the controller | W2 chat / John | Capture demonstrable 2 Oct; laptop proof 8 Oct; radius before 10 Oct or not at all |
 | W3 Presentation | In progress (v2, 21 Sep) | Slides 1-6, 9-10 built (3af5158); PDF render proven; Commons probe unrun (item 33); 92/86 coming off the methodology and track record pages | Video script 23 Sep; probe by 26 Sep; video record 26-30 Sep; sweep after the methodology page change | W3 chat / John | Five items to Jol and Nick 3 Oct |
 | W4 Host | v2 DONE (21 Sep) | STAND-HOST-MANUAL.md v2, 23 slots; three bridge labels flagged for W3 | v3 after 8 Oct screenshots and W5's known-issues list; John's item 34 | W4 chat / John | v3 mid-Oct |
@@ -550,6 +550,24 @@ five contacts.
   The server was found down at 20:15 (dashboard "Failed to fetch"); relaunched on 6065e18 at
   eight workers. The sequential control being faster on the split code (370 v 491s on
   SJC-TPE) with identical output is recorded as unexplained.
+- 24 Sep 2026 (John): MUST FIX, a curfew that moves the departure must move the headline.
+  Verbatim: "Lets log taht as a must fix. If the curfew starts at 2100 and the curfew says
+  the route at 20:59 is the best route available and it is 130k, the resulting forecast
+  should show 130k, and you use the chart to show what the forecast would have been if the
+  curefew hadnt restricted the choice of start times." Context: SJC-TPE, China Airlines 7x
+  A359, curfew at origin 21:00-06:00 moved the outbound from 00:15 to 20:59 and the headline
+  stayed 172,216 (77,414 local, 94,802 feed) because since 15 Aug the feed LEVEL is the V1
+  flat capture and only the timing comes from the QSI model; the curve is scaled to the
+  headline, so the departure cannot move the number. Ruling: when a restriction binds, the
+  connecting-feed headline is the flat level scaled by the permitted departure's score
+  against the unrestricted optimum (the cost the optimiser already returns), the chart
+  shows the unrestricted figure as what the route would have carried, and the page says so
+  in words. Unrestricted runs are unchanged. This is an approved exception to the demand
+  freeze, confined to restricted runs; W1 builds it; acceptance is the three-pair diff
+  (unrestricted payloads IDENTICAL) plus a restricted SJC-TPE run whose headline equals the
+  curve at the chosen departure. Wording on the page and in the pack: W3, W4 informed.
+- 24 Sep 2026 (John): "the optimise times have all been super wuick" on the eight-worker
+  server with the MCT master loaded, recorded as the first user-side reading of job 0.
 ## Waiting on John
 
 1. CLOSED 19 Sep: HEAD `11a4c3f` confirmed and pushed.

@@ -1,0 +1,11 @@
+Launcher ignores per-user Python packages (PYTHONNOUSERSITE=1); warm_demo prints the scikit-learn version
+
+Meridian-run.bat: set PYTHONNOUSERSITE=1 after the MCT line. In the Carte logon a roaming
+scikit-learn 1.7.2 shadowed the machine's pinned 1.9.0 and the calibrated model was being
+unpickled with an InconsistentVersionWarning in every worker (24 Sep). The machine install
+carries every package the server imports (checked with py -3.12 -s). app/warm_demo.py:
+prints the scikit-learn version and whether user site-packages are ignored, so a paste
+records it. routes/W2-RULINGS.md: the edit announced; runbook line.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_013UJS2WR1LYy7JdejgdnMiC

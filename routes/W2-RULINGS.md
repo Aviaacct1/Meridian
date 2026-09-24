@@ -327,4 +327,11 @@ are the natural warm-up), not bulk test traffic.
   path the server needs comes from AVIA_ROOT or config; nothing on the workstation is set
   up by hand that the runbook does not list, so a second workstation is the E: drive cloned
   plus the runbook.
+- Meridian-run.bat, second line added 24 Sep: `set PYTHONNOUSERSITE=1`. Reason: in the Carte
+  logon Python loaded scikit-learn 1.7.2 from C:\Users\Carte\AppData\Roaming\Python in
+  front of the machine's pinned 1.9.0 (app\requirements.txt), and every worker printed
+  InconsistentVersionWarning unpickling the calibrated model. Checked 24 Sep: the machine
+  install has every package the server imports (duckdb, fastapi, uvicorn, pandas, numpy,
+  openpyxl, sklearn 1.9.0, global_land_mask). Runbook line: the launcher prints
+  "scikit-learn: 1.9.0  user site-packages: ignored"; anything else is a stop.
 

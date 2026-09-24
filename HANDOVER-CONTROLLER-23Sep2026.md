@@ -1,4 +1,4 @@
-# HANDOVER: programme controller, 23 September 2026, 21:00 BST (rolling)
+# HANDOVER: programme controller, 24 September 2026, 11:00 BST (rolling; started 23 Sep)
 
 For controller chat 3 (Fable) after a compaction, or chat 4. Read after
 `PROMPT-for-Fable-Controller3-22Sep2026.txt` and instead of HANDOVER-CONTROLLER-22Sep2026.md,
@@ -70,6 +70,47 @@ the workstation is d607d22 plus that pull.
   relaunched; "Failed to fetch" on the public dashboard is the symptom of no listener.
 - Still unsent: step C (the week's decisions in one message). Still unwritten: W4 and W6
   wording lines; W2 data-store freeze and runbook lines; W8 v1.1.
+
+## 1c. 24 Sep morning
+
+- Clean start done: elevated window stops the listener and any orphaned pool workers (command
+  line contains multiprocessing.spawn); normal window launches. Orphan fix live (9195b3f):
+  workers exit when the server process ends.
+- MCT MASTER WAS NOT LOADED in the aviaremote1 logon (Z: is a per-logon Egnyte letter):
+  every run in that logon to this point used the flat default MCT (pre-mortem 16 live).
+  John's ruling: nothing depends on a per-logon letter; E: carries everything so a
+  workstation can be cloned (he wants two or three workstations in different locations for
+  resilience and load). Launcher now sets AVIA_MCT_MASTER=%AVIA_ROOT%\Reference Tables\MCT
+  Master List.xlsx (5e0b597); file copied by John; server 79120 started with "MCT master:
+  3,668 rows from E:\Avia\Reference Tables\MCT Master List.xlsx". EVERY BASELINE BEFORE THIS
+  (engine-bt2, OPT-23Sep-*) was taken without the master; the acceptance baseline for any
+  future W1 change is re-taken on this state; W3's re-run waits for this state.
+- sklearn: workers print InconsistentVersionWarning, model pickled under scikit-learn 1.9.0,
+  loaded under 1.7.2 from C:\Users\Carte\AppData\Roaming\Python (a per-user package folder
+  shadowing the machine install; also shows the server runs in the Carte logon). Which
+  version reproduced the 13 Aug claimset on 22 Sep is UNKNOWN. Check owed (one line, both
+  logons): py -3.12 -c "import sklearn, sys; print(sklearn.__version__, sklearn.__file__)".
+  Goes to W10 and W1; may need the pinned version installed machine-wide.
+- SJC-TPE on this server: China Airlines 7x A359 annual 172,216 two-way (77,414 local,
+  94,802 feed, 77.3%); winter-only rows had been winning the headline on load factor alone
+  (selection ranks nearest-to-80%, not passengers, against the 8 Aug objective): John did
+  not rule on the selection change yet; parked behind the curfew must-fix.
+- MUST FIX (John, verbatim in the umbrella): a curfew that moves the departure must move
+  the headline; the level is flat (15 Aug) so today it does not. W1 builds: restricted runs
+  scale the feed headline by permitted-v-unrestricted score; chart shows the unrestricted
+  figure; unrestricted runs unchanged; approved freeze exception confined to restricted runs.
+- Market background shows "Direct service today: None" for SJC-TPE (two nonstop operators
+  in the OAG week). W2 to check the market-brief query against the OAG store.
+- Pool kill test NOT yet completed (idle-worker kill happened once with no observed
+  outcome; mid-sweep kill not done). Blocked on the Enter key of John's HP Envy work laptop (not the MateBook), which
+  fails in consoles and at the Windows sign-in but works in Word, since two days ago;
+  Restart did not clear it; John suspects the two simultaneous RustDesk sessions. Full
+  shutdown / external keyboard next.
+- Runbook facts: a server launched from one window is stopped only from a window with at
+  least its rights (elevated stop, normal launch); "re-warming (no relaunch)" in the
+  launcher output means the stop did not happen; QSI_PASSWORD is set by
+  `$env:QSI_PASSWORD = Read-Host 'Meridian password'`, never a pasted placeholder (two
+  placeholders were pasted literally on 23 and 24 Sep).
 
 ## 2. W1 job 0: parallel Optimise (controller's own code)
 
