@@ -2965,8 +2965,11 @@ def api_optimise(origin: str, dest: str, airline: str = "", carrier_type: str = 
                       "the evidence; it is not a recommendation."
                       % (VIABLE_LF * 100, best["aircraft"], best["freq"], best["lf"] * 100))
     if _season_blank and best.get("season", "annual") == "annual":
+        # INSIDE THE BAND ONLY (24 Sep, first run): a seasonal row at the plan cap (87.5%) is
+        # demand exceeding the aircraft, not a schedule that fills better, and summer rows are
+        # capped on most routes, so without this the note fired nearly every time.
         _sea_better = [r for r in rows if r.get("season") in ("summer", "winter")
-                       and r["lf"] >= VIABLE_LF and r["lf"] > best["lf"]]
+                       and VIABLE_LF <= r["lf"] <= PRESENT_LF_CAP and r["lf"] > best["lf"]]
         if _sea_better:
             _sb = max(_sea_better, key=lambda r: (r["lf"], r["demand"], r["freq"]))
             seasonal_note = ("A %dx weekly %s %s-only service would plan at %.0f%% load factor "

@@ -1,0 +1,9 @@
+W1: the seasonal note names only a seasonal schedule inside the presentable band
+
+First blank-form run on the 3x-7x sweep chose Starlux 7x A359 annual (91,639 each way,
+82.3%, 45 tasks, 53.6s) and the note named a summer row at 87.5%, which is the plan cap:
+demand beyond the aircraft, not a better fill. Summer rows are capped on most routes, so
+the note is now restricted to rows between VIABLE_LF and PRESENT_LF_CAP.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_013UJS2WR1LYy7JdejgdnMiC
