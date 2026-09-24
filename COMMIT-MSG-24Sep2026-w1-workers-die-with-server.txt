@@ -1,0 +1,9 @@
+W1: Optimise workers exit when the server process ends (no orphaned workers after a stop)
+
+app/cortex_app.py _opt_pool_init: each worker starts a daemon thread that waits on the
+server's process handle (OpenProcess/WaitForSingleObject on Windows) and calls os._exit
+when it signals. Found 23 Sep: Stop-Process on the 8010 listener left its eight workers
+alive at circa 2.2 GB each, and the next server's pool came up beside them.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_013UJS2WR1LYy7JdejgdnMiC

@@ -2752,7 +2752,7 @@ _OPT_POOL = None
 _OPT_POOL_LOCK = None
 
 
-def _opt_pool_init(mem, thr):
+def _opt_pool_init(mem, thr, parent_pid):
     # Runs once in each worker at start. A worker keeps the launcher's environment (the engine
     # flag, the store paths, the password) because spawn copies os.environ; the DuckDB memory
     # cap and thread count are SET (not defaulted) in the worker, because DuckDB's own default
@@ -2761,6 +2761,22 @@ def _opt_pool_init(mem, thr):
     # workers hold 24GB of the workstation's 64GB) and AVIA_OPT_WORKER_THREADS (default 2).
     os.environ["AVIA_DUCKDB_MEMORY"] = mem
     os.environ["AVIA_DUCKDB_THREADS"] = thr
+    # A WORKER DIES WITH ITS SERVER (found 23 Sep 2026: after Stop-Process on the listener, its
+    # eight workers stayed alive at 2.2 GB each, orphaned, and the next server's pool came up
+    # beside them). A daemon thread waits on the parent's process handle and ends this process
+    # the moment the server is gone. Windows only; elsewhere the pool's own shutdown suffices.
+    if os.name == "nt":
+        import threading, ctypes
+        def _watch():
+            try:
+                SYNCHRONIZE = 0x00100000
+                h = ctypes.windll.kernel32.OpenProcess(SYNCHRONIZE, False, int(parent_pid))
+                if h:
+                    ctypes.windll.kernel32.WaitForSingleObject(h, 0xFFFFFFFF)   # INFINITE
+            except Exception:                                   # noqa: BLE001
+                return
+            os._exit(0)
+        threading.Thread(target=_watch, daemon=True, name="parent-watch").start()
 
 
 def _opt_pool_discard():
@@ -2786,7 +2802,7 @@ def _opt_pool(workers):
             mem = (os.environ.get("AVIA_OPT_WORKER_MEMORY") or "3GB").strip()
             thr = (os.environ.get("AVIA_OPT_WORKER_THREADS") or "2").strip()
             _OPT_POOL = ProcessPoolExecutor(max_workers=workers, mp_context=mp.get_context("spawn"),
-                                            initializer=_opt_pool_init, initargs=(mem, thr))
+                                            initializer=_opt_pool_init, initargs=(mem, thr, os.getpid()))
             print("optimise: worker pool started, %d workers, %s DuckDB memory and %s threads each "
                   "(AVIA_OPT_WORKERS / AVIA_OPT_WORKER_MEMORY / AVIA_OPT_WORKER_THREADS)" % (workers, mem, thr))
         return _OPT_POOL
