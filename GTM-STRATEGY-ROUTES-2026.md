@@ -33,7 +33,7 @@ grep; John has not yet confirmed the re-ruling. Order-ready is 21 Oct. Files:
 
 | WS | State | Where it stands | Next action | Owner | Date |
 |---|---|---|---|---|---|
-| W1 Speed and caches | Job 0 SHIPPED 23 Sep (6065e18 on the workstation, 8 workers); pool-rebuild fix WRITTEN, not yet pushed | Split sweep (9 cells, 63 tasks): full sweep 66.5 / 109.3 / 64.7s, named 30.3 / 32.6 / 18.4s at 8 workers, every payload IDENTICAL to the fixed sequential control (OPT-23Sep-fix-w1 v split-w1 v split-w8 all PASS); sequential now 370 / 410 / 323s; 12 workers FAILED (a worker killed for memory, pool left broken); default stays 8 | MUST FIX (John 24 Sep): curfew-bound headline follows the permitted departure; kill test to finish; worker peak-memory reading during a sweep; launcher refuses empty password; payload `engine` label; disclaimer; untrack app/ generated files; market-brief cost; warm_boards | Controller / John | Rebuild fix live 24 Sep; rest by 3 Oct |
+| W1 Speed and caches | Job 0 SHIPPED and kill-tested; curfew must-fix SHIPPED (acceptance on the restricted case PASS); Optimise headline rule SHIPPED (annual, most passengers in 65-85% band, 3x-7x only, in-band seasonal note); GET /api/optimise restored; server console kept open and logged (ac97cd3 on the workstation) | 3x-7x sweep (9 cells, 45 tasks): full 56.6 / 78.7 / 60.7s, named 28.3 / 26.3 / 16.2s at 8 workers; blank-form SJC-TPE three runs identical (Starlux 7x A359, 194,922); curfew SJC-TPE CI 7x A359 21:00-06:00: local 77,414 unchanged, connecting 94,802 to 34,868 (factor 0.368, optimiser score), headline 172,216 to 112,282 at 20:59; unrestricted run_SJC-TPE IDENTICAL to the 23 Sep baseline; run_BRS-EWR and run_DUB-DFW diff against a same-day control on 68a23d4 in progress | Server died mid-request 16:59 with no crash record and its console gone (suspected Ctrl+C or window close; now logged); strip "RuntimeError:" (done); launcher refuses empty password; payload `engine` label; disclaimer; untrack app/ generated files; market-brief cost; warm_boards; per-job "access/entry" prints; W10: 7x to 14x demand response; LF band limits (John); W4 wording: optimised = best-supported by demand; existing-market line | Controller / John | Diff closes 24 Sep; rest by 3 Oct |
 | W2 Stand flow | In progress (v14, 22 Sep) | Delivery proven by Postmark API (MessageID 8283ccb0); lead_store built (ef6de65), app not yet rewired; friction raster never resolved on the workstation, catchment ran on straight-line distance silently, fixed through config, no behaviour change (30e3e78); item 1 radius now W2's under R6 | Sweep: R6 radius plan and lead_store rewiring; data-store freeze line and stale-RDP runbook line owed to W2-RULINGS by the controller | W2 chat / John | Capture demonstrable 2 Oct; laptop proof 8 Oct; radius before 10 Oct or not at all |
 | W3 Presentation | In progress (v2, 21 Sep) | Slides 1-6, 9-10 built (3af5158); PDF render proven; Commons probe unrun (item 33); 92/86 coming off the methodology and track record pages | Video script 23 Sep; probe by 26 Sep; video record 26-30 Sep; sweep after the methodology page change | W3 chat / John | Five items to Jol and Nick 3 Oct |
 | W4 Host | v2 DONE (21 Sep) | STAND-HOST-MANUAL.md v2, 23 slots; three bridge labels flagged for W3 | v3 after 8 Oct screenshots and W5's known-issues list; John's item 34 | W4 chat / John | v3 mid-Oct |
@@ -612,6 +612,27 @@ five contacts.
   unchanged. Also found 24 Sep: GET /api/optimise had returned 422 since the 23 Sep split
   (decorator landed on _cell_kw); restored. The sweep table is now in the payload
   (optimised.sweep). W10 question queued: 7x to 14x adding 78% demand on one gauge.
+- 24 Sep 2026 (evening): W1 acceptance. Blank-form SJC-TPE Optimise three times identical
+  (Starlux 7x A359 annual, 194,922 two-way; the sweep chose 91,639 each way at 82.3% and the
+  returned run reports 87.5% with the floor on). Winter selected: Starlux 7x A359 winter-only,
+  81,564. Curfew run SJC-TPE CI 7x A359, origin 21:00-06:00: departure 20:59, local 77,414
+  unchanged, connecting 94,802 to 34,868, headline 172,216 to 112,282; the factor is the
+  departure optimiser's own score ratio (16,415 / 44,630 = 0.368: a 20:59 departure lands
+  Taipei at 02:44 and misses the morning bank). First attempt scaled the feed before the
+  connectivity re-split and moved local too (77,414 to 63,194); moved after the re-split,
+  connecting leg only, spill refilled. The seasonal note is restricted to rows inside the
+  band (a summer row at the 87.5% plan cap is spill, not a better fill). Three-pair probe
+  on 3x-7x: full 56.6 / 78.7 / 60.7s, named 28.3 / 26.3 / 16.2s; run_SJC-TPE IDENTICAL to
+  OPT-23Sep-split-w8; run_BRS-EWR differed by two QSI-share fields against a baseline taken
+  before the MCT master, so a same-day control was taken on 68a23d4 (CTRL-24Sep-68a23d4) and
+  the diff against it closes the acceptance. OPT-24Sep-select-w8 is the baseline from now on.
+- 24 Sep 2026 16:59: the server died mid-request on the DUB-DFW cold Run ("connection
+  forcibly closed", then no listener). No Application or System event (no crash, no memory
+  exhaustion); its console closed with it so nothing was read. Suspected a Ctrl+C or window
+  close while the on-screen keyboard was up; unproven. Fix shipped (ac97cd3): the server runs
+  in a PowerShell window that stays open after an exit and every line is teed to
+  app\logs\server-<stamp>.log. Pre-mortem 20: nobody touches the server window at the stand;
+  W2 runbook line. Second DUB-DFW run completed.
 ## Waiting on John
 
 1. CLOSED 19 Sep: HEAD `11a4c3f` confirmed and pushed.
@@ -1037,6 +1058,16 @@ Written as if it happened. Each has an owner and a mitigation already in the pla
     Status 23 Sep: full sweep MEASURED at 96.9 / 117.3 / 91.0s on eight workers with every
     payload identical to the sequential run (after the departure-cache fix); the named
     single-airline case is still 55-76s and is next; W2's progressive display still needed.
+    Status 24 Sep: 3x-7x sweep (John's ruling) full 56.6 / 78.7 / 60.7s, named 28.3 / 26.3 /
+    16.2s on eight workers, MCT master loaded. "About a minute" is now measured for the
+    named case and is within two minutes for the open sweep on every register pair.
+20. **The server window is one keystroke from taking the stand down.** Found 24 Sep 16:59:
+    the server exited cleanly mid-request with no crash record, which is the shape of a
+    Ctrl+C or a closed console; its console vanished with it. Shipped (ac97cd3): the server
+    runs in a PowerShell window that stays open after an exit and logs to app\logs. Rule for
+    the stand (W2 runbook): the server window is minimised and never clicked; the host works
+    only in the browser; if the dashboard says "Failed to fetch", the host runs the launcher
+    from the runbook block, nothing else. Owner: W1 (done), W2 (runbook line).
     Status 23 Sep evening: the frequency split takes the full sweep to 66.5 / 109.3 / 64.7s
     and the single-airline case to 18-33s at eight workers, payloads identical; twelve
     workers killed a worker (memory) and the pool stayed broken until restart, so the

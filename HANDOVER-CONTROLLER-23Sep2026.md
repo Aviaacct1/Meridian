@@ -1,4 +1,4 @@
-# HANDOVER: programme controller, 24 September 2026, 15:00 BST (rolling; started 23 Sep)
+# HANDOVER: programme controller, 24 September 2026, 18:30 BST (rolling; started 23 Sep)
 
 For controller chat 3 (Fable) after a compaction, or chat 4. Read after
 `PROMPT-for-Fable-Controller3-22Sep2026.txt` and instead of HANDOVER-CONTROLLER-22Sep2026.md,
@@ -124,6 +124,49 @@ the workstation is d607d22 plus that pull.
   `$env:QSI_PASSWORD = Read-Host 'Meridian password'`, never a pasted placeholder (two
   placeholders were pasted literally on 23 and 24 Sep).
 
+## 1d. 24 Sep afternoon and evening: W1 build day, all shipped
+
+Commits on origin after 68a23d4, in order (all on the workstation, which is on main):
+the curfew must-fix and the selection rule (route_forecast, cortex_app, dashboard); the
+sweep table in the payload; GET /api/optimise restored (its decorator had landed on
+_cell_kw in the 23 Sep split, 422 since 6065e18); blank sweep 3x-7x (John's ruling);
+seasonal note in-band only; restriction applied after the connectivity re-split; server
+console kept open and teed to app\logs (ac97cd3). Written, not yet committed at 18:30:
+selection ranks on carried, not demand (COMMIT-MSG-24Sep2026-w1-select-on-carried.txt).
+
+Rulings from John today, verbatim in the umbrella decisions log: (1) season blank means
+the annual row with most passengers in the band, one seasonal sentence when a seasonal
+row fills better, explicit season honoured; (2) the blank sweep searches 3x to 7x only,
+"providing numbers beyond that just makes the tool look foolish"; the calibration point
+that capacity put on is the biggest predictor of new-route demand, partly self-fulfilling.
+Two concerns answered: the departure curve is per rotation (cap changes nothing); an
+existing market gets an "additional service in a market already served by N weekly" line
+(W4 wording, W2 to fix "Direct service today: None" first). Open for John: the band's
+upper limit (0.85 working assumption, PRESENT_LF_CAP in api_optimise).
+
+Acceptance: blank-form SJC-TPE three times identical (Starlux 7x A359, 194,922); Winter
+gives Starlux 7x winter-only 81,564 (7x carries most of the in-band winter rows); curfew
+SJC-TPE CI 7x A359 21:00-06:00 gives local 77,414 unchanged, connecting 94,802 to 34,868,
+headline 112,282 at 20:59, factor 0.368 = the departure optimiser's own score ratio (a
+20:59 departure lands Taipei at 02:44 and misses the bank). Probe on 3x-7x: full 56.6 /
+78.7 / 58.7s, named 28.3 / 26.3 / 30.4s (eight workers, MCT master loaded). run_SJC-TPE
+IDENTICAL to OPT-23Sep-split-w8; run_BRS-EWR and run_DUB-DFW IDENTICAL to a same-day
+control taken on 68a23d4 (E:\Avia\probe\CTRL-24Sep-68a23d4). The two-field BRS-EWR
+difference against the 23 Sep folder was the MCT master. BASELINE FROM NOW:
+E:\Avia\probe\OPT-24Sep-select-w8 (re-take opt_ files after the carried commit).
+
+Server death 16:59 during the DUB-DFW cold Run: clean exit mid-request, no Application or
+System event, console gone. Suspected Ctrl+C or a closed window while the on-screen
+keyboard was up; unproven. Pre-mortem 20 and W2 runbook lines written. The next death
+leaves app\logs\server-<stamp>.log.
+
+Workstation procedure that worked all day: elevated window stops (Get-CimInstance ...
+cortex_app or multiprocessing.spawn ... Stop-Process) and pulls; normal window sets
+QSI_PASSWORD by Read-Host and runs Meridian-run.bat; a second normal window runs probes
+and Invoke-RestMethod with a Basic header built from a SecureString prompt (block in the
+chat of 24 Sep 15:20). A GET on /api/optimise needs &season= to sweep seasons (the
+endpoint default is "annual"; the browser sends blank).
+
 ## 2. W1 job 0: parallel Optimise (controller's own code)
 
 Design agreed with John 22 Sep: the sweep's cells (candidate x carrier type x season; the
@@ -137,15 +180,22 @@ two minutes is not reached, the next lever is inside the frequency loop and need
 explicit ruling first. Workstation: Ultra 9, 20 cores, 64 GB. Written on the DevPC, John
 commits, workstation pulls, John runs the probes, pastes are the record.
 
-## 3. W1 queue after job 0
+## 3. W1 queue (25 Sep onward)
 
-1. Launcher refuses an empty password and prints the source (env or file), never the value.
-2. Payload top-level `engine` label (cortex_app calibrated_forecast, circa 1218-1272).
-3. DISCLAIMER_FULL naming both companies (W5 wording).
-4. Untrack the three app/ generated outputs; gitignore.
-5. Market-brief first-call cost, 6-8s measured tonight (8.1 / 7.3 / 6.0s), profile first.
-6. The TIF-AUH strip flags (section 1).
-7. warm_boards over the register, week of 12 Oct and 19 Oct.
+1. Commit and deploy the carried-ranking change; re-take opt_ files into
+   OPT-24Sep-select-w8 (DUB-DFW named must pick 7x).
+2. Launcher refuses an empty password and prints the source (env or file), never the value.
+3. Payload top-level `engine` label (cortex_app calibrated_forecast, circa 1218-1272).
+4. DISCLAIMER_FULL naming both companies (W5 wording).
+5. Untrack the three app/ generated outputs; gitignore.
+6. Market-brief first-call cost, 6-8s measured (8.1 / 7.3 / 6.0s), profile first.
+7. The TIF-AUH strip flags (section 1).
+8. "access: shared password ON" / "entry: DEMO sign-in OFF" print per job, not once.
+9. warm_boards over the register, week of 12 Oct and 19 Oct.
+10. W10 questions: 7x to 14x adding 78% demand on one gauge (SJC-TPE); the 6x-to-7x dip on
+    DUB-DFW; the split floor deriving local as a share of the carried total (45/55 on SJC-TPE).
+11. W3: re-run SJC-TPE and BLQ-JFK on this server (MCT master, 3x-7x rule) and compare with
+    the figures presented in Taipei (circa 120k two-way against the tool's 172k for CI 7x).
 
 ## 4. Owed to other workstreams (write into rulings files, same day)
 

@@ -1,0 +1,11 @@
+W1: Optimise ranks rows on passengers carried (demand capped at seats x plan LF), not demand
+
+DUB-DFW EI named sweep (OPT-24Sep-select-w8): every row at the 87.5% plan cap; ranking on
+measured demand let a 0.35% dip in the frequency response (6x 139,237 v 7x 138,747 each
+way) choose 6x A333 while spilling 43,339. Rows now carry "carried" = min(demand,
+seats x freq x weeks x plan_lf) and the selection ranks on it; the sweep table shows it.
+Unrestricted Run payloads untouched. Acceptance: DUB-DFW named picks 7x; three-pair
+run_ files IDENTICAL to OPT-24Sep-select-w8.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_013UJS2WR1LYy7JdejgdnMiC

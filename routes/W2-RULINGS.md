@@ -335,3 +335,29 @@ are the natural warm-up), not bulk test traffic.
   openpyxl, sklearn 1.9.0, global_land_mask). Runbook line: the launcher prints
   "scikit-learn: 1.9.0  user site-packages: ignored"; anything else is a stop.
 
+
+## 24 September, evening: server window, runbook lines, wording to check
+
+- Edit inside W2's area, announced: app/warm_demo.py and Meridian-run.bat (ac97cd3, W1). The
+  server now runs in its own PowerShell window that stays open after an exit and tees every
+  line to app\logs\server-<stamp>.log; the launcher prints "server log: ..." and its closing
+  line no longer says "Meridian has stopped". app/logs/ is gitignored. Reason: at 16:59 the
+  server exited mid-request with no crash record and its console vanished with it (suspected
+  Ctrl+C or a closed window while the on-screen keyboard was up; unproven).
+- Runbook lines (W2 writes them in): (a) the server window is minimised and never clicked or
+  typed into; the host works only in the browser; (b) "Failed to fetch" on the dashboard
+  means the server is down: run the launcher block from the runbook, nothing else; (c) after
+  any incident, the last server log under app\logs is the evidence and is copied to
+  E:\Avia\probe before anything is relaunched.
+- Cosmetic for W1's queue, noted here because the runbook reads the console: "access:
+  shared password ON" and "entry: DEMO sign-in OFF" print on every Optimise job start, not
+  once at start-up.
+- Wording to check with W4 before 10 Oct: the Optimise basis line now reads "Optimised for
+  most passengers within the 65-85% planning band" and may carry one seasonal sentence
+  ("select Winter and Optimise again"); the curfew line may carry "the forecast above
+  carries the restricted departure; unrestricted, connecting N two-way (X% lost to the
+  restriction)". Both are W1 draft wording and W4 may rewrite them within the meaning.
+- Market background "Direct service today: None" on SJC-TPE (two nonstop operators in the
+  OAG week) is still W2's check; with the existing-market framing John ruled today (an
+  additional service in a market already served by N weekly flights), this field is now on
+  the demo path and needs to be right before 10 Oct.

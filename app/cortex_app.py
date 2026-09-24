@@ -2680,8 +2680,16 @@ def _optimise_freq(t):
     except Exception:
         return None
     prof = ranked[0]["annual_profit"]; lf = ranked[0].get("total_lf") or 0.0
+    # CARRIED, not demand, is what a schedule delivers (24 Sep 2026, DUB-DFW): every row on
+    # that pair planned at the 87.5% cap and "most passengers" ranked on measured demand,
+    # so a 0.35% dip in the frequency response (6x 139,237 v 7x 138,747 each way) chose 6x
+    # while spilling 43,000. When the aircraft is full the passengers are the seats.
+    _seats = ranked[0].get("seats")
+    _cap = (float(_seats) * f * sea_weeks * float(c["plan_lf"])) if _seats else None
+    carried = min(float(demand), _cap) if _cap else float(demand)
     return {"airline": cand, "aircraft": code, "freq": f, "ctype": ct_i,
             "season": sea_i, "annual_profit": prof, "demand": demand,
+            "carried": carried,
             "lf": float(lf),
             # The seat count the gauge was CHOSEN on, carried through so the
             # forecast fills the same aeroplane the optimiser sized. Sizing on
@@ -2926,13 +2934,14 @@ def api_optimise(origin: str, dest: str, airline: str = "", carrier_type: str = 
     #   2. With a season CHOSEN the same rule runs over that season's rows and no note is written.
     #   3. No row in the band: the most passengers among rows clearing the floor, said so. No row
     #      clearing the floor at all: the not_viable report below, unchanged.
-    # Passengers are the row's measured demand at its frequency (TRUE demand, the figure the gauge
-    # was sized on); within the band that is what the schedule carries. Ties go to the higher
-    # load factor, then the higher frequency.
+    # Passengers are what the row CARRIES: its measured demand at that frequency, capped at the
+    # seats it flies at the plan load factor (24 Sep, DUB-DFW: on a route capacity bound at every
+    # frequency, demand alone let a noise-level dip pick 6x over 7x). Ties go to the higher load
+    # factor, then the higher frequency.
     PRESENT_LF_CAP = 0.85   # WORKING ASSUMPTION until John sets the band's upper limit (24 Sep 2026)
     _season_blank = season not in ("annual", "summer", "winter")
     _pool = [r for r in rows if r.get("season", "annual") == "annual"] if _season_blank else list(rows)
-    _most_pax = lambda rs: max(rs, key=lambda r: (r["demand"], r["lf"], r["freq"]))
+    _most_pax = lambda rs: max(rs, key=lambda r: (r.get("carried", r["demand"]), r["lf"], r["freq"]))
     band = [r for r in _pool if VIABLE_LF <= r["lf"] <= PRESENT_LF_CAP]
     viable = [r for r in _pool if r["lf"] >= VIABLE_LF]
     not_viable = None
@@ -3038,6 +3047,7 @@ def api_optimise(origin: str, dest: str, airline: str = "", carrier_type: str = 
                               "sweep": [{"airline": r_["airline"], "aircraft": r_["aircraft"],
                                          "freq": r_["freq"], "season": r_.get("season"),
                                          "lf": round(float(r_["lf"]), 3), "demand": round(r_["demand"]),
+                                         "carried": round(r_.get("carried", r_["demand"])),
                                          "seats": r_.get("seats"), "chosen": (r_ is best)}
                                         for r_ in rows],
                               "selected_lf": (round(float(_sel_lf), 3) if _sel_lf is not None else None),
