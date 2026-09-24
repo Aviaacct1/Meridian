@@ -299,3 +299,32 @@ before the 10 Oct freeze and tested at the 11-12 Oct trials; (e) "warm the accou
 small number of real sends from the domain over several days before Routes (the invitations
 are the natural warm-up), not bulk test traffic.
 
+## 24 September 2026: controller edits in W2's area, announced the same day
+
+- Meridian-run.bat: one line added, `set AVIA_MCT_MASTER=%AVIA_ROOT%\Reference Tables\MCT
+  Master List.xlsx`, after the store paths. Reason: the server started this morning in the
+  aviaremote1 logon with "MCT MASTER NOT LOADED (file not found) at Z:\..." because Z: is a
+  per-logon Egnyte letter that logon does not have, so every connection ran on the flat
+  default minimum connect time (pre-mortem 16, live). John's ruling (24 Sep, verbatim): "My
+  personal logon does have Z: access, but I agree nothing should be relitying on that. The
+  whole point of setting up E was to have a single mapped drive with every file on it so it
+  is very quick and easy to closne ot move the whole set up to new workstations." The file
+  is copied by John to E:\Avia\Reference Tables\. RUNBOOK LINES for W2, binding: (a) the
+  restart procedure sets QSI_PASSWORD by Read-Host (never a pasted placeholder), then
+  AVIA_OPT_WORKERS, then runs the launcher from a NON-elevated window; a server launched from
+  an elevated window can only be stopped from one; (b) after every start, the server console
+  must show "[cortex] MCT master: N rows" and never "NOT LOADED"; (c) the stand build runs
+  with AVIA_STAND_MODE on, which refuses to start without the master; (d) clearing orphaned
+  workers after a hard stop is no longer needed from 9195b3f (workers exit with the server),
+  but the elevated stop line remains in the runbook for the case of a server from an older
+  commit.
+- app/warm_demo.py (22 Sep, W1 job 1) and the Optimise pool (23 Sep) are W1's own files
+  under the README; noted here only because the launcher prints their settings.
+- John's direction, 24 Sep, for the runbook's future shape: "if we sell this, we will want to
+  have a workstation in at least 2 locations maybe three, so if internet goes down in one
+  location the programm is still accessible elsewhere and also if many users are working at
+  once they dont get stuck behind a queue on one workstation." Consequence for W2: every
+  path the server needs comes from AVIA_ROOT or config; nothing on the workstation is set
+  up by hand that the runbook does not list, so a second workstation is the E: drive cloned
+  plus the runbook.
+

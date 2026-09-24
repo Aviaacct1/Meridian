@@ -13,6 +13,10 @@ rem to the same disk by its real letter, so the launcher works in both.
 if exist E:\Avia\sabre.duckdb (set AVIA_ROOT=E:\Avia) else (set AVIA_ROOT=D:\Avia)
 set AVIA_SABRE=%AVIA_ROOT%\sabre.duckdb
 set AVIA_OAG=%AVIA_ROOT%\oag.duckdb
+rem The MCT master lives on the product drive too (John, 24 Sep 2026): nothing the
+rem server needs may depend on a per-logon network letter such as Z:. Copied from
+rem Egnyte by hand when it changes; the server refuses to start in stand mode without it.
+set AVIA_MCT_MASTER=%AVIA_ROOT%\Reference Tables\MCT Master List.xlsx
 rem The shipped configuration, stated rather than remembered:
 rem   frequency-sensitive capture ON (the deck ladder needs it),
 rem   feed level V1 (John's 15 August decision; timing stays QSI).

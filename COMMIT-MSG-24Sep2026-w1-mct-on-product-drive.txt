@@ -1,0 +1,12 @@
+Launcher: MCT master read from the product drive (AVIA_ROOT), not the per-logon Egnyte letter; W2 runbook lines
+
+Meridian-run.bat: set AVIA_MCT_MASTER=%AVIA_ROOT%\Reference Tables\MCT Master List.xlsx.
+Found 24 Sep: the aviaremote1 logon has no Z:, so the server started with the MCT master
+NOT LOADED and every connection on the flat default (pre-mortem 16). John's ruling: nothing
+the server needs may depend on a per-logon letter; E: carries every file so a workstation
+can be cloned. John copies the file to E:\Avia\Reference Tables\.
+routes/W2-RULINGS.md: the edit announced; runbook lines (Read-Host password, non-elevated
+launch, MCT line check, stand mode); John's multi-workstation direction recorded.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_013UJS2WR1LYy7JdejgdnMiC
