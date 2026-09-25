@@ -1,0 +1,17 @@
+W9 session 1: stand spec in, artwork brief v0.5, services v1, status v6
+
+- routes/W9-ARTWORK-BRIEF-F124.md v0.5: built on Informa's stand spec
+  (back 3,960 x 2,520; sides 3,015 x 2,520; fascia 4,020 x 320; counter
+  915 x 945; 10mm bleed; 300dpi; .ai or PDF); sight lines; stopper D1;
+  no Avia Solutions on the stand; vector only
+- routes/W9-STAND-SERVICES.md v1: Messe Frankfurt internet options and
+  recommendation, power, screen
+- routes/W9-REPLY-TO-ALISON-25Sep2026.md: deadline and furniture questions
+- routes/W9-GRAPHICS-DECISION-26Sep2026.md v2: package includes fascia
+  and counter graphics
+- routes/W9-FULLVISION-BRIEF-26Sep2026.md, Observatory brand guidelines
+  v1.3 print, stand-docs/ (spec sheet, Messe price list)
+- routes/W9-STATUS.md v6
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01HqTaKJW4ZUwvu85n3Ngrjk

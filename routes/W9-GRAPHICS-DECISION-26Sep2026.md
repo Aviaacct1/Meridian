@@ -1,10 +1,13 @@
 # Stand F124 graphics: the decision for John
 
-Version 1, 25 September 2026 (programme label 26 Sep). Author: The Aviation Observatory.
+Version 2, 25 September 2026 (programme label 26 Sep). Author: The Aviation Observatory.
 Written by W9. Umbrella item 40; critical path line 2.
 
-**The choice.** A printed wall, or the fascia and counter logo only, which the package
-already includes (Charlotte Sullivan, 18 Sep, W9-RULINGS v1).
+**The choice.** Printed walls, or the package graphics only. The Routes specification sheet
+(Informa, 25 Sep) shows the package includes a full-colour fascia overlay (4,020 x 320mm) and
+a full-colour counter graphic (915 x 945mm); the three walls (back 3,960 x 2,520mm, sides
+3,015 x 2,520mm) are the extra. Option B is therefore our own fascia and counter artwork on
+white walls, not a logo only.
 
 **The price on file.** Informa quoted full inlay at circa EUR 3,739.80 plus VAT and overlay
 at circa EUR 3,979.90 plus VAT (Charlotte Sullivan, 17 Sep, W9-RULINGS v1): EUR 240.10
