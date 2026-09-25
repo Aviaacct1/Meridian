@@ -1,0 +1,11 @@
+W9 session 1: deadline 3 Oct confirmed, Claude Design prompt, brief v0.6, status v7
+
+- routes/W9-CLAUDE-DESIGN-PROMPT-F124.md: paste-ready prompt for John's
+  Claude Design session (sizes, sight lines, words, rules, file spec)
+- routes/W9-ARTWORK-BRIEF-F124.md v0.6: 3 Oct final deadline (exhibitor
+  manual, per Informa 25 Sep); D1 adopted; back wall must stand alone
+- routes/W9-STATUS.md v7: John designs with Claude Design; walls ordered
+  on Full Vision's price
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01HqTaKJW4ZUwvu85n3Ngrjk

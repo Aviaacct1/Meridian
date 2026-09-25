@@ -1,8 +1,8 @@
 # W9 status: stand, contract and show logistics
 
 W9 writes this file and rewrites it each session; the controller reads it and never edits it.
-Version 6, Friday 25 September 2026 (see Conflicts 1 on the date). Author: The Aviation
-Observatory. Session 1, sixth pass: Informa's stand specification and the Messe Frankfurt internet price list (Alison Browne, 25 Sep).
+Version 7, Friday 25 September 2026 (see Conflicts 1 on the date). Author: The Aviation
+Observatory. Session 1, seventh pass: deadline confirmed 3 Oct; John designs with Claude Design this weekend.
 
 Read this session: routes/README.md v1; W9-RULINGS.md v1 of 21 Sep with the sections of
 24 Sep evening, 25 Sep late and the two of 26 Sep early; GTM-STRATEGY-ROUTES-2026.md Status
@@ -15,8 +15,8 @@ PROMPT-for-Fable-Routes-19Sep2026.txt STANDING RULES; for jobs 3 and 4, W6-STATU
 | Job | State | Next date | Owner |
 |---|---|---|---|
 | 1 Full Vision brief | SENT by John, 25 Sep | Reply asked by Mon 29 Sep | Full Vision |
-| 2 Graphics decision | PAPER READY: W9-GRAPHICS-DECISION-26Sep2026.md; W9 recommends the printed wall, capped at EUR 3,979.90 plus VAT | John decides today | John |
-| 3 Artwork chain | Brief v0.5 READY, built on Informa's stand specification (sizes, 10mm bleed, 300dpi, .ai or PDF); (W9-ARTWORK-BRIEF-F124.md): three-sided stand, key messages high, a call-to-action stopper; FRESH DESIGN from Identity Standards v1.3 (print), the earlier concept being unavailable and the layout changed (John, 25 Sep); proposed surface allocation for John; no chart on the wall; CMYK gap flagged | John on layout and allocation 26 Sep; direction 27-28 Sep; v1.0 29 Sep; print files 29 Sep-1 Oct; John sends 2 Oct | John, W3, W9 |
+| 2 Graphics decision | John, 25 Sep: design all three walls; order walls only once Full Vision's price is known, possibly back wall only. Package fascia and counter graphics go ahead regardless | Full Vision's price, due 29 Sep | John |
+| 3 Artwork chain | Brief v0.6 and a paste-ready Claude Design prompt (W9-CLAUDE-DESIGN-PROMPT-F124.md) READY. John designs with Claude Design over 26-27 Sep once the manual and Full Vision's parameters arrive; stopper D1 adopted (John, 25 Sep); all three walls designed, back wall must stand alone | Elevations 26-27 Sep; brief v1.0 on Full Vision's reply; John sends by 2 Oct; final deadline 3 Oct | John, W9 |
 | 4 Pens and giveaways | Earlier giveaway work is lost (John, 25 Sep); W9 rebuilds from the rulings. Order BLOCKED on the domain being live (W6 v7) | Draft order next session | W9 / W6 / John |
 | 5 Exhibitor manual and services | Manual NOT ARRIVED; login due shortly (Alison, 25 Sep). W9-STAND-SERVICES.md v1: wired internet is a Messe Frankfurt order; W9 recommends item 37001177, 20/10 Mbit/s with router and WiFi, EUR 1,085; one socket only | W2 confirms bandwidth; John orders when the login arrives | Informa / W2 / John |
 | 6 Contract | OPEN: Charlotte Sullivan's revised form not seen by W9 | John forwards or confirms receipt | John / W9 |
@@ -24,21 +24,14 @@ PROMPT-for-Fable-Routes-19Sep2026.txt STANDING RULES; for jobs 3 and 4, W6-STATU
 
 ## 2. What W9 needs from John
 
-0. **URGENT: the deadline.** Informa's specification sheet says artwork by 14 September 2026,
-   already passed, and the default fascia after it is company name and stand number.
-   Charlotte gave 3 Oct on 17 Sep. Reply to Alison (paste-ready in
-   W9-REPLY-TO-ALISON-25Sep2026.md) asks her to confirm 3 Oct for F124, and whether the
-   furniture can move.
-1. **The stopper wording.** John prefers D and warns against the crystal-ball register
-   (25 Sep). W9's refinement D1, "Your city pair. Forecast in about a minute.", with a
-   method line under it (brief v0.4 section 5). John picks D1, D2 or D; W6 finalises 27 Sep.
-   Still open: the furniture plan (section 4); confirm "three-sided" means three walls with
-   the back wall facing the aisle.
-2. **The graphics decision**, A (wall) or B (logo only), and the price ceiling if not
-   EUR 3,979.90 plus VAT.
-3. **Who does the artwork.** W3 owns it by ruling but also carries the pack generator (critical
-   path 2A) in the same week. W9's view: a dedicated artwork chat on Opus, reading this brief
-   and the guidelines, so neither slips. Controller to rule; John to say.
+0. CLOSED: the deadline. 3 October is the final graphics deadline in the exhibitor manual
+   (Alison Browne to Full Vision, 25 Sep 17:57); Full Vision's own receipt date still asked.
+   Informa customer service is arranging John's manual login.
+1. CLOSED: stopper D1 (John, 25 Sep), to refine in the design session. Still open: the
+   furniture plan; Informa has not answered whether the furniture can move (Full Vision to say).
+2. CLOSED for now: design all three walls, order on price (John, 25 Sep).
+3. CLOSED: John designs with Claude Design this weekend (25 Sep); W3 is not the artwork
+   producer. Controller to note in W3-RULINGS (the 25 Sep late ruling gave W3 the artwork).
 4. **Warn the paid designer now** that a call on 30 Sep or 1 Oct is possible (brief section 10).
 5. **Charlotte's revised booking form:** has it arrived, and where. VAT position and billing
    details for TAO Ltd (item 52: not registered yet).
@@ -129,9 +122,8 @@ fees as agreed with Charlotte. John supplies VAT position and billing details. S
    brief put Avia Solutions on the fascia; the guidelines' descriptor lockup carries "An
    institution of Avia Solutions". W9's brief now uses the stacked lockup without it.
    Controller to carry the ruling into W6, W4, W3 and W2 (any stand-mode screen idents).
-9. **Deadline on the specification sheet.** 14 September 2026 (Informa sheet, 25 Sep) against
-   3 October (Charlotte Sullivan, 17 Sep; umbrella item 40) and the programme's 2 Oct. Until
-   Informa confirms, W9 holds 2 Oct and treats it as at risk.
+9. RESOLVED: the sheet's 14 September is superseded; 3 October is the manual's final
+   graphics deadline (Alison, 25 Sep).
 10. **Process.** W9 ran one read-only `git log --oneline -3` against the mounted clone this
    session, against the rule. Nothing changed; it will not recur.
 
@@ -142,8 +134,8 @@ fees as agreed with Charlotte. John supplies VAT position and billing details. S
 ```
 cd C:\AviaDev
 git pull
-git add routes/W9-STATUS.md routes/W9-FULLVISION-BRIEF-26Sep2026.md routes/W9-GRAPHICS-DECISION-26Sep2026.md routes/W9-ARTWORK-BRIEF-F124.md routes/Observatory-Brand-Guidelines-v1.3-print.dc.html routes/W9-STAND-SERVICES.md routes/W9-REPLY-TO-ALISON-25Sep2026.md routes/stand-docs/F124-stand-spec-25Sep2026.png routes/stand-docs/MesseFrankfurt-Telecoms-Price-List-2026.pdf routes/COMMIT-MSG-26Sep2026-w9-session1f.txt
-git commit -F routes/COMMIT-MSG-26Sep2026-w9-session1f.txt
+git add routes/W9-STATUS.md routes/W9-FULLVISION-BRIEF-26Sep2026.md routes/W9-GRAPHICS-DECISION-26Sep2026.md routes/W9-ARTWORK-BRIEF-F124.md routes/Observatory-Brand-Guidelines-v1.3-print.dc.html routes/W9-STAND-SERVICES.md routes/W9-REPLY-TO-ALISON-25Sep2026.md routes/stand-docs/F124-stand-spec-25Sep2026.png routes/stand-docs/MesseFrankfurt-Telecoms-Price-List-2026.pdf routes/W9-CLAUDE-DESIGN-PROMPT-F124.md routes/COMMIT-MSG-26Sep2026-w9-session1g.txt
+git commit -F routes/COMMIT-MSG-26Sep2026-w9-session1g.txt
 git push
 git log --oneline -1
 ```

@@ -1,14 +1,14 @@
 # Stand F124: artwork brief, designed fresh from the brand guidelines
 
-Version 0.5, 25 September 2026. Author: The Aviation Observatory. Written by W9.
-Status: DRAFT, now built on the stand specification Informa sent on 25 Sep. Supersedes v0.4.
+Version 0.6, 25 September 2026. Author: The Aviation Observatory. Written by W9.
+Status: DRAFT, now built on the stand specification Informa sent on 25 Sep. Supersedes v0.5.
 Open items are marked TO CONFIRM.
 
 ## 1. The job
 
 Design and produce print-ready artwork for F124 from a clean start, using the Identity
 Standards v1.3, print edition (routes/Observatory-Brand-Guidelines-v1.3-print.dc.html) as the
-design authority. Claude designs and produces the final artwork; John approves it and sends
+design authority. John designs with Claude Design over the weekend of 26-27 Sep, once the manual and Full Vision's parameters are in (John, 25 Sep); Claude produces the final artwork; John approves it and sends
 it to routes@fullvision.co.uk; John's paid designer is the fallback (section 10). Nothing on
 the stand names Avia Solutions (John, 25 Sep).
 
@@ -30,8 +30,8 @@ Source: the Routes stand specification sheet, filed as routes/stand-docs/F124-st
 | Included furniture | 1 high table, 4 high stools, 1 counter, 1 waste bin |
 | Included electrics | 3 LED spotlights, one 42-inch floor-standing TV, 1 electrical socket |
 | Included graphics | Full-colour fascia overlay and full-colour counter graphic |
-| Extra | Full-stand colour graphics (the three walls) |
-| Printed artwork deadline | 14 September 2026 on the sheet, already passed. Charlotte Sullivan gave 3 Oct (17 Sep). TO CONFIRM with Full Vision and Informa |
+| Extra | Full-stand colour graphics. John: design for all three walls now; order walls only once Full Vision's price is known; possibly the back wall only |
+| Printed artwork deadline | 3 October 2026 is the final graphics deadline in the exhibitor manual (Alison Browne to Full Vision, 25 Sep 17:57). The sheet's 14 September is superseded. Full Vision's own receipt date TO CONFIRM (asked 25 Sep) |
 | Default if no fascia artwork | Company name and stand number |
 | Colour profile | Not stated. TO CONFIRM |
 | Panel joints | The plan shows dashed lines at circa 1m intervals: three on the back wall, two on each side wall. TO CONFIRM whether these are panel joints the print must avoid |
@@ -93,7 +93,7 @@ fortune-teller register. W9's reading of where that risk sits, and the answer:
 
 | | Top band (stopper) | Second line, under it |
 |---|---|---|
-| D1, W9's pick | Your city pair. Forecast in about a minute. | Built from airline schedules and fares, with the method shown. |
+| D1, adopted by John 25 Sep (refine in the design session if need be) | Your city pair. Forecast in about a minute. | Built from airline schedules and fares, with the method shown. |
 | D2 | Name a city pair. See its forecast in about a minute. | Every forecast shows its working. |
 | D, as John wrote it | Any city pair. Forecast in about a minute. | Every forecast shows its working. |
 
@@ -115,6 +115,11 @@ on 27 Sep; this is W9's input with John's steer.
 
 The fascia and counter graphics are in the package at no extra cost; only the three walls are
 the extra (the graphics decision, umbrella item 40).
+
+**Design so the back wall can stand alone.** John may order the back wall only. If the side
+walls stay white, nothing is lost: the site address is also on the counter, and the full name
+is on the fascia. Design the three walls as one composition, but never put the only copy of
+anything on a side wall.
 
 ## 7. Brand rules that bind the wall (from the guidelines, v1.3)
 
@@ -180,4 +185,4 @@ day. The specification accepts PDF, so the first trigger is now unlikely.
 | Print files | 29 Sep-1 Oct | Claude (W3) |
 | Proof to John | Thu 1 Oct | W3 |
 | John sends to Full Vision | Fri 2 Oct | John |
-| Deadline in force | TO CONFIRM (sheet 14 Sep; Charlotte 3 Oct) | Informa, Full Vision |
+| Deadline in force | 3 Oct, final (exhibitor manual, per Alison 25 Sep); Full Vision's own date TO CONFIRM | Informa, Full Vision |
