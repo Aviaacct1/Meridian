@@ -1,6 +1,6 @@
 # Meridian calibration record 2026
 
-Written by W10 (final calibration test). Version 0.4, 26 September 2026, DRAFT. The
+Written by W10 (final calibration test). Version 0.5, 26 September 2026, DRAFT. The
 definitive version carries ONE figure set, ruled by John, and is what the product carries
 into Routes and republishes yearly. Every figure in this record quotes the line in
 bt2/bt2_experiments.log that produced it; a figure with no log line does not exist.
@@ -90,8 +90,20 @@ seats_ly are excluded. The published pairs therefore describe how well the model
 the local nonstop passengers a launched route carried, given the seats the airline flew.
 They do not describe the connecting feed (never graded), a route whose capacity Meridian
 chose (bt2_forecast labels that case INDICATIVE), a year beyond the launch year, or a
-catchment (base_mkt is the raw pair). The mix of the sample by haul, scope, region pair and
-market size is printed by bt2/bt2_record_mix.py and will be entered here from its log line.
+catchment (base_mkt is the raw pair). The mix (log lines W10-RECORD-MIX-RELAXED and -CANON, 26 Sep): on 6,524, short-haul
+4,455 (68%) and long-haul 2,069 (32%); international 4,160; FSC 4,685 and LCC 1,839; pair
+market under 8k O&D 4,369 (67%), 8-25k 1,453, 25-80k 628, over 80k 74; Europe-North
+America 203, Asia-Europe 167. On 2,915: long-haul 1,147 (39%), under 8k 1,230 (42%),
+Europe-North America 139. The passengers-per-seat ratio the record grades has a median of
+0.68 (6,524) and 0.62 (2,915).
+
+What the record says about a new long-haul nonstop's year-one local traffic as a share of
+the pair's existing O&D: 0.29 where the pair carries 25-80k today, 0.11-0.15 above 80k;
+Europe-North America median 0.74 (0.40-1.91) on 6,524 and 0.61 (0.35-1.15) on 2,915.
+And what it says about capacity: re-predicting every launch at half and double its seats
+moves the model's passengers by 0.51x and 1.99x (elasticity 0.98-0.99 on 6,524, 0.90-0.95
+on 2,915). The model predicts a load factor given a schedule; it does not predict what a
+market would support, and the record cannot be read as if it did.
 
 The basis fault, from the code: app/route_context.py line 346 builds the live seats_ly both
 directions, matching training, so bt2_forecast.forecast returns a two-way local figure;

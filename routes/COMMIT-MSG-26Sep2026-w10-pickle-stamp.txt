@@ -1,7 +1,11 @@
-W10: pickle stamp measured; the app runs the blind-configuration estimator
+W10 26 Sep: jobs 1-3 closed on John's pastes; six log lines; status v5; record v0.5
 
-bt2/bt2_experiments.log: W10-BASIS-IN-THE-PAYLOAD (block C: two-way model figure against each-way
-capacity in the saved Bologna payload), W10-PICKLE-STAMP (the artefact the workstation loads, its build
-environment, its q50 hyperparameters, carid check) and W10-PICKLE-INSAMPLE-PROVISIONAL and W10-PICKLE-INSAMPLE-CONFIRMED (the app's estimator scores
-73.4 / 56.0 in-sample, identical under sklearn 1.7.2 and 1.9.0). routes/W10-STATUS.md v4 and CALIBRATION-RECORD-2026.md v0.4
-carry the finding; all W10 blocks now run with user site-packages ignored (py -3.12 -s).
+bt2/bt2_experiments.log: W10-PICKLE-STAMP, W10-PICKLE-INSAMPLE-PROVISIONAL, W10-BASIS-IN-THE-
+PAYLOAD, W10-PICKLE-INSAMPLE-CONFIRMED (the app's estimator scores 73.4 / 56.0 in-sample,
+identical under sklearn 1.7.2 and 1.9.0), W10-RECORD-MIX-RELAXED and W10-RECORD-MIX-CANON
+(mix, share of existing O&D by class, seat elasticity 0.99: the model is a load-factor
+predictor).
+routes/W10-STATUS.md v5: jobs 1-3 done with the figures; four fix options with scores for
+30 Sep; block D (ceiling score) to follow.
+routes/CALIBRATION-RECORD-2026.md v0.5: sections 8 and 9 carry the measured figures.
+bt2/probe_payload_keys.py: raw docstring (SyntaxWarning).

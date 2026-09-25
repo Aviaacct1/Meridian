@@ -1,6 +1,6 @@
 # W10 status: FINAL CALIBRATION TEST
 
-Written by W10 only, rewritten every session. Version 4, 26 September 2026, session 3, updated on John's block A paste.
+Written by W10 only, rewritten every session. Version 5, 26 September 2026, session 3, updated on John's pastes of blocks A, A2, B and C.
 Clone at e7eaf9d. Read this session: W10-RULINGS.md from "22 September 2026, evening" to the
 end (six sections); FACE-VALIDITY-REGISTER-25Sep2026.md v2 in full; the umbrella Status
 block and critical path of 26 Sep 03:00; bt2/bt2_build_v13.py; app/bt2_forecast.py load path.
@@ -9,10 +9,13 @@ its files are in the commit block below.
 
 ## One line for John
 
-The 89/82 record scored the local nonstop passengers a launched route carried, both
-directions, on realised launches with the airline's seats known; it never scored the
-connecting feed; the model the app runs is not the estimator any calibrated pair describes;
-and the live path treats the model's two-way number as each way, doubling the local leg.
+The record scored the local nonstop passengers a launched route carried, two-way, given
+the seats the airline flew; it never scored the feed; the model that answers a client is
+the blind-configuration estimator (73 / 56 in-sample, 61 blind), not the one any calibrated
+pair describes; its passengers scale one for one with seats, so Optimise cannot ask it what
+a market supports; and the live path doubles its two-way answer by treating it as each
+way. One line fixes the doubling; the Optimise question needs a market anchor; the stand
+carries the pair for the model that runs.
 
 ## The four jobs and when each lands
 
@@ -20,10 +23,10 @@ and the live path treats the model's two-way number as each way, doubling the lo
 |---|---|---|
 | 1. Pickle stamp and its own pair | DONE 26 Sep | Stamp and in-sample pair measured and confirmed on the declared library |
 | 2. Outturn clause | Today, below | Done |
-| 3. Diagnosis: the two mechanisms against the record | Delivered from the code; block C confirmed the basis 26 Sep; block B adds the record's own figures | Done in substance |
-| 4. Fix options with scores beside 83.2/70.0 and 91/85 | 30 Sep | Shapes below; scores need blocks A-C pasted by 28 Sep |
+| 3. Diagnosis: the two mechanisms against the record | DONE 26 Sep: code, block C (basis) and block B (the record's own figures) | Log lines W10-RECORD-MIX-RELAXED, -CANON |
+| 4. Fix options with scores beside 83.2/70.0, 91/85 and 73/56 | 30 Sep; options below now, one test run (block D) for the ceiling score | On track |
 
-## Job 1: the model the app runs (block A pasted 26 Sep; log lines W10-PICKLE-STAMP, W10-PICKLE-INSAMPLE-PROVISIONAL)
+## Job 1: the model the app runs (DONE 26 Sep; log lines W10-PICKLE-STAMP, W10-PICKLE-INSAMPLE-PROVISIONAL, W10-PICKLE-INSAMPLE-CONFIRMED)
 
 The pickle the workstation loads is E:\Avia\bt2_relaxed\bt2_model_v1_3.pkl, written 13 Aug
 01:41 under the declared build (sklearn 1.9.0, airportsdata 20260803, user aviaremote1),
@@ -58,7 +61,7 @@ to 2024. Source: bt2/bt2_discover.py lines 78-84 (Sabre NON-STOP, source_year = 
 year, unordered pair, both directions); bt2/bt2_mixed_basis.py docstring (DB1B coverage
 2000-2024, 2016 Q1 absent and scaled, nothing for 2025).
 
-## Job 3: the diagnosis, from the code
+## Job 3: the diagnosis (DONE 26 Sep)
 
 **What the record scored.** bt2_gbm.py: target log(actual / seats_ly), forecast seats_ly x
 exp(prediction). actual = launch_pax, Sabre NON-STOP passengers on the unordered pair in the
@@ -96,41 +99,82 @@ captured 112,543 (the model's two-way figure carried to 2027) beside annual_capa
 254,800 (both directions) and its answer is set against each-way seats. On Bologna the
 per-seat ratio is 0.42 two-way, so this route alone does not exceed the ceiling; the
 Edinburgh and Abha rows do, and the code settles it either way.
-(ii) Shape. Seats is the anchor and a feature, so more seats returns more passengers at a
-declining per-seat rate: BLQ-JFK 3x to 7x is x2.33 seats for x1.58 local (elasticity 0.54);
-SJC-TPE 7x to 14x is x2 for x1.78 (0.83). Block B measures the record's own elasticity at
-half and double seats. The Bologna sweep (block C) adds a gauge effect: A333 3x to 7x is
-x1.26 demand for x2.33 seats, the B77W x1.58, so the model reads the bigger aircraft as
-the stronger signal, which is the capacity-aggressiveness feature at work. On small origins (AHB rows at 2.6-5.5x the service area's existing
-traffic) the record's launch_pax over base_mkt by market-size band, block B, says whether
-launches from small existing markets carry several times that market in year one; until it
-runs, the record says nothing on it.
-(iii) The Optimise circularity. A model that answers "given this schedule, what will it
-carry" gives more demand to a bigger schedule by construction; Optimise sweeps frequency
-through it and sizes an aircraft to the answer. bt2_forecast already labels this INDICATIVE
-in the payload. The fix is in how Optimise asks, not in the engine.
+(ii) Shape, measured on the record (block B, 26 Sep). Re-predicting every launch at half
+and at double its seats, the model returns 0.507 and 1.987 times the passengers (blind
+configuration; 0.506 and 1.980 fitted): implied elasticity 0.98-0.99 on 6,524 and
+0.90-0.95 on 2,915, long-haul the same as short. The model is a load-factor predictor:
+passengers scale one for one with seats and the per-seat rate barely moves. The live
+sweep reads lower (BLQ-JFK B77W 3x to 7x elasticity 0.54, A333 0.28) because the sweep
+moves frequency and the frequency feature with the seats, which the record test holds;
+the direction is the same and the conclusion does not depend on which.
+(iii) The Optimise circularity, now a number. "Given this schedule, what will it carry" is
+what the model was fitted and scored on, and it answers it at circa 0.68 of seats whatever
+the schedule. "What would this route support" has no answer inside it: every capacity is
+supported at the same load factor, so Optimise sweeping schedules through it and sizing an
+aircraft to the result is circular by construction, as bt2_forecast's INDICATIVE caveat
+already says. The fix is in how Optimise asks (option 2), not in the engine.
+(iv) The share of a service area's existing traffic (block B). The record's nearest
+quantity is launch_pax over base_mkt, the pair's own O&D before launch. On established
+markets the two samples agree: a new long-haul international nonstop carries a median 0.29
+of the pair's existing O&D in year one where that O&D is 25-80k (n=302 relaxed / 244
+canon) and 0.15 / 0.11 above 80k (n=42 / 36). Europe-North America: median 0.74 (p25
+0.40, p75 1.91) on 203 launches relaxed, 0.61 (0.35-1.15) on 139 canon, at 0.40 / 0.35
+passengers per two-way seat. Asia-Europe 0.57 / 0.36. On tiny existing markets (under 8k
+pair O&D) the median launch carries 5.2x the existing pair traffic (relaxed) or 1.5x
+(canon): a launch into a near-empty pair is mostly new traffic, which is the Abha pattern
+(flynas IST 5.5x the service area) and is inside the record for that class. The register's
+Test A ratios are on the service area, not the raw pair, so the comparison is directional:
+BLQ-JFK 0.53 and SJC-TPE 0.27 are inside the EU-NA and long-haul ranges; DUB-DFW 1.88 is at
+the EU-NA p75; BRS-EWR 0.026 is below the p25 of every class.
+(v) The mix. 6,524: short-haul 4,455 (68%), long-haul 2,069 (32%); international 4,160;
+FSC 4,685, LCC 1,839; pair market under 8k 4,369 (67%), 8-25k 1,453, 25-80k 628, over 80k
+74; EU-NA 203 (3.1%), AS-EU 167, AS-NA 64. 2,915: long-haul 1,147 (39%); under 8k 1,230
+(42%); EU-NA 139 (4.8%), AS-EU 109. The relaxed sample's extra 3,609 launches are
+two-thirds tiny-market pairs, which is what buys its higher blind figure and its lower
+calibrated pair. "Secondary city" is not a field in the record; the market-size band is
+the nearest proxy and is reported instead.
 
 **Where the record cannot speak.** The feed; any route whose capacity Meridian chose; any
 year after the launch year; any catchment (base_mkt is the raw pair). Block B prints the
 sample mix (haul, scope, region pair, carrier type, market band) so the long-haul and
 Europe-US counts are stated rather than assumed.
 
-## Job 4: fix options for 30 Sep, shape now, scores on the pastes
+## Job 4: fix options for 30 Sep, each as a diff W1 can apply, with its score
 
-1. Basis: one line at cortex_app 1311, pass _bt2["pax"] / 2.0 with the basis stated in the
-   comment (or return each-way from bt2_forecast with both callers checked). Record score
-   unchanged on both pairs (the record is two-way on both sides); register local rows move
-   by half; W10 re-scores the register by arithmetic the same day.
-2. Optimise anchor: sweep frequency on a market-anchored local (the model at the served
-   route's or the analyst's seats, not the swept seats), aircraft sized to demand. Diff in
-   cortex_app _cell_kw (W1). Record score unchanged; register Optimise column re-run by the
-   controller.
-3. Feed: outside the record. The controller's shape (feed as a share of the route's own
-   size by haul and hub) needs its own back-test; W10 can score it on the sector target
-   (alt_targets, bt2_lib) beside the local pair if John wants a number, one build day.
-4. The stand pair: rebuild the pickle on the calibrated configuration (one flag in
-   bt2_build_v13, --calib), or carry the blind pair. Scores: both already exist (83.2/70.0
-   and 91/85 in-sample; 60.9 blind) plus block A's pair for the pickle as it is.
+Scores beside the three pairs on 6,524 (83.2 / 70.0 published-rule estimator; 91 / 85
+memorisation; 73.4 / 56.0 the estimator that runs, blind 60.9). None of the four options
+changes the record's two-way arithmetic, so the pairs stand under each; what moves is the
+register.
+
+1. BASIS, one line. cortex_app.py line 1311: `p2p_demand_override=(_bt2["pax"] / 2.0 if
+   _bt2 else None)` with a comment stating that bt2_forecast returns both directions
+   (route_context line 346) and route_forecast's captured is each-way (line 853); and the
+   payload's range_low and range_high halved on the same basis so the band matches. Score:
+   record unchanged (log lines W10-BASIS-IN-THE-PAYLOAD, W10-PICKLE-INSAMPLE-CONFIRMED).
+   Register: every BT2 local row halves; EDI-BOS local 137k two-way becomes 68k against the
+   analyst's 43k (1.6x, from 3.2x); BLQ-JFK local at 7x falls from 112,543 to 56,272 each
+   way and the 7x B77W no longer fills. W10 recommends this ships regardless of the rest;
+   it is a defect, not a calibration choice.
+2. OPTIMISE ANCHOR. The sweep cannot use the model's own response to seats (elasticity
+   0.99). Anchor the local leg on the market instead: local_ceiling = share_p75 x
+   base_mkt, with share_p75 by class from the record (block B: EU-NA 1.91 relaxed / 1.15
+   canon; long-haul 25-80k markets 0.55; over 80k 0.29; AS-EU 1.47 / 0.84), applied as
+   min(model, ceiling) inside Optimise only; Run keeps the model's answer with the
+   INDICATIVE caveat. Score: block D measures what the ceiling does to the record, blind
+   and in-sample (expected: a small loss, because a p75 ceiling bites on a quarter of
+   launches by construction; W10 reports the number and John decides whether the Optimise
+   headline is worth it). Diff in cortex_app _cell_kw / api_optimise (W1's file); the class
+   table lives in bt2/ as a CSV the app reads through config.
+3. FEED. Outside the record. The controller's shape (feed as a share of the route's own
+   size by haul and hub) cannot be scored on this record and W10 says so rather than
+   scoring it on the sector target, which grades a quantity nobody publishes. W1 builds it
+   against the register rows (analyst connecting on the Knock and Edinburgh rows) as the
+   test, with the controller.
+4. THE STAND PAIR. No code. John rules: 73 / 56 in-sample and 60.9 blind for the model
+   that runs, with the outturn clause; or rebuild the pickle on the published-rule
+   configuration (bt2_build_v13 writes the blind estimator at line 129; a one-line change
+   writes the calibrated one) and carry 83.2 / 70.0 with the p25-p75 band then coming from
+   a lightly regularised fit. W10 recommends the first.
 
 ## Blocks for John
 
@@ -147,7 +191,7 @@ $env:AVIA_BT2_TARGET  = "nonstop"
 py -3.12 -s bt2_pickle_stamp.py 2>&1 | Tee-Object -FilePath E:\Avia\probe\pickle-stamp-W10-s.log
 ```
 
-Block B, job 3, the record's mix, share and seat response, both samples.
+Block B, DONE 26 Sep (recordmix-relaxed-W10.log, recordmix-canon-W10.log). Kept for the yearly republication.
 
 **Workstation Actual**
 ```
@@ -163,7 +207,7 @@ $env:AVIA_BT2_COHORTS = "2016,2017,2018,2019,2025"
 py -3.12 -s bt2_record_mix.py 2>&1 | Tee-Object -FilePath E:\Avia\probe\recordmix-canon-W10.log
 ```
 
-Block C, the basis check on the saved Bologna payload (read-only).
+Block C, DONE 26 Sep. Kept for reference.
 
 **Workstation Actual**
 ```
@@ -171,13 +215,16 @@ cd C:\src\meridian\bt2
 py -3.12 -s probe_payload_keys.py E:\Avia\probe\BLQ-JFK-25Sep\opt_BLQ-JFK.json
 ```
 
+Block D, the ceiling score for option 2, follows once bt2/bt2_ceiling_test.py is written
+(W10's file); target 28 Sep.
+
 Also wanted, no run: the four "within" lines of section 2 of E:\Avia\probe\mixed-W10-25Sep.log
 as they appeared on screen, for the blind within +-10% figure.
 
 ## Log lines
 
-26 Sep: W10-PICKLE-STAMP, W10-PICKLE-INSAMPLE-PROVISIONAL, W10-BASIS-IN-THE-PAYLOAD and
-W10-PICKLE-INSAMPLE-CONFIRMED written to bt2/bt2_experiments.log
+26 Sep: W10-PICKLE-STAMP, W10-PICKLE-INSAMPLE-PROVISIONAL, W10-BASIS-IN-THE-PAYLOAD,
+W10-PICKLE-INSAMPLE-CONFIRMED, W10-RECORD-MIX-RELAXED and W10-RECORD-MIX-CANON written to bt2/bt2_experiments.log
 from John's block A paste. Items 2 and 3 ran on 25 Sep (claimset-W10-25Sep.log, mixed-W10-25Sep.log, John's pastes to
 the controller). W10 has not seen the pastes; the two log lines for bt2_experiments.log are
 written when they are pasted here, in the existing format, before either figure is quoted
@@ -201,6 +248,5 @@ since": correct as committed; v2 of 24 Sep was written and not committed, W10's 
 
 ## Calendar
 
-Job 1 on block A's paste (26 Sep if pasted). Jobs 2 and 3 delivered today from the code;
-record figures on blocks B and C. Job 4 on 30 Sep holds if A-C are pasted by 28 Sep.
-Items 2 and 3 done 25 Sep; the record v1 by 3 Oct holds.
+Jobs 1, 2 and 3 done 26 Sep. Job 4 options are above; block D's score by 28 Sep; John
+decides 30 Sep. Record v1 by 3 Oct holds.
