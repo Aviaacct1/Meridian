@@ -1,0 +1,14 @@
+W9 session 1: Full Vision brief, graphics decision, artwork brief v0.4, status v5
+
+- routes/W9-FULLVISION-BRIEF-26Sep2026.md: email John sent 25 Sep
+- routes/W9-GRAPHICS-DECISION-26Sep2026.md: wall or logo only
+- routes/W9-ARTWORK-BRIEF-F124.md v0.4: no Avia Solutions on the stand; stopper D1; three-sided stand, messages high,
+  call-to-action stopper options, furniture plan; fresh design from Identity
+  Standards v1.3 (print); surface allocation for John; no chart on the
+  wall; CMYK gap; paid-designer fallback; dates to 2 Oct
+- routes/Observatory-Brand-Guidelines-v1.3-print.dc.html: John's file,
+  filed as the design authority
+- routes/W9-STATUS.md v5
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01HqTaKJW4ZUwvu85n3Ngrjk
