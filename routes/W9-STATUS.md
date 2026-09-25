@@ -1,8 +1,8 @@
 # W9 status: stand, contract and show logistics
 
 W9 writes this file and rewrites it each session; the controller reads it and never edits it.
-Version 1, Friday 25 September 2026 (see Conflicts 1 on the date). Author: The Aviation
-Observatory. Session 1.
+Version 2, Friday 25 September 2026 (see Conflicts 1 on the date). Author: The Aviation
+Observatory. Session 1, second pass after John's reply.
 
 Read this session: routes/README.md v1; W9-RULINGS.md v1 of 21 Sep with the sections of
 24 Sep evening, 25 Sep late and the two of 26 Sep early; GTM-STRATEGY-ROUTES-2026.md Status
@@ -14,26 +14,27 @@ PROMPT-for-Fable-Routes-19Sep2026.txt STANDING RULES; for jobs 3 and 4, W6-STATU
 
 | Job | State | Next date | Owner |
 |---|---|---|---|
-| 1 Full Vision brief | DRAFTED: W9-FULLVISION-BRIEF-26Sep2026.md, circa 200 words | John sends today, Fri 25 Sep; reply asked by Mon 29 Sep | John |
+| 1 Full Vision brief | SENT by John, 25 Sep | Reply asked by Mon 29 Sep | Full Vision |
 | 2 Graphics decision | PAPER READY: W9-GRAPHICS-DECISION-26Sep2026.md; W9 recommends the printed wall, capped at EUR 3,979.90 plus VAT | John decides today | John |
-| 3 Artwork chain | TRACKED below; designer and delivery route unknown | W6 words 27 Sep; spec 29 Sep; W3 29 Sep-1 Oct; designer 2 Oct | W6, Full Vision, W3, W9 |
+| 3 Artwork chain | Artwork brief v0.1 READY (W9-ARTWORK-BRIEF-F124.md); v1.0 the day Full Vision replies. Claude produces final artwork from the Claude Design open-stand concept; John sends to Full Vision; John's paid designer is the fallback | Brief v1.0 29 Sep; artwork 29 Sep-1 Oct; John sends 2 Oct | W9, W3, John |
 | 4 Pens | BLOCKED on the domain being live (W6 v7: site not live, Pages waits on the zone move) | Draft order next session; goes when W6 confirms live | W9 / W6 / John |
-| 5 Exhibitor manual | NOT SEEN by W9; list of what is needed below | The day it arrives | W9 |
+| 5 Exhibitor manual | NOT ARRIVED (John, 25 Sep); list of what is needed below | The day it arrives | Informa / W9 |
 | 6 Contract | OPEN: Charlotte Sullivan's revised form not seen by W9 | John forwards or confirms receipt | John / W9 |
 | 7 Setup and show plan | NOT STARTED | One page by 10 Oct | W9 |
 
 ## 2. What W9 needs from John
 
-1. **Send the Full Vision brief today** (paste-ready in W9-FULLVISION-BRIEF-26Sep2026.md).
-2. **The graphics decision**, A (wall) or B (logo only), and the price ceiling if not
+1. **The graphics decision**, A (wall) or B (logo only), and the price ceiling if not
    EUR 3,979.90 plus VAT.
-3. **Who "the designer" is** who receives the artwork on 2 Oct: W3 produces it, so is the
-   designer an outside studio that finalises for print, or does W3's file go straight to Full
-   Vision? W9 needs the name and the delivery route (email, file transfer, size limit).
-4. **Has the exhibitor manual arrived?** If so, where it is on Egnyte.
-5. **Has Charlotte's revised booking form arrived?** If so, where it is. And the TAO VAT
-   position (item 52: not registered yet) and billing details for it.
-6. **Your title for The Aviation Observatory** for the email signature, if you hold one.
+2. **Where the Claude Design concept files are** (link or export). W9 found the August stand
+   brief (C:\AviaDev\Observatory_Routes2026_stand_brief.docx) and the brand guidelines on
+   Egnyte, but no concept files on Egnyte or the connected folders.
+3. **If the concept's hero is the residual or track-record chart:** off the wall, or on it
+   with no numbers (the 25 Sep ruling bars the accuracy figure).
+4. **Warn the paid designer now** that a call on 30 Sep or 1 Oct is possible (brief section 7).
+5. **Charlotte's revised booking form:** has it arrived, and where is it. VAT position and
+   billing details for TAO Ltd (item 52: not registered yet).
+6. **Your title for The Aviation Observatory**, for future emails, if you hold one.
 
 ## 3. The artwork chain (job 3)
 
@@ -42,9 +43,12 @@ PROMPT-for-Fable-Routes-19Sep2026.txt STANDING RULES; for jobs 3 and 4, W6-STATU
 | Wall words to W3 | Sun 27 Sep | W6 | W9-RULINGS 25 Sep late; W3-RULINGS 25 Sep late | W6-STATUS v7 (20 Sep) predates the ruling; not confirmed by W6 |
 | Panel sizes and file spec | Mon 29 Sep | Full Vision via John, carried to W3 by W9 | Brief of today | Asked today |
 | Finish chosen (inlay or overlay) | Mon 29 Sep | John on W9's note | Decision paper | Open |
-| Artwork produced | Tue 29 Sep-Thu 1 Oct | W3 | W3-RULINGS 25 Sep late | W3-STATUS v2 (21 Sep) predates the ruling |
-| Artwork to designer | Fri 2 Oct | W3, route to confirm | John, W9-RULINGS 25 Sep late | Designer unknown (ask 3) |
-| Informa graphics deadline | 3 Oct | Informa | W9-RULINGS v1 | Full Vision's own date asked today |
+| Artwork brief to v1.0 | Mon 29 Sep, same day as the reply | W9 | John, 25 Sep | v0.1 ready |
+| Artwork produced from the Claude Design concept | Tue 29 Sep-Thu 1 Oct | Claude (W3) | John, 25 Sep; W3-RULINGS 25 Sep late | W3-STATUS v2 (21 Sep) predates the ruling |
+| Proof to John | Thu 1 Oct | W3 | brief section 6 | |
+| John sends artwork to Full Vision | Fri 2 Oct | John | John, 25 Sep | "The designer" on 2 Oct is now John's send to Full Vision |
+| Fallback: paid designer | Called by 30 Sep if brief section 7 triggers | John | John, 25 Sep | John holds the name |
+| Informa graphics deadline | 3 Oct | Informa | W9-RULINGS v1 | Full Vision's own date asked |
 
 Wall content: the one-liner, "Meridian", the site address; no accuracy figure; nothing about
 any competitor.
@@ -69,6 +73,8 @@ fees as agreed with Charlotte. John supplies VAT position and billing details. S
 
 ## 6. What W9 needs from other workstreams
 
+- **W3 (controller to confirm the owner):** the final artwork from the Claude Design concept to
+  W9-ARTWORK-BRIEF-F124.md, 29 Sep-1 Oct, proof to John 1 Oct.
 - **W6:** the wall words to W3 on 27 Sep (W6-STATUS v7 of 20 Sep does not yet carry the
   ruling); the domain spelt exactly and confirmed live before the pen order goes. Programme
   files carry aviationobservatory.com; W6-STATUS v7 says the site is not public and Pages
@@ -105,8 +111,8 @@ fees as agreed with Charlotte. John supplies VAT position and billing details. S
 ```
 cd C:\AviaDev
 git pull
-git add routes/W9-STATUS.md routes/W9-FULLVISION-BRIEF-26Sep2026.md routes/W9-GRAPHICS-DECISION-26Sep2026.md routes/COMMIT-MSG-26Sep2026-w9-session1.txt
-git commit -F routes/COMMIT-MSG-26Sep2026-w9-session1.txt
+git add routes/W9-STATUS.md routes/W9-FULLVISION-BRIEF-26Sep2026.md routes/W9-GRAPHICS-DECISION-26Sep2026.md routes/W9-ARTWORK-BRIEF-F124.md routes/COMMIT-MSG-26Sep2026-w9-session1b.txt
+git commit -F routes/COMMIT-MSG-26Sep2026-w9-session1b.txt
 git push
 git log --oneline -1
 ```

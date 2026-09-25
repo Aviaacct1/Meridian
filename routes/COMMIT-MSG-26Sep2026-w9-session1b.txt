@@ -1,0 +1,13 @@
+W9 session 1: Full Vision brief sent, artwork brief v0.1, status v2
+
+- routes/W9-ARTWORK-BRIEF-F124.md v0.1: brief to turn the Claude Design
+  open-stand concept into shell-scheme print artwork; Full Vision fields
+  marked FV, v1.0 on their reply (due Mon 29 Sep); checks; paid-designer
+  fallback triggers
+- routes/W9-STATUS.md v2: job 1 sent; Claude produces final artwork and
+  John sends to Full Vision; manual not arrived
+- routes/W9-FULLVISION-BRIEF-26Sep2026.md, W9-GRAPHICS-DECISION-26Sep2026.md
+  (first commit; the session1 message file was not used)
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01HqTaKJW4ZUwvu85n3Ngrjk
