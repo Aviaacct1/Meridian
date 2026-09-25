@@ -1,0 +1,12 @@
+W9 session 1: Full Vision brief, graphics decision paper, status v1
+
+- routes/W9-FULLVISION-BRIEF-26Sep2026.md: paste-ready email for John to
+  Full Vision (plan, panel sizes, file spec, prices, deadline, fascia name,
+  screen), reply by Mon 29 Sep
+- routes/W9-GRAPHICS-DECISION-26Sep2026.md: wall or logo only, Informa
+  figures, recommendation and the 2 Oct consequence of each
+- routes/W9-STATUS.md v1: jobs 1-7, artwork chain, asks, conflicts
+  (calendar a day ahead; file author; stand branding)
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01HqTaKJW4ZUwvu85n3Ngrjk
