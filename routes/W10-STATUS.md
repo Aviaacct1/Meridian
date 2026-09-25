@@ -1,6 +1,6 @@
 # W10 status: FINAL CALIBRATION TEST
 
-Written by W10 only, rewritten every session. Version 3, 25 September 2026, session 3.
+Written by W10 only, rewritten every session. Version 4, 26 September 2026, session 3, updated on John's block A paste.
 Clone at e7eaf9d. Read this session: W10-RULINGS.md from "22 September 2026, evening" to the
 end (six sections); FACE-VALIDITY-REGISTER-25Sep2026.md v2 in full; the umbrella Status
 block and critical path of 26 Sep 03:00; bt2/bt2_build_v13.py; app/bt2_forecast.py load path.
@@ -18,37 +18,36 @@ and the live path treats the model's two-way number as each way, doubling the lo
 
 | Job | Lands | State |
 |---|---|---|
-| 1. Pickle stamp and its own pair | 26 Sep, on John's paste of block A | Script written (bt2/bt2_pickle_stamp.py); the structural answer is already below |
+| 1. Pickle stamp and its own pair | DONE 26 Sep | Stamp and in-sample pair measured and confirmed on the declared library |
 | 2. Outturn clause | Today, below | Done |
-| 3. Diagnosis: the two mechanisms against the record | Today, below, from the code; the record's own figures land with block B | Done in substance; blocks B and C confirm |
+| 3. Diagnosis: the two mechanisms against the record | Delivered from the code; block C confirmed the basis 26 Sep; block B adds the record's own figures | Done in substance |
 | 4. Fix options with scores beside 83.2/70.0 and 91/85 | 30 Sep | Shapes below; scores need blocks A-C pasted by 28 Sep |
 
-## Job 1: the model the app runs (structural answer; block A prints the stamp)
+## Job 1: the model the app runs (block A pasted 26 Sep; log lines W10-PICKLE-STAMP, W10-PICKLE-INSAMPLE-PROVISIONAL)
 
-bt2/bt2_build_v13.py lines 73-81 fit the CALIB configuration ("published" it=800 minleaf=5
-leaves=63; "memorisation" it=1600 minleaf=3 leaves=95) and print the calibrated pair from
-it. Lines 128-131 then pickle q25, q50 and q75 fitted with BLIND_KW (lr=0.04, it=600,
-minleaf=60, l2=5.0) on all rows. The calibrated estimator is never written to disk. So:
-- the estimator app/bt2_forecast.py loads and runs is the blind-configuration model,
-  fitted on every launch in the sample on the mixed outturn basis (bt2_build_v13 attaches
-  bt2_mixed_basis before fitting);
-- 91/85 (mixed-W10-25Sep.log) is the in-sample pair of the memorisation estimator, and
-  83.2/70.0 (claimset) of the published-rule estimator; neither estimator runs in the app;
-- the pair that describes the app's model is its own q50 scored on its own rows, which
-  nobody has printed, and its out-of-sample figure is the blind route-level 60.9 within
-  +-20% (60.1 on the mixed basis) with the within +-10% blind figure on the two "within
-  +-10%" lines of mixed-W10-25Sep.log (not quoted here until pasted).
-Block A prints the pickle's build_env (library and airportsdata), version, population,
-n_train, calib_rule, target, the q50's own hyperparameters, the carid check against the
-sample, and the in-sample pair on both bases. If build_env is not sklearn 1.9.0 the pickle
-would not have loaded on the workstation since 13 Aug, so the expected answer is the
-declared build; the paste decides.
+The pickle the workstation loads is E:\Avia\bt2_relaxed\bt2_model_v1_3.pkl, written 13 Aug
+01:41 under the declared build (sklearn 1.9.0, airportsdata 20260803, user aviaremote1),
+version 1.3 09Aug2026, population bt2_relaxed, n_train 6,524, target nonstop, calib_rule
+published. Its q50 estimator is the BLIND configuration (lr 0.04, it 600, leaves 31,
+minleaf 60, l2 5.0, 21 features, 600 iterations), exactly as bt2_build_v13 lines 128-131
+write it; carid identical to the sample. The artefact's own provenance string records the
+calibrated estimator at 84.7 / 72.6 on the mixed basis and blind 60.1, and that estimator
+is not in the file. So: 91 / 85 is NOT the pickle's in-sample pair, and neither is 83.2 /
+70.0 or 84.7 / 72.6; each describes an estimator that was fitted, printed and discarded.
 
-Consequence for the stand sentence, for John to rule with the controller: a calibrated pair
-can be carried only if the app runs the estimator that produced it (rebuild the pickle with
-the calibrated configuration, which then lives outside the training range of its own
-quantile bands), or the sentence carries the blind pair for the model that runs. W10's view:
-the second is the honest one and the first is a change to the product.
+The pickle's own in-sample pair, CONFIRMED on sklearn 1.9.0 with user site-packages
+ignored (log line W10-PICKLE-INSAMPLE-CONFIRMED, identical to the first run to the
+decimal): Sabre throughout 73.4 / 56.0, mixed basis 73.3 / 56.3, actual inside its p25-p75
+band on 51.2% of rows (an honest band). The first run had unpickled under the Carte
+logon's sklearn 1.7.2; it moved nothing here, but every W10 block runs with -s from now on. The controller's note that the workstation runs 1.9.0 with
+user site-packages ignored describes the server logon, not an RDP PowerShell as Carte;
+every W10 block from here carries py -3.12 -s for that reason.
+
+For John's ruling on the stand sentence: the model that answers a route has an in-sample
+pair of circa 73 / 56 and a blind route-level figure of 60.9 (60.1 mixed) within +-20%. A
+higher calibrated pair can be carried only by rebuilding the pickle on that configuration,
+which is a product change (the p25-p75 band would then come from a near-memorising fit).
+W10's view stands: carry the pair for the model that runs.
 
 ## Job 2: the outturn clause
 
@@ -89,12 +88,20 @@ ceiling the model was trained under and cannot exceed; as two-way it is 0.61. AH
 106,616 on A21N 7x: 1.33 each way, 0.67 two way. BLQ-JFK 108,062 at the A21N anchor: the
 same shape. NOC-CDG 23,423 on A223 4x: 0.41 two way. Three register rows are impossible as
 each-way outputs of this model. With growth to 2027 added, the doubling accounts for most
-of the 2-2.6x local over-read on the Edinburgh rows. Block C confirms from the saved
-Bologna payload.
+of the 2-2.6x local over-read on the Edinburgh rows. Block C, pasted 26 Sep, shows the two bases meeting in
+one line of arithmetic: forecast_engine mode scheduled, range 89,724 to 143,116 and
+captured 112,543 (the model's two-way figure carried to 2027) beside annual_capacity
+127,400, which is 350 seats x 7 x 52, each way; carried = min(total_demand 148,271,
+127,400 x 0.875) = 111,475, the payload's total. The model was anchored on seats_ly
+254,800 (both directions) and its answer is set against each-way seats. On Bologna the
+per-seat ratio is 0.42 two-way, so this route alone does not exceed the ceiling; the
+Edinburgh and Abha rows do, and the code settles it either way.
 (ii) Shape. Seats is the anchor and a feature, so more seats returns more passengers at a
 declining per-seat rate: BLQ-JFK 3x to 7x is x2.33 seats for x1.58 local (elasticity 0.54);
 SJC-TPE 7x to 14x is x2 for x1.78 (0.83). Block B measures the record's own elasticity at
-half and double seats. On small origins (AHB rows at 2.6-5.5x the service area's existing
+half and double seats. The Bologna sweep (block C) adds a gauge effect: A333 3x to 7x is
+x1.26 demand for x2.33 seats, the B77W x1.58, so the model reads the bigger aircraft as
+the stronger signal, which is the capacity-aggressiveness feature at work. On small origins (AHB rows at 2.6-5.5x the service area's existing
 traffic) the record's launch_pax over base_mkt by market-size band, block B, says whether
 launches from small existing markets carry several times that market in year one; until it
 runs, the record says nothing on it.
@@ -127,19 +134,17 @@ Europe-US counts are stated rather than assumed.
 
 ## Blocks for John
 
-Block A, job 1 (after the workstation pulls; bt2_pickle_stamp.py is new).
+Block A2, DONE 26 Sep (pickle-stamp-W10-s.log). Kept for the yearly republication.
 
 **Workstation Actual**
 ```
-cd C:\src\meridian
-git pull
 cd C:\src\meridian\bt2
 $env:AVIA_LOCAL_CACHE = "E:\Avia"
 $env:AVIA_BT2_DIR     = "E:\Avia\bt2_relaxed"
 $env:AVIA_APP_DIR     = "C:\src\meridian\app"
 $env:AVIA_BT2_COHORTS = "2016,2017,2018,2019,2024,2025"
 $env:AVIA_BT2_TARGET  = "nonstop"
-py -3.12 bt2_pickle_stamp.py 2>&1 | Tee-Object -FilePath E:\Avia\probe\pickle-stamp-W10.log
+py -3.12 -s bt2_pickle_stamp.py 2>&1 | Tee-Object -FilePath E:\Avia\probe\pickle-stamp-W10-s.log
 ```
 
 Block B, job 3, the record's mix, share and seat response, both samples.
@@ -152,10 +157,10 @@ $env:AVIA_APP_DIR     = "C:\src\meridian\app"
 $env:AVIA_BT2_TARGET  = "nonstop"
 $env:AVIA_BT2_DIR     = "E:\Avia\bt2_relaxed"
 $env:AVIA_BT2_COHORTS = "2016,2017,2018,2019,2024,2025"
-py -3.12 bt2_record_mix.py 2>&1 | Tee-Object -FilePath E:\Avia\probe\recordmix-relaxed-W10.log
+py -3.12 -s bt2_record_mix.py 2>&1 | Tee-Object -FilePath E:\Avia\probe\recordmix-relaxed-W10.log
 $env:AVIA_BT2_DIR     = "E:\Avia\bt2"
 $env:AVIA_BT2_COHORTS = "2016,2017,2018,2019,2025"
-py -3.12 bt2_record_mix.py 2>&1 | Tee-Object -FilePath E:\Avia\probe\recordmix-canon-W10.log
+py -3.12 -s bt2_record_mix.py 2>&1 | Tee-Object -FilePath E:\Avia\probe\recordmix-canon-W10.log
 ```
 
 Block C, the basis check on the saved Bologna payload (read-only).
@@ -163,7 +168,7 @@ Block C, the basis check on the saved Bologna payload (read-only).
 **Workstation Actual**
 ```
 cd C:\src\meridian\bt2
-py -3.12 probe_payload_keys.py E:\Avia\probe\BLQ-JFK-25Sep\opt_BLQ-JFK.json
+py -3.12 -s probe_payload_keys.py E:\Avia\probe\BLQ-JFK-25Sep\opt_BLQ-JFK.json
 ```
 
 Also wanted, no run: the four "within" lines of section 2 of E:\Avia\probe\mixed-W10-25Sep.log
@@ -171,7 +176,9 @@ as they appeared on screen, for the blind within +-10% figure.
 
 ## Log lines
 
-Items 2 and 3 ran on 25 Sep (claimset-W10-25Sep.log, mixed-W10-25Sep.log, John's pastes to
+26 Sep: W10-PICKLE-STAMP, W10-PICKLE-INSAMPLE-PROVISIONAL, W10-BASIS-IN-THE-PAYLOAD and
+W10-PICKLE-INSAMPLE-CONFIRMED written to bt2/bt2_experiments.log
+from John's block A paste. Items 2 and 3 ran on 25 Sep (claimset-W10-25Sep.log, mixed-W10-25Sep.log, John's pastes to
 the controller). W10 has not seen the pastes; the two log lines for bt2_experiments.log are
 written when they are pasted here, in the existing format, before either figure is quoted
 in the record. Until then the record quotes the controller's rulings file as the source.
@@ -182,11 +189,10 @@ in the record. Until then the record quotes the controller's rulings file as the
 ```
 cd C:\AviaDev
 git pull
-git add routes/W10-STATUS.md routes/CALIBRATION-RECORD-2026.md bt2/bt2_record_mix.py bt2/probe_payload_keys.py bt2/bt2_pickle_stamp.py routes/COMMIT-MSG-25Sep2026-w10-session3.txt
-git commit -F routes/COMMIT-MSG-25Sep2026-w10-session3.txt
+git add routes/W10-STATUS.md routes/CALIBRATION-RECORD-2026.md bt2/bt2_experiments.log bt2/probe_payload_keys.py routes/COMMIT-MSG-26Sep2026-w10-pickle-stamp.txt
+git commit -F routes/COMMIT-MSG-26Sep2026-w10-pickle-stamp.txt
 git push
 ```
-(routes/COMMIT-MSG-24Sep2026-w10-diagnosis.txt is superseded by this one and not added.)
 
 ## Conflicts seen
 

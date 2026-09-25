@@ -1,6 +1,6 @@
 # Meridian calibration record 2026
 
-Written by W10 (final calibration test). Version 0.3, 25 September 2026, DRAFT. The
+Written by W10 (final calibration test). Version 0.4, 26 September 2026, DRAFT. The
 definitive version carries ONE figure set, ruled by John, and is what the product carries
 into Routes and republishes yearly. Every figure in this record quotes the line in
 bt2/bt2_experiments.log that produced it; a figure with no log line does not exist.
@@ -113,8 +113,16 @@ loads that pickle. So 83.2 / 70.0 and 91 / 85 each describe an estimator that is
 printed and discarded; the estimator that answers a client's route is the blind
 configuration fitted on every launch, whose leave-one-cohort-out route-level figure is
 60.9% within +-20% (60.1% on the mixed basis) and whose in-sample pair has never been
-printed. bt2/bt2_pickle_stamp.py prints the pickle's build stamp and that pair; the result
-is entered here from its log line. For John's ruling on the stand sentence: either the
+printed. Measured 26 Sep (log line W10-PICKLE-STAMP): the pickle is E:\Avia\bt2_relaxed\
+bt2_model_v1_3.pkl, built 13 Aug 2026 on the declared environment (sklearn 1.9.0,
+airportsdata 20260803), n_train 6,524, target nonstop; its q50 is the blind configuration
+(lr 0.04, it 600, leaves 31, minleaf 60, l2 5.0). Its own in-sample pair, confirmed on the
+declared library (W10-PICKLE-INSAMPLE-CONFIRMED): 73.4% within +-20% and 56.0% within
++-10% Sabre throughout, 73.3 / 56.3 on the mixed basis, with the actual inside the model's
+p25-p75 band on 51.2% of launches. Three pairs therefore exist for one sample of 6,524:
+91 / 85 (memorisation estimator, never runs), 83.2 / 70.0 (published-rule estimator,
+never runs) and 73.4 / 56.0 (the estimator that answers a client; blind route level
+60.9 / 60.1 within +-20%). For John's ruling on the stand sentence: either the
 pickle is rebuilt on the calibrated configuration so the app runs the estimator the pair
 describes, or the sentence carries the blind pair for the model that runs.
 

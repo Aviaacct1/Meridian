@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Print the engine and demand blocks of a saved Meridian payload, wherever they sit. W10, Sep 2026.
+r"""Print the engine and demand blocks of a saved Meridian payload, wherever they sit. W10, Sep 2026.
 
     py -3.12 probe_payload_keys.py E:\Avia\probe\BLQ-JFK-25Sep\opt_BLQ-JFK.json
 
