@@ -262,3 +262,37 @@ The dashboard's field labels, chart titles and the catchment page change in one 
 before the freeze (routes/JOL-FEEDBACK-REGISTER.md). Change the manual's screen words once,
 when W2-STATUS says the batch has landed, not before. "Measured" becomes "actual" on data
 surfaces; section 2's three classes keep Nick's words until Nick agrees the rename.
+
+## 25 September 2026, late: THE ACCURACY SENTENCE, John's ruling (controller)
+
+One model, one record, one pair. The sentence on every client surface: "When this model was
+used to forecast the new routes that launched since 2016, X% of its forecasts were within
+20% of what the route went on to carry and Y% within 10%, across circa 6,500 launches. The
+past does not predict the future, but that is the record." X and Y are the pair W10 confirms
+for the model the app runs (expected 91 / 85 on 6,524; the interim 89 / 82 on 2,915 stays
+until W10 confirms, then comes off every surface). Never in that sentence: calibrated, fit,
+blind, portfolio, environment, library, pickle. Those belong on the methodology page and in
+the host manual's answer to the second question only. Umbrella item 55; John's words verbatim
+in the decisions log, 25 Sep late.
+
+## 25 September 2026, late: OPTIMISE ON THE STAND, John's ruling (controller)
+
+John's words are in the umbrella decisions log, 25 Sep late. The host's flow for a visitor who
+knows their own route: Optimise first, then the explanation, then Run the visitor's case.
+Manual v3 carries, word for word and rehearsed until the host can say it without the page:
+1. What Optimise is: "It reads the demand between the two cities for each airline that could
+   fly it, at a standard narrowbody, and then finds the aircraft and weekly frequency that
+   carry that demand at a planning load factor between 65% and 85%, daily at most. It is the
+   tool's proposition, not a prediction of what an airline would choose."
+2. Why it will differ from the visitor's own case: "You sized your route on things the tool
+   cannot know: the airline's fleet plan, the slot, the start-up appetite. So it will not
+   land on your schedule. Give me your schedule and we run that."
+3. Then Run: airline, aircraft, frequency, season, start time, curfew as the visitor states
+   them (W2 carries the inputs across from the Optimise form; nothing re-typed). The host
+   reads out THREE lines, not one: the carried headline, the demand behind it, and the spill
+   or fill line; a headline that equals the seats at the load factor is the aircraft filling,
+   and the host says so.
+4. The accuracy sentence, once, as ruled above, with "about six and a half thousand" spoken
+   and 6,524 written on every printed surface.
+The manual does not say calibrated, blind, fit, pickle or environment anywhere a visitor can
+see or hear it.

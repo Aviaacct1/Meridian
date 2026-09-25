@@ -127,3 +127,104 @@ evidence for the record: catchment measurement changed silently when C:\Avia sto
 existing, so pre- and post- runs are not one series; state the date if it can be found.
 Announced here the same day. Commit 30e3e78 carried W10's session 1 files under the
 controller's subject; W10's own message is routes/COMMIT-MSG-22Sep2026-w10-session1.txt.
+
+## 25 September 2026: a third question for the record, the local capture on a new long-haul nonstop (controller; corrected same day)
+
+Bologna-New York, blank-form Optimise on 0eb7139, 25 Sep (E:\Avia\probe\BLQ-JFK-25Sep\
+opt_BLQ-JFK.json), each way: local demand by the calibrated model 108,062 from a service area
+flying to New York today of 203,142 (53% before growth), 112,543 in the forecast year; feed
+35,728; total_demand 148,271; carried 111,475 on a 350-seat B77W at 7x (222,950 two-way),
+76% local. John's reading: 222k "for a launch route to Bologna seems high"; Avia's December
+2025 AdB forecast assumed a daily A321XLR (circa half the local demand the tool gives).
+Questions for W10, alongside the frequency response and the split-floor share-of-total
+behaviour (24 Sep): (a) what share of a service area's existing traffic to the destination
+the calibrated model gives a new long-haul nonstop, and what the 2,915 launches say about
+that share on Europe-to-US secondary-city routes; (b) the frequency response inside the
+local demand (UA 3x 71,961 to 7x 113,382 each way on the sweep). No engine change before
+Routes; the answer goes in CALIBRATION-RECORD-2026.md as a stated limitation if it cannot
+be tested by 3 Oct. An earlier version of this section put the question on the connecting
+share; the payload's demand block shows connecting at 24%, so that reading is withdrawn.
+Also from 24 Sep, for the record: the workstation runs the MCT master (3,668 rows) and
+scikit-learn 1.9.0 with user site-packages ignored; W10 and Nick build on that environment.
+
+## 25 September 2026, evening: THE FREEZE IS CONDITIONAL; W10's job widens (controller, John's ruling)
+
+John's ruling, verbatim in the umbrella decisions log 25 Sep: the engine freeze "was a ruling
+based on a degree of confidence that the numbers emerging were sensibe, if we find numbers
+like this that would make the tool look wrong we have to change it." The case: Bologna-New
+York blank-form Optimise on 0eb7139 returns United 7x B77W, 222,950 two-way; the model reads
+226k two-way of demand at the sweep's A21N anchor (local 108,062 each way from a service
+area flying to New York today of 203,142; feed 35,728); Avia's own December 2025 forecast
+for AdB assumed a daily A321XLR. The sweep is already anchored on a narrowbody (cortex_app
+_cell_kw, aircraft="A21N"); the 77W is the aircraft sized to carry the anchored demand, so
+the number is the engine's read, not the optimiser's choice.
+
+W10's programme to 3 Oct, in this order; items 2 and 3 of 22 Sep continue underneath:
+1. By 26 Sep: analogue actuals for the register in routes/FACE-VALIDITY-REGISTER-25Sep2026.md
+   from OAG and T-100 (a comparable launch or the served route's actual, source and year
+   stated per row). The controller runs the probe and fills the tool columns.
+2. By 29 Sep, the diagnosis, measured on the record, one page in W10-STATUS:
+   (a) what share of a service area's existing traffic to the destination the calibrated
+       model gives a new long-haul nonstop, and what the 2,915 launches say about that share
+       on Europe-to-US secondary-city routes (Test A, umbrella 25 Sep: BRS-EWR 0.026,
+       SJC-TPE 0.271, BLQ-JFK 0.532, DUB-DFW 1.878);
+   (b) the frequency response inside the local demand (BLQ-JFK UA 3x 71,961 to 7x 113,382
+       each way; SJC-TPE 7x to 14x +78% on 24 Sep) against what the launches show;
+   (c) the seat anchor in indicative mode: the model was scored on realised launches with
+       the airline's capacity known; test whether it is calibrated for "given this schedule,
+       what will it carry" and not for "what would this route support", which is the
+       Optimise question. If so the fix is in how Optimise asks the engine, not the engine.
+   (d) the mix of the 2,915: how many long-haul, how many from secondary cities, how many
+       Europe-US; and where the record cannot speak, say so.
+3. By 30 Sep: the fix options, each as a diff W1 can apply, each with its back-test score
+   beside the current 89/82 on 2,915 (a fix that lowers the pair is still a fix; item 55
+   moves with it). John decides 30 Sep. W1 builds 1-6 Oct; W10 re-scores; acceptance 7-8
+   Oct; the 10 Oct freeze is of the corrected engine.
+The bt2 environment: workstation runs the MCT master (3,668 rows), sklearn 1.9.0, user
+site-packages ignored. If 29 Sep is not achievable, say so on 26 Sep with what is.
+
+## 25 September 2026, later: W10 job 1 withdrawn; the register is Avia's own forecasts (controller)
+
+John's instruction (umbrella decisions log, 25 Sep, verbatim there): the face-validity
+comparison is against the figures Avia's analysts put on new routes for clients, not
+against analogues from the stores. The controller has read the Egnyte record and written
+routes/FACE-VALIDITY-REGISTER-25Sep2026.md v2: twenty routes with a stated analyst figure
+(Knock 2026, Abha 2025, Scotland 2018-19 pre-COVID, Bologna 2025) and eleven with a
+schedule only. The controller runs the probe on the workstation and fills the results;
+job 1 of the previous section (analogues by 26 Sep) is withdrawn. Jobs 2 and 3 stand with
+their dates (diagnosis 29 Sep, fix options with back-test scores 30 Sep) and the register's
+results are W10's evidence for both. If the W10 chat has been idle since 22 Sep, its next
+STATUS says what ran, and if nothing ran, says that.
+
+## 25 September 2026, late: reply to W10's 24 Sep message (controller)
+
+Your 24 Sep message reached the controller on 25 Sep via John. In order:
+- Item 1: re-ruled (A) on 22 Sep evening, in this file above; you were not blocked, the
+  ruling was here. John's confirmation is umbrella step C item 7 and does not hold you.
+- Item 2: run first, on John's paste, exactly as your block has it. Nothing is re-scored
+  until the baseline reproduces to the decimal.
+- Item 3: as traced; run after item 2 matches.
+- Your three code facts are accepted and matter more than you knew: the register (this
+  file, previous section; routes/FACE-VALIDITY-REGISTER-25Sep2026.md, Results) shows the
+  product's demand at 2 to 2.6 times Avia's own analysts on every hub-ended long-haul from
+  Edinburgh, split between a local over-read (bt2_forecast, which the record scored) and a
+  connecting feed 10-25 times the analysts' (route_forecast's V1 flat capture, which by
+  your greps the record never scored). Your 29 Sep diagnosis states, with the greps, which
+  of the two the 89/82 record measured and which it did not, what the record scored
+  (carried or demand, and against what actual), and what the record says about the local
+  read on Europe-to-US and Europe-to-Asia long-haul from an established airport. If the
+  answer is that the record scored carried on realised launches, say so in one sentence at
+  the top; John reads it on a phone.
+- Pull first: your clone was at 7c15c3d; origin is at 0eb7139 or later.
+
+## 25 September 2026, late: items 2 and 3 done; what W10 owes for the stand sentence (controller)
+
+Item 2 PASSED tonight (claimset-W10-25Sep.log: all eight figures to the decimal, declared
+build). Item 3 RUN (mixed-W10-25Sep.log): V1.3 configuration on the declared library, Sabre
+throughout 90.9 / 83.5, mixed 91.1 / 84.8, blind 60.9 / 60.1. John's ruling (umbrella, 25 Sep
+late): the stand carries ONE pair for THE model the app runs. So W10's next job, before the
+diagnosis: read the build stamp of the bt2_model_v1_3.pkl the workstation loads (path from
+bt2_forecast.load, AVIA_LOCAL_CACHE), state which library and configuration built it, and
+whether tonight's 91 / 85 is its in-sample pair; if the pickle is not the 1.9.0 V1.3 rebuild,
+score the pickle itself and report that pair. Also state, in one clause a host can say, the
+outturn period the record scores against. Then the diagnosis of 29 Sep as ruled.

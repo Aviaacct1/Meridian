@@ -1,0 +1,17 @@
+Controller 26 Sep day one: face-validity register, freeze made conditional, stand sentence and flow ruled, sweep
+
+- routes/FACE-VALIDITY-REGISTER-25Sep2026.md (new): twenty routes from Avia's own client
+  forecasts on Egnyte run through Meridian as fixed-input Runs; demand 2-2.6x the analysts on
+  hub-ended long-haul from Edinburgh; the feed and local mechanisms separated.
+- GTM-STRATEGY-ROUTES-2026.md: Status rewritten with the locked critical path; John's rulings
+  of 25-26 Sep verbatim (freeze conditional, stand sentence, Optimise-then-Run, 6,524, wall
+  artwork by 2 Oct, pens, site before invitations, TAO sender); items 57-60; pre-mortem 21;
+  W10 items 2 and 3 results; the controller's option (b) error recorded.
+- routes/W2, W3, W4, W6, W9, W10-RULINGS.md: the rulings lines owed since 22 Sep and the day's
+  new ones (stand flow, sentence, wall words and artwork, pens, mailbox route, W10 diagnosis).
+- HANDOVER-CONTROLLER-26Sep2026.md (new): consolidated handover for chat 4 day two.
+- PROMPT-for-Opus-W9-26Sep2026.txt (new): the W9 chat prompt, with the Full Vision brief job.
+- Pre-mortem items 22-30 and the same-day pack rulings (critical path 2A, items 61-62).
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01Ai6fXfSs283Z67QSwHLSQs

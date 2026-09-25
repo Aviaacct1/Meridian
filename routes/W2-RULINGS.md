@@ -361,3 +361,88 @@ are the natural warm-up), not bulk test traffic.
   OAG week) is still W2's check; with the existing-market framing John ruled today (an
   additional service in a market already served by N weekly flights), this field is now on
   the demo path and needs to be right before 10 Oct.
+
+## 25 September 2026, late: OPTIMISE THEN RUN, the stand flow (controller, John's ruling)
+
+John's ruling (umbrella, 25 Sep late): the stand flow for a visitor who knows their route is
+Optimise, the host's explanation, then a Run of the visitor's own schedule. W2's flow must
+make the Run one action from the Optimise result: the origin, destination, airline, season,
+start time and curfews already entered carry across, the aircraft and frequency fields take
+the visitor's values, nothing is re-typed, and the result page shows the carried headline,
+the demand behind it and the spill or fill line together and labelled (each way / two-way
+per the standing terminology ruling). "Direct service today: None" on a served route (SJC-TPE,
+24 Sep) must be fixed before this flow is rehearsed on 11-12 Oct. Still owed from the
+controller to this file: the data-store freeze line (no OAG or Sabre refresh 10 Oct to after
+Routes) and the stale-RDP runbook line; both stated here now: (a) FREEZE: no store refresh of
+any kind from 10 Oct until after 23 Oct; refresh_weekly is disabled on the workstation from
+10 Oct and re-enabled by John after Routes; (b) RDP: a stale RDP session left connected at the
+workstation evicts nobody but holds the console; the runbook's restart procedure begins by
+checking for and disconnecting (never signing out) any existing session. Every sample figure
+in writing is 6,524 launches; spoken, "about six and a half thousand".
+
+## 26 September 2026, early: JOHN'S TAO SENDING ADDRESS, before the invitations (controller)
+
+John: "my email for thos invites nees to be the TAO one not Avia". W2 states by 29 Sep which
+route gives John a mailbox he can send and receive from at aviationobservatory.com in Outlook
+or a client he uses: a mailbox on the Microsoft tenant (needs the tenant administrator, not
+John; W2 writes the ask), or Cloudflare Email Routing for inbound (item 20) with an outbound
+sender configured for his client; the Postmark account is the product's transactional sender
+and is not John's personal address. W2 writes the exact steps and who does each; John does
+not send invitations from an Avia address meanwhile.
+
+## 26 September 2026: the sweep of W2-STATUS v14 (controller)
+
+- Item 5, progressive Optimise: DEFERRED to after Routes on the measured timing (named
+  Optimise 24.3 / 22.3 / 16.2s, open sweep under 90s, 24 Sep); umbrella item 59, John to confirm.
+- Postmark was approved on 23 Sep (username TheAO, free plan); John's ruling on test, warm,
+  upgrade and switch is in this file (22 Sep late). Your next STATUS shows the first real send
+  from the Observatory domain and the warm-up schedule.
+- The named-route handover (W6-STATUS v7, risk 1): W2 writes the step and owns it. An
+  invitation reply naming a route is forwarded by John to the stand build the same day; the
+  route is warmed and run before the meeting; inside 48 hours it runs live. In the runbook
+  before the first invitation goes.
+- The Optimise-then-Run flow, the "Direct service today" fix, the freeze and RDP lines and
+  John's TAO mailbox route are above (25 and 26 Sep). Order of work: mailbox route (29 Sep),
+  flow and fix, rewire and capture buttons (2 Oct), laptop proof (8 Oct, needs John's two spec
+  blocks, which the controller is chasing).
+
+## 26 September 2026: THE SAME-DAY PACK is W2's build priority after the mailbox route (controller)
+
+John's instruction and the ruling are in the umbrella (critical path 2A, items 61-62). W2 builds,
+in this order, all before the 11-12 Oct trial: (1) a temporary email field at the foot of the
+result page (Run and Optimise), which queues a pack job carrying the run's exact inputs (John's
+download-fidelity ruling: the pack reproduces the run on screen); (2) the queue view as a
+working list: queued / building / ready for review / sent / failed, newest first, reason
+visible, with an APPROVE AND SEND action that a UK reviewer uses; (3) the build step calls
+W3's generator (deck plus workbook) on the workstation with no human step; (4) send via
+Postmark from the Observatory domain, the ruled two emails; (5) failure states that say what
+failed and leave the job for a retry; (6) the offline fallback (email and route captured on
+the card, run later) written in the runbook. Rewire of the lead store and the capture buttons
+are part of (1)-(2). Stand mode and the laptop build follow. Progressive Optimise stays
+deferred (item 59).
+
+## 26 September 2026, later: THE THREE STATES of a pack job (controller, John's ruling)
+
+John's words are in the umbrella decisions log (26 Sep, item 61 amended). Every pack job has
+one state, set at the stand by the host on the email field: NOW, HOLD (default) or, set by the
+reviewer, PAUSED.
+- NOW: sends the moment W3's build passes its own checks; no human step. For a visitor who
+  needs it for a meeting today. The host can say "it will be in your inbox before you reach
+  the next hall" only once W3 has stated the build time; W2 shows the expected time on the
+  page from the measured build.
+- HOLD: the build runs at once; the job then waits 30 minutes from the moment the checks pass
+  and sends itself unless a reviewer has paused it. The timer is visible in the queue view.
+- PAUSED: the reviewer stops a job with a one-line reason; it is released by hand, re-run, or
+  left. A job whose build fails any check goes to PAUSED automatically, never to send.
+The queue view is a list, newest first, one line per job (visitor, route, state, time to send,
+reviewer note) with a one-page PDF preview so a glance is enough; two actions only, PAUSE and
+SEND NOW. Failure states say what failed. The offline fallback (card, run later) stays in the
+runbook for the day the queue is down. All of this proven with real emails on 11-12 Oct.
+
+## 26 September 2026, later still: HOLD TIME is a setting; the holding email (controller, John's ruling)
+
+The hold before auto-send is a configuration value John sets (minutes; zero means send on
+pass), shown in the queue view, changeable without a restart. A PAUSED job triggers, the same
+day, a short holding email to the visitor from the Observatory address ("your pack follows
+tomorrow morning"), so nothing arrives late in silence; the pack itself sends when released.
+Author on every product file is The Aviation Observatory (umbrella, 26 Sep).

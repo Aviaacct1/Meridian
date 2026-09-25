@@ -117,3 +117,28 @@ three W6 drafts (invitations, calendar, messaging); ROUTES-ATTENDING-ORGANISATIO
 - The stand contract itself is still unsigned pending the revised form (Charlotte Sullivan);
   Informa's email treats participation as confirmed, so W9 records the contract as a
   paperwork item, not a risk to the stand.
+
+## 25 September 2026, late: THE 2 OCT ARTWORK DATE (controller, John's ruling)
+
+John: the wall graphics artwork must be with the graphic designer before 2 Oct. W9's brief to
+Full Vision therefore goes on 26 Sep and asks for panel sizes, file specification, price per
+panel and the artwork deadline by Monday 29 Sep. The graphics decision (full printed wall or
+fascia and counter logo only) is John's on 26 Sep. W6 hands the wall words to W3 on 27 Sep;
+W3 produces the artwork 29 Sep to 1 Oct. The wall carries the one-liner, the product name
+and the site address; it does NOT carry the accuracy figure (that stays on screen, leaflet
+and pack, which can change until 10 Oct). Pens (item 54) are ordered in the same week.
+
+## 26 September 2026, early: PENS AND GIVEAWAYS THIS WEEK (controller, John's ruling)
+
+John: "Order any pens or giveaways". W9 drafts the order this week: pens with the Observatory
+name and site address (item 54), quantity and supplier proposed with a price for John to
+approve; John places the order. Anything beyond pens is proposed with a price, not assumed.
+
+## 26 September 2026, early: PEN WORDING, John's steer (controller)
+
+John, verbatim: "pens i think Meridian by TAO or Meridian with a strapline might work or maybe
+Meridian by aviationobeservtory..com so they actually provide a place to go". W9 proposes the
+pen artwork with "Meridian" and the web address on it (John's preference is the version that
+gives the reader somewhere to go), one alternative with a strapline, both in the Observatory
+identity, for John to pick; the web address is spelt exactly as the live site's domain. Order
+this week, once the site's address is confirmed live (W6).

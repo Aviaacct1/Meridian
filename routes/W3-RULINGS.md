@@ -275,3 +275,104 @@ and the video script, on a freshly restarted server, and record old against new 
 W3-STATUS with the run's frequency. Where a figure moved, the surface is rebuilt before it
 goes to Jol and Nick on 3 Oct. Nothing on any of those surfaces is final until this is done.
 
+## 25 September 2026: BOLOGNA-NEW YORK, what the tool's 222k is made of (controller; corrected same day)
+
+John ran the blank-form Optimise on Bologna-New York on the 24 Sep close commit (0eb7139)
+and got United 7x B77W, 222,950 two-way; at a fixed 5x, American, 138k. His words are in the
+umbrella decisions log, 25 Sep: 222k "for a launch route to Bologna seems high". The payload
+(E:\Avia\probe\BLQ-JFK-25Sep\opt_BLQ-JFK.json, John's pastes), all EACH WAY: sweep row UA
+B77W 7x annual, demand 113,382, carried 111,475 (the seat cap) at 83.9% on 350 seats; demand
+block total_demand 148,271 = local 112,543 + feed 35,728; carried 111,475 = p2p 84,613 (76%)
++ connecting 26,862 (24%). Two-way: circa 169k local, circa 54k connecting. An earlier
+version of this section said 62% connecting; that was the controller's subtraction from a
+mislabelled market_build step and is withdrawn.
+
+What this means for W3, pending John's ruling (umbrella item 26 now carries the figure
+question as well as the carrier):
+- The high figure is the local model: 225k two-way local demand, about double Avia's own
+  December 2025 forecast for AdB (Egnyte, /Shared/Archive/2025/Bologna - Traffic Forecast
+  Update 2025/Report/SENT 5 Dec 2025/AdB Traffic Forecast Update 2025 FINAL.pptx: "a major
+  U.S. Full Service Carrier ... year-round daily service to New York (JFK or EWR) from Apr
+  2028 with A321XLR ... From Summer 2029 ... a widebody aircraft (e.g. B787-9) ... A321XLR
+  during the winter months"). The engine is frozen; W10 carries the question.
+- Do not build slide 8 or the Bologna-New York video figures until John rules on the
+  carrier (item 26) and on whether the demo case is the tool's own Optimise answer (United
+  7x B77W, 222,950 two-way, local and connecting shown each way and two-way) or a fixed
+  input (A321XLR daily, the 2025 shape). Silence to 30 Sep: the tool's own answer with the
+  split stated.
+- Every Bologna-New York surface labels each figure each way or two-way (John's standing
+  terminology ruling); the market_build's step-5 note is being corrected by W1 and must not
+  be copied into the pack as it stands.
+- The 23 Sep provisional ruling above stands: every figure re-run on the freshly restarted
+  server at 0eb7139 or later, old against new in W3-STATUS.
+
+## 25 September 2026, late: THE ACCURACY SENTENCE, John's ruling (controller)
+
+One model, one record, one pair. The sentence on every client surface: "When this model was
+used to forecast the new routes that launched since 2016, X% of its forecasts were within
+20% of what the route went on to carry and Y% within 10%, across circa 6,500 launches. The
+past does not predict the future, but that is the record." X and Y are the pair W10 confirms
+for the model the app runs (expected 91 / 85 on 6,524; the interim 89 / 82 on 2,915 stays
+until W10 confirms, then comes off every surface). Never in that sentence: calibrated, fit,
+blind, portfolio, environment, library, pickle. Those belong on the methodology page and in
+the host manual's answer to the second question only. Umbrella item 55; John's words verbatim
+in the decisions log, 25 Sep late.
+
+## 25 September 2026, late: WALL ARTWORK 29 SEP TO 1 OCT (controller)
+
+The wall graphics artwork is with the designer by 2 Oct (John). W6 hands the words on 27 Sep;
+Full Vision's sizes and file specification arrive via W9 by 29 Sep; W3 produces the artwork 29
+Sep to 1 Oct in the Observatory identity, Avia Solutions as author on the files. The wall
+carries the one-liner, the product name and the site address only; the accuracy figure is not
+printed on the wall.
+
+## 26 September 2026: the sweep of W3-STATUS v2, four conflicts ruled (controller)
+
+1. Deck author: file metadata author and last-modified-by are Avia Solutions (standing rule on
+   every generated file); slide branding is The Aviation Observatory. One line, as you said.
+2. Accuracy wording: the slide text is John's sentence of 25 Sep (this file, 25 Sep late; item
+   55), figure to follow W10's confirmation; the item 25(b) wording comes out of the notes.
+3. Dates: 3 Oct for every item, as you work to.
+4. Slides 7 and 8: your proposal accepted with one change: the charts regenerate after the
+   engine fix is accepted on 7-8 Oct (umbrella critical path, item 1), not after the 10 Oct
+   freeze, so nothing printed carries a pre-fix figure. Layout and argument to Jol and Nick on
+   3 Oct with charts marked provisional.
+Also ruled: the video records 8-10 Oct on accepted figures, Bologna-New York as the fixed
+A321XLR daily case; the wall artwork (this file, 25 Sep late) is your first job of the week.
+
+## 26 September 2026: THE PACK GENERATOR is W3's build priority beside the wall artwork (controller)
+
+John's instruction is in the umbrella (critical path 2A). W3 delivers, before the 11-12 Oct
+trial: (1) the pack template (deck plus workbook, the PDF where ruled) fixed on the ruled
+sentences, the ruled accuracy line, Avia Solutions as file author, Observatory branding, no
+minutes figure; (2) imagery automatic from the cleared library by the provenance rules already
+built, with Observatory mood frames wherever coverage fails, so a build never waits on a
+picture; (3) a one-call build from a run's inputs that W2's queue can invoke, returning the
+files and a status; (4) a formatting checklist for the UK reviewer (one page: what to look at,
+what to ignore). The stand deck's slides 7-8, the pitch page and the video keep their dates
+(above). The probe (item 33) decides whether airport photography is in the automatic set.
+
+## 26 September 2026, later: BUILD CHECKS and PREVIEW for the pack (controller, John's ruling)
+
+The pack may send with nobody looking (umbrella item 61 as amended), so the build must check
+itself: completed without error; every section rendered; no placeholder text, empty chart or
+missing figure; the ruled sentences and accuracy line present verbatim; every image resolved
+from the cleared library or a mood frame substituted; file author and last-modified-by Avia
+Solutions; en-GB proofing. The build returns PASS or the list of failures; W2 routes a failure
+to PAUSED. W3 also returns a one-page PDF preview (cover and headline) for the queue view, and
+states the measured build time per pack so the host can promise a delivery time.
+
+## 26 September 2026, later still: AUTHOR REVERSED; the rehearsal batch (controller, John's ruling)
+
+1. Author: John's ruling (umbrella, 26 Sep): every product output, the visitor pack (deck,
+   workbook, PDF), the stand deck, the video, carries The Aviation Observatory as author and
+   last-modified-by. The controller's conflict-1 ruling of this morning is reversed; your
+   build was right. The metadata check in the build now tests for The Aviation Observatory.
+2. Rehearsal batch: in the week of 6-8 Oct W3 builds 30-50 packs automatically on the routes
+   in routes/FACE-VALIDITY-REGISTER-25Sep2026.md (and W2's route panel when it exists), on
+   the engine as accepted on 7-8 Oct. Jess and Jol QA the batch against a one-page written
+   formatting standard W3 writes with them beforehand (what is a fault, what is not). Every
+   fault is fixed in the template, never in a deck; the batch is re-run until a whole batch
+   passes. That result sets the hold timer (John) and is the evidence the host manual quotes.
+3. The reviewer's checklist (yesterday's item 4) becomes the pause rule: pause only for a fault
+   the standard names; never edit; never hold for taste.

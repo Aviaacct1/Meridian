@@ -254,3 +254,46 @@ two restarts. Sentence 1 may therefore promise the FORECAST "in about a minute" 
 1-LIVE). Optimise is "a few minutes more" and is never promised in seconds; "under five
 minutes" remains true for the whole demonstration and may be used where the pack is the
 subject. Swap the same day, as you offered.
+
+## 25 September 2026, late: THE ACCURACY SENTENCE, John's ruling (controller)
+
+One model, one record, one pair. The sentence on every client surface: "When this model was
+used to forecast the new routes that launched since 2016, X% of its forecasts were within
+20% of what the route went on to carry and Y% within 10%, across circa 6,500 launches. The
+past does not predict the future, but that is the record." X and Y are the pair W10 confirms
+for the model the app runs (expected 91 / 85 on 6,524; the interim 89 / 82 on 2,915 stays
+until W10 confirms, then comes off every surface). Never in that sentence: calibrated, fit,
+blind, portfolio, environment, library, pickle. Those belong on the methodology page and in
+the host manual's answer to the second question only. Umbrella item 55; John's words verbatim
+in the decisions log, 25 Sep late.
+
+## 25 September 2026, late: WALL WORDS BY 27 SEP (controller)
+
+The stand wall artwork reaches the designer by 2 Oct (John). W6 hands W3 the wall words on 27
+Sep: the one-liner (sentence 2.3 in the version John picks on 26 Sep; silence = B), the
+product name and the site address. No accuracy figure on the wall (controller ruling in the
+umbrella, 25 Sep late); the sentence with the figure goes on the screen, the leaflet and the
+pack. Everything in writing says 6,524 launches; nothing on any surface says calibrated,
+blind, fit or environment.
+
+## 26 September 2026, early: SITE LIVE BEFORE THE INVITATIONS; BIO; TAO SENDER (controller, John's ruling)
+
+John's words are in the umbrella decisions log, 26 Sep early. W6 launches a first version of
+the site before any invitation goes: who The Aviation Observatory Limited is, the Meridian
+one-liner, the Routes stand (F124, 21-23 October 2026, Frankfurt), contact. Withheld: the
+competitor comparison page (item 11, the 19 Sep ruling stands). The price grid appears only as
+PRICING-DECISION-2026.md v1.0 states it, or not at all. "Three seats / 100 presentations" comes
+off before launch. W6 also drafts the company bio for a pre-Routes post, linking to the site,
+for John's approval; nothing is posted by W6. The invitations are sent by John from his
+Aviation Observatory address; W6 holds the send until W2 confirms that address works.
+
+## 26 September 2026: the sweep of W6-STATUS v7 (controller)
+
+- Sentence 1-HELD ("about a minute") is RELEASED for any wording that describes a single run;
+  the timing is measured (named Optimise 24.3 / 22.3 / 16.2s, Run 8-17s, 24 Sep). 1-LIVE
+  ("under five minutes") stands for the demonstration as a whole. Both true; use the one that
+  fits the sentence.
+- Order of work this week: site first version live (before invitations); wall words to W3 on
+  27 Sep; bio for John; invitations held for John's TAO address and the five names.
+- The named-route handover is W2's (W2-RULINGS 26 Sep); you carry the line in the invitation
+  that a named route will be forecast ahead of the meeting.

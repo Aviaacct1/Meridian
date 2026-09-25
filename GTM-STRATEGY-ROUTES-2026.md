@@ -16,38 +16,93 @@ The detail lives in two companions and this document points at them rather than 
 ## Status
 
 Rewritten every session by the programme controller; John reads this on a phone. As at
-Thursday 24 September 2026, evening (John in the UAE): controller chat 3 (Fable) closes
-tonight after one compaction; chat 4 opens 25 Sep on HANDOVER-CONTROLLER-24Sep2026.md. W1
-shipped its whole build day and passed acceptance: the pool kill test, the curfew must-fix,
-the Optimise headline rule (three rulings from John, verbatim in the decisions log), the
-GET endpoint repair, the server console kept open and logged, and the ranking on carried
-passengers. The workstation runs the carried commit on eight workers with the MCT master;
-E:\Avia\probe\OPT-24Sep-final-w8 is the baseline; three-pair timing on it is full 52.5 /
-86.9 / 52.6s and named 24.3 / 22.3 / 16.2s, so "about a minute" is measured. Informa named
-the stand contractor (Full Vision) on 24 Sep, so W9 opens 25 Sep. Postmark is approved
-(John's ruling in W2-RULINGS: test, warm, upgrade if smooth, switch on any issue). W2 to W8
-and W10 have not been swept since 22 Sep and every one of them has work due this week; the
-week's decisions (step C) have still not been put to John in one message. Order-ready is
-21 Oct. Files: `routes\Wn-STATUS.md` (chat writes), `routes\Wn-RULINGS.md` (controller
-writes), `routes\README.md`.
+Friday 26 September 2026, 03:00 BST (John in the UAE): controller chat 4, day one, after the
+sweep of every STATUS file (W2 v14 of 22 Sep, W3 v2 and W4 v2 and W5 v4 and W6 v7 of 20-21
+Sep, W8 v2 of 20 Sep, W10 v1 of 22 Sep; no chat has written since). The day's finding: the
+face-validity register (routes/FACE-VALIDITY-REGISTER-25Sep2026.md) shows Meridian's demand
+at 2 to 2.6 times Avia's own analysts on every hub-ended long-haul from Edinburgh, split
+between a connecting feed 10-25x the analysts' (the V1 flat capture, never scored by the
+record) and a local over-read on small origins; John lifted the engine freeze conditionally
+(pre-mortem 21) and the fix is the critical path. W10's baseline reproduced to the decimal
+and the V1.3 refit gives 91 / 85 on 6,524; John ruled the stand sentence (item 55). Workstation
+on 0eb7139 = origin. The wall artwork must reach the designer by 2 Oct, the site must be live
+and John must have a TAO mailbox before invitations go. Files: `routes\Wn-STATUS.md` (chat
+writes), `routes\Wn-RULINGS.md` (controller writes), `routes\README.md`.
 
-| WS | State | Where it stands | Next action | Owner | Date |
+THE CRITICAL PATH, locked 26 Sep, in order; nothing below a line starts before the line above
+it is safe:
+1. ENGINE FIX. W10 diagnosis Mon 29 Sep (pickle stamp, the two mechanisms against the record,
+   outturn clause); John decides the fix Tue 30 Sep from options with back-test scores; W1
+   builds and W10 re-scores 1-6 Oct; acceptance 7-8 Oct (three-pair diff, the register
+   re-run); W3 re-runs every figure and records the video 8-10 Oct; freeze 10 Oct. Slip here
+   moves everything after it; the fallback is the fixed-input demo path with the limitation
+   in the known-issues list.
+2. STAND GRAPHICS. Today: John decides item 40 (wall or logo) and item 44 (2.3 A or B); Full
+   Vision brief sent asking spec by 29 Sep. 27 Sep W6 words to W3. 29 Sep-1 Oct W3 artwork.
+   2 Oct to the designer. No accuracy figure on the wall.
+2A. THE SAME-DAY PACK (John, 26 Sep: "needs to be clear and centre before we talk about
+   locked"). The visitor's own run leaves the stand as a presentation the same day. Ruled
+   26 Sep, controller, John to confirm (item 61): the BUILD is automatic and the SEND is
+   approved by a person. On the result page the host types the visitor's email (temporary
+   field at the foot of the run, W2); the run is queued as a pack job with the run's own
+   inputs (W2's lead store and queue, built 21 Sep, app not yet rewired); the pack (deck plus
+   workbook, W3's generator with automatic imagery from the cleared library, mood frames
+   where coverage fails) is built on the workstation without anyone touching it; a named
+   reviewer in the UK opens the queue view, checks formatting only (not content), and
+   presses send; Postmark delivers from the Observatory domain with the ruled two emails.
+   AMENDED 26 Sep (John): three states per job, NOW (host, sends on the build's own checks,
+   no review), HOLD (default, auto-sends 30 minutes after the build passes unless paused),
+   PAUSED (reviewer, with a reason); the build's checks are the safety net where nobody
+   looks; a failed check goes to PAUSED. Offline capture (email and route on the card, run later) is the
+   fallback if the queue fails on the day, and the host manual carries it. Owners: W2 (email
+   field, queue job, queue view with approve/send, failure states, the runbook), W3 (pack
+   template fixed on the ruled sentences, automatic images, one-click build from a run),
+   John (the reviewer's name and hours for 21-23 Oct: item 62). Proven end to end on the
+   11-12 Oct trial with a real email; rehearsed with Suzanna 16 Oct.
+3. INVITATIONS. Gate: John's TAO mailbox (W2 says the route by 29 Sep; the tenant ask goes
+   today if that is the route) AND the site live (W6, first version, competitor page
+   withheld) AND the five contact names (John). Then send, 29 Sep at the earliest, week of 6
+   Oct at the latest. The reply-to-forecast handover for a named route gets a written owner
+   (W2) before the first invitation goes.
+4. ORDER-READY. Solicitor slot week of 6 Oct; PI cover at TAO Ltd (binding on 21 Oct, John);
+   TAO bank account and VAT (John, accountant); support address and reader (John); known
+   issues frozen 10 Oct with the long-haul segment and feed limitation stated; Nick signs.
+5. STAND OPERATIONS. W2: Optimise-then-Run flow with inputs carried, "Direct service today"
+   fix, lead-store rewire and capture buttons by 2 Oct, laptop proof 8 Oct (needs John's two
+   spec blocks), runbook with the freeze and RDP lines; W4 v3 after 8 Oct screenshots; a named
+   person at the workstation 11-12 Oct; Suzanna 16 Oct; setup 20 Oct.
+
+| WS | State | Where it stands (evidence) | Next action | Owner | Date |
 |---|---|---|---|---|---|
-| W1 Speed and caches | Job 0 SHIPPED and kill-tested; curfew must-fix SHIPPED (acceptance on the restricted case PASS); Optimise headline rule SHIPPED (annual, most passengers in 65-85% band, 3x-7x only, in-band seasonal note); GET /api/optimise restored; server console kept open and logged (ac97cd3 on the workstation) | 3x-7x sweep (9 cells, 45 tasks): full 56.6 / 78.7 / 60.7s, named 28.3 / 26.3 / 16.2s at 8 workers; blank-form SJC-TPE three runs identical (Starlux 7x A359, 194,922); curfew SJC-TPE CI 7x A359 21:00-06:00: local 77,414 unchanged, connecting 94,802 to 34,868 (factor 0.368, optimiser score), headline 172,216 to 112,282 at 20:59; unrestricted run_SJC-TPE IDENTICAL to the 23 Sep baseline; run_BRS-EWR and run_DUB-DFW diff against a same-day control on 68a23d4 in progress | Server died mid-request 16:59 with no crash record and its console gone (suspected Ctrl+C or window close; now logged); strip "RuntimeError:" (done); launcher refuses empty password; payload `engine` label; disclaimer; untrack app/ generated files; market-brief cost; warm_boards; per-job "access/entry" prints; W10: 7x to 14x demand response; LF band limits (John); W4 wording: optimised = best-supported by demand; existing-market line | Controller / John | Diff closes 24 Sep; rest by 3 Oct |
-| W2 Stand flow | In progress (v14, 22 Sep) | Delivery proven by Postmark API (MessageID 8283ccb0); lead_store built (ef6de65), app not yet rewired; friction raster never resolved on the workstation, catchment ran on straight-line distance silently, fixed through config, no behaviour change (30e3e78); item 1 radius now W2's under R6 | Sweep: R6 radius plan and lead_store rewiring; data-store freeze line and stale-RDP runbook line owed to W2-RULINGS by the controller | W2 chat / John | Capture demonstrable 2 Oct; laptop proof 8 Oct; radius before 10 Oct or not at all |
-| W3 Presentation | In progress (v2, 21 Sep) | Slides 1-6, 9-10 built (3af5158); PDF render proven; Commons probe unrun (item 33); 92/86 coming off the methodology and track record pages | Video script 23 Sep; probe by 26 Sep; video record 26-30 Sep; sweep after the methodology page change | W3 chat / John | Five items to Jol and Nick 3 Oct |
-| W4 Host | v2 DONE (21 Sep) | STAND-HOST-MANUAL.md v2, 23 slots; three bridge labels flagged for W3 | v3 after 8 Oct screenshots and W5's known-issues list; John's item 34 | W4 chat / John | v3 mid-Oct |
-| W5 Order-ready documents | v0.3 DONE (21 Sep) | Every document exists in draft; seven slots John's or the insurer's; PI cover and TAO bank account bind 21 Oct | Solicitor slot wk 6 Oct; known-issues frozen 10 Oct; disclaimer wording to W1 for item 3 | W5 chat / John | 6 and 10 Oct |
-| W6 Messaging, marketing, website, meetings | In progress (v7, 21 Sep) | Sentences in the Observatory voice (variants v3); invitations drafted; post 1 and list email await approval; site still says three seats / 100 presentations | John: five contact names, 2.3 A or B, post 1 and list email by 25 Sep; invitations 26-29 Sep | W6 chat / John | 25-29 Sep |
-| W8 Pricing | DONE 20 Sep; v1.1 owed | PRICING-DECISION-2026.md v1.0 FINAL; v1.1 for the TAO Ltd entity line not yet issued | Controller issues v1.1 (entity line only) | Controller | 26 Sep |
-| W9 Stand, contract, logistics | OPENS 25 Sep (Informa named the contractor 24 Sep) | Participation confirmed by Informa 24 Sep; Full Vision builds the shell scheme and quotes wall graphics; contract paperwork pending the revised form; F124; graphics deadline 3 Oct in the umbrella, to be confirmed against Full Vision | John opens the W9 chat with the prompt in the 24 Sep handover; brief to Full Vision drafted for John; graphics decision by 30 Sep or logo only | John / W9 chat | Brief 26 Sep; graphics 30 Sep |
-| W10 Final calibration test | OPEN, STATUS v1 (22 Sep) | Item 1 re-ruled to W2 (John to confirm); items 2 and 3 proceed: 22 Sep baseline rerun, then 92/86 on 6,524 reproduced or replaced; interim on every surface 89/82 on 2,915 | Controller verifies the radius claim by grep; sweep on the baseline paste; W10 says by 29 Sep whether 3 Oct holds | W10 chat / John | Record v1 by 3 Oct; John rules item 55 |
-| W7 Rehearsal and freeze | Diaried | Trials 11-12 Oct remote, 16 Oct with Suzanna; 13 Oct is an Atlas meeting | Nothing until October; controller confirms a named person at the workstation for 11-12 Oct | Controller / John | Freeze 10 Oct |
+| W1 Speed, caches, controller build | Acceptance PASSED 24-25 Sep; queue item 1 CLOSED (run_ diff IDENTICAL, DUB-DFW named 7x) | Workstation 0eb7139 = origin; baseline OPT-24Sep-final-w8; named Optimise 24.3 / 22.3 / 16.2s; BLQ-JFK and register probes saved under E:\Avia\probe | Engine fix from W10's write-up 1-6 Oct; market_build step-5 label and the sweep-v-run sentence; launcher empty-password refusal; then the queue | Controller | Fix 6 Oct; queue by freeze |
+| W2 Stand flow | v14 (22 Sep), not swept by W2 since | lead_store built, app not rewired; Postmark approved 23 Sep (W2 does not yet know); catchment distance fixed via config (30e3e78); friction raster never resolved | Optimise-then-Run flow (inputs carried); "Direct service today: None" fix; rewire and capture buttons; John's TAO mailbox route by 29 Sep; runbook lines (freeze, RDP, restart); Postmark first real send and warm-up; progressive Optimise DEFERRED to after Routes on measured timing (controller ruling, John to confirm, item 59) | W2 chat / John (two spec blocks, tablet) | Capture 2 Oct; laptop proof 8 Oct |
+| W3 Presentation, pack, video | v2 (21 Sep); slides 1-6, 9-10 built; 7-8 held; PDF proven; pitch page and video NOT STARTED; probe unrun | 3af5158 plus the pricing and PDF commits; figures provisional (W3-RULINGS 23 and 25 Sep) | Wall artwork 29 Sep-1 Oct; probe by 26 Sep or mood frames; slides to Jol and Nick 3 Oct with charts marked provisional; re-run every figure 7-8 Oct; video 8-10 Oct (Bologna as fixed XLR daily); conflicts 1-4 ruled below | W3 chat / John (items 26, 45) | 3 Oct review; 10 Oct video |
+| W4 Host | v2 DONE (21 Sep) | STAND-HOST-MANUAL.md v2, 862 lines, 23 slots | v3 after 8 Oct screenshots: three visitor types, the four Optimise lines, the three-line read-out, the accuracy sentence once, 6,524 in writing | W4 chat / John (item 34) | v3 mid-Oct; slots as John answers |
+| W5 Order-ready documents | v0.3 DONE (21 Sep); eight asks open, all John's | Standard Terms, Order Form, one-pager, invoice, onboarding, known issues v0.1, licence record, feedback card | Solicitor slot wk 6 Oct; PI cover at TAO Ltd (binding on 21 Oct); bank and VAT; support; quarterly call ruling; Nick to sign known issues; OAG/Sabre in writing; twelve months' notice (silence 3 Oct) | W5 chat / John | 6 and 10 Oct |
+| W6 Messaging, site, invitations | v7 (20 Sep); sentences v3; invitations v3; post 1 and list email drafted; site removals at 6d153d2, clean-clone proof unrun, Pages waits on the zone | Sentence 1-HELD ("about a minute") RELEASED by the controller 26 Sep for single-run wording; 1-LIVE stands for the whole demonstration | Site FIRST VERSION LIVE before invitations (competitor page withheld; seats/presentations off); wall words to W3 27 Sep; bio for John; invitations from the TAO address only, when John has one, with the five names | W6 chat / John (names, 2.3, post 1, list email) | Site by 29 Sep; invitations 29 Sep-6 Oct |
+| W8 Pricing | DONE; v1.1 FINAL 21 Sep already carries the TAO Ltd entity line | PRICING-DECISION-2026.md v1.1 (W8-STATUS v2) | Nothing; the controller's "v1.1 owed" was stale and is closed | W8 | Closed |
+| W9 Stand, contract, logistics | OPENS 26 Sep | Full Vision named 24 Sep; F124; contract form with Charlotte open | Brief to Full Vision today (spec by 29 Sep); graphics decision today; pens order this week; setup plan 20 Oct; who carries what | John / W9 chat | Brief 26 Sep; artwork 2 Oct |
+| W10 Final calibration test | Items 2 and 3 DONE 25 Sep; diagnosis widened | Baseline to the decimal on the declared build; V1.3 refit 91 / 85 on 6,524, blind 60.9; segments 72.6 / 39.8 | Pull; pickle build stamp and confirmed pair; the two mechanisms against the record; outturn clause; fix options with scores by 30 Sep | W10 chat | 29 Sep; 30 Sep; record v1 3 Oct |
+| W7 Rehearsal and freeze | Diaried | Trials 11-12 Oct remote, 16 Oct Suzanna | Named person at the workstation 11-12 Oct (John); freeze 10 Oct on the corrected engine | Controller / John | 10 Oct |
 
-Still open from earlier reads: (a) W3-STATUS.md v2 is behind the slide build at 3af5158;
-(b) W2-RULINGS owes the data-store freeze line (no OAG or Sabre refresh 10 Oct to after
-Routes) and the stale-RDP runbook line; (c) Atlas has no row in this table (same stand, same
-freeze; Jess); (d) the first Friday note is due 26 Sep and is not written.
+Controller rulings from this sweep, announced in the rulings files the same day:
+- W3 conflict 1 (deck author): file metadata author and last-modified-by stay Avia Solutions
+  (standing rule); slide branding is the Observatory. Conflict 2: the slide text is John's
+  sentence of 25 Sep (item 55), figure to follow W10; 25(b) wording withdrawn from the notes.
+  Conflict 3: 3 Oct. Conflict 4: W3's proposal accepted, amended: charts regenerate after the
+  engine fix acceptance on 7-8 Oct, not after the 10 Oct freeze, so printed matter is on
+  accepted figures.
+- W2 item 5 (progressive Optimise): deferred to after Routes on the measured timing (named
+  24s, open sweep under 90s); the host says "about a minute" and shows the methodology page.
+  John to confirm (item 59).
+- W6 sentence 1-HELD released for single-run wording; 1-LIVE ("under five minutes") stands for
+  the demonstration as a whole.
+- W6 risk 1 (named-route reply to forecast): W2 writes the step and owns it; John forwards the
+  reply to the stand build the same day; it is in the runbook before the first invitation.
+- W8 v1.1: already issued by W8 on 21 Sep; the controller's owed item is closed.
+Still open from earlier reads: (c) Atlas has no row in this table (Jess); (d) the first Friday
+note is written today as the close of this session.
+
 ## What is left, by owner, as at 19 September, 22:45
 
 **John, this week (dates are the chats' dates, not mine):**
@@ -633,6 +688,417 @@ five contacts.
   in a PowerShell window that stays open after an exit and every line is teed to
   app\logs\server-<stamp>.log. Pre-mortem 20: nobody touches the server window at the stand;
   W2 runbook line. Second DUB-DFW run completed.
+- 25 Sep 2026 (John's paste): workstation C:\src\meridian on main at 0eb7139 = origin/main,
+  "Controller 24 Sep close", over eae2757 (carried ranking) and ac97cd3. The workstation runs
+  the carried commit; W1 queue item 1 half met (DUB-DFW named-7x probe still to run). DevPC
+  log not yet pasted.
+- 25 Sep 2026 (John): BOLOGNA-NEW YORK OPTIMISE LOOKS HIGH. Verbatim: "The optimse tool
+  chooses United at 7x a week 77w and 222k pax, if you set it to 5x week we get AA 138k on a
+  77w. Honestly, 222k a week for a launch route to Bologna seems high. It seems to be becasue
+  Venice is 14x but Venice is a global destination, Blogna is lovely but not a global
+  destination. I beleive we did a light touch Bologna forecast last year which assumed a 321
+  in winter and wide body in summer." Found on Egnyte: /Shared/Archive/2025/Bologna - Traffic
+  Forecast Update 2025/Report/SENT 5 Dec 2025/AdB Traffic Forecast Update 2025 FINAL.pptx
+  (Avia for AdB, 5 Dec 2025): "A major U.S. Full Service Carrier is expected to launch a
+  year-round daily service to New York (JFK or EWR) from Apr 2028 with A321XLR aircraft. From
+  Summer 2029 the service will utilise a widebody aircraft (e.g. B787-9) and switch back to
+  A321XLR during the winter months. Year-round usage of widebody aircraft is expected in the
+  long term after 2031." The report states no route-level passenger figure for New York in
+  its text; the route rows live in Forecast/ShortTerm/BLQ_ShortTermForecast(ADF).xlsx (not
+  read, 20MB). No mechanism named until the payload (sweep table, market_build) is read;
+  block issued to John. Bears on W3 (Bologna-New York figures already provisional, W3-RULINGS
+  23 Sep) and W10 (frequency response question).
+- 25 Sep 2026 (John's paste): W1 QUEUE ITEM 1 CLOSED. --diff OPT-24Sep-select-w8 v
+  OPT-24Sep-final-w8 on the workstation at 0eb7139: run_SJC-TPE, run_BRS-EWR, run_DUB-DFW
+  IDENTICAL (the pass condition); the 208 opt_ differences are the new `carried` field on
+  every sweep row (absent before eae2757) and DUB-DFW named moving 6x to 7x (capacity 97,656
+  to 113,932, carried 85,449 to 99,690, competition_split rows following the frequency), which
+  is the carried ranking doing what it was built to do. The two DUB-BOS files in the select
+  folder are the stale pair the 24 Sep handover says to ignore.
+- 25 Sep 2026 (controller): first BLQ-JFK probe block was wrong: `optimised` is a TOP-LEVEL
+  key of the /api/optimise payload (cortex_app circa 3025, final["optimised"]), not
+  schedule.optimised; the 24 Sep handover's "schedule.optimised" wording is the run payload's
+  block on a restricted run. The market_build did print: whole-service-area today 203,142;
+  local by the calibrated model 108,062; carried to the forecast year 112,543 (x1.0415);
+  seat-limited to 84,613 (x0.7518); point-to-point carried 84,613 two-way. The connecting
+  figure and the chosen cell are not yet read; second block issued.
+- 25 Sep 2026 (John's pastes, sweep table and demand block): BLQ-JFK on 0eb7139, blank form.
+  Sweep: UA B77W 7x annual chosen, demand 113,382 each way, carried 111,475 each way (222,950
+  two-way, the seat cap: 350 x 7 x 52 x 0.875) at 83.9%; DL A333 7x 100,298 / 89,817 on 282
+  seats; demand rises with frequency on every cell (UA 3x 71,961 to 7x 113,382). Demand block
+  of the returned run, EACH WAY: total_demand 148,271 = local 112,543 (market_build "carried
+  forward to the forecast year") + feed 35,728; carried 111,475 = p2p 84,613 (76%) +
+  connecting 26,862 (24%; beyond 6,298, behind 20,564); induced False. So the 222,950 headline
+  is circa 169k local and circa 54k connecting two-way. THE CONTROLLER'S FIRST READING (62%
+  connecting, by subtraction from the market_build) WAS WRONG: the market_build's local
+  figures are each way, and its step-5 note "Passengers flying only this route, both
+  directions" mislabels an each-way figure (W1 wording defect, queue item 12; John's
+  terminology ruling, each-way and two-way always labelled). The high figure is the LOCAL
+  model: 108,062 each way captured from a service area flying to New York today of 203,142
+  (53% before growth), 225k two-way local demand against Avia's December 2025 AdB assumption
+  of a daily A321XLR (circa 112k-124k two-way as a working calculation). Not Venice by any
+  step in the payload; the frequency-sensitive capture and the share the calibrated model
+  gives a new nonstop of its service area's existing traffic are the two things to question,
+  both W10, both frozen before Routes. The sweep's 113,382 against the run's 148,271 is the
+  known sweep-versus-run demand difference recorded on SJC-TPE at acceptance (91,639 at 82.3%
+  against 87.5% with the floor on); the size of the gap here (31%) goes to W1 to explain from
+  the code, no change. W3-RULINGS and W10-RULINGS corrected the same day.
+- 25 Sep 2026 (John): BOLOGNA-NEW YORK, the gauge and the number. Verbatim: "77w and 222k
+  for a new route just feels like the aircraft is too big for a new route. It is more likely
+  to start smaller and test demand and I suspect 77w 222k would make people think our tool
+  if not mad, was extremely positive. For me that causes two issues 1) we need to make sure
+  we are confident in that number and understand why it happens so we cna see if it causes
+  similar reults elsewhere and if we think that is fine or wrong 2) possibly change the
+  route as a route for the video if it is giving us any kind of concern." Controller: issue 1
+  decides issue 2; two measurements issued the same day, no code change: (a) the local
+  capture ratio (market_build step 2 / step 1) on every saved register pair against BLQ-JFK,
+  to see whether 53% is the model's habit or this route's; (b) BLQ-JFK fixed at United 7x on
+  A21X, B789 and B77W, to see whether local demand rises with the gauge (the capacity effect
+  John named on 24 Sep, which would make the carried ranking prefer the biggest aircraft in
+  any fleet). Hypothesis to test, not asserted: the optimiser tends to the largest gauge in
+  the fleet wherever demand is capacity-driven (SJC-TPE chose the A359, DUB-DFW an A333 with
+  "upsize" spill, BLQ-JFK the B77W). Video route decision after the two pastes; the video
+  records 26-30 Sep, so the decision is due 26 Sep.
+- 25 Sep 2026 (John's paste, Test A): local capture step (market_build step 2 / step 1) on
+  the saved baseline run payloads against BLQ-JFK, each way: BRS-EWR area today 1,462,299,
+  local model 38,124, ratio 0.026, p2p share of carried 0.317; DUB-DFW 32,858 / 61,695, ratio
+  1.878 (a new market: the model gives more than flies today), p2p share 0.389; SJC-TPE
+  190,395 / 51,631, ratio 0.271, p2p share 0.45; BLQ-JFK 203,142 / 108,062, ratio 0.532, p2p
+  share 0.759. Reading: the capture ratio is NOT a constant habit of the model; it depends
+  on what the service area contains (London inside Bristol's area, San Francisco inside San
+  Jose's, nothing inside Dublin's). BLQ-JFK's 53% is the highest ratio of the three routes
+  that have an existing market, and whether Venice's own New York traffic is inside
+  Bologna's service area decides whether that 53% is a share of hub-connecting passengers
+  (aggressive, arguable) or a share of another airport's home nonstop market (wrong). The
+  payload's catchment block (observed_share, names) and demand.natural / current / captured
+  / qsi_share answer that; block issued. Test B (gauge response) still to run.
+- 25 Sep 2026 (John's paste, Test B): BLQ-JFK, United, 7x, gauge fixed, each way. A21X:
+  local 69,649, total_demand 108,266, carried 57,967 (capacity.seats blank; the generic
+  table). B789 (257 seats, UA configuration): local 61,057, total 99,317, carried 81,854.
+  B77W (350): local 108,062, total 148,271, carried 111,475. Local demand moves with the
+  gauge (+55% from A21X to B77W; the 789 below the A21X is unexplained and goes to W1 to
+  read from the code). MECHANISM, from the code's own words (cortex_app circa 1266-1270):
+  "The model is anchored on seats ... when the CALLER named a carrier configuration the seat
+  count is the airline's own judgement and the back-test measured exactly that case. When
+  seats is None the gauge comes from the generic type table, which is Meridian's choice, and
+  anchoring on it is circular." The calibrated model takes seats x frequency as an input,
+  because launched capacity predicted outturn on the record (John, 24 Sep). Inside Optimise
+  the tool chooses the gauge, reads the demand off that gauge, and the carried ranking then
+  prefers the largest aircraft in band. A predictor has become a lever. This is systematic,
+  not Bologna's: SJC-TPE chose Starlux's A359, DUB-DFW an A333 with "upsize" spill, BLQ-JFK
+  the B77W. Frequency was taken out of the same loop by John's 3x-7x ruling on 24 Sep; gauge
+  is still in it. Answers John's issue 1: the number is explained, it will recur on every
+  blank-form Optimise with a widebody in the fleet, and the controller's view is that it is
+  wrong as a product answer (it reports what the route would carry if an airline chose that
+  metal, not what an airline should choose). Options put to John as item 58.
+- 25 Sep 2026 (John): ITEM 58 RULED (b), ANCHOR THE SWEEP. Verbatim: "I agree that we should
+  go with B. One thing that is relebant in the earlier drafts I think we also used to optimise
+  fr airline profitability. From memory we removed it beasue the profitability is generic to
+  LCC, FSC, ULCC and Reg, and so deemed not accurate enough for a forecast but useful enough
+  as a directional guide to an airport. I am wondering whether that was a mistake, if we had
+  optimising for the the best margin wuld be another way of removing these large heavy
+  aircraft, so bring that back might achieve the same goal." Controller's answer: profit as
+  the objective would not remove the loop, because the loop is in the demand read, not in
+  the objective; a 77W that the model fills to 84% with demand it created from the 77W's own
+  seats has the lowest unit cost in the sweep and would win on margin too, most likely by
+  more. The earlier removal stands for the reason given (generic economics by carrier type).
+  Profit returns, if at all, as a directional second line on the anchored sweep after Routes
+  (backlog). W1 builds (b) now, in the controller chat: reference gauge per airline = the
+  smallest long-haul type in that airline's sweep; demand read once per airline x season at
+  the reference gauge and 7x (the existing stage-1 sizing pass, re-anchored), frequency rows
+  3x-7x from that demand, aircraft sized to carry it within the band; Run untouched.
+  Acceptance: three-pair run_ diff IDENTICAL against OPT-24Sep-final-w8; BLQ-JFK sweep table
+  before and after; blank-form SJC-TPE three times identical. Freeze exception approved by
+  John, confined to api_optimise selection code. W3, W4, W6, W10 rulings lines follow the
+  acceptance, not before.
+- 25 Sep 2026 (John), on the anchored sweep and SJC-TPE: "remember the TPE deck includes the
+  curfew, but I would hope the numbers do end up being consistnet". Noted for W3: the deck
+  figures are curfew runs (the 24 Sep must-fix moved the connecting leg on restricted runs),
+  so the W3 re-run after the anchored sweep compares like with like: Optimise result, then
+  the same schedule as a curfew Run, both on the new server, against the circa 120k figure
+  presented to the Taipei carriers.
+- 25 Sep 2026 (controller, CORRECTION, before any code was touched): OPTION (b) IS ALREADY
+  HOW THE SWEEP WORKS. Read in api_optimise before building: _cell_kw (cortex_app 2605) runs
+  every sweep forecast with aircraft="A21N", so stage 1 and stage 2 read demand at a generic
+  A321neo gauge for every airline and frequency, and aircraft_select.select_aircraft then
+  sizes the aircraft to that demand within the band. The B77W on BLQ-JFK is not the gauge
+  loop choosing the biggest aircraft: it is the aircraft that carries the A21N-anchored
+  demand of 113,382 each way at 7x (113,382 / (7 x 52 x 0.875) = 356 seats). The loop shows
+  only afterwards, when the returned run re-reads the chosen 77W and reports 148,271 (the 31%
+  sweep-versus-run gap). Test B's A21X reading (108,266 total at 7x) is the same anchored
+  demand within the generic-seat difference between A21N and A21X. So the question is back
+  where Test A left it: the calibrated model's read of BLQ-JFK at a narrowbody anchor is
+  226k two-way total (69.6k local each way on an A21X in Test B; 53% of the service area's
+  existing New York traffic plus feed), about double Avia's own December 2025 AdB
+  assumption. That is engine demand logic, frozen, and W10's. Item 58 is re-put with the
+  options that remain. The controller ruled (b) without reading the sweep code first, which
+  is the mistake chat 3 recorded twice; recorded here as the third time.
+- 25 Sep 2026 (John): THE ENGINE FREEZE IS CONDITIONAL, NOT ABSOLUTE. Verbatim: "engine not
+  changing was a ruling based on a degree of confidence that the numbers emerging were
+  sensibe, if we find numbers like this that would make the tool look wrong we have to
+  change it. We are launching to the worlds air service experts, many will naturally just
+  have a feel for the answer and where our numers are way off that will immediately make
+  people dismiss it. and that would destroy the opportunity to sell it reputationally for
+  good. So we cannot keep to a ruling just because that is our stated preferred plan if the
+  pla has to change it has to change." Also, earlier the same day: "seems like we stuck in a
+  circle untol W10 and W1 have fixed the calibration of the engine we cant say what the
+  final numbers are and therefore whether the Bologna forecast stands or will reduce."
+  Ruling as recorded: the engine demand logic may change before Routes where a measured
+  face-validity failure is found; every change is measured on the back-test before it ships
+  (the accuracy pair is re-scored, item 55), applied by W1 from a diff W10 writes up
+  (README code ownership unchanged), and accepted by the three-pair probe plus the
+  face-validity register. The 10 Oct demo-path freeze then freezes the corrected engine.
+  Consequences accepted: the video cannot be recorded on figures that may move (record
+  window moves to after acceptance, 8-10 Oct at the latest); W3's SJC-TPE and BLQ-JFK
+  figures stay provisional to the same date; W4 v3 wording follows. Programme: (1) 25-26
+  Sep, face-validity register: blank-form Optimise on circa twelve routes an air-service
+  planner has a feel for, tool answer beside an analogue actual from the stores, to measure
+  how widespread the over-read is before anything is changed; (2) 29 Sep, W10 diagnosis:
+  long-haul capture share, frequency response, seat anchor in indicative mode, and what mix
+  of long-haul secondary-city launches the 2,915 contain; (3) 30 Sep, John decides the fix
+  from measured options; (4) 1-6 Oct, W1 builds, W10 re-scores; (5) 7-8 Oct acceptance, W3
+  re-runs every figure, video recorded; (6) 10 Oct freeze. Pre-mortem 21 added.
+- 25 Sep 2026 (John), SJC-TPE is not a face-validity concern: "SJC TPE with a curfew says 120k
+  not sure what the non curfew was but probabky arund 172k so dont think thta is too
+  different." Matches the 24 Sep acceptance: CI 7x A359 unrestricted 172,216 two-way,
+  curfew 21:00-06:00 at origin 112,282; the Taipei deck's circa 120k is the curfew case.
+  SJC-TPE stays on the register as the control (a route John judges sensible), not as a
+  suspect.
+- 25 Sep 2026 (John): THE FACE-VALIDITY REGISTER IS AVIA'S OWN CLIENT FORECASTS. Verbatim:
+  "W10 is open but notihing has happend fo 2 days. Can I suggest you go and look at the
+  forecast s on egynte prepared by the team in the last 12 months and maybe even soem pre
+  covid. A 100k potential route in 2018 is unlikely to be a 200k potential route now. so
+  that will give you a range of routes with the numbers the analyst thought were reasonable
+  and were profived to clients who agreed. We then forecast those for 2027. ours doesnt need
+  to match but we should be directionally near them mostly." Done the same evening: 71 route
+  assumptions read off Egnyte (Bologna 2025, LCY Lightning 2025, Abha 2025, Tashkent 2025,
+  Shakira 2023, Zagreb 2026, Knock 2026 and 2018, Scotland 2018 and 2019); twenty with a
+  stated passenger figure form the comparison set in routes/FACE-VALIDITY-REGISTER-
+  25Sep2026.md v2 (Knock 2026 the cleanest: sent to the client, first full year 2028, local
+  and connecting stated). The twelve-route register of the afternoon is superseded. Meridian
+  runs each as a fixed-input Run on the analyst's inputs for 2027, then a blank Optimise.
+  W10's job 1 (analogues from the stores) is withdrawn; W10 keeps the diagnosis (29 Sep)
+  and the fix options (30 Sep), and gets the register results as its evidence.
+- 25 Sep 2026 (John's paste, the register Runs): twenty fixed-input Runs on the analysts'
+  own inputs, table and reading in routes/FACE-VALIDITY-REGISTER-25Sep2026.md (Results).
+  Headline: fourteen of twenty are seat-capped, so the carried figure agrees with the
+  analyst only because both fill the aircraft; the demand behind it is 2 to 5 times the
+  analyst's on every route ending at the airline's hub (NOC-FRA 94,958 v 19,379; EDI-JFK
+  243,468 v 94,397; AHB-DXB 235,394 v 106,830), while the five routes below the cap read at
+  about half the analyst's figure (NOC-KTW 0.34, NOC-BER 0.51, EDI-DEL 0.54, AHB-ADD 0.58,
+  AHB-IST TK 0.73). Local carried on the Knock rows is a third of the analyst's local. The
+  over-read is systematic on hub routes and the under-read systematic on thin ones; not
+  Bologna's alone. Diagnosis needs local_model, area_today and the feed fields per row
+  (in the saved JSONs); Optimise block still to run.
+- 25 Sep 2026 (John's paste, the demand fields): the register's second table and the
+  controller's reading are in routes/FACE-VALIDITY-REGISTER-25Sep2026.md. Two mechanisms:
+  (1) the V1 flat connecting capture gives a regional route into a major hub a feed 10-25x
+  the analyst's (NOC-FRA circa 39k each way against 2,800 two-way; NOC-CDG 44k against
+  4,400), because it is a share of the hub's market and does not scale with the route;
+  (2) the local read is half to a third of the analyst's on thin non-hub routes (BER, MUC,
+  KTW) and several times the service area's existing traffic on small origins (AHB-IST
+  flynas 5.5x, KWI 2.9x, DEL 2.6x, EDI-CAN 1.5x). Where the origin's own market is large
+  the local agrees (NOC-FRA 17k v 16,600; NOC-CDG 48.7k v 50,000). Hypothesis for W10: the
+  back-test scores carried on realised launches, so a model that over-reads demand and
+  caps at seats x LF scores well; the 89/82 pair may be substantially a capacity claim, and
+  item 55 must be answered with that in view. Fix shape (not yet a fix): feed as a share of
+  the route's own size by haul and hub, and a bound on local stimulation against the
+  service area; measured on the back-test first. W10 diagnosis 29 Sep; options 30 Sep.
+- 25 Sep 2026 (John), the Knock caveat: "worth noting that NOC is probably one of the hardest
+  airports to forecast for. It shares its catchment with essentially all Irish airports but
+  has very little reason to be the main point of entry. Analyst forecasts tend to use much
+  more art than science on Noc forecasts so I would not be surprised to see discrepancies
+  there, but not on Edi or larger airports, they should all be consistt." Applied: the Knock
+  rows are downgraded to indicative in the register. The Edinburgh rows carry the finding on
+  their own: EDI-BOS analyst 91,062 (43,000 local, 48,000 connecting), tool 230,924 (local
+  137k two-way, 3.2x the analyst and 1.2x the service area's whole Boston traffic today;
+  feed 88k, 1.8x); EDI-JFK 243,468 v 94,397; EDI-PVG 124,826 v 52,753 (local 42k, feed 82k);
+  EDI-HKG 107,032 v 52,404; EDI-CAN 86,094 v 36,391 (local 24k from a service area flying
+  16k). Two to two and a half times on every hub-ended long-haul from a large established
+  airport, in both the local and the feed; the pre-COVID caveat does not cover a factor of
+  2.5. The finding stands without Knock.
+- 25 Sep 2026 (John's paste of W10's message, dated 24 Sep, "session 1 state"): W10 has run
+  nothing; its clone was at 7c15c3d; it had not read the 22 Sep evening re-ruling of item 1
+  (W10-RULINGS, option (A)) and reports item 1 "blocked on you"; item 2 (claimset baseline)
+  block is with John, unrun; item 3 traced (92/86 built on sklearn 1.7.2 / airportsdata
+  20260315, memorisation config, mixed basis; expected lower on the declared environment).
+  W10's three code facts are accepted as evidence: the BT2 claimset's capture feature comes
+  from bt2_capture.py via the connection builder and no file in the training chain
+  references route_forecast or a radius. That matters for the register finding: the scored
+  model and the product's demand path share bt2_forecast but not route_forecast's feed, so
+  the flat V1 feed that produces the hub over-read is OUTSIDE what the 89/82 record scored.
+  Controller's ruling to W10 (rulings file, 25 Sep late): item 1 is (A), as ruled 22 Sep,
+  John's confirmation is step C item 7; item 2 runs first, on John's paste; the diagnosis
+  of 29 Sep adds the register's two tables and must state which of the two mechanisms the
+  record scored (local via bt2_forecast) and which it never saw (feed via route_forecast).
+- 25 Sep 2026, late (John's paste): W10 ITEM 2 PASSED. bt2_claimset.py on the workstation,
+  E:\Avia\bt2_relaxed, six cohorts, target nonstop, PYTHONNOUSERSITE set: build python
+  3.12.10, sklearn 1.9.0, numpy 2.3.5, scipy 1.18.0, airportsdata 20260803; n=6,524 (286
+  pax>1.1x-seats artefacts excluded). Calibrated 83.2 / 70.0; blind route 60.9; tier A 88.2
+  (n=653); portfolios of 10 and 20 87.7 / 93.2; segments blind 72.6 (short-haul, domestic or
+  LCC, n=2,988) / 39.8 (long-haul, international, FSC, n=1,486). All eight figures equal the
+  22 Sep baseline to the decimal (W10-STATUS v1 line 54). Log E:\Avia\probe\claimset-W10-
+  25Sep.log. The record's own weakest segment, long-haul international FSC at 39.8% blind,
+  is the segment the register found over-read by 2-2.6x and the one a Routes visitor will
+  type. Block 3 (item 3, mixed basis) may run now.
+- 25 Sep 2026, late (John's paste): W10 ITEM 3 RUN on the declared environment
+  (bt2_mixed_basis.py, sklearn 1.9.0, airportsdata 20260803, n=6,524; log E:\Avia\probe\
+  mixed-W10-25Sep.log). Ruler: 595 US domestic launches regraded on DOT, median DOT/Sabre
+  1.015, sources agree within 20% on 67.6%. Model: Sabre throughout blind 60.9 / calibrated
+  90.9 (within 10%: 36.3 / 83.5); mixed basis blind 60.1 / calibrated 91.1 (within 10%: 35.7
+  / 84.8). US slice: graded on Sabre 61.0 / 94.3, on DOT 51.6 / 90.4. So 92/86 becomes 91/85
+  on the declared environment: the mixed basis costs nothing, the library about a point.
+  The 91/85 and the claimset's 83/70 are the same 6,524 launches with different fit
+  configurations (memorisation it=1600/minleaf=3/leaves=95 against the declared it=800/
+  minleaf=5/leaves=63); the blind figure is 60.9 under both. Item 3 is answered; item 55 is
+  now a choice between 91/85 (memorisation fit, 6,524), 83/70 (declared fit, 6,524) and the
+  interim 89/82 (2,915), all "history known", with blind 61 route-level and 88-93 in
+  portfolios beneath every one of them, and long-haul international FSC at 40 blind. W10's
+  record v1 states all of this on one page; John rules by 3 Oct. Controller's view for that
+  ruling, not a ruling: the honest stand sentence quotes a calibrated pair AND the blind
+  portfolio figure, never the calibrated pair alone, and the long-haul segment figure goes
+  in the known-issues list.
+- 25 Sep 2026, late (John): RULING, THE STAND ACCURACY SENTENCE IS ONE MODEL, ONE RECORD, ONE
+  PAIR. Verbatim: "If you are an ASD person and walk past the stnand, and have a 3 min
+  oconversation including 2 mins demo. Your question will likely be how accurate is it. this
+  needs to be met with when it was used to forecast new routes that have istorically
+  launched since 2015 it achieved X/Y within 20/10 over a sample of 7000. That does meant
+  the past will predict the future but that is the result. We cannot started talking about
+  calibrated, different fits, pickles, part working models, That is far roo comple for a
+  stand conversation. For anyone at the conference the andswer is we have one model that has
+  produce the forecast you have just done and historically it achieved this. Post Routes
+  before sale we can conitinue to refine the model so we do have one tru model but if we
+  dont have time before Routes to iron that our we still need to stick to the simple
+  explanation." Controller's reading: the sentence shape is ruled; the figures in it are the
+  record's, not rounded up: the sample is 6,524 launches (say "circa 6,500", not 7,000) from
+  the 2016-2019, 2024 and 2025 cohorts (say "since 2016", not 2015); X/Y is the pair for the
+  model the app runs, 91 / 85 subject to W10 matching the pickle to tonight's refit, else
+  whatever W10 measures on the pickle. Everything about fits, environments, blind and
+  portfolio figures goes to the methodology page, the known-issues list and the host
+  manual's second-question answer, never into the first sentence. Item 55 resolves this way
+  by 3 Oct; the interim 89/82 stays on the surfaces until W10 confirms the pickle.
+- 25 Sep 2026, late (John): TWO RULINGS ON THE STAND. (1) The sample: "sample use the precise
+  number it feels more acurate the person on the stand and reduce to circa 6500 but we
+  should be precise in writing". So: 6,524 in every written surface; the host may say "about
+  six and a half thousand". (2) Optimise on the stand, verbatim: "My one major concern with
+  this, is that isf we say 91% is +- 20% and then we start producing forecasts like teh
+  Bologna 222k year one, people will begin to question the 91% claim. Obviously 1 in 10 can
+  be out with this logic and if the average person only runs one or two on the stand outr
+  chances of being questionsed are lower but in practice if I work for Tamp a I will run one
+  route I have already done and know my answer and see what the machine gives. Also I would
+  expect the optimised version to be the best route or the closest to my number. In practice
+  that isnt what optimise can ever do as we wont know the subjective criteria someone has
+  steered toward their answer. So I think the people manning the stand have to have a 100%
+  clear explanation of what optimise is, so that when an answer comes out that is different
+  to what the person expects they can explain it and then RUN an option that closely matches
+  the route the person was considering i.e. aircraft, frequence, alirnline, start time, etc
+  and hopefully that will be closer as the true model test." Ruling as recorded: the stand
+  flow is Optimise, explain, then Run the visitor's own case; the host's explanation of
+  Optimise is a W4 deliverable in the manual and is rehearsed; W2's flow keeps Run one click
+  from the Optimise result with the visitor's inputs carried across. Controller's caution,
+  from the register: a fixed Run on the visitor's own schedule is also 2-2.6x the analyst on
+  hub-ended long-haul (the Edinburgh rows WERE fixed Runs), but because the aircraft fills,
+  the carried headline the visitor sees is seats x frequency x load factor and often agrees
+  with theirs (EDI-JFK 97,460 against the analyst's 94,397); what gives it away is the
+  demand and spill line ("demand exceeds 7x A321: 73,000 spilled"). The host must be able to
+  read that line as well as the headline. The engine fix remains the real answer.
+- 25 Sep 2026, late (John), on the visitor types: "there will be many different types, many
+  wont have a idea, many will run routes they havent seen and expect the answers to be
+  correct and use the results for teh airlines straightaway. so keep in mind theyre will be
+  a range ... Of course their route forecast hasnt been back tested so if they different it
+  could be theires that is wrong, but we will never know and what will matter to the person
+  is what feels right." Recorded for W4 (the manual covers three visitor types: knows the
+  route, no route in mind, will take the pack to an airline) and for the engine work: the
+  test is face validity to a planner, which is why the register compares against Avia's own
+  analysts rather than against actuals alone.
+- 25 Sep 2026, late (John): "Please keep in mind that we need to design the stand hand
+  graphics to the graphic designed before the 2 Oct". Ruling as recorded: the wall graphics
+  artwork is with the designer by 2 Oct, so the chain is pulled forward: graphics decision
+  (item 40, full wall or logo only) and sentence 2.3 (item 44) are decided TODAY 26 Sep, not
+  30 Sep; the Full Vision brief goes today asking for panel sizes, file specification, price
+  and artwork deadline by Monday 29 Sep; W6 hands the wall words (the one-liner, the product
+  name, the site address) to W3 on 27 Sep; W3 artwork 29 Sep to 1 Oct; to the designer 2
+  Oct. Controller's ruling on what is printed: the wall carries the one-liner, the name and
+  the site, NOT the accuracy figure, because the pair is not confirmed until W10 reads the
+  pickle (29 Sep) and may change once more with the engine fix; the accuracy sentence lives
+  on the screen, the leaflet and the pack, which can change until 10 Oct. Say if you want the
+  number on the wall regardless; then it is 91 / 85 on 6,524 and the fix cannot move it.
+- 26 Sep 2026, early (John): THREE INSTRUCTIONS. Verbatim: "Order any pens or giveaways, get a
+  website up and running so we can refer to it on the company bio that we could post pre
+  rouets today if we wanted and needs to be ready before we send invites so if anyone
+  receives it they can see who TAO is. Also my email for thos invites nees to be the TAO one
+  not Avia." Rulings as recorded: (1) W9 orders the pens this week (item 54: Observatory name
+  and site address; John approves the artwork and pays; W9 drafts the order). (2) W6 launches
+  the site BEFORE the invitations go: a first version that says who The Aviation Observatory
+  is, what Meridian does (the one-liner), the Routes stand (F124, 21-23 Oct) and how to reach
+  us; the competitor comparison page is withheld (19 Sep ruling, item 11) and the price grid
+  is on only if it is PRICING-DECISION-2026.md v1.0 word for word; "three seats / 100
+  presentations" comes off first. The company bio for a pre-Routes post links to it. (3) The
+  invitations go from John's Aviation Observatory address, not Avia's. That needs a mailbox
+  John can send and receive from at aviationobservatory.com before the invitations go, which
+  is the long pole: it is either a mailbox on the Microsoft tenant (tenant admin is not
+  John's; ask the administrator today) or Cloudflare Email Routing for inbound (item 20, DNS
+  move) with an outbound sender John can use from Outlook; W2 states which is achievable by
+  29 Sep and what John must ask for. Invitations do not go from an Avia address as a
+  fallback; they wait for the TAO address.
+- 26 Sep 2026 (John): "what does progressive optimise mean. also there is still lots of work
+  in the streams that needs doing and is not mentioned. Fix the presentations, adding images
+  automatically, demo process i.e. entering an email so that the run they have done can be
+  run as a presentation and sent to them. How do we do that. Add a temproary add email to the
+  bottm of the run so when they get a numbers result they type their email and the
+  presentation is then run and sent to them outside the stand tool but automatically. Or do
+  we do that but have someone in UK review the deck not for content but for formatting issues
+  and send it manually, or do we just capture the email and the desired route offline and run
+  it wehn we have itme, etc etc. All of this needs to be thought thru and decided and set up
+  on top of the other changes. Agree they are not as important as getting the engine and the
+  forercasts right, but need to be clear and centre before we talk about locked." Answered:
+  critical path line 2A and items 61-62; W2 and W3 rulings the same day. Progressive Optimise
+  = showing the best schedule found so far while the sweep is still running, instead of a
+  spinner until it finishes; deferred (item 59) because the sweep is now under ninety seconds.
+- 26 Sep 2026 (John), the same-day pack, amending item 61. Verbatim: "I agree with your
+  selection in principle but we need work arounds. What if someone needs the presentation
+  right then to take to an airline meeting. Waiting for someone in UK to invisbly vet the
+  presentation would be perverse and make it feel unautomated. No one on the stand has the
+  knwoeldged to check the presentation, so when it is needed becomes a point. now, automatic,
+  in 30 mins send to UK but auto sent after 30 mins if no one has time to review. UK person
+  has chance to pause an auto send if the deck produced is utter nonsense, but we need to
+  make this slick as I am not sure of the volume, If we have 20 over 3 days that is doable
+  but if we had 150 over 2 days probably not if we dont want to deay the send too long."
+  RULED (item 61 as amended): every pack job has one of three states set at the stand: NOW
+  (the host ticks it for a visitor who needs it for a meeting; sends the moment the build
+  passes its own checks, no human review); HOLD (the default: sends automatically 30 minutes
+  after the build passes unless a reviewer pauses it); PAUSED (a reviewer stops it with a
+  reason; released by hand or re-run). The build's own checks stand in for a reviewer where
+  nobody looks: the build completed, every section rendered, no placeholder or missing figure,
+  the ruled sentences present, images resolved or mood frames substituted, file author Avia
+  Solutions; a build that fails a check goes to PAUSED, never to send. The reviewer's view is
+  a list with a one-page PDF preview per job so a glance is enough; at 150 jobs in two days
+  that is one every ten minutes of the show and the 30-minute auto-send keeps the flow if the
+  reviewer is behind. W2 builds the states, the timer and the checks hook; W3 supplies the
+  build checks and the preview. Item 62 (the reviewer) stands, with the volume caveat.
+- 26 Sep 2026 (John), three rulings on the pack. Verbatim: "For these decks Avia Solutions is
+  not the author Aviation Observatory will be the author. The times I made up 30 mins might be
+  45 or an hour i,e the longer it takes a presentation to arrive the less speedy will be the
+  impression and the question about whether it was blocked by email blockers etc comes up.
+  But if the manual checks finds things then send something wrong is worse. My preference is
+  that the default is that automatic send is the goal and fine because we are so confident in
+  the presentation decks but in 4 weeks I am not sure we will reach that point hence the
+  thought about manual intervention. Problem is Jess and Jol are rightly QA professionals and
+  will never want to release something until it is perfect and spending 4 hours per
+  presentation fixingthem wont be an option either." RULED: (1) AUTHOR: every product output
+  (visitor pack deck and workbook, PDF, stand deck, video, pens, wall) carries The Aviation
+  Observatory as author and last-modified-by; Avia Solutions stays the author of Avia's own
+  deliverables and the programme files. The controller's ruling of 26 Sep on W3 conflict 1 is
+  REVERSED. (2) HOLD TIME is a setting, not a constant: John sets it (30, 45, 60 minutes or
+  zero); the goal is zero, automatic send. (3) THE REVIEWER IS A PAUSE, NOT A QA PASS: the
+  reviewer never edits a deck; a job either sends as built or is paused and the visitor gets a
+  short holding email the same day ("your pack follows tomorrow morning") with the pack sent
+  once the template fault is fixed. The QA effort goes BEFORE Routes, on the generator, not on
+  the outputs: a rehearsal batch of 30-50 packs on the register routes, built automatically in
+  the week of 6-8 Oct, QA'd by Jess and Jol against a written formatting standard; every fault
+  found is fixed in the TEMPLATE and the batch re-run until a whole batch passes; then the
+  hold timer is set by John from what that batch showed. Item 62 (reviewer name and hours)
+  stands; with the pause-only rule it is a small job.
 ## Waiting on John
 
 1. CLOSED 19 Sep: HEAD `11a4c3f` confirmed and pushed.
@@ -685,7 +1151,15 @@ five contacts.
     bt2`), so the earlier worry that the screen ran a different model is closed. What remains
     is item 55. Nick signs the sentence (John asks him with item 53). Master list 2.4 and
     pre-mortem 9 close on this.
-26. **Carrier for slide 8, Bologna-New York.** No default; W3 will not pick an airline.
+26. **Carrier for slide 8, Bologna-New York, and now the figure.** Carrier: no default; W3
+    will not pick an airline. Figure (25 Sep): the tool's blank-form answer is United 7x B77W,
+    222,950 two-way, of which circa 169k local and circa 54k connecting (the demand block);
+    the local demand alone (225k two-way) is about double Avia's December 2025 AdB assumption
+    of a daily A321XLR. Decide whether the demo case is the tool's own Optimise answer with
+    the local/connecting split stated, or a fixed input (A321XLR daily, the 2025 shape).
+    Silence to 30 Sep: the tool's own answer with the split stated, because the stand
+    demonstrates Optimise and a hand-picked schedule is not the product; W10 carries the
+    capture-share question.
 27. **Decks already sent without rights records** (the 94 JPEGs in the CI deck): the
     controller's ruling is that nothing is re-sent; the exposure is an internal provenance
     gap, not a client obligation, and it goes on the master list as a post-Routes review
@@ -799,7 +1273,7 @@ five contacts.
 40. **Graphics by 3 Oct**: full inlay circa EUR 3,740 or overlay circa EUR 3,980 plus VAT, or
     fascia and counter logo only (included). Controller's view: one printed back wall with
     the one-liner and the accuracy line is what makes a 12 sqm shell read as a product
-    stand; W3 does the artwork. Silence to 30 Sep: logo only.
+    stand; W3 does the artwork. Silence to 30 Sep: logo only. PULLED FORWARD 25 Sep late: decision needed 26 Sep so the artwork reaches the designer by 2 Oct (John); the wall carries no accuracy figure (controller ruling, decisions log).
 41. CLOSED 21 Sep: the contract files in /Shared/Management/Management Information/A3/The
     Aviation Observatory/Legal/.
 42. RULED 21 Sep (John, with the controller's condition): the all-day recording is TESTED ON
@@ -843,7 +1317,14 @@ five contacts.
     capped" (Jol's feedback R1; John: "measured" implies an estimate in ASD). Until he answers,
     slide 4 and manual section 2 keep his words and every data surface says "actual".
 54. **Pens as the stand giveaway**, Observatory name and site address, ordered this week (W9).
-55. **Which accuracy pair the product publishes.** Interim, on every surface: 89/82 on 2,915.
+55. **Which accuracy pair the product publishes.** RULED IN SHAPE 25 Sep (John): one model,
+    one record, one pair, in the sentence "When this model was used to forecast the new
+    routes that launched since 2016, X% of its forecasts were within 20% of what the route
+    went on to carry and Y% within 10%, across circa 6,500 launches. The past does not
+    predict the future, but that is the record." X/Y = the pair of the model the app runs
+    (bt2_model_v1_3.pkl): 91 / 85 on 6,524 if W10 confirms the pickle is the 1.9.0 V1.3
+    rebuild scored tonight; otherwise the pair W10 measures on the pickle. W10 states the
+    outturn period in one clause for the sentence. Interim until then: 89/82 on 2,915.
     W10 reproduces the 22 Sep baseline, tests the catchment radius, and reproduces or replaces
     92/86 on 6,524; John rules on ONE figure set by 3 Oct. Silence to 3 Oct: the interim pair
     ships and the 92/86 pair stays off every surface.
@@ -855,6 +1336,50 @@ five contacts.
     Open point: whether one competitor-client airport goes on the five as a deliberate test
     of budget-holders; controller view is no, the 19 Sep ruling stands until a paid client
     exists, and those airports are Suzanna's priority walk-ups instead. Invitations 26-29 Sep.
+58. **THE BOLOGNA-NEW YORK NUMBER, RE-PUT 25 Sep (decision by 26 Sep).** Option (b) was
+    ruled and then found to be the existing design (decisions log, 25 Sep correction): the
+    sweep already reads demand at an A21N anchor and sizes the aircraft to it; the 77W is the
+    aircraft that carries an anchored demand of 226k two-way at 7x. The number is the
+    calibrated model's read of the route, not the optimiser's choice of metal. Remaining
+    options, none of which changes the engine: (a) LEAVE the Optimise answer and state on the
+    page what it is (demand read at a narrowbody anchor, aircraft sized to carry it); (c) the
+    VIDEO uses Bologna-New York as a fixed A321XLR daily Run (Test B: 57,967 carried each way,
+    115,934 two-way, the 2025 shape), with the Optimise answer shown and explained in the
+    stand demo only; (d) a GAUGE RULE of the same kind as the 3x-7x rule: a new long-haul
+    route is sized on the airline's smallest long-haul type unless that type cannot carry the
+    demand at 7x within the band, in which case the tool says so ("demand exceeds a daily
+    787-9; the next gauge is ...") rather than silently reaching for the 77W. (d) is a
+    selection-code change in api_optimise, two days, and needs a ruling from John on what
+    "smallest long-haul type" means (XLR-class where the airline has it, otherwise the
+    smallest widebody); it does not lower the 226k, it changes what the tool proposes an
+    airline should fly. (e) W10 tests whether the 53% capture and the frequency response are
+    what the 2,915 launches support; no change before Routes either way. Controller's view:
+    (c) for the video now, (e) for the record, and (d) only if John wants the stand answer to
+    read as a launch schedule rather than a sized one; (a) is the fallback wording in any
+    case. Consequence of silence to 26 Sep: (c) and (e), and the Optimise answer on the stand
+    stays United 7x B77W with the basis stated.
+59. **Progressive Optimise deferred to after Routes.** W2 proposed it (v14); the controller
+    rules yes on the measured timing (named Optimise 24.3 / 22.3 / 16.2s, open sweep 52.5 /
+    86.9 / 52.6s on 24 Sep): a best-so-far display is not worth the build inside the freeze
+    when the host can say "about a minute" and show the methodology page. Silence: deferred.
+60. **John's Aviation Observatory mailbox.** Invitations go from it, not Avia (26 Sep). W2 names
+    the route by 29 Sep; if it is a tenant mailbox the ask to the administrator goes today.
+    Consequence of silence: invitations wait; the five meetings become walk-ups if not sent by
+    6 Oct.
+61. **The same-day pack: automatic build, approved send.** Ruled by the controller 26 Sep
+    (critical path 2A) from John's three options (fully automatic; automatic with a UK
+    formatting review then send; capture offline and run later). Confirm, or choose another.
+    Silence: as ruled.
+62. **The UK reviewer for the queue during Routes**: a named person, their hours on 21-23 Oct
+    (UK afternoon covers the Frankfurt day), and a second name. Consequence of silence: packs
+    build and nobody sends them; the fallback becomes the plan.
+57. **Confirm the git state for chat 4**: HALF CLOSED 25 Sep. Workstation pasted: HEAD
+    0eb7139 on main, equal to origin/main, "Controller 24 Sep close: ..."; below it eae2757
+    (W1 carried ranking) and ac97cd3 (server console). W1 queue item 1's first half is met.
+    Still owed: `git log --oneline -3` from the DevPC (C:\AviaDev). Consequence of silence: the controller records no
+    machine state, every command block this week is written on the assumption that the
+    workstation is on that commit, and a stale workstation would show 23 Sep behaviour
+    (Optimise headline by load factor, no curfew must-fix) in any demo John runs.
 
 ---
 
@@ -1075,6 +1600,59 @@ Written as if it happened. Each has an owner and a mitigation already in the pla
     stays at eight until a worker's peak memory is measured. "About a minute" for Optimise
     is now within reach on the register pairs but is NOT yet released to W6: it needs the
     rebuild fix live and one full day without a pool fault.
+21. **A number an air-service expert can feel is wrong.** Found 25 Sep on Bologna-New York:
+    the blank-form Optimise returned United 7x B77W, 222,950 two-way, against Avia's own
+    December 2025 assumption for AdB of a daily A321XLR; the calibrated model reads 226k
+    two-way of demand at a narrowbody anchor (53% of the service area's existing New York
+    traffic plus feed). John's ruling: the freeze is conditional on the numbers being
+    sensible; where they are not, the engine changes before Routes, measured on the
+    back-test first. Answer: the face-validity register (twelve routes, tool against
+    analogue actuals) by 26 Sep; W10 diagnosis 29 Sep; fix decided 30 Sep; built and
+    re-scored 1-6 Oct; accepted 7-8 Oct; video after acceptance. Owner: controller (W1
+    build), W10 (diagnosis, re-score), W3 (re-run), John (the fix decision). Status: open.
+
+22. **Stand internet, power and screen are not on any list.** The demo runs on the Surrey
+    workstation through Cloudflare, so the stand needs a wired exhibitor internet line (Informa
+    or Full Vision order, with a deadline), 4G as the second route, the Plan B laptop as the
+    third; a TV or monitor for the video loop and the demo screen (hire or carry); power,
+    extension leads, EU plugs. Owner: W9 (order and dates), W2 (the three routes tested on
+    11-12 Oct). Status: open, 26 Sep.
+23. **Email capture at a German show needs a privacy line.** The host types a visitor's email
+    and the lead store keeps it: a one-line notice at the point of capture, a privacy page on
+    the site, a retention date, and Informa condition 5.3 on delegate data all apply. Owner:
+    W6 (site page), W2 (the line on the capture screen, retention in the store), W5 (the
+    words). Status: open.
+24. **The pack lands in a corporate spam folder.** A new domain sending attachments to airport
+    and airline inboxes during the show: Postmark warm-up (ruled), SPF/DKIM/DMARC (item 20),
+    AND every pack email carries a download link to the hosted pack (item 21 controls) so a
+    stripped attachment still delivers; the holding email is short and plain. Owner: W2.
+    Status: open.
+25. **Pack builds and live demos compete for the same workstation.** Eight Optimise workers
+    plus a queue of pack builds during the busiest hour: builds run at lower priority, one at
+    a time, and never while a live Optimise is running; measured in the rehearsal batch and
+    on 11-12 Oct with demos running. Owner: W2 (queue), controller (measurement). Status:
+    open.
+26. **Nothing printed for the hand.** Pens are ruled; a leaflet or card with the one-liner, the
+    site and John's TAO address, and TAO business cards for John and Suzanna, are not. Print
+    deadlines fall with the wall artwork. Owner: W6 (words), W9 (print and delivery to the
+    Messe with the pens: address, deadline, who receives). Status: open.
+27. **People on the stand.** Exhibitor badges for John, Suzanna and Stefan from Informa; a rota
+    with breaks so two people are always on; who holds the laptop overnight (nothing left on
+    the stand); equipment insurance; John's own travel and the 20 Oct setup day. Owner: W9,
+    John. Status: open.
+28. **After the show.** Who follows up which lead, by when, with what (the order form, the
+    one-pager, a meeting); the lead store exported on the evening of 23 Oct; the marketing
+    calendar's post-Routes posts. Owner: W6, W5, John. Status: open.
+29. **"Can I have a trial?"** A visitor asks for access after the show. The position (a paid
+    launch licence only; a rehearsed route pack as the taster; no free logins) is not written
+    anywhere the host can read. Owner: W8 to state it in one line, W4 to carry it. Status:
+    open.
+30. **The register's routes are not the visitors' routes.** Twenty routes were tested; the
+    stand will see hundreds. Before the freeze, W2's 40-60 route panel is run through the
+    accepted engine and every answer read by John or Nick for face validity, so the known
+    weak scenarios list (W4 3.3a, W5 known issues) is built from evidence not guesswork.
+    Owner: controller (the run), John and Nick (the read). Status: open; after the fix.
+
 ---
 
 ## 7. Who owns what, in one line each
