@@ -1,0 +1,13 @@
+W10 session 3: pickle stamp script, diagnosis from the code, record v0.3
+
+routes/W10-STATUS.md v3: the model the app runs is the BLIND_KW estimator pickled by
+bt2_build_v13 (lines 128-131), not the calibrated estimator any published pair describes;
+the outturn clause; the diagnosis (record scored two-way local nonstop carried on realised
+launches, seats known; feed never scored; two-way model output passed into route_forecast's
+each-way captured, doubling the local leg, with EDI-BOS, AHB-DXB and BLQ-JFK above the model's
+own 1.1x-seats ceiling as each-way numbers); fix options in shape; blocks A-C.
+bt2/bt2_pickle_stamp.py: new, read-only; prints the loaded pickle's stamp and scores its own
+q50 in-sample on both bases.
+bt2/bt2_record_mix.py, bt2/probe_payload_keys.py: new (session 2, uncommitted).
+routes/CALIBRATION-RECORD-2026.md v0.3: section 4 closed (A), sections 8 and 9 added.
+No runs by W10; bt2_experiments.log unchanged.
