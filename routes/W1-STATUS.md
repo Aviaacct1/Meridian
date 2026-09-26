@@ -46,3 +46,14 @@ the premium cabin is priced at a fixed 1,400 (below every measured premium fare)
 most of the aircraft, so revenue and margin are overstated on long-haul. Taxes: total includes
 government taxes and carrier surcharges, base excludes both; true airline revenue lies between.
 Next: margin effect of cabin fares (total and base) via econ_fare/bus_fare overrides; then the fix.
+
+## 27 September 2026: b478b97 carried W2's uncommitted work
+
+`git add` on whole files swept W2's session edits in cortex_app.py and cortex_dashboard.html into
+the cabin-fares commit (pack queue endpoints, email field, AVIA_SHOW_ECONOMICS switch default OFF,
+rotation and "incl. feed" slips). Read in full from the diff; nothing there conflicts with the fare
+change. cortex_app.py imports pack_queue, which was untracked: committed separately
+(COMMIT-MSG-27Sep2026-w2-pack-queue-module.txt) so a clean clone starts. Controller: W2 should be
+told, and the rule for every chat is to commit its own files before another chat's block runs.
+Economics screens are withheld by default until pre-mortem 33 is accepted; the API still returns
+economics, and AVIA_SHOW_ECONOMICS=1 shows them.

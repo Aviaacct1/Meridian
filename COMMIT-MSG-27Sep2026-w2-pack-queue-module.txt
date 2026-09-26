@@ -1,0 +1,15 @@
+W2: pack_queue.py and its tests, which b478b97 already imports (repo made whole)
+
+b478b97 (W1 cabin fares) was committed with `git add` on whole files, and so also carried W2's
+uncommitted session work in app/cortex_app.py and app/cortex_dashboard.html: the same-day pack
+queue endpoints and email field, the economics switch (AVIA_SHOW_ECONOMICS, default off, pre-mortem
+33), and the two presentation slips (rotation diagram on cap.freq; "incl. feed" only when the feed
+is above zero). cortex_app.py imports pack_queue at module level, and pack_queue.py was untracked,
+so without this commit the server cannot start from a clean clone. This adds W2's module and its
+60-check test as W2 left them (W2-STATUS section 2: 60 checks, 0 failed on the Dev PC).
+
+W2's remaining owed items (config.py AVIA_ROOT raster resolution, cortex_help.html naming,
+STAND-RUNBOOK, W2-STATUS) are left for W2's own commit.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01Ai6fXfSs283Z67QSwHLSQs
