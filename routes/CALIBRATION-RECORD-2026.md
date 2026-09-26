@@ -1,11 +1,33 @@
 # Meridian calibration record 2026
 
-Written by W10 (final calibration test). Version 0.8, 26 September 2026, DRAFT. The
-definitive version carries ONE figure set, ruled by John, and is what the product carries
-into Routes and republishes yearly. Every figure in this record quotes the line in
+Written by W10 (final calibration test). Version 1.0, 26 September 2026, RULED. Carries
+ONE figure set, ruled by John on 26 September 2026, which the product carries into Routes
+and republishes yearly. Sections 1 to 10 are the evidence; section 0 is the ruling. Every figure cites a log line. Every figure in this record quotes the line in
 bt2/bt2_experiments.log that produced it; a figure with no log line does not exist.
 
 Avia Solutions Limited. All rights reserved.
+
+## 0. The ruled figure set (John, 26 September 2026)
+
+Meridian's calibrated forecast, scored on 6,524 real route launches (2016-2019, 2024 and
+2025) against the local nonstop passengers each route actually carried in its launch year
+(Sabre MIDT), is within +-20% of the outturn on 88% of launches and within +-10% on 78%
+(calibrated: fitted on the full history and graded on the same launches). On launches the
+model never saw, portfolios of twenty routes are within +-20% on 94%. Calibration rule B
+(learning rate 0.07, 1,200 iterations, minimum leaf 4, 79 leaves), declared; blind route
+level 60.5% within +-20% and 35.2% within +-10%, never published as a single-route figure.
+Environment: python 3.12.10, scikit-learn 1.9.0, numpy 2.3.5, scipy 1.18.0, airportsdata
+20260803. Artefact: E:\Avia\bt2_relaxed\bt2_model_v1_3.pkl, version "1.4 26Sep2026 rule B
+sabre", built 26 September 2026 (log line W10-RULE-B-BUILT); the estimator in the artefact
+is the estimator that produced the pair (W10-PICKLE-STAMP, W10-CALIB-GRID).
+
+The host's line: "calibrated means fitted on the full history of 6,524 launches and graded
+on the same launches; the portfolio figure is graded on launches the model never saw."
+
+The ruled sentence for every surface, exactly: calibrated 88% within +-20% and 78% within
++-10% on 6,524 launches; blind evidence as portfolios of twenty (94%) only, never a
+single-route blind figure. It replaces 89 / 82 on 2,915 and 92 / 86 on 6,524 everywhere,
+and goes live in the same step as the rebuilt artefact (John's ruling 2 of 26 September).
 
 ## 1. What the claim is
 
@@ -38,7 +60,8 @@ Run by John on the workstation, E:\Avia\probe\claimset-W10-25Sep.log, reported b
 controller (W10-RULINGS, 25 Sep late): all eight figures to the decimal on the declared
 build. Calibrated 83.2 / 70.0 (published-rule estimator, in-sample), blind route 60.9,
 tier A 88.2, portfolios of 10 and 20 87.7 / 93.2, segments 72.6 / 39.8, n=6,524, Sabre
-throughout, target nonstop. Log line in bt2_experiments.log to follow John's paste to W10.
+throughout, target nonstop. Log line W10-ITEM2-BASELINE-REPRODUCED (build line sklearn 1.9.0; tier A n=653, portfolios
+650 and 323 baskets, segments n=2,988 and 1,486).
 
 ## 4. The catchment radius (item 1): closed, ruled (A) 22 September 2026
 
@@ -68,7 +91,8 @@ on sklearn 1.7.2 and airportsdata 20260315; on the declared environment it reads
 The pair is reproducible in method and moves with the library, as line 378 predicted for an
 unregularised fit. "Mixed basis" for a client: US domestic launches are graded against US
 DOT DB1B ticket data and all other launches against Sabre MIDT; it costs about half a
-point against Sabre throughout at this configuration. Log line to follow John's paste.
+point against Sabre throughout at this configuration. Log line W10-ITEM3-MIXED-REPRODUCED (build line sklearn 1.9.0; ruler median DOT over Sabre
+1.015, 67.6% agreement within +-20%; US slice graded on DOT blind 51.6%, calibrated 90.4%).
 
 ## 6. Recommended figure set (W10, 26 September 2026, revised on the calibration grid; John rules)
 
@@ -93,8 +117,19 @@ estimator (the pickle as it stands), and the market ceiling (rejected, section 8
 
 ## 7. Yearly republication
 
-To be written: the sample refresh (new cohort), the script, the environment pins, the log
-line, and who rules.
+Each year, after the Sabre and OAG stores carry the new full year: (1) build the new cohort
+with bt2/bt2_discover.py, bt2_profile.py, bt2_capture.py, bt2_base.py, bt2_metro.py and
+bt2_growth.py into E:\Avia\bt2_relaxed and add it to AVIA_BT2_COHORTS; (2) run
+bt2/bt2_claimset.py and bt2/bt2_calib_grid.py with py -3.12 -s on the declared
+environment (or the newly declared one, re-pinned in app/requirements.txt first) and log
+both; (3) John re-declares the calibration rule on the grid, on the same positioning
+(believable, not too good; one sample, one rule, one estimator); (4) rebuild the artefact
+with bt2/bt2_build_v13.py --calib <rule> --basis sabre, read it back with
+bt2/bt2_pickle_stamp.py, and log W10-RULE-<rule>-BUILT; (5) rebuild the evidence file and
+histogram with --out-app on the DevPC and commit them with the new sentence in one commit;
+(6) restart the server; (7) re-run the face-validity register (routes/FACE-VALIDITY-
+REGISTER-25Sep2026.md) on the new artefact and record it. A figure with no log line does
+not exist, and the sentence never changes before the artefact does.
 
 ## 8. The scope of the record, and a basis fault on the live path (24 September 2026)
 

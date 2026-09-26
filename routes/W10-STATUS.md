@@ -1,6 +1,7 @@
 # W10 status: FINAL CALIBRATION TEST
 
-Written by W10 only, rewritten every session. Version 10, 26 September 2026, evening: John's rulings recorded; the rebuild block handed. Supersedes v1-v8 in full. Clone at e7eaf9d plus uncommitted W10 files
+Written by W10 only, rewritten every session. Version 12, 26 September 2026, evening: rule B built and read back; the 25 Sep runs logged;
+record v1.0 RULED; W10's test is complete. Supersedes v1-v8 in full. Clone at e7eaf9d plus uncommitted W10 files
 listed in the commit block. Every figure below has a log line in bt2/bt2_experiments.log
 (W10-* lines, 26 Sep) or is quoted from the controller's rulings file pending John's paste.
 
@@ -21,7 +22,7 @@ Bologna-New York in the class of Avia's own 2025 forecast.
 | 2. Outturn clause | DONE 26 Sep | Section below |
 | 3. Diagnosis of the two register mechanisms | DONE 26 Sep | Code facts plus W10-BASIS-IN-THE-PAYLOAD, W10-RECORD-MIX-RELAXED, -CANON |
 | 4. Fix options with scores | DONE 26 Sep, for John's ruling 30 Sep | W10-CEILING-*, W10-SCHEDULE-PRIOR*, W10-PRIOR-PREVIEW-1, -2, W10-CALIB-GRID |
-| Items 2 and 3 of 22 Sep | Run 25 Sep by John (controller's report) | Log lines owed on John's paste of the two logs |
+| Items 2 and 3 of 22 Sep | DONE: run 25 Sep, logged 26 Sep | W10-ITEM2-BASELINE-REPRODUCED, W10-ITEM3-MIXED-REPRODUCED |
 
 ## Job 1: the model the app runs
 
@@ -213,7 +214,9 @@ are built with --out-app on the DevPC and committed with the sentence, per rulin
 the workstation. The app picks up the new pickle on the next server restart (W1/W2's
 launcher; Stop-Process first), which is the moment the sentence changes.
 
-Block H, after the DevPC commit and the workstation pull. Expected on screen: "calibrated:
+Block H, DONE 26 Sep 11:46 (build-ruleB-W10.log, pickle-stamp-ruleB-W10.log; log line
+W10-RULE-B-BUILT): version 1.4 26Sep2026 rule B sabre, in-sample 88.2 / 78.3, band 56.8%,
+provenance blind 60.5. The 13 Aug blind artefact kept beside it. Expected on screen was: "calibrated:
 within +-20% 88.2%, within +-10% 78.3%", then "wrote E:\Avia\bt2_relaxed\bt2_model_v1_3.pkl".
 Then the stamp script reads the new artefact back and must show version 1.4, calib_rule B,
 and in-sample 88.2 / 78.3.
@@ -235,7 +238,8 @@ py -3.12 -s bt2_pickle_stamp.py 2>&1 | Tee-Object -FilePath E:\Avia\probe\pickle
 The copy line keeps the 13 Aug blind artefact beside the new one; rollback is copying it
 back. Nothing else on the workstation changes until the server is restarted.
 
-Block J, the two 25 Sep logs, printed to the screen for pasting (no run).
+Block J, DONE 26 Sep: both 25 Sep runs were on sklearn 1.9.0; log lines
+W10-ITEM2-BASELINE-REPRODUCED and W10-ITEM3-MIXED-REPRODUCED written.
 
 **Workstation Actual**
 ```
@@ -266,7 +270,8 @@ three pairs in the preview.
 W10-PICKLE-STAMP, W10-PICKLE-INSAMPLE-PROVISIONAL, W10-BASIS-IN-THE-PAYLOAD,
 W10-PICKLE-INSAMPLE-CONFIRMED, W10-RECORD-MIX-RELAXED, W10-RECORD-MIX-CANON,
 W10-CEILING-RELAXED, W10-CEILING-CANON, W10-SCHEDULE-PRIOR, W10-SCHEDULE-PRIOR-LOOKUP,
-W10-PRIOR-PREVIEW-1, W10-PRIOR-PREVIEW-2, W10-CALIB-GRID. Logs on the workstation under E:\Avia\probe\
+W10-PRIOR-PREVIEW-1, W10-PRIOR-PREVIEW-2, W10-CALIB-GRID, W10-RULE-B-BUILT, W10-ITEM2-BASELINE-REPRODUCED, W10-ITEM3-MIXED-REPRODUCED.
+Logs on the workstation under E:\Avia\probe\
 (pickle-stamp-W10.log, pickle-stamp-W10-s.log, recordmix-relaxed-W10.log,
 recordmix-canon-W10.log, ceiling-relaxed-W10.log, ceiling-canon-W10.log,
 schedprior-relaxed-W10.log, schedprior-lookup-BLQ-W10.log, prior-preview-W10.log,
@@ -279,11 +284,13 @@ probe_payload_keys.py, bt2_ceiling_test.py, bt2_schedule_prior.py, bt2_prior_pre
 
 ## Outstanding
 
-1. The two 25 Sep logs printed from E:\Avia\probe (block J) and pasted: two log lines,
-   then the record's 83.2 / 70.0 and 91 / 85 cite log lines rather than the rulings file.
+1. DONE 26 Sep: the two 25 Sep runs logged from John's paste; the record cites log lines
+   throughout.
 2. John's rulings: GIVEN 26 Sep, above. The feed's owner: controller.
 3. W10 writes bt2/schedule_prior.csv and its fitting script on the ruling (one session).
-4. CALIBRATION-RECORD-2026.md v1 to the controller by 3 Oct, from log lines only.
+4. CALIBRATION-RECORD-2026.md v1.0 RULED, 26 Sep, section 0 carries the ruled figure set
+   and the exact sentence; W3 carries it to every surface in the same commit as the
+   server restart on the new artefact (ruling 2). Sections 3 and 5 cite their log lines.
 5. Yearly republication: the record's section 7 (the new cohort, the scripts, the pins,
    who rules), written with v1.
 
