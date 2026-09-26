@@ -1,0 +1,12 @@
+W10 26 Sep night: gauge at level 0 checked; schedule prior table v2 final for W1
+
+bt2/bt2_experiments.log: W10-GAUGE-LEVEL0. Blind by cohort, gauge with the region level 70.2%
+within +-20%, inside p25-p75 52.1%, width x1.25, against 69.5%, 54.0%, x1.25 without it. Rule met,
+file left as written. Soft spots recorded: short haul gauge 44.7% within +-20%; long-haul band
+holds the flown gauge on 44.2%.
+
+routes/W10-STATUS.md v21: schedule prior closed; E:\Avia\bt2_relaxed\schedule_prior.csv v2 final,
+v1 kept; W1 wires the spec including level 0.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_015NbinCPXuUWF3VuAEiSjFX

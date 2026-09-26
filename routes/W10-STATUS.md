@@ -1,8 +1,8 @@
 # W10 status: FINAL CALIBRATION TEST
 
-Written by W10 only, rewritten every session. Version 20, 26 September 2026, night. The re-measured table won its rule
-(W10-RETIME-FREQ) and is written at E:\Avia\bt2_relaxed\schedule_prior.csv, v1 kept beside it; one check remains before W1 relies
-on it: the region level re-keys gauge too, unscored (block G1). Clone at dba090d. Every figure below has a log line.
+Written by W10 only, rewritten every session. Version 21, 26 September 2026, night. SCHEDULE PRIOR CLOSED: E:\Avia\bt2_relaxed\
+schedule_prior.csv v2 (frequency re-measured as timetabled, region level 0, gauge checked) is FINAL for W1, v1 kept beside it as
+schedule_prior_v1.csv. W1 wires the spec below in one go, including level 0 at step 2. Every figure below has a log line.
 
 ## One line for John
 
@@ -143,20 +143,15 @@ frequencies (86.7% against 62.6% for the averaged measure). Bologna-New York now
 / 7.0, so Optimise sweeps 3x, 4x, 5x and 7x; the same shape at S0 (Genoa, Southend) 2.8 / 3.8 / 5.0, so 3x, 4x, 5x. United's
 long-haul international line: 3.0 / 7.0 / 7.0, n=25.
 
-**Open: gauge at level 0.** The region level also re-keys the gauge band (Bologna 226 / 266 / 287 at level 0 against 239 / 278 / 294
-at level 1), and that was not scored. bt2/bt2_gauge_level0_check.py scores it blind. Rule set before the run: the level 0 gauge
-stands if it holds the flown gauge on 45-55% and loses no more than 1.0 point within +-20% against levels 1-4; otherwise --fix
-rewrites every level 0 row's gauge from its level 1 parent, frequency untouched. Either way W1's lookup is unchanged.
+**Gauge at level 0: checked, stands (W10-GAUGE-LEVEL0).** Blind by cohort: levels 0-4 70.2% within +-20%, inside p25-p75 52.1%,
+width x1.25, against levels 1-4 69.5%, 54.0%, x1.25. Rule met; the file is left as written. Two soft spots on record: short haul
+under 800 km reads gauge within +-20% on 44.7% (turboprop and jet launches share the classes), and on long haul the band holds the
+flown gauge on 44.2%. Neither changes the design; both are candidates for the yearly refit.
 
-**Block G1, Workstation Actual (RDP, sees E:).**
-
-```
-cd C:\src\meridian
-git pull
-cd C:\src\meridian\bt2
-$env:AVIA_LOCAL_CACHE="E:\Avia"; $env:AVIA_APP_DIR="C:\src\meridian\app"; $env:AVIA_BT2_TARGET="nonstop"; $env:AVIA_BT2_DIR="E:\Avia\bt2_relaxed"; $env:AVIA_BT2_COHORTS="2016,2017,2018,2019,2024,2025"
-py -3.12 -s bt2_gauge_level0_check.py --fix E:\Avia\bt2_relaxed\schedule_prior.csv 2>&1 | Tee-Object -FilePath E:\Avia\probe\gauge-level0-W10.log
-```
+**THE TABLE W1 WIRES: schedule_prior.csv v2, FINAL.** Frequency columns are the launching carrier's first-full-month frequency per
+week per direction; gauge columns are the record's seats per departure; levels 0-4 with region_pair on level 0; carrier lines on the
+same measures. For the Bologna-New York line in the section below, read the v2 figures: level 0 (EU-NA, n=69), frequency 3.0 / 4.1
+/ 7.0, gauge 226 / 266 / 287; the v1 figures that follow are superseded.
 
 **Bologna-New York on the Sabre pair** (base_mkt 37,814, 6,647 km, international, FSC): level 1, n=205; gauge 239 / 278 / 294 seats
 (p25 / median / p75), frequency 2.2 / 3.0 / 4.1 per week per direction. United line (long-haul international, n=25): gauge 176 / 214 /
