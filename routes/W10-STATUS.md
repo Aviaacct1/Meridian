@@ -1,8 +1,7 @@
 # W10 status: FINAL CALIBRATION TEST
 
-Written by W10 only, rewritten every session. Version 12, 26 September 2026, evening: rule B built and read back; the 25 Sep runs logged;
-record v1.0 RULED; W10's test is complete. Supersedes v1-v8 in full. Clone at e7eaf9d plus uncommitted W10 files
-listed in the commit block. Every figure below has a log line in bt2/bt2_experiments.log
+Written by W10 only, rewritten every session. Version 13, 26 September 2026, late: the go-live step (evidence files, blocks, and every
+file stating a pair) for the controller's restart; W10's test is otherwise complete. Supersedes v1-v8 in full. Clone at 91ba51d (origin after 7f107b2). Every figure below has a log line in bt2/bt2_experiments.log
 (W10-* lines, 26 Sep) or is quoted from the controller's rulings file pending John's paste.
 
 ## One line for John
@@ -180,6 +179,132 @@ The three pairs on 6,524 stand under every option; none touches the record's ari
    the table with the reason; the airfield and range banners become first-screen alerts
    on the Optimise result.
 
+## The go-live step: evidence files and every pair on app/ and deck/ (controller's job of 26 Sep, late)
+
+Clone read at 91ba51d (after 7f107b2, W1's basis fix). The artefact is built (W10-RULE-B-BUILT);
+what remains is the two derived files and the text, in one step with the server restart.
+
+**What the two files are and where each must live (read from the code, 26 Sep)**
+- app/accuracy_dist.json, the histogram: TRACKED in git (.gitignore lines 100-102 keep it
+  in the repo on purpose). methodology_page.py line 244 reads it from the app folder and
+  draws the chart and its "N% of routes within +-20%" label from it (lines 275-277). It
+  reaches the workstation only through a commit and a pull. It currently says 91.9 / 85.6,
+  memorisation rule, mixed basis (9 Aug).
+- master_backtest_scored.csv, the evidence file: GITIGNORED (.gitignore line 26,
+  master_backtest*.csv). track_record.py _source_path (lines 92-109) resolves it from
+  AVIA_BT_EVIDENCE, then E:\Avia, then D:\Avia, then the app folder. So on the workstation
+  it is DATA at E:\Avia\master_backtest_scored.csv, never a commit. track_record computes its
+  per-airport tables live from it (lines 142-226).
+
+**Where the rebuild can run.** bt2_build_v13.py needs E:\Avia\bt2_relaxed. The workstation
+has it (the rule B build ran there at 11:46). The DevPC had a byte-identical copy on 13 Aug
+(bt2_experiments.log SAMPLE-IS-BYTE-IDENTICAL, DECLARED-BASELINE ran on DESKTOP-3R7OQVJ); W10
+cannot see the DevPC's E: from here, so block K1 tests it first. The build is deterministic
+(random_state 7, same data, same pinned library), so both machines must print the same
+pair to the decimal; that print is the check.
+- Workstation: builds the CSV into a probe folder (never into the clone, which only pulls);
+  the CSV is copied to E:\Avia at the restart.
+- DevPC: builds accuracy_dist.json straight into C:\AviaDev\app for the go-live commit.
+  (It also rewrites the DevPC's own copy of the pickle and a DevPC-only CSV; both harmless.)
+- If K1 prints False, the DevPC cannot build: fallback K2b, the workstation prints the JSON
+  to the screen and John pastes it here; W10 writes it into C:\AviaDev\app and checks it
+  against the build's printed pair before the commit.
+
+Block K1, does the DevPC hold the sample.
+
+**DevPC**
+```
+cd C:\AviaDev\bt2
+Test-Path E:\Avia\bt2_relaxed\launch_profile_2025.csv
+Test-Path E:\Avia\bt2_relaxed\region_by_country.json
+```
+
+Block K2, the workstation build of the evidence CSV (writes E:\Avia\probe\ruleB-out only;
+the live pickle is rewritten identically). Expected: "outturn basis: Sabre MIDT throughout,
+6524 launches", "calibrated: within +-20% 88.2%, within +-10% 78.3%", "wrote
+E:\Avia\probe\ruleB-out\master_backtest_scored.csv" and "...accuracy_dist.json".
+
+**Workstation Actual**
+```
+cd C:\src\meridian\bt2
+$env:AVIA_LOCAL_CACHE = "E:\Avia"
+$env:AVIA_APP_DIR     = "C:\src\meridian\app"
+$env:AVIA_BT2_TARGET  = "nonstop"
+$env:AVIA_BT2_DIR     = "E:\Avia\bt2_relaxed"
+$env:AVIA_BT2_COHORTS = "2016,2017,2018,2019,2024,2025"
+New-Item -ItemType Directory -Force E:\Avia\probe\ruleB-out
+py -3.12 -s bt2_build_v13.py --calib B --basis sabre --out-app E:\Avia\probe\ruleB-out 2>&1 | Tee-Object -FilePath E:\Avia\probe\build-ruleB-outapp-W10.log
+```
+
+Block K3, the DevPC build of the histogram (only if K1 printed True twice). Expected: the
+same two lines as K2, to the decimal, then "wrote C:\AviaDev\app\accuracy_dist.json".
+
+**DevPC**
+```
+cd C:\AviaDev\bt2
+$env:AVIA_LOCAL_CACHE = "E:\Avia"
+$env:AVIA_APP_DIR     = "C:\AviaDev\app"
+$env:AVIA_BT2_TARGET  = "nonstop"
+$env:AVIA_BT2_DIR     = "E:\Avia\bt2_relaxed"
+$env:AVIA_BT2_COHORTS = "2016,2017,2018,2019,2024,2025"
+py -3.12 -s bt2_build_v13.py --calib B --basis sabre --out-app C:\AviaDev\app
+```
+
+Block K2b, fallback only if K1 printed False: the JSON printed for pasting.
+
+**Workstation Actual**
+```
+cd E:\Avia\probe\ruleB-out
+type accuracy_dist.json
+```
+
+Block K4, at the restart, before the server starts (the controller's restart step): the
+evidence CSV goes live, the 9 Aug one kept beside it for rollback.
+
+**Workstation Actual**
+```
+cd E:\Avia
+if (Test-Path E:\Avia\master_backtest_scored.csv) { copy E:\Avia\master_backtest_scored.csv E:\Avia\master_backtest_scored_MEMO_09Aug2026.csv }
+copy E:\Avia\probe\ruleB-out\master_backtest_scored.csv E:\Avia\master_backtest_scored.csv
+```
+Rollback of the whole step: copy back bt2_model_v1_3_BLIND_13Aug2026.pkl and
+master_backtest_scored_MEMO_09Aug2026.csv, revert the go-live commit, restart.
+
+**Every file under app/ and deck/ that states an accuracy pair (grep of 26 Sep, tracked
+files; the venvs, attic, archive and the untracked app/app_avia_style/ excluded).** The
+sample stays 6,524, so only the percentages and, where named, the sample and basis change.
+Replacement figures: calibrated 88% within +-20%, 78% within +-10%, 6,524 launches;
+portfolios of twenty 94%; outturn Sabre MIDT throughout (the DOT sentence comes off).
+
+| File | Lines | States now | Change | Owner |
+|---|---|---|---|---|
+| app/accuracy_dist.json | whole file | 91.9 / 85.6, memorisation, mixed | rebuilt by K3 (or K2b) | W10 build |
+| app/methodology_page.py | 308-312 tiles | 92% / 86% / 6,524 | 88% / 78% / 6,524 | W3 |
+| app/methodology_page.py | 324-327 prose | 86% within 10%, 92% within 20% (twice) | 78%, 88% | W3 |
+| app/methodology_page.py | 331-333 prose | portfolios 93% | 94% | W3 |
+| app/methodology_page.py | 421-424 sub-heading | 86% / 92% | 78% / 88% | W3 |
+| app/methodology_page.py | 285 docstring | "calibrated 92% / 86%" | 88% / 78% (comment) | W3 |
+| app/track_record.py | 11-15 docstring | 92% / 86% / 93% | 88% / 78% / 94% (comment) | W3 |
+| app/track_record.py | 646, 692, 770 | portfolios 93% | 94% | W3 |
+| deck/spec_routes_stand.py | 31-34 SRC_CALIB | 2,915, 2016-2019 and 2025, DOT for US domestic | 6,524, 2016-2019, 2024 and 2025, Sabre MIDT throughout | W3 |
+| deck/spec_routes_stand.py | 51-53 ACCURACY | 89% / 82% on 2,915 | 88% / 78% on 6,524 | W3 |
+| deck/spec_routes_stand.py | 55-59 NOTE_25B | 2,915, 89% / 82% | 6,524, 88% / 78% (or delete: item 25 is closed) | W3 |
+| deck/figures_observatory.py | 284 chart label | "89% WITHIN 20%" hardcoded | "88% WITHIN 20%", better read from accuracy_dist.json | W3 |
+| deck/spec_goa_nyc.py | 435-447 | 2,915, 89% / 82%, portfolios 94% | 6,524, 88% / 78%, 94% | W3 |
+| deck/build_goa_nyc.py | 591-604 | same as above | same | W3 |
+| deck/build_ba_sjc.py | 773-801 | 2,915, 89% / 82%, 94%, "grey curve is all 2,915" | 6,524, 88% / 78%, 94%; the curve text follows the data | W3 |
+
+The Genoa and San Jose builders are case generators from August; changing them changes what
+a re-run prints and does not re-issue any deck already sent. The methodology page's "actual
+first-year traffic" (lines 310, 423) is looser than the record's outturn (launch year, from
+the start month to December); W3 may keep it, since the chart axis says the same.
+
+**Outside app/ and deck/, for their owners (not in the go-live commit unless the controller
+says so):** routes/STAND-HOST-MANUAL.md (W4), W5-ONBOARDING-SCRIPT.md, W5-ONE-PAGER-19Sep2026.md,
+W5-STANDARD-TERMS.md (W5), W6-MESSAGING-VARIANTS-19Sep2026.md, W6-INVITATIONS-AND-MEETINGS-
+19Sep2026.md, W6-MARKETING-CALENDAR-19Sep2026.md (W6), and the website copy wherever W6
+holds it. Each carries the old pair.
+
 ## John's rulings, 26 September 2026 (in this chat; for the controller's decisions log)
 
 1. THE STAND PAIR: calibration rule B (lr 0.07, it 1200, minleaf 4, leaves 79), Sabre
@@ -296,12 +421,15 @@ probe_payload_keys.py, bt2_ceiling_test.py, bt2_schedule_prior.py, bt2_prior_pre
 
 ## Commit block
 
+This commit carries W10's status only. The go-live commit (accuracy_dist.json from K3 or
+K2b, and the W3 text edits above) is the controller's, made once, with the restart.
+
 **DevPC**
 ```
 cd C:\AviaDev
 git pull
-git add routes/W10-STATUS.md routes/CALIBRATION-RECORD-2026.md bt2/bt2_experiments.log bt2/probe_payload_keys.py bt2/bt2_ceiling_test.py bt2/bt2_schedule_prior.py bt2/bt2_prior_preview.py bt2/bt2_calib_grid.py bt2/bt2_build_v13.py routes/COMMIT-MSG-26Sep2026-w10-pickle-stamp.txt
-git commit -F routes/COMMIT-MSG-26Sep2026-w10-pickle-stamp.txt
+git add routes/W10-STATUS.md routes/COMMIT-MSG-26Sep2026-w10-golive-list.txt
+git commit -F routes/COMMIT-MSG-26Sep2026-w10-golive-list.txt
 git push
 ```
 

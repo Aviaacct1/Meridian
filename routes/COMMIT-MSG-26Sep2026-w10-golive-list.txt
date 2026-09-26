@@ -1,0 +1,11 @@
+W10 26 Sep late: the go-live step for rule B, blocks and the list of every pair on app/ and deck/
+
+routes/W10-STATUS.md v13: where the evidence CSV (gitignored, data at E:\Avia) and the
+histogram (tracked, app/accuracy_dist.json) live and are read; the workstation build of the
+CSV to a probe folder; the DevPC build of the histogram if the DevPC holds the sample, with a
+paste fallback; the copy at restart with rollback; and every tracked file under app/ and deck/
+that states an accuracy pair, with lines, the replacement figures (88 / 78 on 6,524,
+portfolios 94, Sabre throughout) and the owner. Header corrected to the clone at 91ba51d.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_015NbinCPXuUWF3VuAEiSjFX
