@@ -152,12 +152,11 @@
         <div class="ch"><div><h3>Airport catchment</h3><div class="sub">Enter an airport or city; the map shows the population banded by least-cost drive time.</div></div></div>
         <div class="cb">
           <div class="searchrow">
-            <div class="fld" style="flex:1"><label>Airport or city</label><input id="ap" placeholder="e.g. SJC or San Jose" value="SJC"></div>
+            <div class="fld" style="flex:1"><label>Airport or city</label><input id="ap" placeholder="airport code or city" value=""></div>
             <button class="btn" id="go" style="flex:0 0 auto">Show catchment</button>
           </div>
           <div class="chips">
             <span>Try</span>
-            <span class="exchip" data-a="SJC">SJC</span>
             <span class="exchip" data-a="SFO">SFO</span>
             <span class="exchip" data-a="London">London</span>
             <span class="exchip" data-a="Geneva">Geneva</span>
@@ -311,10 +310,12 @@ function draw(d){
   $('#k_places').textContent=fmtN(d.locales.length);
   if(d.capture!=null){
     $('#k_cap').textContent=Math.round(d.capture*100)+'%';
-    $('#k_cap_s').textContent='measured (survey + mobility)';
-    $('#capNote').innerHTML=`Capture is measured for <b>${a.code}</b>: with its own nonstop it takes about `+
-      `<b>${Math.round(d.capture*100)}%</b> of this catchment's demand on the route, from passenger survey and mobility data. `+
-      `That measured share overrides the model for every ${a.code} route.`;
+    // The measured share is client survey data (27 Sep 2026): it is USED by the engine but never
+    // printed on a page shown to third parties or on the stand.
+    $('#k_cap').textContent='measured';
+    $('#k_cap_s').textContent='survey and mobility data held';
+    $('#capNote').innerHTML=`A measured capture share is held for <b>${a.code}</b> from passenger survey and mobility data, `+
+      `and it replaces the model for every ${a.code} route.`;
   } else {
     $('#k_cap').textContent='per route';
     $('#k_cap_s').textContent='modelled, not yet measured';
@@ -329,11 +330,15 @@ function draw(d){
   if(d.pop_nearer_other && d.total_pop){
     const nearer=d.locales.filter(l=>l.nearer_airport);
     const codes=[...new Set(nearer.map(l=>l.nearer_airport))];
-    const top=nearer.slice(0,3).map(l=>l.name?`${l.name} (${l.nearer_airport})`:l.nearer_airport).join(', ');
+    // Wording fixed 27 Sep 2026 (John): "nearer JED, ABT than TIF" read as a typo, and "Rabigh (JED)"
+    // read as a mislabel. Say "another airport", list the codes with "or", name the places plainly.
+    const codeTxt = codes.length>1 ? codes.slice(0,-1).join(', ')+' or '+codes[codes.length-1] : codes[0];
+    const names=nearer.slice(0,3).map(l=>l.name).filter(Boolean);
+    const nameTxt = names.length>1 ? names.slice(0,-1).join(', ')+' and '+names[names.length-1] : (names[0]||'');
     $('#capNote').innerHTML += `<br><br><b>${fmtM(d.pop_nearer_other)}</b> of this catchment's `+
-      `${fmtM(d.total_pop)} people (${Math.round(d.pop_nearer_other/d.total_pop*100)}%) live nearer ${codes.join(', ')} `+
-      `than ${a.code} in a straight line`+(top?`, including ${top}`:'')+`. The forecast does not assume ${a.code} serves them; `+
-      `the share it takes is modelled route by route.`;
+      `${fmtM(d.total_pop)} people (${Math.round(d.pop_nearer_other/d.total_pop*100)}%) live nearer another airport with `+
+      `scheduled service (${codeTxt}) than ${a.code}, measured in a straight line`+(nameTxt?`; the largest places are ${nameTxt}`:'')+
+      `. The forecast does not assume ${a.code} serves them; the share it takes is modelled route by route.`;
   }
 
   // band breakdown (from server bands, plus fallback recompute if raster absent)

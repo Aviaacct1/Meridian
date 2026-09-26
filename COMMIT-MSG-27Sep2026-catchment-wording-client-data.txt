@@ -1,0 +1,14 @@
+Catchment page: nearer-airport wording, client survey share no longer printed, SJC default removed (John, Taif review, 26 Sep)
+
+- The nearer-airport note reads "live nearer another airport with scheduled service (JED or ABT)
+  than TIF, measured in a straight line; the largest places are ...". Before, "nearer JED, ABT than
+  TIF" read as a typo and "Rabigh (JED)" as a mislabel.
+- Where a measured capture share is held, the page says so but no longer prints the figure. The
+  only such share is SJC's, from client survey and mobility data; the engine still uses it.
+- The page no longer opens on SJC and the SJC example chip is gone; the input starts blank.
+  cortex_watch.html's placeholder no longer names SJC.
+
+Forecasts unchanged.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01Ai6fXfSs283Z67QSwHLSQs
