@@ -1,12 +1,18 @@
 #!/usr/bin/env python3
-r"""Build the v1.3 production artefacts on whichever sample AVIA_BT2_DIR points at.
+r"""Build the production artefacts (v1.4 from 26 Sep 2026) on whichever sample AVIA_BT2_DIR points at.
 
-    AVIA_BT2_DIR=C:\Avia\bt2_relaxed python3 bt2_build_v13.py --out-app C:\AviaDev\app
+    AVIA_BT2_DIR=E:\Avia\bt2_relaxed py -3.12 -s bt2_build_v13.py            rule B, Sabre throughout, pickle only
+    ... --out-app C:\AviaDev\app                                        also the evidence file and histogram
+
+Since 26 September 2026 (John's ruling, W10-CALIB-GRID) the pickle carries the estimator fitted under
+the declared calibration rule, default B on the Sabre basis, so the published pair describes the model
+the app runs. The file name bt2_model_v1_3.pkl is unchanged because app/bt2_forecast.py resolves it;
+the version field inside says 1.4.
 
 Produces, all stamped with the population they were built on, because the 5 August artefacts were
 not and it took a day to work out what the published figure described:
 
-    bt2_model_v1_3.pkl          the q25/q50/q75 estimators, blind config, plus carid
+    bt2_model_v1_3.pkl          the q25/q50/q75 estimators under the declared rule, plus carid
     master_backtest_scored.csv  the evidence file the track record page reads
     accuracy_dist.json          the histogram the site chart draws
 
@@ -46,27 +52,43 @@ CALIB = {
     "published":    dict(lr=0.06, it=800,  minleaf=5, l2=0.0, leaves=63),
     "capacity":     dict(lr=0.06, it=1800, minleaf=5, l2=0.0, leaves=63),
     "memorisation": dict(lr=0.08, it=1600, minleaf=3, l2=0.0, leaves=95),
+    # RULE B, declared by John on 26 September 2026 (bt2_experiments.log W10-CALIB-GRID): calibrated
+    # 88.2% within +-20% and 78.3% within +-10% on the 6,524, Sabre throughout, blind route 60.5 /
+    # 35.2 and portfolios of twenty 94.1%. The grid showed the out-of-sample columns hold from the
+    # blind reference to memorisation, so the rule is a declared description of the history and
+    # nothing else. THE PICKLE CARRIES THE ESTIMATOR FITTED UNDER THE DECLARED RULE (see below).
+    "B":            dict(lr=0.07, it=1200, minleaf=4, l2=0.0, leaves=79),
 }
 
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--calib", choices=sorted(CALIB), default="published")
+    ap.add_argument("--calib", choices=sorted(CALIB), default="B")
+    ap.add_argument("--basis", choices=("sabre", "mixed"), default="sabre",
+                    help="outturn basis: sabre throughout (John, 26 Sep 2026) or mixed (US domestic on DOT)")
     ap.add_argument("--out-app", default=None, help="where to write the evidence file and histogram")
     ap.add_argument("--dry-run", action="store_true")
     a = ap.parse_args()
 
     rows = G.rows
     F.attach(rows)
-    # John's rule of 5 August: a route is graded against the source its audience can verify, so US
-    # domestic launches are graded against the DOT and everything else against Sabre. Applied here
-    # rather than in the caller, so the model, the evidence file and the histogram cannot end up on
-    # three different definitions of an outturn.
-    import bt2_mixed_basis as MB
-    n_dot = MB.attach(rows)
     pop = os.path.basename(B.BT2.rstrip("/\\"))
-    print("  outturn basis: %d US domestic launches graded against US DOT DB1B, %d against Sabre "
-          "MIDT" % (n_dot, len(rows) - n_dot))
+    if a.basis == "mixed":
+        # John's rule of 5 August: a route is graded against the source its audience can verify, so
+        # US domestic launches are graded against the DOT and everything else against Sabre. Applied
+        # here rather than in the caller, so the model, the evidence file and the histogram cannot
+        # end up on three different definitions of an outturn.
+        import bt2_mixed_basis as MB
+        n_dot = MB.attach(rows)
+        print("  outturn basis: %d US domestic launches graded against US DOT DB1B, %d against Sabre "
+              "MIDT" % (n_dot, len(rows) - n_dot))
+    else:
+        # SABRE THROUGHOUT, John's ruling of 26 September 2026: one sample, one ruler, one estimator,
+        # so the stand hosts have one story. The mixed basis stays available behind --basis mixed.
+        n_dot = 0
+        for r in rows:
+            r["_src"] = "Sabre MIDT"
+        print("  outturn basis: Sabre MIDT throughout, %d launches" % len(rows))
     print("sample %s, n=%d, cohorts %s, calibration rule '%s'"
           % (pop, len(rows), ",".join(str(c) for c in B.COHORTS), a.calib))
 
@@ -88,7 +110,9 @@ def main():
         Xtr, ytr, Xte = F.X_of(tr, G12), G.y_of(tr), F.X_of(te, G12)
         q = {}
         for qq, nm in ((0.5, "p50"), (0.25, "p25"), (0.75, "p75")):
-            mm = G.make(SPEC, **BLIND_KW)
+            # the SAME rule as the pickled estimator, so the provenance string's blind figure
+            # describes the model that ships (was BLIND_KW; W10, 26 Sep 2026)
+            mm = G.make(SPEC, **CALIB[a.calib])
             mm.set_params(quantile=qq)
             mm.fit(Xtr, ytr)
             q[nm] = mm.predict(Xte)
@@ -102,8 +126,8 @@ def main():
         print("  dry run, nothing written")
         return
 
-    basis = "calibrated-fitted v1.3 %s sample, %s rule, mixed outturn basis" % (pop, a.calib)
-    prov = ("BT2 v1.3, sample %s n=%d, cohorts %s. Calibration rule '%s' (%s). "
+    basis = "calibrated-fitted v1.4 %s sample, %s rule, %s outturn basis" % (pop, a.calib, a.basis)
+    prov = ("BT2 v1.4, sample %s n=%d, cohorts %s. Calibration rule '%s' (%s). "
             "Calibrated %.1f%% within +-20%%, %.1f%% within +-10%%. Blind LOCO %.1f%% within +-20%%. "
             "A calibrated figure states how hard the model was allowed to fit its own history and "
             "has no meaning independent of model capacity."
@@ -121,12 +145,20 @@ def main():
     # 2.4 points; this one makes the model unreadable. Rebuilding under the pinned release is the fix
     # and the rebuilt model is a DIFFERENT model, so its claim set must be re-measured.
     from bt2_claimset import _provenance
-    m = {"carid": G.carid, "version": "1.3 09Aug2026", "author": "Avia Solutions",
-         "n_train": len(rows), "population": pop, "calib_rule": a.calib,
+    m = {"carid": G.carid, "version": "1.4 26Sep2026 rule %s %s" % (a.calib, a.basis),
+         "author": "Avia Solutions",
+         "n_train": len(rows), "population": pop, "calib_rule": a.calib, "basis": a.basis,
          "calib_config": CALIB[a.calib], "blind_config": BLIND_KW, "provenance": prov,
-         "build_env": _provenance(), "target": B.TARGET}
+         "build_env": _provenance(), "target": B.TARGET,
+         "pickled_estimator": "calibrated (the declared rule), since 26 Sep 2026; was blind before"}
+    # THE PICKLE CARRIES THE ESTIMATOR THE CLAIM DESCRIBES. Until 26 September 2026 the three
+    # quantile estimators below were fitted with BLIND_KW while the calibrated pair above was
+    # printed from a different estimator and discarded, so no published pair described the model
+    # the app ran (bt2_experiments.log W10-PICKLE-STAMP). John's ruling of 26 September: one sample,
+    # one estimator, one pair; the estimator fitted under the declared calibration rule is the one
+    # written here, and its in-sample pair is what every surface carries.
     for qq, nm in ((0.5, "q50"), (0.25, "q25"), (0.75, "q75")):
-        mm = G.make(SPEC, **BLIND_KW)
+        mm = G.make(SPEC, **CALIB[a.calib])
         mm.set_params(quantile=qq)
         mm.fit(X, y)
         m[nm] = mm

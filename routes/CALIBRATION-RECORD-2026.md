@@ -1,6 +1,6 @@
 # Meridian calibration record 2026
 
-Written by W10 (final calibration test). Version 0.7, 26 September 2026, DRAFT. The
+Written by W10 (final calibration test). Version 0.8, 26 September 2026, DRAFT. The
 definitive version carries ONE figure set, ruled by John, and is what the product carries
 into Routes and republishes yearly. Every figure in this record quotes the line in
 bt2/bt2_experiments.log that produced it; a figure with no log line does not exist.
@@ -70,24 +70,26 @@ unregularised fit. "Mixed basis" for a client: US domestic launches are graded a
 DOT DB1B ticket data and all other launches against Sabre MIDT; it costs about half a
 point against Sabre throughout at this configuration. Log line to follow John's paste.
 
-## 6. Recommended figure set (W10's recommendation, 26 September 2026; John rules)
+## 6. Recommended figure set (W10, 26 September 2026, revised on the calibration grid; John rules)
 
-For the model the product runs (bt2_model_v1_3.pkl, blind configuration, 21 features):
-on 6,524 real launches (2016-2019, 2024, 2025), scored against the local nonstop
-passengers each route carried in its launch year (Sabre MIDT; US DOT DB1B for US domestic
-launches to 2024): calibrated 73% within +-20% and 56% within +-10% (in-sample,
-W10-PICKLE-INSAMPLE-CONFIRMED); blind at route level 61% within +-20% and 36% within +-10%
-(leave-one-cohort-out, W10-CEILING-RELAXED raw arm; the blind within +-20% agrees with
-bt2_claimset to the decimal); blind portfolios of twenty 93% (claimset, log line 389). The
-actual falls inside the model's own p25-p75 band on 51% of launches. Environment: python
-3.12.10, sklearn 1.9.0, numpy 2.3.5, scipy 1.18.0, airportsdata 20260803. The
-alternative is to rebuild the artefact on the published-rule configuration and carry 83.2
-/ 70.0 for the estimator that then runs; that is a product change and W10 does not
-recommend it.
+The calibration rule is a declared choice (V1.3-RULE, 9 August), and the grid of 26
+September (W10-CALIB-GRID) shows it is a free one: from the blind reference to the
+memorisation rule the blind route figure holds at 60.5-60.9% within +-20% and the blind
+portfolios of twenty at 93-95%, while the in-sample pair moves from 74 / 57 to 91 / 84.
+On John's positioning (believable, not too good; one sample and one method across the
+methodology and the accuracy sections) W10 recommends rule B (learning rate 0.07, 1,200
+iterations, minimum leaf 4, 79 leaves), Sabre throughout: calibrated 88% within +-20% and
+78% within +-10% on 6,524 real launches (2016-2019, 2024, 2025), scored against the local
+nonstop passengers each route carried in its launch year; blind portfolios of twenty 94%
+within +-20%; the actual inside the model's own p25-p75 band on 57% of launches.
+Environment: python 3.12.10, sklearn 1.9.0, numpy 2.3.5, scipy 1.18.0, airportsdata
+20260803. Condition: the estimator fitted under rule B is the one written into
+bt2_model_v1_3.pkl, so the pair describes the model that answers a route. The mixed
+basis (595 US domestic launches on DOT DB1B) reads 86 / 75 under B and 88 / 80 under C
+and is John's choice for the US audience.
 
-A cap on the model's local leg at a share of the pair's existing market (fix option 2)
-was scored on 26 September and rejected: it costs 12 points blind and 16 in-sample on
-6,524 and loses on every segment (W10-CEILING-RELAXED, -CANON).
+Superseded by this section: the 26 Sep morning recommendation of 73 / 56 for the blind
+estimator (the pickle as it stands), and the market ceiling (rejected, section 8).
 
 ## 7. Yearly republication
 

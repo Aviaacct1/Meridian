@@ -1,4 +1,4 @@
-W10 26 Sep: all four jobs closed; twelve log lines; status v9; record v0.7
+W10 26 Sep: all four jobs closed; John's six rulings; rule B build; thirteen log lines; status v10; record v0.8
 
 bt2/bt2_experiments.log, twelve W10 lines: the pickle the app runs is the blind estimator
 (73.4 / 56.0 in-sample, confirmed on sklearn 1.9.0); the two-way model figure set against
@@ -10,7 +10,14 @@ market-typical schedule against 216,000 at Thursday's 77W daily).
 routes/W10-STATUS.md v9: clean rewrite for the controller; jobs 1-4 done; option 2b (the
 schedule prior) recommended with John's two additions; the Bologna comparison with Avia's
 own 2025 forecast; the airfield and range alerts for W1/W2; the build list; outstanding.
-routes/CALIBRATION-RECORD-2026.md v0.7: sections 6, 8, 9 and 10.
+routes/CALIBRATION-RECORD-2026.md v0.8: section 6 revised on the calibration grid (rule B,
+88 / 78 on 6,524, portfolios 94, recommended), sections 8, 9 and 10.
 bt2/: bt2_pickle_stamp.py, bt2_record_mix.py, probe_payload_keys.py, bt2_ceiling_test.py,
 bt2_schedule_prior.py, bt2_prior_preview.py, bt2_calib_grid.py (the calibration rule grid
 on the 6,524 for John's stand-pair ruling), all read-only; nothing under app/ touched.
+bt2/bt2_build_v13.py: rule B added and made the default on the Sabre basis (--basis mixed kept);
+the pickle now carries the estimator fitted under the declared rule, not the blind one; the
+provenance blind figure is that estimator's own; version field 1.4 26Sep2026. File name unchanged.
+routes/W10-STATUS.md v10: John's six rulings of 26 Sep (rule B Sabre; versions and text together;
+option 1 ship; option 2b go; airfield and range alerts; the feed to the controller) and the rebuild
+block for the workstation.

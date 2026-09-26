@@ -1,7 +1,6 @@
 # W10 status: FINAL CALIBRATION TEST
 
-Written by W10 only, rewritten every session. Version 9, 26 September 2026, close of the
-26 Sep session. Supersedes v1-v8 in full. Clone at e7eaf9d plus uncommitted W10 files
+Written by W10 only, rewritten every session. Version 10, 26 September 2026, evening: John's rulings recorded; the rebuild block handed. Supersedes v1-v8 in full. Clone at e7eaf9d plus uncommitted W10 files
 listed in the commit block. Every figure below has a log line in bt2/bt2_experiments.log
 (W10-* lines, 26 Sep) or is quoted from the controller's rulings file pending John's paste.
 
@@ -21,7 +20,7 @@ Bologna-New York in the class of Avia's own 2025 forecast.
 | 1. Pickle stamp and its own pair | DONE 26 Sep | W10-PICKLE-STAMP, W10-PICKLE-INSAMPLE-CONFIRMED |
 | 2. Outturn clause | DONE 26 Sep | Section below |
 | 3. Diagnosis of the two register mechanisms | DONE 26 Sep | Code facts plus W10-BASIS-IN-THE-PAYLOAD, W10-RECORD-MIX-RELAXED, -CANON |
-| 4. Fix options with scores | DONE 26 Sep, for John's ruling 30 Sep | W10-CEILING-*, W10-SCHEDULE-PRIOR*, W10-PRIOR-PREVIEW-1, -2 |
+| 4. Fix options with scores | DONE 26 Sep, for John's ruling 30 Sep | W10-CEILING-*, W10-SCHEDULE-PRIOR*, W10-PRIOR-PREVIEW-1, -2, W10-CALIB-GRID |
 | Items 2 and 3 of 22 Sep | Run 25 Sep by John (controller's report) | Log lines owed on John's paste of the two logs |
 
 ## Job 1: the model the app runs
@@ -153,7 +152,20 @@ The three pairs on 6,524 stand under every option; none touches the record's ari
    rule, three rules between it and memorisation, and memorisation: the in-sample pair on
    both bases, the same rule's blind route pair and portfolios of twenty, and its p25-p75
    coverage, so John picks the rule with its out-of-sample cost in view. Target circa
-   87 / 80 on n=6,524 (John). The cost of a lighter rule is a noisier estimator route by
+   87 / 80 on n=6,524 (John). RESULT (W10-CALIB-GRID, 26 Sep): the out-of-sample cost of a
+   lighter rule is nil, blind route 60.5-60.9 and portfolios 93-95% from the blind
+   reference to memorisation; the calibrated pair alone moves: published 83.2 / 70.0,
+   A 86.1 / 74.5, B 88.2 / 78.3, C 90.8 / 83.4, memorisation 90.9 / 83.5 (Sabre
+   throughout; mixed basis 2-4 points lower). W10 RECOMMENDS RULE B (lr 0.07, it 1200,
+   minleaf 4, leaves 79), SABRE THROUGHOUT: calibrated 88% within +-20% and 78% within
+   +-10% on 6,524 launches, blind portfolios of twenty 94%. One sample, one ruler, one
+   estimator; the p25-p75 band holds the actual on 57% of launches. Host line: "calibrated
+   means fitted on the full history of 6,524 launches and graded on the same launches;
+   the portfolio figure is graded on launches the model never saw." If John prefers the
+   mixed basis for the US audience, B reads 86 / 75 and C 88 / 80 with the DOT sentence.
+   Build: bt2_build_v13 gains rule B under --calib and writes the calibrated estimator
+   (not the blind one) into the pickle; the workstation rebuilds on E:\Avia\bt2_relaxed;
+   the register re-runs on the result before the freeze. The cost of a lighter rule is a noisier estimator route by
    route (blind route figure falls, never published) and a tighter band; the register is
    re-run on the rebuilt pickle before the freeze.
 5. AIRFIELD AND RANGE (John, 26 Sep, on the Southampton preview): the layers exist
@@ -167,8 +179,75 @@ The three pairs on 6,524 stand under every option; none touches the record's ari
    the table with the reason; the airfield and range banners become first-screen alerts
    on the Optimise result.
 
+## John's rulings, 26 September 2026 (in this chat; for the controller's decisions log)
+
+1. THE STAND PAIR: calibration rule B (lr 0.07, it 1200, minleaf 4, leaves 79), Sabre
+   throughout, on the 6,524: calibrated 88% within +-20% and 78% within +-10%, blind
+   portfolios of twenty 94%. One sample and one method across the general methodology and
+   the route-forecast accuracy sections. Item 55 answered; the 2,915 pair is retired.
+2. VERSIONS AND TEXT MOVE TOGETHER: the rebuilt pickle (rule B estimator) and the 88 / 78
+   sentence on every surface land in one step, never one before the other, so no two
+   versions can diverge again. John expects the rebuild today; the block is below.
+3. OPTION 1, the basis fix at cortex_app 1311: SHIP (W1, 1-6 Oct).
+4. OPTION 2b, the schedule prior with the two additions (new types by seat count; carrier
+   line as a flag, re-run inside the carrier's band at five or more comparable launches):
+   GO, and see how it reads when testers can see it.
+5. AIRFIELD AND RANGE: NOT_FEASIBLE types demoted with the reason; first-screen alerts on
+   the Optimise result. Agreed in principle; John will see it in action before the freeze
+   and may amend.
+6. THE FEED: not W10's; for the controller to place (it is measured in the register as
+   10-25x the analysts' on hub routes and the record has never scored it; it needs an owner
+   and a decision on whether it is in hand before the freeze).
+The 30 September decision is therefore taken on 26 September; W1 can start Monday.
+
+## The rebuild, today (W10's file bt2/bt2_build_v13.py changed under ruling 2)
+
+bt2_build_v13.py now carries rule B, defaults to it on the Sabre basis (--basis mixed
+keeps the DOT grading available), and writes the estimator fitted under the declared rule
+into the pickle instead of the blind one; the blind figure in the artefact's provenance
+string is that estimator's own. The file name stays bt2_model_v1_3.pkl because
+app/bt2_forecast.py resolves it; the version field inside reads "1.4 26Sep2026 rule B
+sabre". The pickle is data (E:\Avia\bt2_relaxed), not repo. The evidence file and histogram
+under app/ (track record page, site chart) are tracked in git and are W3's surfaces: they
+are built with --out-app on the DevPC and committed with the sentence, per ruling 2, not on
+the workstation. The app picks up the new pickle on the next server restart (W1/W2's
+launcher; Stop-Process first), which is the moment the sentence changes.
+
+Block H, after the DevPC commit and the workstation pull. Expected on screen: "calibrated:
+within +-20% 88.2%, within +-10% 78.3%", then "wrote E:\Avia\bt2_relaxed\bt2_model_v1_3.pkl".
+Then the stamp script reads the new artefact back and must show version 1.4, calib_rule B,
+and in-sample 88.2 / 78.3.
+
+**Workstation Actual**
+```
+cd C:\src\meridian
+git pull
+cd C:\src\meridian\bt2
+$env:AVIA_LOCAL_CACHE = "E:\Avia"
+$env:AVIA_APP_DIR     = "C:\src\meridian\app"
+$env:AVIA_BT2_TARGET  = "nonstop"
+$env:AVIA_BT2_DIR     = "E:\Avia\bt2_relaxed"
+$env:AVIA_BT2_COHORTS = "2016,2017,2018,2019,2024,2025"
+copy E:\Avia\bt2_relaxed\bt2_model_v1_3.pkl E:\Avia\bt2_relaxed\bt2_model_v1_3_BLIND_13Aug2026.pkl
+py -3.12 -s bt2_build_v13.py --calib B --basis sabre 2>&1 | Tee-Object -FilePath E:\Avia\probe\build-ruleB-W10.log
+py -3.12 -s bt2_pickle_stamp.py 2>&1 | Tee-Object -FilePath E:\Avia\probe\pickle-stamp-ruleB-W10.log
+```
+The copy line keeps the 13 Aug blind artefact beside the new one; rollback is copying it
+back. Nothing else on the workstation changes until the server is restarted.
+
+Block J, the two 25 Sep logs, printed to the screen for pasting (no run).
+
+**Workstation Actual**
+```
+cd E:\Avia\probe
+type claimset-W10-25Sep.log
+type mixed-W10-25Sep.log
+```
+
 ## Build list for W1 (and W2 where marked), 1-6 October, for John's approval
 
+0. The pickle rebuild under rule B (block H, W10's script; today) and, with W3, the
+   evidence file, histogram and the 88 / 78 sentence in one commit (ruling 2).
 1. cortex_app 1311: halve the override and its band (option 1).
 2. The schedule prior: W10 writes bt2/schedule_prior.csv (gauge and frequency p25, median,
    p75 by class, plus the carrier lines by carrier code with n) and the fitting script;
@@ -187,7 +266,7 @@ three pairs in the preview.
 W10-PICKLE-STAMP, W10-PICKLE-INSAMPLE-PROVISIONAL, W10-BASIS-IN-THE-PAYLOAD,
 W10-PICKLE-INSAMPLE-CONFIRMED, W10-RECORD-MIX-RELAXED, W10-RECORD-MIX-CANON,
 W10-CEILING-RELAXED, W10-CEILING-CANON, W10-SCHEDULE-PRIOR, W10-SCHEDULE-PRIOR-LOOKUP,
-W10-PRIOR-PREVIEW-1, W10-PRIOR-PREVIEW-2. Logs on the workstation under E:\Avia\probe\
+W10-PRIOR-PREVIEW-1, W10-PRIOR-PREVIEW-2, W10-CALIB-GRID. Logs on the workstation under E:\Avia\probe\
 (pickle-stamp-W10.log, pickle-stamp-W10-s.log, recordmix-relaxed-W10.log,
 recordmix-canon-W10.log, ceiling-relaxed-W10.log, ceiling-canon-W10.log,
 schedprior-relaxed-W10.log, schedprior-lookup-BLQ-W10.log, prior-preview-W10.log,
@@ -200,11 +279,9 @@ probe_payload_keys.py, bt2_ceiling_test.py, bt2_schedule_prior.py, bt2_prior_pre
 
 ## Outstanding
 
-1. John's paste of claimset-W10-25Sep.log and mixed-W10-25Sep.log (build line and
-   figures): two log lines, then the record's 83.2 / 70.0 and 91 / 85 cite log lines
-   rather than the rulings file.
-2. John's rulings, 30 Sep: the stand pair; the sample; option 1; option 2b; the airfield
-   and range alerts.
+1. The two 25 Sep logs printed from E:\Avia\probe (block J) and pasted: two log lines,
+   then the record's 83.2 / 70.0 and 91 / 85 cite log lines rather than the rulings file.
+2. John's rulings: GIVEN 26 Sep, above. The feed's owner: controller.
 3. W10 writes bt2/schedule_prior.csv and its fitting script on the ruling (one session).
 4. CALIBRATION-RECORD-2026.md v1 to the controller by 3 Oct, from log lines only.
 5. Yearly republication: the record's section 7 (the new cohort, the scripts, the pins,
@@ -216,7 +293,7 @@ probe_payload_keys.py, bt2_ceiling_test.py, bt2_schedule_prior.py, bt2_prior_pre
 ```
 cd C:\AviaDev
 git pull
-git add routes/W10-STATUS.md routes/CALIBRATION-RECORD-2026.md bt2/bt2_experiments.log bt2/probe_payload_keys.py bt2/bt2_ceiling_test.py bt2/bt2_schedule_prior.py bt2/bt2_prior_preview.py bt2/bt2_calib_grid.py routes/COMMIT-MSG-26Sep2026-w10-pickle-stamp.txt
+git add routes/W10-STATUS.md routes/CALIBRATION-RECORD-2026.md bt2/bt2_experiments.log bt2/probe_payload_keys.py bt2/bt2_ceiling_test.py bt2/bt2_schedule_prior.py bt2/bt2_prior_preview.py bt2/bt2_calib_grid.py bt2/bt2_build_v13.py routes/COMMIT-MSG-26Sep2026-w10-pickle-stamp.txt
 git commit -F routes/COMMIT-MSG-26Sep2026-w10-pickle-stamp.txt
 git push
 ```
