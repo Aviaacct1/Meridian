@@ -126,6 +126,9 @@ def cabin_fares(db, airports, dest_airports, year=None):
     import duckdb
     if not os.path.exists(db) or not airports or not dest_airports:
         return None
+    _key = (db, tuple(airports), tuple(dest_airports), year)
+    if _key in _CABIN_CACHE:              # the store only changes on a refresh, which restarts workers
+        return _CABIN_CACHE[_key]
     prem = ("upper(cabin_class) LIKE '%BUSINESS%' OR upper(cabin_class) LIKE '%FIRST%' "
             "OR upper(cabin_class) LIKE '%PREMIUM%'")
     aph = ",".join("?" * len(airports)); dph = ",".join("?" * len(dest_airports))
@@ -152,9 +155,13 @@ def cabin_fares(db, airports, dest_airports, year=None):
     if not r or not r[0]:
         return None
     pax, ppax, e_rev, e_pax, p_rev, e_base, p_base = [float(x or 0) for x in r]
-    return {"pax": pax, "prem_share": (ppax / pax) if pax else 0.0,
+    _CABIN_CACHE[_key] = res = {"pax": pax, "prem_share": (ppax / pax) if pax else 0.0,
             "econ": (e_rev / e_pax) if e_pax else None, "prem": (p_rev / ppax) if ppax else None,
             "econ_base": (e_base / e_pax) if e_pax else None, "prem_base": (p_base / ppax) if ppax else None}
+    return res
+
+
+_CABIN_CACHE = {}
 
 
 def nonstop_share(db, airports, dest_airports, year=None):

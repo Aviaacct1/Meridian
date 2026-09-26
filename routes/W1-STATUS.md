@@ -57,3 +57,16 @@ change. cortex_app.py imports pack_queue, which was untracked: committed separat
 told, and the rule for every chat is to commit its own files before another chat's block runs.
 Economics screens are withheld by default until pre-mortem 33 is accepted; the API still returns
 economics, and AVIA_SHOW_ECONOMICS=1 shows them.
+
+
+## 27 September 2026: cabin fares live (b478b97 + 03f6ad9), acceptance passed
+
+fare_source cabin+premium on all five; two-way passengers unchanged. Margin before / after:
+EDI-BOS B6 A21N 7x 46.5% / 34.4%; BLQ-JFK UA A21X 7x 38.3% / 27.1%; SJC-TPE CI A359 7x 16.3% / 4.4%;
+SOU-JFK UA B753 5x 52.5% / 34.1%; TIF-AUH EY A321 7x 21.4% / 4.3% (contribution 2.5m USD a year,
+breakeven 79.1%). Europe-US margins still read high because fares include taxes (UK and Italian
+departure taxes); economics stays WITHHELD on the stand (AVIA_SHOW_ECONOMICS off) and pre-mortem 33
+stays open until a sourced tax table exists, after Routes. Taif slide 15 economics replaced by the
+figures above, labelled "fares as sold, including taxes".
+Next (built, not yet committed): Optimise's aircraft sizing ranks on the measured cabin fares
+instead of the distance proxy (COMMIT-MSG-27Sep2026-w1-optimise-measured-fares.txt).

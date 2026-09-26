@@ -1764,6 +1764,10 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
     if (bus_fare is None or abs(float(bus_fare) - 1400.0) < 1e-6) and r.get("fare_prem") and not r.get("induced"):
         bus_fare = round(float(r["fare_prem"]), 2)
         _fare_src = (_fare_src or "user economy") + "+premium"
+    # The measured cabin fares ride on every payload, economics or not, so Optimise's aircraft sizing
+    # (which runs with_econ=False) ranks on the same fares the economics screen uses (27 Sep 2026).
+    out["fares_measured"] = {"econ": r.get("fare_econ"), "prem": r.get("fare_prem"),
+                             "all_cabin": r.get("avg_fare"), "prem_share": r.get("fare_prem_share")}
     if with_econ:
         out.update(_econ_block(carried_ew, aircraft, freq, home, dest_airport, gcd, econ_share,
                                plan_lf, econ_fare, bus_fare, fuel_price, ct, weeks=season_weeks,
@@ -2891,7 +2895,8 @@ def _optimise_base(c):
     demand = fc["demand"].get("total_demand") or fc["demand"]["total"]   # TRUE demand, not the capacity-bound total
     if demand <= 0:
         return None
-    return {"es_i": es_i, "demand_7": demand}
+    _fm = fc.get("fares_measured") or {}
+    return {"es_i": es_i, "demand_7": demand, "fare_e": _fm.get("econ"), "fare_p": _fm.get("prem")}
 
 
 def _optimise_freq(t):
@@ -2933,7 +2938,12 @@ def _optimise_freq(t):
         # capacity than the carrier flies. Passing both is safe because the explicit
         # fleet still takes precedence for the pool.
         code, ranked = ASsel.select_aircraft(c["dist_nm"], demand, f, plan_lf=c["plan_lf"],
-                        econ_share=es_i, econ_fare_ow=c["fare"], bus_fare_ow=c["bus_fare"],
+                        # MEASURED CABIN FARES in the sizing (27 Sep 2026): the market's own economy and
+                        # premium fares from stage 1, as sold; the distance proxy only when unmeasured,
+                        # and a premium fare the caller set (anything but the form's 1,400) still wins.
+                        econ_share=es_i, econ_fare_ow=(t.get("fare_e") or c["fare"]),
+                        bus_fare_ow=(t.get("fare_p") if (t.get("fare_p") and abs(float(c["bus_fare"]) - 1400.0) < 1e-6)
+                                     else c["bus_fare"]),
                         airline_type=ct_i, weeks=sea_weeks,
                         airline_iata=(cand or None),
                         fleet=([c["fixed_ac"]] if c["fixed_ac"] else None),   # honour a client-fixed gauge, else search
@@ -3214,7 +3224,8 @@ def api_optimise(origin: str, dest: str, airline: str = "", carrier_type: str = 
     # exactly as the loop's `continue`s skipped them. (23 September 2026: the split lets the
     # single-airline Optimise, one cell, use the pool; before it, that case ran in-process.)
     bases = list(_optimise_map(_optimise_base, cells))
-    tasks = [{"cell": c, "freq": f, "es_i": b["es_i"], "demand_7": b["demand_7"]}
+    tasks = [{"cell": c, "freq": f, "es_i": b["es_i"], "demand_7": b["demand_7"],
+              "fare_e": b.get("fare_e"), "fare_p": b.get("fare_p")}
              for c, b in zip(cells, bases) if b is not None for f in c["freqs"]]
     rows = []
     for _t, _r in zip(tasks, _optimise_map(_optimise_freq, tasks)):
@@ -3383,7 +3394,8 @@ def api_optimise(origin: str, dest: str, airline: str = "", carrier_type: str = 
                 _cfb = "client fixed"
                 if not (freq and int(freq) > 0):
                     _cc["freqs"], _cfb = _SP.freqs_in_band(_cl, _haul)
-                _ctasks = [{"cell": _cc, "freq": f, "es_i": _base["es_i"], "demand_7": _base["demand_7"]}
+                _ctasks = [{"cell": _cc, "freq": f, "es_i": _base["es_i"], "demand_7": _base["demand_7"],
+                            "fare_e": _base.get("fare_e"), "fare_p": _base.get("fare_p")}
                            for f in _cc["freqs"]] if _base else []
                 _crows = [r for r in _optimise_map(_optimise_freq, _ctasks) if r is not None]
                 try:

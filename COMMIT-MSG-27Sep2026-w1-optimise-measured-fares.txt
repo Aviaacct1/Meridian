@@ -1,0 +1,17 @@
+W1: Optimise sizes and ranks aircraft on the market's measured cabin fares, not the distance proxy
+
+- app/cortex_app.py: calibrated_forecast carries fares_measured (economy, premium, all-cabin,
+  premium share) on every payload; Optimise stage 1 passes them to stage 2 and to the carrier
+  check, and select_aircraft prices economy and premium seats at them. The distance proxy
+  (max(180, nm x 0.11)) is used only when the market has no measured fare; a premium fare the
+  caller set still wins.
+- app/sabre_catchment.py: cabin_fares() cached per market and year within a process.
+- routes/W1-STATUS.md: cabin-fare acceptance recorded.
+
+Why: the sweep ranked schedules by contribution on a fare roughly half the measured economy fare
+on long haul (SOU-JFK proxy circa 330 USD against 935 measured), so the ranking and the economics
+screen disagreed. Passenger numbers per schedule are unchanged; which schedule Optimise picks may
+change, so the four-pair Optimise acceptance is re-run.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01Ai6fXfSs283Z67QSwHLSQs
