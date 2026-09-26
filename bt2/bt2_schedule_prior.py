@@ -52,7 +52,8 @@ def feats(r, carrier=False):
     return f
 
 
-TARGETS = {"annual seats (both directions)": lambda r: r["seats_ly"],
+TARGETS = {"annualised seats (gauge x freq x 2 x 52)": lambda r: max(r["gauge"], 1.0) * max(r["freq"], 0.5) * 2.0 * 52.0,
+           "annual seats as flown (months operated)": lambda r: r["seats_ly"],
            "seats per departure (gauge)": lambda r: max(r["gauge"], 1.0),
            "weekly frequency per direction": lambda r: max(r["freq"], 0.5)}
 
@@ -126,7 +127,7 @@ def main():
         for label, tfn in TARGETS.items():
             pred = blind(rows, tfn, carrier)
             score([tfn(r) for r in rows], pred, label)
-            if label.startswith("annual"):
+            if label.startswith("annualised"):
                 for name, fn in (("short-haul", lambda r: r["gcd"] < 2500), ("long-haul", lambda r: r["gcd"] >= 2500),
                                  ("long-haul EU-NA", lambda r: r["gcd"] >= 2500 and region_pair(r) == "EU-NA"),
                                  ("market 25-80k", lambda r: 25000 <= r["base_mkt"] < 80000),

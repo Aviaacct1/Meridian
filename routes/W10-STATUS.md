@@ -1,6 +1,6 @@
 # W10 status: FINAL CALIBRATION TEST
 
-Written by W10 only, rewritten every session. Version 7, 26 September 2026, session 3; option 2 rejected; John's Optimise design (the schedule prior) written up and its test handed over as block E.
+Written by W10 only, rewritten every session. Version 8, 26 September 2026, session 3; option 2 rejected; option 2b (the schedule prior) TESTED and holds; W10 recommends it for 30 Sep.
 Clone at e7eaf9d. Read this session: W10-RULINGS.md from "22 September 2026, evening" to the
 end (six sections); FACE-VALIDITY-REGISTER-25Sep2026.md v2 in full; the umbrella Status
 block and critical path of 26 Sep 03:00; bt2/bt2_build_v13.py; app/bt2_forecast.py load path.
@@ -191,10 +191,23 @@ register.
    years the record catches up on its own. (ii) A carrier cross-check on every Optimise
    result: the chosen carrier's own launches on comparable pairs (n, gauge, frequency),
    printed beside the answer, with "fewer than N comparable launches" stated when that is
-   the case. Score: block E (bt2/bt2_schedule_prior.py) measures whether the record can
-   predict the schedule flown from pre-launch facts, blind by cohort, with and without
-   carrier identity; --lookup prints the check line for one pair. If the prior lands
-   within +-50% on most launches the sweep can stand on it; if not, W10 says so.
+   the case. SCORE (block E, log lines W10-SCHEDULE-PRIOR, W10-SCHEDULE-PRIOR-LOOKUP): the record
+   predicts gauge to within +-20% on 71% of launches (91% within +-50%) and weekly
+   frequency to within +-20% on 71% (88% within +-50%), blind by cohort, from pre-launch
+   facts alone; carrier identity adds three points on gauge. Annual seats as flown are not
+   predictable (20% within +-20%) because seats_ly carries the months operated, which is
+   launch timing, so the prior is expressed as gauge x frequency x 52 and never as
+   seats_ly. THE PRIOR HOLDS. For a Bologna-shaped pair the record's comparable launches
+   are a 270-seat widebody at three to four a week (64 Europe-North America launches) or
+   a 180-220 seat aircraft near daily (United's six comparable launches at gauge 219, 5.8
+   a week); a 77W daily is outside the range and would not have been offered. W10
+   RECOMMENDS 2b for John's ruling on 30 Sep. The build for W1: (1) the prior as a CSV in
+   bt2/ read through config (gauge and frequency p25-p75 by class, plus the carrier line),
+   or the fitted prior pickled beside the model; (2) Optimise's sweep bounded to the
+   prior's p25-p75 on gauge and frequency for the pair, new types mapped by seat count;
+   (3) contribution ranks within the set; (4) the model forecasts at the winner; (5) the
+   payload carries the prior's range and the carrier line with its n. Record and Run
+   untouched. W10 writes the class table and the carrier lines; W1 wires them.
 3. FEED. Outside the record. The controller's shape (feed as a share of the route's own
    size by haul and hub) cannot be scored on this record and W10 says so rather than
    scoring it on the sector target, which grades a quantity nobody publishes. W1 builds it
@@ -247,8 +260,9 @@ py -3.12 -s probe_payload_keys.py E:\Avia\probe\BLQ-JFK-25Sep\opt_BLQ-JFK.json
 
 Block D, DONE 26 Sep (ceiling-relaxed-W10.log, ceiling-canon-W10.log). Kept for the record.
 
-Block E, the schedule prior test (bt2/bt2_schedule_prior.py, new; after the workstation
-pulls), plus the Bologna check line as an example.
+Block E, DONE 26 Sep (schedprior-relaxed-W10.log, schedprior-lookup-BLQ-W10.log). The script
+now also scores the annualised target (gauge x freq x 52); re-run when convenient, same
+command, to put that figure in the log.
 
 **Workstation Actual**
 ```
@@ -289,8 +303,8 @@ as they appeared on screen, for the blind within +-10% figure.
 ## Log lines
 
 26 Sep: W10-PICKLE-STAMP, W10-PICKLE-INSAMPLE-PROVISIONAL, W10-BASIS-IN-THE-PAYLOAD,
-W10-PICKLE-INSAMPLE-CONFIRMED, W10-RECORD-MIX-RELAXED, W10-RECORD-MIX-CANON, W10-CEILING-RELAXED
-and W10-CEILING-CANON written to bt2/bt2_experiments.log
+W10-PICKLE-INSAMPLE-CONFIRMED, W10-RECORD-MIX-RELAXED, W10-RECORD-MIX-CANON, W10-CEILING-RELAXED,
+W10-CEILING-CANON, W10-SCHEDULE-PRIOR and W10-SCHEDULE-PRIOR-LOOKUP written to bt2/bt2_experiments.log
 from John's block A paste. Items 2 and 3 ran on 25 Sep (claimset-W10-25Sep.log, mixed-W10-25Sep.log, John's pastes to
 the controller). W10 has not seen the pastes; the two log lines for bt2_experiments.log are
 written when they are pasted here, in the existing format, before either figure is quoted
@@ -315,5 +329,5 @@ since": correct as committed; v2 of 24 Sep was written and not committed, W10's 
 ## Calendar
 
 All four jobs done 26 Sep. John decides 30 Sep on: the stand pair; the sample; option 1
-(ship); option 2b on block E's score. Outstanding for the record: John's pastes of the
+(ship); option 2b (recommended, tested). Outstanding for the record: John's pastes of the
 25 Sep claimset and mixed logs (build line and figures), then record v1 by 3 Oct.
