@@ -1,0 +1,20 @@
+W1: the calibrated model's local leg is passed each way, not two-way (halves every calibrated forecast's local)
+
+W10 finding of 26 Sep (W10-STATUS v9, log line W10-BASIS-IN-THE-PAYLOAD): bt2_forecast
+returns a two-way figure because route_context builds seats_ly for both directions
+(route_context.py 346), and cortex_app passed it into route_forecast's each-way `captured`
+(cortex_app 1311). The local leg was doubled on every calibrated-engine forecast since the
+22 Sep engine switch; confirmed in the saved BLQ-JFK payload (captured 112,543 two-way against
+annual_capacity 127,400 each way).
+
+- app/cortex_app.py: p2p_demand_override = _bt2["pax"] / 2.0; forecast_engine.range_low and
+  range_high halved on the same basis and labelled range_basis "each way". Comments state
+  both bases. Nothing in bt2/ or route_forecast changes; the calibration record does not move.
+
+Every Run and Optimise payload changes (the local leg halves). NEW BASELINE after this
+commit: E:\Avia\probe\OPT-29Sep-basis-w8; the three-pair diff against OPT-24Sep-final-w8 is
+EXPECTED to differ on every local figure and is read for that; the face-validity register
+re-run (routes/FACE-VALIDITY-REGISTER-25Sep2026.md) is the acceptance.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01Ai6fXfSs283Z67QSwHLSQs

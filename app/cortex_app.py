@@ -1308,7 +1308,17 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
                         att_exponent=att_exponent, catchment_mult=catchment_mult,
                         coverage_override=coverage_override, market_override=market_override,
                         share_override=share_override, max_plan_lf=plan_lf,
-                        p2p_demand_override=(_bt2["pax"] if _bt2 else None),
+                        # BASIS (26 September 2026, W10 finding, controller fix): bt2_forecast returns a
+                        # TWO-WAY figure, because route_context builds seats_ly for both directions
+                        # (route_context.py line 346, x 2.0, matching the training target: Sabre nonstop
+                        # passengers on the unordered pair, both directions). route_forecast's `captured`
+                        # is EACH WAY (route_forecast.py 656; 853 "demand is each-way"). Passing the model's
+                        # two-way figure straight in doubled the local leg on every calibrated-engine
+                        # forecast since the 22 Sep engine switch (confirmed in the saved BLQ-JFK payload:
+                        # captured 112,543 two-way against annual_capacity 127,400 each way; EDI-BOS local
+                        # at 1.23 x each-way seats, above any load factor the model was trained under).
+                        # Halved here, and the range below on the same basis. The record does not move.
+                        p2p_demand_override=((_bt2["pax"] / 2.0) if _bt2 else None),
                         annual_capacity=((float(seats) * freq * season_weeks) if seats else None),
                         market_factor=RF.market_factor_for(carrier_type),   # market-size-keyed P2P trim
                         season=season, season_share=season_share, season_weeks=season_weeks,
@@ -1533,8 +1543,11 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
             "tier": (_bt2 or {}).get("tier"),
             "model": (_bt2 or {}).get("model"),
             "population": (_bt2 or {}).get("population"),
-            "range_low": round((_bt2 or {}).get("lo")) if _bt2 else None,
-            "range_high": round((_bt2 or {}).get("hi")) if _bt2 else None,
+            # EACH WAY, like every other figure in this block's neighbours: bt2_forecast's lo/hi are
+            # two-way (seats_ly both directions), halved here on the same basis as the override above.
+            "range_basis": "each way",
+            "range_low": round((_bt2 or {}).get("lo") / 2.0) if _bt2 else None,
+            "range_high": round((_bt2 or {}).get("hi") / 2.0) if _bt2 else None,
             "declined": _bt2_note,
             # Stated because it is the one thing a reader would otherwise assume wrongly: when the
             # model answers, the seven QSI calibration factors are NOT applied on top of it, since
