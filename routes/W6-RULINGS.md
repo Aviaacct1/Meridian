@@ -297,3 +297,13 @@ Aviation Observatory address; W6 holds the send until W2 confirms that address w
   27 Sep; bio for John; invitations held for John's TAO address and the five names.
 - The named-route handover is W2's (W2-RULINGS 26 Sep); you carry the line in the invitation
   that a named route will be forecast ahead of the meeting.
+
+## 26 September 2026: MEETINGS ARE REQUESTED IN THE ROUTES PLATFORM (controller)
+
+John's stand meeting entitlement is live on routesonline.com (Routes Scheduling, 25 Sep). The
+five meetings are requested by John in the platform; the invitation email from his TAO address
+is the follow-up to an accepted request. W6 gives John, today, a one-screen list for the
+platform: the five organisations and the reserves with the role to search for (head of
+aviation / route development / network), and the two-line request text the platform allows,
+in the Observatory voice with the affiliation clause. W6 never reads or receives the platform's
+attendee list (condition 5.3); John searches and requests himself.

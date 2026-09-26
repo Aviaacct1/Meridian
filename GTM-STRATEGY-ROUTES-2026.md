@@ -1099,6 +1099,151 @@ five contacts.
   found is fixed in the TEMPLATE and the batch re-run until a whole batch passes; then the
   hold timer is set by John from what that batch showed. Item 62 (reviewer name and hours)
   stands; with the pause-only rule it is a small job.
+- 26 Sep 2026 (John's paste): Routes Scheduling (scheduler@routesonline.com, Informa, 25 Sep
+  11:24) has added the stand meeting entitlement to John's Routes account; he can log in and
+  request meetings. Consequences: (1) the five meetings (item 13: Birmingham, Dublin, Vienna,
+  Dallas Fort Worth, Milan SEA, reserves in the organisations file) are REQUESTED THROUGH THE
+  ROUTES PLATFORM by John himself, today or Monday, before airports' diaries fill; the email
+  invitation from the TAO address (W6) becomes the follow-up to an accepted request, not the
+  first contact, which loosens the mailbox dependency on the meeting dates (not on the
+  invitations' wording, which still carries the affiliation clause and the named-route ask).
+  (2) Condition 5.3 applies to the platform: John reads the attendee list in the platform and
+  never pastes it into any chat; W6 gives him the organisations and roles to search for, and
+  he types the requests. (3) John reads off the platform, and reports to the controller: the
+  entitlement count, the request deadline, and any rule on how many requests per organisation.
+  Item 63.
+- 26 Sep 2026 (John): "One new issue is that I am representing SJC as a client as well so need
+  those meetings confirmed before requesting meetings so I don't double book myself I am keen
+  to get some feedback directly rather than thru stand hosts." Consequences: (1) SEQUENCE:
+  SJC's airline meetings are confirmed first; the five TAO requests go in the platform around
+  them (item 63 amended); the platform's request deadline decides how long John can wait, so
+  he reads it today. (2) ROTA: John is off the stand for SJC meetings and for his own TAO
+  meetings; the rota (pre-mortem 27) assumes John absent for blocks on all three days, with
+  Suzanna and Stefan covering and a rule for who takes a walk-up when only one is on. (3) TWO
+  HATS: John meets Taipei carriers for SJC in the same week the TAO stand demonstrates
+  SJC-TPE as a worked route (item 28, John's exception). The figures must be one set (W3
+  re-run, curfew like for like) and the controller asks John once whether SJC is content that
+  its route is the public demonstration while he negotiates for it; if not, the stand demo
+  moves to a never-worked route and SJC-TPE stays in the pitch to the carriers only. Item 64.
+  (4) FEEDBACK: John wants it direct from his own meetings; W5's feedback card gets a
+  two-minute version John fills after each meeting (five lines: who, route, what they liked,
+  what they questioned, next step), on paper or phone, exported with the lead store.
+- 26 Sep 2026 (John): ITEM 64 CLOSED ("I am ok with SJc tpe"); ITEM 45 SUPERSEDED. Verbatim:
+  "we should probably work 7 or so examples so we can chose 3 or 4 for video. Australian, us,
+  Europe and Asian route, possible even a carrebbean so we have coverage". Ruling as recorded:
+  W3 works SEVEN routes, one pack each, and John picks three or four for the video after
+  seeing them; the set shows geographic coverage. Fixed by earlier rulings: SJC-TPE (US-Asia,
+  item 28) and Bologna-New York (Europe-US, item 28; carrier item 26 still open). Standing
+  from 9 Sep: Bordeaux (short-haul Europe) and Boise (US domestic). Controller's proposals for
+  the other three, each subject to the never-worked-airport check against the Egnyte archive
+  before any use, and to the tool's data coverage on the pair: (5) a Europe-US hub case from
+  item 45's list (Copenhagen-Denver was the default); (6) AUSTRALIA, a secondary Australian
+  airport to Asia or New Zealand (candidates: Adelaide, Gold Coast, Cairns, Hobart; to
+  Singapore, Tokyo, Auckland); (7) CARIBBEAN, a Caribbean airport to the US or Europe where
+  Sabre coverage is proven (candidates to be checked; Barranquilla is a client and excluded).
+  W3 proposes the exact pairs and airlines with the coverage check by 30 Sep; runs on the
+  current engine for scripting now, re-runs all seven on the accepted engine 7-8 Oct; video
+  8-10 Oct on the three or four John picks. The rota, the two hats and the direct feedback
+  card are recorded above.
+- 26 Sep 2026 (John), on the seven routes: "Is domestic route perhaps and or a us Latam route.
+  Maybe choose ones we have done in the past for clients over 10 years so we can quick check
+  outcomes vs the old ones". Controller's reading and ruling: two different uses, kept apart.
+  (a) CHECKING: routes Avia forecast for clients over the last ten years are exactly the
+  face-validity register (routes/FACE-VALIDITY-REGISTER-25Sep2026.md); the register widens to
+  a US domestic and a US-Latin America row from the archive (Shakira 2023 gives Barranquilla-
+  Miami, Ultra Air 3x; the Scotland and Knock rows already cover Europe; W3 or the controller
+  finds a US domestic client forecast in /Shared/Archive) and every one is run internally
+  against the analyst's figure. (b) SHOWING: the video and the stand keep John's standing rule
+  that no client airport is demonstrated (SJC-TPE and Bologna are his two exceptions, item
+  28), so the seven worked routes for the video are never-worked analogues in the same
+  markets as the client routes: a US domestic pair (Boise stands), a US-Latin America pair
+  (a US secondary airport to Mexico, Colombia or the Dominican Republic, never Barranquilla),
+  Australia, Caribbean, Europe-US hub. If John wants a client route in the video, he sets the
+  rule aside for that route by name, as he did for SJC-TPE and Bologna. W3-RULINGS amended.
+- 26 Sep 2026 (W10-STATUS v9, read by the controller; log lines W10-* 518-527 in
+  bt2/bt2_experiments.log; John ran every block): W10 DELIVERED ALL FOUR JOBS TWO DAYS EARLY.
+  (1) THE MODEL THE APP RUNS is bt2_model_v1_3.pkl, written 13 Aug on the declared build, and
+  its q50 is the BLIND configuration (lr 0.04, it 600, leaves 31, minleaf 60, l2 5.0), not
+  the calibrated fit; bt2_build_v13 fits the calibrated configuration, prints its pair and
+  discards it. The pickle's own in-sample pair, identical under sklearn 1.7.2 and 1.9.0:
+  73.4 / 56.0 on 6,524 (73.3 / 56.3 mixed); blind route level 60.9 / 36.3; blind portfolios
+  of twenty 93. So 91 / 85 and 83.2 / 70.0 describe estimators that never answer a client.
+  (2) OUTTURN CLAUSE: scored against the passengers the route actually carried in its launch
+  year, from the month it started to December, 2016-2019, 2024 and 2025, Sabre MIDT (US
+  domestic to 2024 on DOT DB1B). (3) DIAGNOSIS: the record scored two-way local nonstop
+  passengers carried with the airline's seats as an input, and never the feed (BT2 replaces
+  only `captured`, route_forecast 656). A BASIS DEFECT: route_context.py 346 builds seats_ly
+  both directions, so bt2_forecast returns a TWO-WAY figure, and cortex_app.py 1311 passes it
+  as the EACH-WAY p2p_demand_override; confirmed in the saved Bologna payload (captured
+  112,543 two-way against annual_capacity 127,400 each way). The local leg is doubled on every
+  calibrated-engine forecast since the 22 Sep engine switch; with growth this is most of the
+  2-2.6x on the Edinburgh rows. The model's shape: passengers scale one for one with seats
+  (elasticity 0.98-0.99), so it answers "given this schedule, what will it carry" at circa
+  0.68 of seats and cannot answer "what would this route support": the Optimise circularity as
+  a number. Small origins: launch pax over existing O&D median 5.2x under 8k, 0.18 over 80k;
+  the Abha pattern is inside the record for its class. (4) FIX OPTIONS: option 1 BASIS, one
+  line at cortex_app 1311 (halve the override and its band), a defect, ship; option 2 MARKET
+  CEILING tested and REJECTED (blind 60.9 to 48.5); option 2b THE SCHEDULE PRIOR, John's own
+  design given in the W10 chat on 26 Sep (per W10-STATUS v9; John to confirm the wording
+  here): Optimise first asks what an airline would launch on a pair like this from the record
+  (existing pair O&D, haul, carrier type, base strength, sister flag, connecting competition),
+  bounds the sweep to that band on gauge and frequency, ranks by contribution inside it,
+  forecasts at the winner; tested blind: gauge within 20% on 71% of launches, frequency on
+  71%; new types mapped by seat count; a carrier line (flag, never veto); preview Bologna-New
+  York local 41,675 two-way at the market-typical schedule (266 seats at 3.8 a week) against
+  216,000 at Thursday's 77W daily; with the current feed circa 145k total against Avia's own
+  2025 AdB forecast of circa 129.5k, within 15%; option 3 FEED outside the record, W1 tests
+  the controller's shape against the register; option 4 THE STAND PAIR: W10 recommends 73 / 56
+  in-sample and 61 / 36 blind with portfolios of twenty at 93, and does not recommend
+  rebuilding the pickle to carry 83.2 / 70.0; option 5 AIRFIELD AND RANGE alerts (John's
+  ruling in the W10 chat 26 Sep): NOT_FEASIBLE types demoted with the reason, first-screen
+  alerts. CONTROLLER: accepted in full; W10-RULINGS carries the acceptance. The critical path
+  pulls forward: John rules on options 1, 2b, 4 and 5 by Mon 29 Sep (today if he can); W1 ships
+  option 1 on Mon 29 Sep as job 0 with a new baseline (every Run payload moves: the local leg
+  halves; acceptance is the register re-run showing exactly that); W1 builds 2b and 5 from 30
+  Sep to 3 Oct on W10's schedule_prior.csv; acceptance 6-7 Oct; the video and W3 re-runs gain
+  two days. The 25 Sep claimset and mixed runs were made with PYTHONNOUSERSITE=1 and their
+  build lines read sklearn 1.9.0, which answers W10's question about -s.
+- 26 Sep 2026 (John's paste, Suzanna McIntosh, 25 Sep 15:15): Suzanna commits to Routes
+  subject to a family situation that could take her home at short notice; John has booked her
+  a fully flexible flight; she has seen the product and wants to demonstrate it. Programme
+  consequences: W4's host is confirmed; the rota (pre-mortem 27) carries a named second host
+  who can run the full demonstration if Suzanna has to leave, and John names that person
+  (Stefan is the candidate on record); her practice session (item 46) is booked for the week
+  of 29 Sep by video, and the 16 Oct trial stands. No detail of the family situation goes in
+  any programme file beyond this line.
+- 26 Sep 2026 (controller as W1): OPTION 1 BUILT, uncommitted on the DevPC clone. cortex_app
+  1311 passes _bt2["pax"] / 2.0 (each way); forecast_engine.range_low and range_high halved on
+  the same basis with range_basis "each way"; comments state both bases; syntax checked.
+  COMMIT-MSG-26Sep2026-w1-local-leg-each-way.txt. Ships on John's confirmation of option 1
+  (it is a defect fix; the controller recommends shipping today). Acceptance: workstation pull
+  and restart; three-pair probe saved as OPT-29Sep-basis-w8 (or the day's date) and diffed
+  against OPT-24Sep-final-w8, EXPECTED to differ on every local figure and nothing else in
+  kind; register Runs re-run with the same block as 25 Sep into E:\Avia\probe\FACE-<date>
+  and the ratios read against the analysts (EDI-BOS local expected 1.6x from 3.2x). This
+  becomes the new baseline for the schedule-prior build.
+- 26 Sep 2026 (John, in the W10 chat, recorded in W10-STATUS v12 and committed at acf4a1e;
+  the controller quotes W10's record of them): SIX RULINGS. (1) THE STAND PAIR: calibration
+  rule B (lr 0.07, it 1200, minleaf 4, leaves 79), Sabre throughout, on the 6,524: calibrated
+  88% within +-20% and 78% within +-10%, blind portfolios of twenty 94%; one sample and one
+  method across the methodology and the route-forecast accuracy sections; the 2,915 pair is
+  retired. (2) VERSIONS AND TEXT MOVE TOGETHER: the rebuilt pickle (rule B estimator) and the
+  88 / 78 sentence land on every surface in one step. (3) OPTION 1, the basis fix: SHIP.
+  (4) OPTION 2b, the schedule prior with its two additions: GO. (5) AIRFIELD AND RANGE:
+  NOT_FEASIBLE types demoted with the reason, first-screen alerts; John sees it before the
+  freeze and may amend. (6) THE FEED: for the controller to place. STATE AT 26 Sep evening:
+  the rule B pickle is BUILT on the workstation (block H, 11:46, version 1.4 26Sep2026 rule B
+  sabre, in-sample 88.2 / 78.3; the 13 Aug blind artefact kept as
+  bt2_model_v1_3_BLIND_13Aug2026.pkl for rollback) but NOT LIVE: the running server still
+  holds the old pickle in memory. The basis fix is committed and pushed (7f107b2) and is also
+  not live. W10 is COMPLETE. CONTROLLER RULINGS: (a) the next workstation restart is the single
+  step ruling 2 requires, and it does not happen until the evidence file and histogram are
+  rebuilt on rule B (bt2_build_v13 --out-app, W10's script) and committed together with any
+  surface text that states a pair; until then NOBODY RESTARTS THE SERVER (pre-mortem 31);
+  (b) THE FEED: owned by W1 (the controller); measured on the register after that restart,
+  when the local leg is right and only the feed remains; options with their register effect
+  to John by Wed 1 Oct; a feed change before the freeze only if the register shows it is still
+  the dominant error on hub routes after the local fix.
 ## Waiting on John
 
 1. CLOSED 19 Sep: HEAD `11a4c3f` confirmed and pushed.
@@ -1289,7 +1434,7 @@ five contacts.
     comes out of the blocks.
 44. **Sentence 2.3, version A or B** (W6-MESSAGING-VARIANTS v3). Controller's view: B on the
     stand and in the invitations, A where one line is all there is. Silence to 25 Sep: B.
-45. **The third video scenario, a larger hub for a long-haul pitch** (never a client airport):
+45. SUPERSEDED 26 Sep (John): seven worked routes, John picks three or four for the video (decisions log 26 Sep; W3-RULINGS). Was: **The third video scenario, a larger hub for a long-haul pitch** (never a client airport):
     Vienna, Brussels, Lisbon or Copenhagen; Denver, Phoenix, Minneapolis or Seattle. Bordeaux
     and Boise stand from 9 Sep. Silence to 26 Sep: Copenhagen and Denver.
 46. **A Suzanna session on the current build before the 16 Oct trial**, week of 29 Sep, so her
@@ -1317,17 +1462,12 @@ five contacts.
     capped" (Jol's feedback R1; John: "measured" implies an estimate in ASD). Until he answers,
     slide 4 and manual section 2 keep his words and every data surface says "actual".
 54. **Pens as the stand giveaway**, Observatory name and site address, ordered this week (W9).
-55. **Which accuracy pair the product publishes.** RULED IN SHAPE 25 Sep (John): one model,
-    one record, one pair, in the sentence "When this model was used to forecast the new
-    routes that launched since 2016, X% of its forecasts were within 20% of what the route
-    went on to carry and Y% within 10%, across circa 6,500 launches. The past does not
-    predict the future, but that is the record." X/Y = the pair of the model the app runs
-    (bt2_model_v1_3.pkl): 91 / 85 on 6,524 if W10 confirms the pickle is the 1.9.0 V1.3
-    rebuild scored tonight; otherwise the pair W10 measures on the pickle. W10 states the
-    outturn period in one clause for the sentence. Interim until then: 89/82 on 2,915.
-    W10 reproduces the 22 Sep baseline, tests the catchment radius, and reproduces or replaces
-    92/86 on 6,524; John rules on ONE figure set by 3 Oct. Silence to 3 Oct: the interim pair
-    ships and the 92/86 pair stays off every surface.
+55. CLOSED 26 Sep (John, W10 chat): calibration rule B, Sabre throughout, on 6,524
+    launches: 88% within 20% and 78% within 10%; blind portfolios of twenty 94%. John's
+    sentence: "When this model was used to forecast the new routes that launched since 2016,
+    88% of its forecasts were within 20% of what the route went on to carry and 78% within
+    10%, across 6,524 launches. The past does not predict the future, but that is the record."
+    Lands on every surface in the same step as the rule B pickle goes live (ruling 2).
 56. **Open the W10 chat** from the prompt in the controller chat of 22 Sep, and paste the
     original catchment radius text into it if you still have it (the controller restated it).
     Silence: W10 does not start and item 55 defaults to the interim pair.
@@ -1373,6 +1513,17 @@ five contacts.
 62. **The UK reviewer for the queue during Routes**: a named person, their hours on 21-23 Oct
     (UK afternoon covers the Frankfurt day), and a second name. Consequence of silence: packs
     build and nobody sends them; the fallback becomes the plan.
+63. **Routes meeting requests.** Your stand meeting entitlement is live (Routes Scheduling,
+    25 Sep). Log in, request the five (Birmingham, Dublin, Vienna, Dallas Fort Worth, Milan
+    SEA) and the reserves, and tell me the entitlement count and the request deadline. Never
+    paste the platform's attendee list into any chat (condition 5.3). Consequence of silence:
+    the diaries fill and the five become walk-ups regardless of the mailbox.
+64. CLOSED 26 Sep (John): SJC-TPE stays the worked route on the stand. Was: **Two hats at Routes.** You meet Taipei carriers for SJC in the week the TAO stand shows
+    SJC-TPE as its worked route. Is SJC content with that? If yes, the figures on the stand and
+    in your SJC meetings are one set and W3 re-runs them together; if no, the stand demo moves
+    to a never-worked route. Consequence of silence: the stand demo stays SJC-TPE and the risk
+    is yours. Also: confirm the SJC meeting slots before the TAO requests go in (item 63), and
+    read the platform's request deadline today.
 57. **Confirm the git state for chat 4**: HALF CLOSED 25 Sep. Workstation pasted: HEAD
     0eb7139 on main, equal to origin/main, "Controller 24 Sep close: ..."; below it eae2757
     (W1 carried ranking) and ac97cd3 (server console). W1 queue item 1's first half is met.
@@ -1637,7 +1788,8 @@ Written as if it happened. Each has an owner and a mitigation already in the pla
     deadlines fall with the wall artwork. Owner: W6 (words), W9 (print and delivery to the
     Messe with the pens: address, deadline, who receives). Status: open.
 27. **People on the stand.** Exhibitor badges for John, Suzanna and Stefan from Informa; a rota
-    with breaks so two people are always on; who holds the laptop overnight (nothing left on
+    with breaks so two people are always on, written on the assumption that John is OFF the
+    stand for SJC client meetings and his own TAO meetings in blocks on all three days (26 Sep); who holds the laptop overnight (nothing left on
     the stand); equipment insurance; John's own travel and the 20 Oct setup day. Owner: W9,
     John. Status: open.
 28. **After the show.** Who follows up which lead, by when, with what (the order form, the
@@ -1652,6 +1804,15 @@ Written as if it happened. Each has an owner and a mitigation already in the pla
     accepted engine and every answer read by John or Nick for face validity, so the known
     weak scenarios list (W4 3.3a, W5 known issues) is built from evidence not guesswork.
     Owner: controller (the run), John and Nick (the read). Status: open; after the fix.
+
+31. **A server restart puts the rule B model live without its sentence.** The rule B pickle is
+    on the workstation (26 Sep) and loads at the next server start; the basis fix (7f107b2)
+    also waits for a restart. John's ruling 2 requires the pickle and every surface that states
+    a pair to change in one step. Answer: no restart of the Meridian server on the workstation
+    until the rule B evidence file and histogram (bt2_build_v13 --out-app) and any pair text are
+    committed; then one stop-pull-restart, the new baseline, and the register re-run. If the
+    server dies before then, relaunch it knowing it comes up on rule B, and commit the
+    evidence the same day. Owner: controller, W10 (the --out-app build). Status: open.
 
 ---
 

@@ -376,3 +376,33 @@ states the measured build time per pack so the host can promise a delivery time.
    passes. That result sets the hold timer (John) and is the evidence the host manual quotes.
 3. The reviewer's checklist (yesterday's item 4) becomes the pause rule: pause only for a fault
    the standard names; never edit; never hold for taste.
+
+## 26 September 2026: SEVEN WORKED ROUTES, John picks three or four for the video (controller, John's ruling)
+
+Item 45 is superseded. John: "we should probably work 7 or so examples so we can chose 3 or 4
+for video. Australian, us, Europe and Asian route, possible even a carrebbean so we have
+coverage." The seven: (1) SJC-TPE and (2) Bologna-New York (item 28; Bologna's carrier is item
+26, still John's; the video case for Bologna is the fixed A321XLR daily Run unless John says
+otherwise); (3) Bordeaux short-haul and (4) Boise US domestic, as agreed 9 Sep; (5) a Europe-US
+hub case from the old item 45 list (Copenhagen-Denver was the default); (6) an Australian
+secondary airport to Asia or New Zealand (Adelaide, Gold Coast, Cairns or Hobart; Singapore,
+Tokyo or Auckland); (7) a Caribbean airport to the US or Europe. For 5, 6 and 7 W3 proposes
+the exact pairs and airlines by 30 Sep with two checks stated per pair: never a client airport
+(search the Egnyte archive folders by airport name; Barranquilla is a client and is out) and
+data coverage on the pair (the market_build service-area figure and the OAG competing set are
+non-empty and plausible; say what they show). Run all seven now on the current engine for
+scripting; re-run all seven on the accepted engine 7-8 Oct; John picks three or four; record
+8-10 Oct. One pack per route in the visitor-pack format as the rehearsal batch's first seven.
+
+## 26 September 2026, later: a US-Latin America pair; client routes check, never show (controller)
+
+John (umbrella, 26 Sep): a US domestic and a US-Latin America route among the seven, and
+past client routes as a quick check of outcomes. Two uses, kept apart: client routes are run
+INTERNALLY against the analyst's figure in the face-validity register (the controller extends
+it with a US-Latin America row from Shakira 2023, Barranquilla-Miami, and a US domestic row
+from the archive); the video shows NEVER-WORKED analogues only, per John's standing rule, with
+SJC-TPE and Bologna as his named exceptions. So the seven for the video: SJC-TPE; Bologna-New
+York; Bordeaux short-haul; Boise (US domestic); a US-Latin America pair (a US secondary
+airport to Mexico, Colombia or the Dominican Republic; not Barranquilla); Australia; Caribbean
+or the Europe-US hub case, whichever the coverage check favours. Propose pairs and airlines
+with the two checks by 30 Sep, as above.

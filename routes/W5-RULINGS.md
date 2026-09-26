@@ -309,3 +309,10 @@ supplier names. Same answer, no third-party name on a client-facing surface.
 9. Your eight asks are umbrella items 31 (PI, bank, VAT), 34-style: solicitor slot (item 49),
    support (item 50), known-issues sign-off (Nick, ruled unless John objects), OAG and Sabre
    told of the party (item 51).
+
+## 26 September 2026: a two-minute feedback card for John's own meetings (controller)
+
+John wants feedback direct from his meetings, not through the hosts. W5 adds a two-minute
+version of the feedback card for John: five lines (who, route discussed, what they liked, what
+they questioned, next step), usable on paper and on a phone, exported with the lead store on
+the evening of 23 Oct. Nothing else changes on the visitor card.

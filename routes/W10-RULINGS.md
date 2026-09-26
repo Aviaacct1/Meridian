@@ -228,3 +228,38 @@ bt2_forecast.load, AVIA_LOCAL_CACHE), state which library and configuration buil
 whether tonight's 91 / 85 is its in-sample pair; if the pickle is not the 1.9.0 V1.3 rebuild,
 score the pickle itself and report that pair. Also state, in one clause a host can say, the
 outturn period the record scores against. Then the diagnosis of 29 Sep as ruled.
+
+## 26 September 2026, evening: W10-STATUS v9 ACCEPTED IN FULL (controller)
+
+Read in full with the log lines 518-527. Every finding stands as evidence: the pickle stamp
+and its pair, the outturn clause, the basis defect at cortex_app 1311 (confirmed by the
+controller against route_context.py 346, seats_ly x 2.0), the seat elasticity, the small-
+origin ratios, the ceiling rejection, the schedule prior's blind test and the previews. Two
+days early, and the critical path moves with you: John rules on options 1, 2b, 4 and 5 by
+Mon 29 Sep; W1 ships option 1 on 29 Sep as job 0 with a new baseline; W1 builds 2b and 5 on
+30 Sep to 3 Oct from your bt2/schedule_prior.csv, which you write the moment John rules.
+Answers: (a) the 25 Sep claimset and mixed runs were made with $env:PYTHONNOUSERSITE = "1" set
+in the window and both build lines read sklearn 1.9.0; the two log lines you owe can cite
+E:\Avia\probe\claimset-W10-25Sep.log and mixed-W10-25Sep.log with the figures as pasted in
+the umbrella decisions log (25 Sep late). (b) John's rulings given in your chat (the schedule
+prior design, contribution not profit, the carrier line, new types by seat count, the
+airfield and range alerts) are in the umbrella as reported by you; if you hold his words
+verbatim, put them in your next STATUS so the umbrella can quote him rather than you.
+(c) Your build list is adopted as W1's, in your order; the airfield demotion and first-screen
+alerts are shared with W2 for the dashboard. (d) CALIBRATION-RECORD-2026.md v1 by 3 Oct
+stands, from log lines only, and now carries the three pairs for one sample with the plain
+statement of which one the product runs. (e) The stand sentence's figures are item 55 in the
+umbrella; John decides; nothing on any surface changes until he does.
+
+## 26 September 2026, late: W10 COMPLETE; one job left for the next session (controller)
+
+Your v12 and commit acf4a1e are accepted; John's six rulings are in the umbrella decisions log
+as you recorded them, item 55 closed at rule B 88 / 78. The basis fix is committed at 7f107b2.
+One job remains yours before the restart, because ruling 2 requires the pickle and the pair
+text to go live in one step: run bt2_build_v13.py with --out-app to rebuild the evidence file
+(master_backtest_scored.csv) and histogram (accuracy_dist.json) on rule B, state where it can
+run (the DevPC has no E:\Avia stores unless you know otherwise; if it cannot, give the
+workstation block that writes to a folder John can copy from, and the DevPC commit block),
+and list every file under app/ and deck/ that states a pair so the one commit carries them all.
+Then the controller restarts the server once. Also, for the record: your v12 header says
+"Clone at e7eaf9d"; origin is at 7f107b2.

@@ -1,0 +1,14 @@
+W10 session 2: diagnosis from the code, bt2_record_mix.py, record v0.2
+
+routes/W10-STATUS.md v2: what the 89/82 record scored (two-way local nonstop carried on
+realised launches, seats known), what it never scored (the feed), and the basis fault:
+route_context builds seats_ly both directions so bt2_forecast returns a two-way local figure,
+which cortex_app passes into route_forecast's each-way captured; EDI-BOS, AHB-DXB and BLQ-JFK
+local reads exceed the model's own 1.1x-seats ceiling as each-way numbers. Fix options in
+shape; four blocks for John.
+bt2/probe_payload_keys.py: new, read-only payload walker for the basis check.
+bt2/bt2_record_mix.py: new, prints basis, mix, launch_pax/base_mkt by class and the model's
+seat elasticity on its own rows, both samples.
+routes/CALIBRATION-RECORD-2026.md v0.2: section 4 closed as ruled (A); section 8 added, the
+scope of the record and the basis fault.
+No runs; bt2_experiments.log unchanged.

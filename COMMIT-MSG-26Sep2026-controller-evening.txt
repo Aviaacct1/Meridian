@@ -1,0 +1,11 @@
+Controller 26 Sep evening: W10's six rulings logged, item 55 closed at rule B 88/78, restart held, the feed placed, same-day pack and stand rulings
+
+- GTM-STRATEGY-ROUTES-2026.md: John's six rulings from the W10 chat; item 55 closed; the
+  restart held until the rule B evidence and pair text ship together (pre-mortem 31); the
+  feed owned by W1 and decided on the register after the restart; pre-mortem 22-31; items
+  59-64; same-day pack (critical path 2A); Routes meeting platform; SJC two hats; seven
+  worked routes; Suzanna confirmed.
+- routes/W2, W3, W4, W5, W6, W10-RULINGS.md: the day's rulings lines.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01Ai6fXfSs283Z67QSwHLSQs

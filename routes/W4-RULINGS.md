@@ -296,3 +296,14 @@ Manual v3 carries, word for word and rehearsed until the host can say it without
    and 6,524 written on every printed surface.
 The manual does not say calibrated, blind, fit, pickle or environment anywhere a visitor can
 see or hear it.
+
+## 26 September 2026: the host is confirmed; a second host is named (controller)
+
+Suzanna has committed to Routes (John's paste, 25 Sep), with a personal reason she may need to
+leave at short notice; nothing more about it is written anywhere. W4 therefore writes the
+manual so that a second host can run the whole demonstration from it without Suzanna: the
+four Optimise lines, the three-line read-out, the accuracy sentence, the pack flow and the
+fallback are all in the host's words, not hers. John names the second host (item 62 covers
+the UK reviewer; this is a stand role); Stefan is the candidate on record. Suzanna's session
+on the current build (item 46) is booked for the week of 29 Sep by video; the 16 Oct trial
+stands; the rota (W9, pre-mortem 27) assumes one host may be absent for a whole day.
