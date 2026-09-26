@@ -263,3 +263,16 @@ workstation block that writes to a folder John can copy from, and the DevPC comm
 and list every file under app/ and deck/ that states a pair so the one commit carries them all.
 Then the controller restarts the server once. Also, for the record: your v12 header says
 "Clone at e7eaf9d"; origin is at 7f107b2.
+
+## 26 September 2026, night: WHEN THE OLD ENGINE ANSWERS, SAY SO (controller)
+
+Found on the register (umbrella, 26 Sep; pre-mortem 32): the calibrated model declines any pair
+with fewer than 250 existing passengers a year or no Sabre traffic, and the pre-BT2 engine
+answers instead (payload forecast_engine.local_leg "qsi engine", declined carries the reason).
+The accuracy sentence does not describe those forecasts. Wording, the same everywhere: "This
+route is outside the range of the calibrated model (fewer than 250 passengers a year fly it
+today, or none are recorded). The forecast uses Meridian's market-share engine, and the
+accuracy record does not describe it."
+W10: measure how often a visitor will hit this path (the share of the register, of W2's route
+panel when it exists, and of the 6,524's own origin airports' unserved pairs), and state whether
+the 250 floor can be put to a visitor as one simple rule.

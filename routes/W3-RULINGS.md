@@ -426,3 +426,15 @@ rule B evidence (their claims depend on the data, not just the text): deck/spec_
 deck/build_goa_nyc.py, deck/build_ba_sjc.py (2,915, 89 / 82, "18 San Jose launches in the
 2016-2019 and 2025 cohorts", the grey curve). The pitch page, the pack and the stand deck
 carry only John's sentence and the 6,524 from here on.
+
+## 26 September 2026, night: WHEN THE OLD ENGINE ANSWERS, SAY SO (controller)
+
+Found on the register (umbrella, 26 Sep; pre-mortem 32): the calibrated model declines any pair
+with fewer than 250 existing passengers a year or no Sabre traffic, and the pre-BT2 engine
+answers instead (payload forecast_engine.local_leg "qsi engine", declined carries the reason).
+The accuracy sentence does not describe those forecasts. Wording, the same everywhere: "This
+route is outside the range of the calibrated model (fewer than 250 passengers a year fly it
+today, or none are recorded). The forecast uses Meridian's market-share engine, and the
+accuracy record does not describe it."
+W3: the pack cover carries the line when the payload says "qsi engine", and the accuracy
+sentence is omitted from that pack; the build check fails a pack that carries both.

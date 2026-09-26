@@ -176,3 +176,49 @@ the seven Edinburgh rows the tool is 2.0-2.6x the analyst on every hub-ended lon
 non-hub summer route (DEL). At EDI-BOS the local alone (137k two-way) is 3.2x the analyst's
 local and exceeds the service area's whole Boston traffic today (113k two-way); the feed
 (88k) is 1.8x the analyst's 48k. Both mechanisms, on a large established airport.
+
+### Results, 26 Sep: the register re-run after the go-live (rule B + basis fix, 8bb87a3; John's paste)
+
+| pair | al | analyst | carried 2way | ratio | demand 2way | dem_ratio (25 Sep) | local ew | cnx ew |
+|---|---|---|---|---|---|---|---|---|
+| NOC-FRA | LH | 19,379 | 33,306 | 1.72 | 94,958 | 4.90 (4.90) | 2,453 | 14,200 |
+| NOC-BER | LH | 19,277 | 9,766 | 0.51 | 9,766 | 0.51 (0.51) | 2,388 | 2,496 |
+| NOC-MUC | LH | 15,770 | 33,306 | 2.11 | 56,262 | 3.57 (3.57) | 2,022 | 14,631 |
+| NOC-CDG | AF | 54,390 | 53,872 | 0.99 | 103,814 | 1.91 (2.51) | 4,888 | 22,048 |
+| NOC-ZRH | WK | 9,475 | 9,114 | 0.96 | 11,440 | 1.21 (2.21) | 2,970 | 1,587 |
+| NOC-CPH | SK | 16,146 | 16,380 | 1.01 | 31,496 | 1.95 (2.69) | 2,336 | 5,854 |
+| NOC-KTW | W6 | 13,538 | 4,666 | 0.34 | 4,666 | 0.34 (0.34) | 2,323 | 10 |
+| AHB-IST | TK | 94,631 | 31,720 | 0.34 | 31,720 | 0.34 (0.73) | 9,378 | 6,482 |
+| AHB-IST | XY | 106,538 | 127,122 | 1.19 | 127,122 | 1.19 (2.10) | 37,584 | 25,977 |
+| AHB-DXB | XY | 106,830 | 112,346 | 1.05 | 112,346 | 1.05 (2.20) | 36,392 | 19,780 |
+| AHB-ADD | ET | 44,504 | 15,136 | 0.34 | 15,136 | 0.34 (0.58) | 3,513 | 4,055 |
+| AHB-KWI | J9 | 46,729 | 41,066 | 0.88 | 41,066 | 0.88 (1.64) | 13,570 | 6,963 |
+| AHB-DEL | XY | 61,296 | 53,500 | 0.87 | 53,500 | 0.87 (1.76) | 20,520 | 6,230 |
+| EDI-BOS | B6 | 91,062 | 97,460 | 1.07 | 154,924 | 1.70 (2.54) | 24,451 | 24,279 |
+| EDI-JFK | B6 | 94,397 | 97,460 | 1.03 | 182,082 | 1.93 (2.58) | 21,614 | 27,117 |
+| EDI-ATL | DL | 58,439 | 51,696 | 0.88 | 67,950 | 1.16 (1.58) | 7,026 | 18,821 |
+| EDI-PVG | HO | 52,753 | 58,604 | 1.11 | 97,266 | 1.84 (2.37) | 7,566 | 21,736 |
+| EDI-HKG | HX | 52,404 | 56,602 | 1.08 | 79,132 | 1.51 (2.04) | 10,294 | 18,007 |
+| EDI-CAN | CZ | 36,391 | 41,496 | 1.14 | 67,454 | 1.85 (2.37) | 4,098 | 16,650 |
+| EDI-DEL | 6E | 39,686 | 14,620 | 0.37 | 14,620 | 0.37 (0.67) | 5,527 | 1,782 |
+
+Controller's reading, 26 Sep:
+1. The local fix did what W10 said on every row the calibrated model answers. Excluding Knock
+   (indicative), the median demand ratio falls from 2.04 to 1.16; rows within 0.8-1.25 of the
+   analyst rise from none of thirteen to five (AHB-IST XY, AHB-DXB, AHB-KWI, AHB-DEL, EDI-ATL).
+   EDI-BOS local is now 48.9k two-way against the analyst's 43k local (1.14x, was 3.2x).
+2. FOUR KNOCK ROWS ARE UNCHANGED TO THE PASSENGER (NOC-FRA, BER, MUC, KTW): the calibrated model
+   did not answer them and the old QSI engine did. Check forecast_engine.declined in their saved
+   JSONs before reading anything into those four.
+3. THE FEED is now the leading over-read on long-haul demand: connecting is 50-80% of carried on
+   EDI-PVG, CAN, ATL, HKG and the NOC hub rows. The carried headline stays within 15% of the
+   analyst on every Edinburgh long-haul row because the aircraft fills; the excess is in demand
+   and spill. The feed job (controller as W1) starts from these rows.
+4. A NEW UNDER-READ, sharper after the fix: routes below their seat cap now read at about a third
+   of the analyst (AHB-IST on Turkish 0.34, AHB-ADD 0.34, EDI-DEL 0.37, NOC-KTW 0.34, NOC-BER
+   0.51). The halving is correct on basis; the question is whether the model, the analysts, or
+   both are wrong on thin routes. EDI-DEL's analyst row states 45,760 seats for a summer-only 2x
+   A321, which is a full year of seats, so that row is itself suspect. AHB-IST on Turkish reads
+   a quarter of flynas on the same pair and gauge: a carrier effect in the model that needs
+   explaining before the stand. For W10, owner of the record: one question, measured, not
+   assumed.

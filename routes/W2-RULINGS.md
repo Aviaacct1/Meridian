@@ -446,3 +446,24 @@ pass), shown in the queue view, changeable without a restart. A PAUSED job trigg
 day, a short holding email to the visitor from the Observatory address ("your pack follows
 tomorrow morning"), so nothing arrives late in silence; the pack itself sends when released.
 Author on every product file is The Aviation Observatory (umbrella, 26 Sep).
+
+## 26 September 2026, night: WHEN THE OLD ENGINE ANSWERS, SAY SO (controller)
+
+Found on the register (umbrella, 26 Sep; pre-mortem 32): the calibrated model declines any pair
+with fewer than 250 existing passengers a year or no Sabre traffic, and the pre-BT2 engine
+answers instead (payload forecast_engine.local_leg "qsi engine", declined carries the reason).
+The accuracy sentence does not describe those forecasts. Wording, the same everywhere: "This
+route is outside the range of the calibrated model (fewer than 250 passengers a year fly it
+today, or none are recorded). The forecast uses Meridian's market-share engine, and the
+accuracy record does not describe it."
+W2: first-screen line on the result page whenever local_leg is "qsi engine", before the
+headline, not in a footnote; carried into the pack job so the pack says it too.
+
+## 26 September 2026, evening: CONTROLLER EDITED cortex_dashboard.html (announced)
+
+To get Stefan and Suzanna a demo-ready build tonight, the controller made three changes in
+W2's file: the engine notice div (#engineNote) rendered before the basis when
+forecast_engine.local_leg is not "calibrated model"; the airfield and range banners moved above
+the basis line; optimised.airfield_note appended to the Optimise basis. Commit
+COMMIT-MSG-26Sep2026-w1-notices-airfield.txt. Read them next session; restyle freely, keep the
+wording and the position.

@@ -201,7 +201,7 @@ def main():
     _shell = (os.environ.get("AVIA_FORECAST_ENGINE") or "unset").strip().lower()
     print(f"  forecast engine: {a.engine.upper()}"
           + ("  *** QSI engine: ROLLBACK, not the calibrated model ***" if a.engine == "qsi" else
-             "  (calibrated model; claimset reproduced 22 Sep 2026)")
+             "  (calibrated model; the version loaded is stated in every payload as forecast_engine.model; 1.4 rule B from 26 Sep 2026)")
           + (f"   [shell said {_shell}, overridden]" if _shell not in ("unset", a.engine) else ""))
     # Optimise sweep workers (23 Sep 2026): said at start-up so a paste records the setting the
     # server ran with. Unset means the server's default of 8; 1 is the single-process path.

@@ -1,0 +1,21 @@
+W1/W2: first-screen notices (old engine, airfield), NOT_FEASIBLE types set aside in Optimise, each-way label, launcher line
+
+- app/cortex_app.py (api_optimise): every sweep row carries the binding airfield band; a
+  NOT_FEASIBLE type is set aside from the selection and listed at the foot of the sweep table;
+  if every type is infeasible the demand is still shown and airfield_note says the route is
+  unlikely to be servable on runway grounds. UNKNOWN is never demoted. optimised.airfield_note
+  and sweep[].airfield added. (John, 26 Sep, W10-STATUS v12 ruling 5.)
+- app/cortex_dashboard.html: engine notice before the basis when the calibrated model declined
+  the route (pre-mortem 32, wording as ruled); airfield and range banners moved above the basis;
+  airfield_note appended to the Optimise basis line.
+- app/route_forecast.py: the market_build point-to-point note says each way, not both directions.
+- app/warm_demo.py: the engine line no longer claims the 22 Sep claimset; it points at
+  forecast_engine.model.
+
+Acceptance: stop, pull, restart; SOU-JFK blank Optimise shows the airfield note and no
+NOT_FEASIBLE type chosen; SJC-TPE and BLQ-JFK blank Optimise choose as before on feasible types;
+NOC-FRA Run shows the engine notice; three-pair probe diffed against OPT-26Sep-golive-w8
+(expected: new airfield fields only).
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01Ai6fXfSs283Z67QSwHLSQs

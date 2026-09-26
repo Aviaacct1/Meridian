@@ -64,8 +64,8 @@ STEP_NOTES = {
         "How the same total divides between passengers flying only this route and those connecting at "
         "either end, set by how much of each airport's traffic is transfer traffic.",
     "Point to point passengers carried each year":
-        "Passengers flying only this route, both directions. Connecting passengers are added to this "
-        "to reach the route total.",
+        "Passengers flying only this route, each way (one direction; double it for two-way). "
+        "Connecting passengers are added to this to reach the route total.",
 }
 DEMAND_RADIUS_KM = 110.0          # the origin's OWN residence catchment (tight; the hub is a
                                   # competitor it leaks to, not part of its demand)

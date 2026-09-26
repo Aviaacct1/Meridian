@@ -486,10 +486,16 @@
              this page was not produced the way the basis line claims, so it renders above
              the basis, in the reader's path, not in a tooltip. -->
         <div id="runWarnings" style="display:none;margin:-6px 0 10px;padding:10px 12px;border:1px solid #c0392b;border-radius:6px;background:#fdf0ee;color:#7b241c;font-size:13px"></div>
-        <div id="basis" class="foot-note" style="margin:-6px 0 16px"></div>
-        <div id="cap" class="banner ok"></div>
+        <!-- Engine notice (26 Sep 2026, pre-mortem 32): when the calibrated model declines a
+             route (under 250 passengers a year today, or none recorded), the market-share engine
+             answers and the accuracy record does not describe it. Said first, before the basis. -->
+        <div id="engineNote" style="display:none;margin:-6px 0 10px;padding:10px 12px;border:1px solid #b9770e;border-radius:6px;background:#fef5e7;color:#7e5109;font-size:13px"></div>
+        <!-- Airfield and range first (John, 26 Sep 2026): a route the aircraft cannot operate
+             is said before the numbers, not under them. -->
         <div id="airfield" class="banner ok hidden"></div>
         <div id="rangemargin" class="banner warn hidden"></div>
+        <div id="basis" class="foot-note" style="margin:-6px 0 16px"></div>
+        <div id="cap" class="banner ok"></div>
         <div id="viability" class="banner warn hidden"></div>
         <div class="grid">
           <div class="card">
@@ -1790,6 +1796,12 @@ function render(d){
       w.innerHTML="<b>This run is not clean.</b> "+ws.map(x=>String(x)).join("<br>");
     } else { w.style.display="none"; w.innerHTML=""; }
   })();
+  (function(){ const e=$("#engineNote"); if(!e) return;
+    const fe=d.forecast_engine||{};
+    if(fe.local_leg && fe.local_leg!=="calibrated model"){ e.style.display="block";
+      e.innerHTML="<b>This route is outside the range of the calibrated model</b> (fewer than 250 passengers a year fly it today, or none are recorded). The forecast uses Meridian's market-share engine, and the accuracy record does not describe it.";
+    } else { e.style.display="none"; e.innerHTML=""; }
+  })();
   // The email offer follows the run's state: a warned run is never emailed (the server
   // refuses too; this is the honest face of it), and an optimise sweep is not one run.
   (function(){ const b=$("#demoBtn"); if(!b) return;
@@ -1839,6 +1851,7 @@ function render(d){
     // its place, and the user chooses whether to run it.
     if(op.selection_note) $("#basis").textContent += "  Selection: "+op.selection_note+".";
     if(op.seasonal_note) $("#basis").textContent += "  "+op.seasonal_note;
+    if(op.airfield_note) $("#basis").textContent += "  Airfield: "+op.airfield_note+".";
   }
   // WHAT THIS RUN ANSWERED. The same city pair returns a different number depending
   // on whether an airline is attached, and both answers are right: the market on its

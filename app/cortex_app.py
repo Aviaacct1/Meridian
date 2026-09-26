@@ -2934,6 +2934,48 @@ def api_optimise(origin: str, dest: str, airline: str = "", carrier_type: str = 
     if not rows:
         return JSONResponse({"ok": False, "error": _explain_infeasible(origin, dest, dist_km, plan_lf)})
 
+    # AIRFIELD DEMOTION (John, 26 September 2026, on the Southampton preview; W10-STATUS v12
+    # ruling 5). The airfield check was ADVISORY only (4 July): the sweep could choose a type
+    # that cannot take off from one of the two runways and the page would carry a banner under
+    # the headline. Now every sweep row carries the binding end's band, a NOT_FEASIBLE type is
+    # set aside from the selection and listed at the foot of the sweep table with the reason,
+    # and when every type is infeasible the demand is still shown with a first-screen note that
+    # the route is unlikely to be servable on runway grounds. UNKNOWN (no performance anchors)
+    # is never demoted: flag rather than fill, and never invent a verdict.
+    _rows_all = rows
+    airfield_note = None
+    try:
+        import airfield_check as _AFC
+        _af_cache = {}
+        def _af_band(ac):
+            if ac not in _af_cache:
+                _b = []
+                for _apt in (origin, dest):
+                    try:
+                        _b.append((_AFC.capability(ac, _apt, dist_km, plan_lf=plan_lf) or {}).get("band", "UNKNOWN"))
+                    except Exception:                        # noqa: BLE001
+                        _b.append("UNKNOWN")
+                _af_cache[ac] = ("NOT_FEASIBLE" if "NOT_FEASIBLE" in _b else
+                                 "MARGINAL" if "MARGINAL" in _b else
+                                 "OK" if "OK" in _b else "UNKNOWN")
+            return _af_cache[ac]
+        for _r in rows:
+            _r["airfield"] = _af_band(_r["aircraft"])
+    except Exception as _e:                                  # noqa: BLE001
+        for _r in rows:
+            _r["airfield"] = "UNKNOWN"
+        airfield_note = "airfield check unavailable for this sweep (%s)" % _e
+    _feasible = [r for r in rows if r.get("airfield") != "NOT_FEASIBLE"]
+    _demoted = sorted({r["aircraft"] for r in rows if r.get("airfield") == "NOT_FEASIBLE"})
+    if _demoted and _feasible:
+        airfield_note = ("set aside on runway grounds at %s or %s: %s; the choice is among the "
+                         "types that can operate the route" % (origin, dest, ", ".join(_demoted)))
+        rows = _feasible
+    elif _demoted and not _feasible:
+        airfield_note = ("NO AIRCRAFT IN THE SWEEP CAN OPERATE THIS ROUTE ON RUNWAY GROUNDS (%s); "
+                         "the demand is shown, but the route is unlikely to be servable as it stands"
+                         % ", ".join(_demoted))
+
     # SELECTION (John's ruling, 24 September 2026, verbatim in the umbrella decisions log). The
     # 8 August objective above is passengers subject to the load factor reaching the planning
     # band, but what ran until today was "nearest to 80%", which is a fill objective: it ranked
@@ -3061,8 +3103,10 @@ def api_optimise(origin: str, dest: str, airline: str = "", carrier_type: str = 
                                          "freq": r_["freq"], "season": r_.get("season"),
                                          "lf": round(float(r_["lf"]), 3), "demand": round(r_["demand"]),
                                          "carried": round(r_.get("carried", r_["demand"])),
-                                         "seats": r_.get("seats"), "chosen": (r_ is best)}
-                                        for r_ in rows],
+                                         "seats": r_.get("seats"), "chosen": (r_ is best),
+                                         "airfield": r_.get("airfield", "UNKNOWN")}
+                                        for r_ in (sorted(_rows_all, key=lambda x: x.get("airfield") == "NOT_FEASIBLE"))],
+                              "airfield_note": airfield_note,
                               "selected_lf": (round(float(_sel_lf), 3) if _sel_lf is not None else None),
                               "lf_basis_note": _lf_note,
                               "not_viable": not_viable,

@@ -1254,6 +1254,55 @@ five contacts.
   San Jose) are left for W3 and must not be re-run until updated. W4, W5 and W6 correct their
   routes/ documents before anything is sent. THE FEED: owned by the controller as W1 (ruled
   earlier tonight); W10's status line asking for an owner is answered.
+- 26 Sep 2026 (John's pastes): GO-LIVE CONFIRMED. DevPC and workstation at 8bb87a3; server
+  relaunched 12:33 workstation time (BT2, sklearn 1.9.0 user site ignored, 8 workers, MCT master
+  3,668 rows, showcase forecasts 4-9s). /api/forecast BLQ-JFK UA A21X 7x: forecast_engine model
+  "1.4 26Sep2026 rule B sabre", range_basis each way, range 28,922-34,796 each way, tier B,
+  indicative; demand each way: total_demand 65,740 (was 108,266 on 25 Sep), carried 57,967 (the
+  seat cap, unchanged), p2p_carried 26,463, connecting_carried 31,504. The local leg is now in the
+  class of W10's preview and of Avia's 2025 AdB forecast; the FEED is now the larger leg (54% of
+  carried on this route), which is the register's mechanism 1 as expected. Pre-mortem 31 CLOSED.
+  Next: new baseline probe (OPT-26Sep-golive-w8), the register Runs re-run into FACE-26Sep, then
+  the feed options by Wed 1 Oct (controller as W1). Methodology tiles: John to confirm 88 / 78.
+- 26 Sep 2026 (John's paste): NEW BASELINE E:\Avia\probe\OPT-26Sep-golive-w8 on 8bb87a3, rule B,
+  basis fix live (TIMING-20260926-1239.md). Full sweep 56.4 / 78.7 / 54.6s; named 28.4 / 24.4 /
+  16.3s; Run cold 16.1 / 20.3 / 13.1s, warm 11.5 / 9.9 / 7.9s (SJC-TPE / BRS-EWR / DUB-DFW). Runs
+  circa 2s slower than 24 Sep (the rule B estimator is 1,200 iterations and 79 leaves against 600
+  and 31); Optimise unchanged within noise; "about a minute" holds. Every later change is diffed
+  against this folder. Register re-run (FACE-26Sep) next.
+- 26 Sep 2026 (John's paste): REGISTER RE-RUN after the go-live (E:\Avia\probe\FACE-26Sep;
+  table and reading in routes/FACE-VALIDITY-REGISTER-25Sep2026.md). Excluding Knock, median
+  demand against the analyst 2.04 -> 1.16; rows within 0.8-1.25 from none to five of thirteen;
+  EDI-BOS local 3.2x -> 1.14x the analyst's local. Carried within 15% of the analyst on every
+  Edinburgh long-haul row. Remaining: (a) THE FEED, now 50-80% of carried on long-haul hub rows
+  (controller as W1, options by 1 Oct); (b) a sharper UNDER-READ on thin routes below the seat
+  cap (AHB-IST Turkish, AHB-ADD, EDI-DEL, NOC-KTW at 0.34-0.37; AHB-IST Turkish at a quarter of
+  flynas on the same pair and gauge), a question for W10; (c) four Knock rows unchanged to the
+  passenger, answered by the old engine (declined check owed).
+- 26 Sep 2026 (John's paste): THE FOUR UNCHANGED KNOCK ROWS WERE ANSWERED BY THE OLD ENGINE.
+  forecast_engine.local_leg "qsi engine" with declined: NOC-FRA, BER, MUC "The pair records only
+  192 / 153 / 221 passengers a year, below the 250 floor of every route BT2 has ..."; NOC-KTW
+  "route context incomplete: no Sabre traffic between NOC and KTW in 2025, so base_mkt
+  cann[ot] ..."; NOC-CDG answered by the calibrated model (control). So any pair with under 250
+  existing passengers a year, or no Sabre traffic at all, is forecast by the pre-BT2 engine,
+  which the accuracy sentence does not describe. The payload says so; whether the screen, the
+  pack and the host say so is NOT established. Controller ruling: (1) W2: when local_leg is
+  "qsi engine", the result page shows a first-screen line "This route is outside the range of
+  the calibrated model (fewer than 250 passengers a year fly it today, or none are recorded);
+  the forecast uses Meridian's market-share engine, and the accuracy record does not describe
+  it." and the pack carries the same line on its cover; (2) W4: the host says it in those words
+  and does not quote the accuracy sentence on such a route; (3) W10: how often a Routes visitor
+  will hit this path (the share of the register and of W2's route panel that is declined) and
+  whether the 250 floor can be stated as a simple rule; (4) the feed work covers both engines.
+  Pre-mortem 32.
+- 26 Sep 2026, 16:00 Gulf time (John): "It is only 4pm local so I have another few hours today.
+  It would be great to get as close as possible to a fully fixed demo ready Meridian. That would
+  mean Stefan and Suzy have more time to go in and play with it as they need." Controller built,
+  uncommitted: engine notice and airfield/range banners first-screen (pre-mortem 32; W10 ruling
+  5); NOT_FEASIBLE types set aside in Optimise with a note; the each-way label on market_build;
+  the launcher's engine line. W10 asked, in parallel, for bt2/schedule_prior.csv so the schedule
+  prior can be wired tonight if it arrives. Tester note for Stefan and Suzanna written
+  (routes/TESTER-NOTE-26Sep2026.md).
 ## Waiting on John
 
 1. CLOSED 19 Sep: HEAD `11a4c3f` confirmed and pushed.
@@ -1822,7 +1871,15 @@ Written as if it happened. Each has an owner and a mitigation already in the pla
     until the rule B evidence file and histogram (bt2_build_v13 --out-app) and any pair text are
     committed; then one stop-pull-restart, the new baseline, and the register re-run. If the
     server dies before then, relaunch it knowing it comes up on rule B, and commit the
-    evidence the same day. Owner: controller, W10 (the --out-app build). Status: open.
+    evidence the same day. Owner: controller, W10 (the --out-app build). Status: CLOSED 26 Sep, live at 8bb87a3, model 1.4 rule B confirmed in the payload.
+
+32. **A thin route is forecast by the old engine under the new accuracy sentence.** Found 26 Sep
+    on the register: pairs with under 250 existing passengers a year, or no Sabre traffic, are
+    declined by the calibrated model and answered by the pre-BT2 engine (NOC-FRA 4.9x the
+    analyst). New markets from small airports, which visitors will type, take this path. Answer:
+    a first-screen line and a pack-cover line when the old engine answers, and the host never
+    quotes the accuracy sentence on such a route (W2, W3, W4); W10 measures how often it bites.
+    Status: open.
 
 ---
 

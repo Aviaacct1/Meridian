@@ -322,3 +322,14 @@ within 20% of the actual total 94% of the time." Every file of yours that carrie
 92 / 86, 2,915 or the DB1B grading sentence (W10-STATUS v14 lists: STAND-HOST-MANUAL.md) is corrected in your
 next session and before anything is sent or printed. The product goes live on 88 / 78 at the
 next server restart.
+
+## 26 September 2026, night: WHEN THE OLD ENGINE ANSWERS, SAY SO (controller)
+
+Found on the register (umbrella, 26 Sep; pre-mortem 32): the calibrated model declines any pair
+with fewer than 250 existing passengers a year or no Sabre traffic, and the pre-BT2 engine
+answers instead (payload forecast_engine.local_leg "qsi engine", declined carries the reason).
+The accuracy sentence does not describe those forecasts. Wording, the same everywhere: "This
+route is outside the range of the calibrated model (fewer than 250 passengers a year fly it
+today, or none are recorded). The forecast uses Meridian's market-share engine, and the
+accuracy record does not describe it."
+W4: the host says it in those words and does not quote the accuracy sentence on such a route.
