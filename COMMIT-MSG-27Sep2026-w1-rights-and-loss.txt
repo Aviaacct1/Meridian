@@ -1,0 +1,21 @@
+W1: Optimise respects traffic rights on auto-chosen airlines; loss-making picks said (John, TIF-AUH, 26 Sep)
+
+- app/cortex_app.py (_candidate_airlines): an AUTO-CHOSEN airline must have its home country at
+  one end of the route, or (EU common aviation area: EU27, NO, IS, CH) be an area carrier on an
+  intra-area pair, or already fly the pair in the OAG week. Home country is measured, not listed:
+  the country holding most of the carrier's distinct departures in the current OAG week
+  (airportsdata). Unknown countries or home: not filtered (flag rather than fill). A NAMED airline
+  is never filtered. Found on TIF-AUH, where IndiGo (home IN) was chosen for Saudi Arabia to Abu
+  Dhabi. optimised.rights_note names the carriers set aside.
+- app/cortex_app.py (api_optimise): optimised.loss_note when the chosen schedule's route margin is
+  negative: either it contributes before ownership but loses at the generic ownership cost, or it
+  does not cover operating costs and the route is not a proposition on these inputs.
+- app/cortex_dashboard.html: both notes on the Optimise basis line.
+
+Known limit, for the record: a carrier whose departures mostly sit outside its registration
+country (a pan-European low-cost carrier flying to a non-EU point) can be measured to the wrong
+home; the "already flies the pair" rule rescues existing routes, and a named airline is never
+filtered.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01Ai6fXfSs283Z67QSwHLSQs

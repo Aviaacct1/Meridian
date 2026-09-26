@@ -1898,6 +1898,8 @@ function render(d){
     if(op.selection_note) $("#basis").textContent += "  Selection: "+op.selection_note+".";
     if(op.seasonal_note) $("#basis").textContent += "  "+op.seasonal_note;
     if(op.airfield_note) $("#basis").textContent += "  Airfield: "+op.airfield_note+".";
+    if(op.loss_note) $("#basis").textContent += "  Economics: "+op.loss_note+".";
+    if(op.rights_note) $("#basis").textContent += "  Airlines "+op.rights_note+".";
   }
   // WHAT THIS RUN ANSWERED. The same city pair returns a different number depending
   // on whether an airline is attached, and both answers are right: the market on its

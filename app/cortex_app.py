@@ -2544,6 +2544,72 @@ def _schedule_prior_pair(origin, dest):
     return out
 
 
+# TRAFFIC RIGHTS ON AUTO-CHOSEN AIRLINES (John, 26 Sep 2026, TIF-AUH: Optimise chose IndiGo to fly
+# Saudi Arabia to Abu Dhabi, a fifth-freedom route it could not operate). The candidate list takes the
+# biggest carriers at each end, and nothing checked the airline belongs to either country. Meridian has
+# no airline-country table, so HOME COUNTRY IS MEASURED: the country holding most of the carrier's
+# distinct departures in the current OAG week (airportsdata countries). Rule for an AUTO-CHOSEN airline:
+#   - its home country is the origin's or the destination's country (third and fourth freedoms; on a
+#     domestic pair this is the cabotage rule), or
+#   - both airports and the carrier's home lie in the European common aviation area (EU single market:
+#     EU27 plus Norway, Iceland and Switzerland), where any member carrier may fly any intra-area pair, or
+#   - the carrier already flies this exact pair in the OAG week (it evidently holds the rights).
+# An airline the client NAMES is never filtered. Set-aside carriers are reported in the payload.
+_EU_AREA = set("AT BE BG HR CY CZ DK EE FI FR DE GR HU IE IT LV LT LU MT NL PL PT RO SK SI ES SE NO IS CH".split())
+_CARRIER_HOME = {}
+
+
+def _carrier_home(con, week, carrier):
+    """ISO country with the most distinct departures for this carrier in the OAG week, or None."""
+    key = (week, carrier)
+    if key in _CARRIER_HOME:
+        return _CARRIER_HOME[key]
+    home = None
+    try:
+        import schedule_prior as _SPc
+        rows = con.execute("SELECT dep_airport, COUNT(*) FROM (SELECT DISTINCT carrier, dep_airport, arr_airport, "
+                           "local_dep_time, local_arr_time, flying_time FROM oag WHERE week=? AND carrier=?) "
+                           "GROUP BY 1", [week, carrier]).fetchall()
+        by = {}
+        for ap_, n in rows:
+            c = _SPc.country(ap_)
+            if c:
+                by[c] = by.get(c, 0) + int(n)
+        home = max(by, key=by.get) if by else None
+    except Exception:                                        # noqa: BLE001
+        home = None
+    _CARRIER_HOME[key] = home
+    return home
+
+
+def _rights_ok(con, week, carrier, o_codes, d_codes, ctry_o, ctry_d):
+    """(True, None) when an auto-chosen carrier may plausibly operate the pair, else (False, reason)."""
+    if not (ctry_o and ctry_d):
+        return True, None                                    # countries unknown: flag rather than fill
+    home = _carrier_home(con, week, carrier)
+    if home is None:
+        return True, None                                    # home not measured: do not guess
+    if home in (ctry_o, ctry_d):
+        return True, None
+    if ctry_o in _EU_AREA and ctry_d in _EU_AREA and home in _EU_AREA:
+        return True, None
+    try:
+        ph_o = ",".join("?" * len(o_codes)); ph_d = ",".join("?" * len(d_codes))
+        n = con.execute("SELECT COUNT(*) FROM oag WHERE week=? AND carrier=? AND "
+                        "((dep_airport IN (%s) AND arr_airport IN (%s)) OR (dep_airport IN (%s) AND arr_airport IN (%s)))"
+                        % (ph_o, ph_d, ph_d, ph_o),
+                        [week, carrier] + list(o_codes) + list(d_codes) + list(d_codes) + list(o_codes)).fetchone()[0]
+        if n:
+            return True, None
+    except Exception:                                        # noqa: BLE001
+        pass
+    return False, ("based in %s, and neither end of this route is in %s, so it would need traffic rights "
+                   "it does not normally hold" % (home, home))
+
+
+_CAND_SET_ASIDE = {}
+
+
 def _candidate_airlines(origin, dest, dist_km, limit=3):
     """Airlines that could plausibly fly this sector: the biggest carriers based at the destination and
     origin airports (OAG) whose KNOWN fleet includes a range-feasible aircraft. Destination-based
@@ -2569,15 +2635,31 @@ def _candidate_airlines(origin, dest, dist_km, limit=3):
             return [r[0] for r in rows if r[0]]
 
         out = []
-        for c in top(dest, True, 8) + top(origin, False, 5):
-            cu = (c or "").upper()
-            if cu in out:
-                continue
-            fleet, known = AF.fleet_for(cu, avail, dist_km)
-            if known and fleet:
+        set_aside = {}
+        import schedule_prior as _SPr
+        om_ = GEO.resolve_metro(origin, served_index=ctx.get("served"), dump=DUMP, expand=True)
+        dm_ = GEO.resolve_metro(dest, served_index=ctx.get("served"), dump=DUMP, expand=True)
+        o_codes, d_codes = (om_.get("airports") or [om_.get("primary")]), (dm_.get("airports") or [dm_.get("primary")])
+        ctry_o, ctry_d = _SPr.country(om_.get("primary")), _SPr.country(dm_.get("primary"))
+        rcon = duckdb.connect(ctx["oag_db"], read_only=True)
+        try:
+            for c in top(dest, True, 8) + top(origin, False, 5):
+                cu = (c or "").upper()
+                if cu in out or cu in set_aside:
+                    continue
+                fleet, known = AF.fleet_for(cu, avail, dist_km)
+                if not (known and fleet):
+                    continue
+                ok, why = _rights_ok(rcon, ctx["week"], cu, o_codes, d_codes, ctry_o, ctry_d)
+                if not ok:
+                    set_aside[cu] = why
+                    continue
                 out.append(cu)
-            if len(out) >= limit:
-                break
+                if len(out) >= limit:
+                    break
+        finally:
+            rcon.close()
+        _CAND_SET_ASIDE[(origin.upper(), dest.upper())] = set_aside
         return out
     except Exception:
         return []
@@ -3326,6 +3408,39 @@ def api_optimise(origin: str, dest: str, airline: str = "", carrier_type: str = 
             _al_name = _AN.AIRLINES.get((best.get("airline") or "").upper()) or ""
         except Exception:                                    # noqa: BLE001
             _al_name = ""
+        # CARRIERS SET ASIDE ON TRAFFIC RIGHTS (26 Sep 2026), named so a visitor sees why their home
+        # airport's biggest foreign carrier is not the answer.
+        _rights_note = None
+        if not al:
+            _sa = _CAND_SET_ASIDE.get((origin.upper(), dest.upper())) or {}
+            if _sa:
+                try:
+                    import airline_names as _ANr
+                    _nm = lambda c: (_ANr.AIRLINES.get(c) or c) + " (" + c + ")"
+                except Exception:                            # noqa: BLE001
+                    _nm = lambda c: c
+                _rights_note = ("not considered, as neither end of the route is in their home country: "
+                                + "; ".join(_nm(c) for c in sorted(_sa)))
+        # A SCHEDULE THAT LOSES MONEY IS SAID ON THE FIRST SCREEN (26 Sep 2026, TIF-AUH: IndiGo 3x chosen
+        # on contribution with a -5.6% route margin and nothing saying so). Contribution is before
+        # ownership, the margin after it; when they disagree the reader is told which way and why.
+        _loss_note = None
+        try:
+            _ec = final.get("economics") or {}
+            _mg = _ec.get("margin")
+            _cb = _ec.get("annual_contribution_before_ownership")
+            if _mg is not None and float(_mg) < 0:
+                if _cb is not None and float(_cb) > 0:
+                    _loss_note = ("this schedule covers its operating costs and contributes towards aircraft "
+                                  "ownership, but at Meridian's generic ownership cost it loses money (margin "
+                                  "%.1f%%); whether it works depends on the airline's own ownership cost"
+                                  % (float(_mg) * 100))
+                else:
+                    _loss_note = ("this schedule does not cover its operating costs (margin %.1f%%), and it is "
+                                  "the best contribution among the schedules in the planning band; on these "
+                                  "inputs the route is not a proposition" % (float(_mg) * 100))
+        except Exception:                                    # noqa: BLE001
+            _loss_note = None
         final["optimised"] = {"airline": best["airline"], "airline_auto": (not al) and bool(best["airline"]),
                               "airline_name": _al_name,
                               "aircraft": best["aircraft"], "freq": best["freq"],
@@ -3362,6 +3477,8 @@ def api_optimise(origin: str, dest: str, airline: str = "", carrier_type: str = 
                                          "airfield": r_.get("airfield", "UNKNOWN")}
                                         for r_ in (sorted(_rows_all, key=lambda x: x.get("airfield") == "NOT_FEASIBLE"))],
                               "airfield_note": airfield_note,
+                              "rights_note": _rights_note,
+                              "loss_note": _loss_note,
                               "selected_lf": (round(float(_sel_lf), 3) if _sel_lf is not None else None),
                               "lf_basis_note": _lf_note,
                               "not_viable": not_viable,

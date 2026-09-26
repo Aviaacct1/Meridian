@@ -479,3 +479,12 @@ wording and the position.
   the catchment picture may show road times while forecasts run on straight line, and the page
   says so. W3: the pack's catchment page is drawn from the same catchment_profile; check it for
   minute labels on a straight-line run and for any client airport named in its notes.
+
+## 27 September 2026: two presentation slips for W2, from John's TIF-AUH run
+
+- Headline "Total forecast ... incl. feed" prints when the connecting feed is zero (a
+  point-to-point carrier). Say "incl. feed" only when connecting is above zero.
+- The rotation diagram draws seven days ("Pattern basis: daily") for a 3x/week schedule. Draw the
+  operated days only, or say which days are assumed.
+Also announced: controller edit in the Optimise basis line (rights_note, loss_note), commit
+message COMMIT-MSG-27Sep2026-w1-rights-and-loss.txt.
