@@ -12,4 +12,5 @@ schedule prior) recommended with John's two additions; the Bologna comparison wi
 own 2025 forecast; the airfield and range alerts for W1/W2; the build list; outstanding.
 routes/CALIBRATION-RECORD-2026.md v0.7: sections 6, 8, 9 and 10.
 bt2/: bt2_pickle_stamp.py, bt2_record_mix.py, probe_payload_keys.py, bt2_ceiling_test.py,
-bt2_schedule_prior.py, bt2_prior_preview.py, all read-only; nothing under app/ touched.
+bt2_schedule_prior.py, bt2_prior_preview.py, bt2_calib_grid.py (the calibration rule grid
+on the 6,524 for John's stand-pair ruling), all read-only; nothing under app/ touched.

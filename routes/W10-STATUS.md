@@ -141,11 +141,21 @@ The three pairs on 6,524 stand under every option; none touches the record's ari
 3. FEED: outside the record. The controller's shape (feed as a share of the route's own
    size by haul and hub) is tested against the register rows with W1; W10 does not score
    it on the sector target.
-4. THE STAND PAIR: no code. W10 recommends: for the model the product runs, on 6,524 real
-   launches, calibrated 73% within +-20% and 56% within +-10% (in-sample), blind at route
-   level 61% and 36%, blind portfolios of twenty 93%, with the outturn clause. The
-   alternative, rebuilding the pickle on the published-rule configuration to carry 83.2 /
-   70.0, is a product change and not recommended.
+4. THE STAND PAIR. John, 26 Sep: 73 / 56 is not a pair a statistically literate buyer
+   will spend time on; 89 / 82 was judged right (believable, not too good); one sample and
+   one methodology across the general method and the accuracy sections, so the hosts have
+   one story. W10's constraint, unchanged: the pair must describe the estimator that
+   answers a route, so whichever calibration rule is declared, the estimator fitted under
+   it goes into the pickle (bt2_build_v13, one line), with the word "calibrated", the
+   declared rule on the methodology page, and the blind portfolios of twenty as the
+   out-of-sample statement (V1.3-RULE precedent: the rule is a declared choice). Block G
+   (bt2/bt2_calib_grid.py) prints, on the 6,524, for the blind reference, the published
+   rule, three rules between it and memorisation, and memorisation: the in-sample pair on
+   both bases, the same rule's blind route pair and portfolios of twenty, and its p25-p75
+   coverage, so John picks the rule with its out-of-sample cost in view. Target circa
+   87 / 80 on n=6,524 (John). The cost of a lighter rule is a noisier estimator route by
+   route (blind route figure falls, never published) and a tighter band; the register is
+   re-run on the rebuilt pickle before the freeze.
 5. AIRFIELD AND RANGE (John, 26 Sep, on the Southampton preview): the layers exist
    (app/airfield_check.py, Southampton anchored on Airbus RP2541272 at 1,814 m TORA, 6,797
    airports; _attach_range_margin) and are attached on every app path, but are ADVISORY by
@@ -206,7 +216,7 @@ probe_payload_keys.py, bt2_ceiling_test.py, bt2_schedule_prior.py, bt2_prior_pre
 ```
 cd C:\AviaDev
 git pull
-git add routes/W10-STATUS.md routes/CALIBRATION-RECORD-2026.md bt2/bt2_experiments.log bt2/probe_payload_keys.py bt2/bt2_ceiling_test.py bt2/bt2_schedule_prior.py bt2/bt2_prior_preview.py routes/COMMIT-MSG-26Sep2026-w10-pickle-stamp.txt
+git add routes/W10-STATUS.md routes/CALIBRATION-RECORD-2026.md bt2/bt2_experiments.log bt2/probe_payload_keys.py bt2/bt2_ceiling_test.py bt2/bt2_schedule_prior.py bt2/bt2_prior_preview.py bt2/bt2_calib_grid.py routes/COMMIT-MSG-26Sep2026-w10-pickle-stamp.txt
 git commit -F routes/COMMIT-MSG-26Sep2026-w10-pickle-stamp.txt
 git push
 ```
