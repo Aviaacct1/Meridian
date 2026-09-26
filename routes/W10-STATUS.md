@@ -1,8 +1,9 @@
 # W10 status: FINAL CALIBRATION TEST
 
-Written by W10 only, rewritten every session. Version 18, 26 September 2026, late evening. The frequency range is run and fails
-its rule (W10-FREQ-RANGE); the class table is final for gauge and frequency, and the section below is the complete spec W1 wires in
-one go (John's ruling: no interim wiring, testers back after). Clone at d2449f1. Every figure below has a log line in bt2/bt2_experiments.log.
+Written by W10 only, rewritten every session. Version 19, 26 September 2026, night. The class table is the wired design (v18
+spec, amended at step 2 below for a level 0). John asked for one further improvement: frequency re-measured as the timetable flew it,
+script bt2/bt2_retime_freq.py, waiting for its workstation run (block R1). If it wins, it replaces the table file; no rewire.
+Clone at b110b87. Every figure below has a log line in bt2/bt2_experiments.log.
 
 ## One line for John
 
@@ -103,7 +104,11 @@ run and is NOT to be wired.
 1. Load E:\Avia\bt2_relaxed\schedule_prior.csv through the pickle's resolver (bt2_forecast._model_path roots, subfolder
    bt2_relaxed then bt2). Absent file: Optimise runs as today and the first screen says the schedule prior is not loaded.
 2. Key the pair on the four fields in the class-key table above, with market_band on route_context.market(a, b, year)[0], NOT
-   market_build step 1. Take the first level with n of 20 or more. Report level, key and n in the payload.
+   market_build step 1, PLUS region_pair (bt2_record_mix.region_pair: EU, NA, AS, ME or OT by airportsdata country; international
+   pairs sorted and joined, e.g. EU-NA, or intra-EU; domestic pairs 'domestic US', 'domestic EU' or 'domestic other'). Levels run 0
+   to 4; level 0 is the level 1 key plus region_pair. Take the first level with n of 20 or more. The v1 file has no level 0 rows and
+   no region_pair column, so read the column as blank when absent; the lookup then starts at level 1 exactly as before. Report
+   level, key and n in the payload.
 3. Gauge: sweep aircraft whose seat count lies in the row's gauge p25-p75 (types mapped by seats, so A220 and A321XLR fall in by
    seat count; NOT_FEASIBLE types stay set aside as at 156de6e). If no feasible type lies inside, take the nearest feasible seat
    count and say so.
@@ -116,6 +121,24 @@ run and is NOT to be wired.
    both; below 5, print "fewer than 5 comparable launches". Never use the carrier's all-launches row (United's is its regional
    feed, median 76 seats).
 7. The payload carries the class row, the carrier line and which constraint bound, so a tester sees why the schedule is what it is.
+
+**Frequency re-measured as timetabled (v19, John's go).** The record's frequency averages every carrier's departures over every
+operated month, launch month included, so a 3x launched mid-month reads circa 2.4. bt2/bt2_retime_freq.py re-measures each launch as
+the launching carrier's departures in the first full month after launch, per week per direction, from the same pair_months extract
+(fallbacks counted and printed). It then scores, blind by cohort against that measure: T1 the current table, T2 the table refitted
+on it, T2R T2 plus a region pair level 0. Decision rule set before the run: T2 wins at 45-55% inside p25-p75 and a better median
+within +-20% than T1; T2R wins over T2 if also 45-55%, at least 5% narrower, and no worse within +-20%. --out writes only for a
+winner and keeps the current file as schedule_prior_v1.csv. Gauge is unchanged.
+
+**Block R1, Workstation Actual (RDP, sees E:).**
+
+```
+cd C:\src\meridian
+git pull
+cd C:\src\meridian\bt2
+$env:AVIA_LOCAL_CACHE="E:\Avia"; $env:AVIA_APP_DIR="C:\src\meridian\app"; $env:AVIA_BT2_TARGET="nonstop"; $env:AVIA_BT2_DIR="E:\Avia\bt2_relaxed"; $env:AVIA_BT2_COHORTS="2016,2017,2018,2019,2024,2025"
+py -3.12 -s bt2_retime_freq.py --out E:\Avia\bt2_relaxed\schedule_prior.csv 2>&1 | Tee-Object -FilePath E:\Avia\probe\retime-W10.log
+```
 
 **Bologna-New York on the Sabre pair** (base_mkt 37,814, 6,647 km, international, FSC): level 1, n=205; gauge 239 / 278 / 294 seats
 (p25 / median / p75), frequency 2.2 / 3.0 / 4.1 per week per direction. United line (long-haul international, n=25): gauge 176 / 214 /

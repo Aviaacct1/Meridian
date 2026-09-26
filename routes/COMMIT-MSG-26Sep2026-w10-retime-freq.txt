@@ -1,0 +1,14 @@
+W10 26 Sep night: frequency re-measured as timetabled; region level; W1 key amended for level 0
+
+bt2/bt2_retime_freq.py: re-measures each launch's frequency as the launching carrier's departures
+in the first full month after launch (fallbacks counted), from pair_months_L.csv, and scores blind
+by cohort the current table, the table refitted on the new measure, and the same with a region
+pair level 0. Decision rule set before the run; --out writes only for a winner and keeps the
+current table as schedule_prior_v1.csv. Not yet run.
+
+routes/W10-STATUS.md v19: the method, the rule, block R1, and step 2 of the W1 wiring spec amended
+so the lookup reads a region_pair column and a level 0 from the start (absent in v1, so v1 behaves
+exactly as before); whichever table wins is then a data swap.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_015NbinCPXuUWF3VuAEiSjFX
