@@ -1,0 +1,12 @@
+W1 27 Sep: feed options measured on the register; fare basis check for the margin flag
+
+- routes/W1-STATUS.md: V1 against QSI feed level on the face-validity register. V1 median 1.01,
+  14 of 21 within +-20% of the analysts; QSI level median 1.01, 13 of 21, and it lifts SJC-TPE to
+  183,856 against the circa 120k control. Recommendation: keep V1.
+- tools/fare_check.py (new, read-only): per pair, Sabre all-cabin against economy-only and
+  premium-only fares, total against base, premium share. The P&L prices economy seats at the
+  all-cabin TOTAL fare and the business cabin again at 1,400 USD; this measures that choice.
+- tools/probe_register.ps1: -Ports accepts "8010,8011" under -File as well as -Command.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01Ai6fXfSs283Z67QSwHLSQs

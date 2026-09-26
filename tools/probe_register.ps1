@@ -7,8 +7,10 @@
 #     powershell -ExecutionPolicy Bypass -File .\tools\probe_register.ps1 -Ports 8010,8011 -Tag feed
 #
 # The password is read with Read-Host and never stored. Output: E:\Avia\probe\register_<Tag>_<stamp>.csv
-param([int[]]$Ports = @(8010), [string]$Tag = "run", [int]$Year = 2027, [string]$OutDir = "E:\Avia\probe")
+param([object[]]$Ports = @(8010), [string]$Tag = "run", [int]$Year = 2027, [string]$OutDir = "E:\Avia\probe")
 
+# -File passes "8010,8011" as one string; -Command passes an array. Accept both.
+$Ports = @($Ports | ForEach-Object { "$_" -split "[, ]+" } | Where-Object { $_ } | ForEach-Object { [int]$_ })
 $pw = Read-Host "Meridian password" -AsSecureString
 $plain = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($pw))
 $hdr = @{ Authorization = "Basic " + [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("meridian:$plain")) }
