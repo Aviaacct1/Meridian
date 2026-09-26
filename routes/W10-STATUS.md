@@ -191,7 +191,15 @@ register.
    years the record catches up on its own. (ii) A carrier cross-check on every Optimise
    result: the chosen carrier's own launches on comparable pairs (n, gauge, frequency),
    printed beside the answer, with "fewer than N comparable launches" stated when that is
-   the case. SCORE (block E, log lines W10-SCHEDULE-PRIOR, W10-SCHEDULE-PRIOR-LOOKUP): the record
+   the case. How it feeds the decision (W10's proposal, 26 Sep, for John): a flag, never a
+   veto. Where the carrier has five or more comparable launches and its own band does not
+   overlap the pair's prior band, Optimise re-runs the sweep inside the carrier's own band
+   and shows both answers, headline on the carrier's ("as United launches such routes"),
+   the market-typical schedule beside it; where the carrier has fewer than five, the
+   headline stays on the market prior and the line says so; capacity_frame bounds the
+   aircraft to what the carrier actually flies on sectors of that length before either.
+   The tool never says an airline would not do it; it shows the airline's own pattern so
+   the host can. SCORE (block E, log lines W10-SCHEDULE-PRIOR, W10-SCHEDULE-PRIOR-LOOKUP): the record
    predicts gauge to within +-20% on 71% of launches (91% within +-50%) and weekly
    frequency to within +-20% on 71% (88% within +-50%), blind by cohort, from pre-launch
    facts alone; carrier identity adds three points on gauge. Annual seats as flown are not
@@ -260,6 +268,26 @@ py -3.12 -s probe_payload_keys.py E:\Avia\probe\BLQ-JFK-25Sep\opt_BLQ-JFK.json
 
 Block D, DONE 26 Sep (ceiling-relaxed-W10.log, ceiling-canon-W10.log). Kept for the record.
 
+Block F, John's question of 26 Sep: what the new logic gives for Bologna, Genoa and
+Southampton to New York (bt2/bt2_prior_preview.py, new; after the workstation pulls). Reads
+the raw pair O&D from Sabre, states the prior's band and the carrier line, and runs the
+model at the p25, median and p75 schedules through the app's own route_context and
+bt2_forecast. Local nonstop only, two-way and each way; the feed is not in it.
+
+**Workstation Actual**
+```
+cd C:\src\meridian
+git pull
+cd C:\src\meridian\bt2
+$env:AVIA_LOCAL_CACHE = "E:\Avia"
+$env:AVIA_APP_DIR     = "C:\src\meridian\app"
+$env:AVIA_BT2_TARGET  = "nonstop"
+$env:AVIA_BT2_DIR     = "E:\Avia\bt2_relaxed"
+$env:AVIA_BT2_COHORTS = "2016,2017,2018,2019,2024,2025"
+$env:AVIA_FORECAST_ENGINE = "bt2"
+py -3.12 -s bt2_prior_preview.py BLQ-JFK:UA GOA-JFK:UA SOU-JFK:UA 2>&1 | Tee-Object -FilePath E:\Avia\probe\prior-preview-W10.log
+```
+
 Block E, DONE 26 Sep (schedprior-relaxed-W10.log, schedprior-lookup-BLQ-W10.log). The script
 now also scores the annualised target (gauge x freq x 52); re-run when convenient, same
 command, to put that figure in the log.
@@ -316,7 +344,7 @@ in the record. Until then the record quotes the controller's rulings file as the
 ```
 cd C:\AviaDev
 git pull
-git add routes/W10-STATUS.md routes/CALIBRATION-RECORD-2026.md bt2/bt2_experiments.log bt2/probe_payload_keys.py bt2/bt2_ceiling_test.py bt2/bt2_schedule_prior.py routes/COMMIT-MSG-26Sep2026-w10-pickle-stamp.txt
+git add routes/W10-STATUS.md routes/CALIBRATION-RECORD-2026.md bt2/bt2_experiments.log bt2/probe_payload_keys.py bt2/bt2_ceiling_test.py bt2/bt2_schedule_prior.py bt2/bt2_prior_preview.py routes/COMMIT-MSG-26Sep2026-w10-pickle-stamp.txt
 git commit -F routes/COMMIT-MSG-26Sep2026-w10-pickle-stamp.txt
 git push
 ```

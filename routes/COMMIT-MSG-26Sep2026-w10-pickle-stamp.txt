@@ -17,3 +17,6 @@ bt2/bt2_schedule_prior.py: new, read-only; tests John's Optimise design (the sch
 predict the schedule an airline would launch from pre-launch facts, blind by cohort, with and
 without carrier identity) and prints the carrier check line for one pair (--lookup). RESULT: gauge and frequency each
 predictable within +-20% on 71% of launches blind; the prior holds; option 2b recommended.
+bt2/bt2_prior_preview.py: new, read-only; the new Optimise logic previewed on named pairs
+(prior band, carrier line, model at p25/median/p75 schedules) through the app's own route_context
+and bt2_forecast, without touching app/.
