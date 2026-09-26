@@ -63,13 +63,20 @@ def main():
           % (len(rows), B.BT2, os.environ.get("AVIA_FORECAST_ENGINE"), _provenance()))
     st = BF.status()
     print("model: %s (%s, trained on %s)" % (st.get("model_path"), st.get("population"), st.get("trained_on")))
+    # THE BASE YEAR, as the app passes it (cortex_app 1287: year=ctx["year"], the latest Sabre source
+    # year). Left to default, route_context builds pre_month from today's calendar year, 2026-01, for
+    # which the OAG store holds no legs, and refuses the route by name. Measured 26 Sep 2026.
+    import duckdb
+    _c = duckdb.connect(RC._store("sabre"), read_only=True)
+    YEAR = int(_c.execute("SELECT max(source_year) FROM sabre").fetchone()[0]); _c.close()
+    print("base year: %d (latest Sabre source year, as the app passes it); pre-launch month %d-01" % (YEAR, YEAR))
     for spec in sys.argv[1:]:
         pair, _, car = spec.partition(":")
         a, b = pair.split("-")
         car = car or "UA"
         dom = AP[a]["country"] == AP[b]["country"]
         gcd = gc_km(a, b)
-        bm, gro, err = RC.market(a, b)
+        bm, gro, err = RC.market(a, b, year=YEAR)
         print("\n" + "=" * 78)
         print("%s-%s, %s: %.0f km, %s; existing O&D on the raw pair (Sabre, both directions) %s"
               % (a, b, car, gcd, "domestic" if dom else "international",
@@ -103,7 +110,7 @@ def main():
         out = None
         for label, i in (("p25", 0), ("median", 1), ("p75", 2)):
             g, f = bd["gauge"][i], bd["freq"][i]
-            ctx = RC.build(a, b, car, aircraft_seats=g, freq=f, months=12, launch_mon=1)
+            ctx = RC.build(a, b, car, aircraft_seats=g, freq=f, months=12, launch_mon=1, year=YEAR)
             if not ctx.get("ok"):
                 print("  %-10s %6.0f %6.1f   route context: %s" % (label, g, f, "; ".join(ctx.get("missing", []))))
                 continue
