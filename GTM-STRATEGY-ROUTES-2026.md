@@ -23,6 +23,10 @@ caveat." Controller: measure first on a side-by-side server (8011, road times on
 register and the Taif routes, confirm the calibrated model's local leg does not read it (code
 reading says it does not: bt2_capture_core has no catchment call), then John rules on switching
 before any Taif route numbers go into the proposal.
+Measured 27 Sep (8010 straight line against 8011 road time, same inputs): calibrated model
+unchanged to the passenger (TIF-AUH EY A21N 2027 at 7x 132,496 and 14x 175,604 on both); the
+market-share engine moves SOU-JFK -3.2%, BLQ-JFK +4.1%, EDI-BOS -1.5%, SJC-TPE 0%. Road times
+switched on in Meridian-run.bat on John's stated preference. The 88 / 78 claim is untouched.
 
 Latest, 26 Sep 2026 evening: acceptance Optimise after the go-live (8bb87a3) and the notices
 commit. SJC-TPE JX A359 5x 134,116 two-way, close to the circa 120k curfew pitch. SOU-JFK AA

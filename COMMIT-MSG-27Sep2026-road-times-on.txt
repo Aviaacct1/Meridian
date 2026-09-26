@@ -1,0 +1,11 @@
+Launcher: road drive times ON for the catchment share model (John, 27 Sep 2026)
+
+Meridian-run.bat sets AVIA_DRIVE_TIMES=1. John, verbatim: "I would much rather make the change
+than the caveat." Measured side by side the same morning (8010 straight line, 8011 road time,
+same inputs): the calibrated model's answers are identical (TIF-AUH EY A21N 2027, 7x 132,496 and
+14x 175,604 on both), so the 88 / 78 claim is untouched; the market-share engine moves SOU-JFK
+-3.2%, BLQ-JFK +4.1%, EDI-BOS -1.5%, SJC-TPE 0%. Requires rasterio and scikit-image in the
+machine Python (installed 26 Sep; app/requirements.txt lists them).
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01Ai6fXfSs283Z67QSwHLSQs

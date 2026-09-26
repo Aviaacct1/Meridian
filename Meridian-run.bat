@@ -27,9 +27,15 @@ rem   feed level V1 (John's 15 August decision; timing stays QSI).
 rem   AVIA_FEED_LEVEL=qsi here is the one-line rollback.
 set AVIA_FREQ_SENSITIVE=1
 set AVIA_FEED_LEVEL=v1
+rem ROAD TIMES ON for the catchment share model (John, 27 Sep 2026: "I would much rather make the
+rem change than the caveat"). Measured side by side on 8010/8011 the same morning: the calibrated
+rem model's answers are identical either way (TIF-AUH 7x and 14x unchanged to the passenger); the
+rem market-share engine moves -3.2% to +4.1% on SOU-JFK, BLQ-JFK, EDI-BOS and 0% on SJC-TPE.
+rem Needs rasterio and scikit-image in the machine Python (installed 26 Sep 2026).
+set AVIA_DRIVE_TIMES=1
 echo.
 echo  Meridian starting. Stores at %AVIA_ROOT%. Feed level V1, timing QSI,
-echo  frequency-sensitive on.
+echo  frequency-sensitive on, road drive times on.
 echo.
 echo  NOTE: if a server is already running, warm_demo re-warms it and it
 echo  keeps the environment it was STARTED with. To change settings,
