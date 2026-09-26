@@ -1,7 +1,7 @@
 # W10 status: FINAL CALIBRATION TEST
 
-Written by W10 only, rewritten every session. Version 13, 26 September 2026, late: the go-live step (evidence files, blocks, and every
-file stating a pair) for the controller's restart; W10's test is otherwise complete. Supersedes v1-v8 in full. Clone at 91ba51d (origin after 7f107b2). Every figure below has a log line in bt2/bt2_experiments.log
+Written by W10 only, rewritten every session. Version 14, 26 September 2026, late: K1 (DevPC has no sample), K2 and K2b done; the rule B
+histogram is in place in C:\AviaDev\app, verified and UNCOMMITTED, for the go-live commit. Supersedes v1-v8 in full. Clone at 91ba51d (origin after 7f107b2). Every figure below has a log line in bt2/bt2_experiments.log
 (W10-* lines, 26 Sep) or is quoted from the controller's rulings file pending John's paste.
 
 ## One line for John
@@ -209,6 +209,16 @@ pair to the decimal; that print is the check.
 - If K1 prints False, the DevPC cannot build: fallback K2b, the workstation prints the JSON
   to the screen and John pastes it here; W10 writes it into C:\AviaDev\app and checks it
   against the build's printed pair before the commit.
+
+STATE AT 12:15, 26 Sep: K1 printed False twice (the DevPC no longer holds
+E:\Avia\bt2_relaxed). K2 ran on the workstation (log line W10-RULE-B-EVIDENCE-BUILT: Sabre
+throughout, 88.2 / 78.3, no region warning; both files in E:\Avia\probe\ruleB-out). K2b
+pasted; W10 wrote it to C:\AviaDev\app\accuracy_dist.json and checked it against its own
+bins: 5,756 of 6,524 launches in the bins within +-20% (88.228%) and 5,107 within +-10%
+(78.280%), both equal to the stated w20 and w10; n 6,524; rule B. The bins hold 6,249
+launches because the chart range is -55% to +55% and 275 launches fall outside it, as in
+every version since 9 Aug. The file is deliberately NOT in W10's commit: it goes in the
+go-live commit with W3's text, then K4, then one restart. K3 is not needed.
 
 Block K1, does the DevPC hold the sample.
 
