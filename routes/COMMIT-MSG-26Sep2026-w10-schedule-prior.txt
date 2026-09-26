@@ -1,0 +1,19 @@
+W10 26 Sep evening: schedule prior fitting script for Optimise (ruling 4 GO), class key stated for W1
+
+bt2/bt2_fit_schedule_prior.py: fits the schedule prior from the record (6,524 launches, six
+cohorts): gauge and weekly frequency per direction at p25, median and p75 with n, by class
+(scope, haul band, carrier type, pair market band; four fallback levels, n of 20 or more) and by
+carrier (n of 5 or more). Scores the table blind leave-one-cohort-out and writes
+schedule_prior.csv with a .meta.txt build stamp; --lookup prints the row a pair would use.
+The table is workstation data at E:\Avia\bt2_relaxed\schedule_prior.csv beside the pickle, read
+by the pickle's resolver; not in the repo (tool standard rule 3). Not yet run.
+
+routes/W10-STATUS.md v15: the class key exactly, with the correction that market_band keys on
+the raw two-way pair, route_context.market(a, b, year)[0], NOT market_build step 1 (Bologna-New
+York 37,814 against 203,142, S2 not S3); the lookup rule; carrier lines; units; the fail-soft
+rule when the file is absent; block S1 to build it.
+
+bt2/bt2_experiments.log: the W10-RULE-B-EVIDENCE-BUILT line, left out of the go-live commit.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_015NbinCPXuUWF3VuAEiSjFX

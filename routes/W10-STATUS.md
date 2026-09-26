@@ -1,8 +1,9 @@
 # W10 status: FINAL CALIBRATION TEST
 
-Written by W10 only, rewritten every session. Version 14, 26 September 2026, late: K1 (DevPC has no sample), K2 and K2b done; the rule B
-histogram is in place in C:\AviaDev\app, verified and UNCOMMITTED, for the go-live commit. Supersedes v1-v8 in full. Clone at 91ba51d (origin after 7f107b2). Every figure below has a log line in bt2/bt2_experiments.log
-(W10-* lines, 26 Sep) or is quoted from the controller's rulings file pending John's paste.
+Written by W10 only, rewritten every session. Version 15, 26 September 2026, evening: the schedule prior table (John's ruling 4, GO)
+is written as a fitting script, bt2/bt2_fit_schedule_prior.py, for W1 to wire into Optimise; the table itself is built on the workstation
+and has not yet run, so no figure from it is quoted here. v14 content below stands. Clone at 156de6e (origin after 8bb87a3). Every figure
+below has a log line in bt2/bt2_experiments.log (W10-* lines, 26 Sep) or is quoted from the controller's rulings file pending John's paste.
 
 ## One line for John
 
@@ -12,6 +13,76 @@ estimator (73 / 56 in-sample, 61 / 36 blind), not the one any published pair des
 its passengers scale one for one with seats; the live path doubled its two-way answer by
 treating it as each way; and Optimise now has a tested fix, the schedule prior, that puts
 Bologna-New York in the class of Avia's own 2025 forecast.
+
+## Schedule prior table for Optimise (v15, ruling 4 GO)
+
+**Script.** bt2/bt2_fit_schedule_prior.py. It fits the table from the record (6,524 launches, cohorts 2016-2019, 2024, 2025), scores it
+blind leave-one-cohort-out, and writes the CSV plus a .meta.txt build stamp. `--lookup` prints the row a given pair would use.
+
+**Where the table lives: workstation data, not the repo.** E:\Avia\bt2_relaxed\schedule_prior.csv, beside bt2_model_v1_3.pkl. The
+controller asked for bt2/schedule_prior.csv; W10 recommends the data path instead, for three reasons. Tool standard rule 3 (data lives
+on the workstation). The sample exists only there, so a repo copy could only arrive by John pasting the table. And the
+table is a fitted artefact of the same sample and build as the pickle, so it should move with the pickle and be rebuilt with it at
+each yearly republication (CALIBRATION-RECORD section 7). W1 reads it with the resolver the pickle already uses
+(app/bt2_forecast.py `_model_path`: AVIA_LOCAL_CACHE, then E:\Avia, then C:\Avia; subfolder bt2_relaxed, then bt2), file name
+schedule_prior.csv. If the file is absent (the DevPC, for one), Optimise must run as it does today and say on the first screen that
+the schedule prior is not loaded; it must not fail.
+
+**The class key, exactly.** Four fields, all from things the app already computes:
+
+| Field | Computed on | Bands |
+|---|---|---|
+| market_band | base_mkt: Sabre passengers on the UNORDERED AIRPORT PAIR, ALL itineraries, BOTH directions, latest full Sabre year. In the app: `route_context.market(a, b, year)[0]` | S0 under 8,000; S1 8,000-24,999; S2 25,000-79,999; S3 80,000 and over |
+| haul_band | great-circle km between the two airports | H0 under 800; H1 800-1,999; H2 2,000-4,499; H3 4,500 and over |
+| carrier_type | the app's carrier type | LCC and ULCC to LCC; FSC, Regional and Charter to FSC (the record classes LCC by connection_builder.DEFAULT_LCC_LIST) |
+| scope | airport countries (airportsdata) | D same country; I otherwise |
+
+**Correction to the brief: the market key is NOT market_build step 1.** Step 1 ("Passengers flying to the destination from the whole
+service area today", route_forecast.py) is the catchment market, grossed for coverage and each way. The record was fitted on the raw
+pair, which is what `route_context.market` returns (app/route_context.py line 91, same definition as bt2_discover.py base_mkt). On
+Bologna-New York step 1 is 203,142 against a pair of 37,814: keying on step 1 puts the pair in S3 instead of S2 and bounds the sweep
+to the wrong schedules.
+
+**Lookup rule.** Rows with table=class carry a level. Take the first level whose row exists with n of 20 or more:
+
+| Level | Key (other key columns blank) |
+|---|---|
+| 1 | scope, haul_band, carrier_type, market_band |
+| 2 | haul_band, carrier_type, market_band |
+| 3 | haul_band, market_band |
+| 4 | haul_band |
+
+Every haul band has a level 4 row, so the lookup never fails. The payload must report the level and n used.
+
+**Carrier lines.** Rows with table=carrier, keyed on carrier (OAG two-letter code), haul_band and scope, plus one row per carrier with
+haul_band and scope blank (all its launches). Written only where n is 5 or more; below that the payload says "fewer than 5 comparable
+launches". Per ruling 4 the carrier line is a flag, never a veto: at 5 or more comparable launches Optimise re-runs inside the
+carrier's own p25-p75 and shows both.
+
+**Columns and units.** table, level, scope, haul_band, carrier_type, market_band, carrier, n, gauge_p25, gauge_med, gauge_p75,
+freq_p25, freq_med, freq_p75. Gauge is seats per departure (OAG seats over operations in the operated months; the average across
+carriers where a launch pair had more than one). Frequency is departures per week per direction (launch_profile wk_freq_dir). Seats a
+year for a candidate = gauge x frequency x 2 x 52, two-way, the calibrated model's basis; halve for each way.
+
+**What Optimise does with it (ruling 4, option 2b).** Bound the sweep to the class row's gauge p25-p75 (types mapped by seat count, so
+the A220 and A321XLR fall in by their seats) and frequency p25-p75; rank by contribution inside that set; forecast at the winner.
+NOT_FEASIBLE types stay set aside as W1 has them (156de6e).
+
+**Still to run (block S1, below).** The fit, its blind score and the Bologna lookup. Nothing from the table is quoted until John's paste
+is logged as W10-SCHEDULE-PRIOR-TABLE. The gradient-boosted prior scored gauge 71.1% and frequency 70.9% within +-20%
+(W10-SCHEDULE-PRIOR); a lookup table is coarser and may score below that. If it scores more than 5 points below on either, W10 will say
+so in v16 and the controller decides whether W1 wires the table or the gradient-boosted prior.
+
+**Block S1, Workstation Actual (RDP, sees E:).**
+
+```
+cd C:\src\meridian
+git pull
+cd C:\src\meridian\bt2
+$env:AVIA_LOCAL_CACHE="E:\Avia"; $env:AVIA_APP_DIR="C:\src\meridian\app"; $env:AVIA_BT2_TARGET="nonstop"; $env:AVIA_BT2_DIR="E:\Avia\bt2_relaxed"; $env:AVIA_BT2_COHORTS="2016,2017,2018,2019,2024,2025"
+py -3.12 -s bt2_fit_schedule_prior.py --out E:\Avia\bt2_relaxed\schedule_prior.csv 2>&1 | Tee-Object -FilePath E:\Avia\probe\schedprior-fit-W10.log
+py -3.12 -s bt2_fit_schedule_prior.py --lookup base_mkt=37814 gcd_km=6647 scope=I carrier_type=FSC carrier=UA 2>&1 | Tee-Object -FilePath E:\Avia\probe\schedprior-lookup-W10.log
+```
 
 ## State of the four jobs (W10-RULINGS, 25 Sep)
 
