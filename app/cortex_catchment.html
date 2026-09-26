@@ -302,6 +302,10 @@ function draw(d){
   $('#bandTitle').textContent = raster ? 'Population by drive time' : 'Population by distance';
   $('#k_reach_l').textContent = raster ? 'Within 120-min drive' : 'Within 175 km';
   $('#k_reach_s').textContent = raster ? 'road drive time' : 'straight line';
+  // Say which measure the FORECAST uses when it differs from the picture (27 Sep 2026, John on Taif).
+  if(raster && d.forecast_distance && d.forecast_distance!=='road time'){
+    $('#mapSub').textContent += ' · route forecasts currently allocate this catchment by straight-line distance';
+  }
 
   // KPIs
   $('#k_total').textContent=fmtM(d.total_pop);
@@ -337,7 +341,7 @@ function draw(d){
     const nameTxt = names.length>1 ? names.slice(0,-1).join(', ')+' and '+names[names.length-1] : (names[0]||'');
     $('#capNote').innerHTML += `<br><br><b>${fmtM(d.pop_nearer_other)}</b> of this catchment's `+
       `${fmtM(d.total_pop)} people (${Math.round(d.pop_nearer_other/d.total_pop*100)}%) live nearer another airport with `+
-      `scheduled service (${codeTxt}) than ${a.code}, measured in a straight line`+(nameTxt?`; the largest places are ${nameTxt}`:'')+
+      `scheduled service (${codeTxt}) than ${a.code}, measured ${d.nearer_basis==='road time'?'by road drive time':'in a straight line'}`+(nameTxt?`; the largest places are ${nameTxt}`:'')+
       `. The forecast does not assume ${a.code} serves them; the share it takes is modelled route by route.`;
   }
 

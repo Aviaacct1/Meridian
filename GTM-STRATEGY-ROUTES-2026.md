@@ -15,6 +15,15 @@ The detail lives in two companions and this document points at them rather than 
 
 ## Status
 
+27 Sep, small hours: road times for the forecast. The catchment picture now reads the friction
+raster (validated by John band by band on Taif: implied speeds 41-90 km/h, bands reconcile to the
+person). The forecast's share model still allocates by straight line (AVIA_DRIVE_TIMES off, a
+calibration-affecting switch). John, verbatim: "I would much rather make the change than the
+caveat." Controller: measure first on a side-by-side server (8011, road times on) against the
+register and the Taif routes, confirm the calibrated model's local leg does not read it (code
+reading says it does not: bt2_capture_core has no catchment call), then John rules on switching
+before any Taif route numbers go into the proposal.
+
 Latest, 26 Sep 2026 evening: acceptance Optimise after the go-live (8bb87a3) and the notices
 commit. SJC-TPE JX A359 5x 134,116 two-way, close to the circa 120k curfew pitch. SOU-JFK AA
 A21N 7x 124,852. BLQ-JFK DL A333 7x 146,028, but connecting is circa 80% of carried: Bologna

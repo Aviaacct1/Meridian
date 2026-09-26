@@ -2359,6 +2359,20 @@ def catchment_profile(q):
         others.sort(key=lambda r: r["km"])
     except Exception:                                        # noqa: BLE001
         others = []
+    # NEARER BY ROAD where the raster is read (27 Sep 2026, John on Taif: Makkah is 75 km straight
+    # line and 71 minutes by road from TIF, and which airport is "nearer" is what a lender's adviser
+    # will probe). One least-cost pass per other airport, the same call the forecast's share model
+    # makes; straight line only where the raster is not read, and the payload says which.
+    other_times = {}
+    if times:
+        for _o in others:
+            try:
+                _t = dt.times_from(_o["code"], _o["lat"], _o["lon"], pts)
+                if _t:
+                    other_times[_o["code"]] = _t
+            except Exception:                                # noqa: BLE001
+                pass
+    nearer_basis = "road time" if (times and other_times and len(other_times) == len(others)) else "straight line"
     BANDS = [30, 60, 90, 120]
     band_pop = {30: 0.0, 60: 0.0, 90: 0.0, 120: 0.0, 999: 0.0}
     out = []; total = 0.0
@@ -2377,14 +2391,22 @@ def catchment_profile(q):
         total += pop; band_pop[b] += pop
         _km_home = RE.gc_km(olat, olon, float(l.lat), float(l.lon))
         _near = None
-        for _o in others:
-            _k = RE.gc_km(_o["lat"], _o["lon"], float(l.lat), float(l.lon))
-            if _k < _km_home and (_near is None or _k < _near[1]):
-                _near = (_o["code"], _k)
+        if nearer_basis == "road time" and drive is not None:
+            for _o in others:
+                _tt = other_times[_o["code"]]
+                _m = _tt[i] if i < len(_tt) else None
+                if _m is not None and float(_m) < drive and (_near is None or float(_m) < _near[1]):
+                    _near = (_o["code"], float(_m))
+        else:
+            for _o in others:
+                _k = RE.gc_km(_o["lat"], _o["lon"], float(l.lat), float(l.lon))
+                if _k < _km_home and (_near is None or _k < _near[1]):
+                    _near = (_o["code"], _k)
         out.append({"lat": round(float(l.lat), 4), "lon": round(float(l.lon), 4),
                     "pop": int(pop), "drive": (round(drive) if drive is not None else None),
                     "km": round(_km_home),
                     "nearer_airport": (_near[0] if _near else None),
+                    "nearer_minutes": (round(_near[1]) if (_near and nearer_basis == "road time") else None),
                     "name": getattr(l, "name", "") or ""})
     out.sort(key=lambda r: -r["pop"])
     cap = ACAP.capture_for(home)
@@ -2397,7 +2419,7 @@ def catchment_profile(q):
             "capture": (round(float(cap), 3) if cap is not None else None),
             "drive_available": bool(times),
             "forecast_distance": ("road time" if RF._drive_engine() is not None else "straight line"),
-            "other_airports": others,
+            "other_airports": others, "nearer_basis": nearer_basis,
             "pop_nearer_other": int(sum(r["pop"] for r in out if r.get("nearer_airport"))),
             "locales": out[:500]}
 

@@ -1,0 +1,15 @@
+Catchment page: nearer-airport test by road time when the raster is read; forecast measure stated (John, Taif, 27 Sep)
+
+- app/cortex_app.py (catchment_profile): when the friction raster is read, one least-cost pass
+  per other airport in the radius, and a place counts as nearer another airport only if its road
+  minutes there are fewer than to this airport. Straight line only when the raster is not read.
+  Payload adds nearer_basis and per-locale nearer_minutes.
+- app/cortex_catchment.html: the note says "measured by road drive time" or "in a straight line"
+  from nearer_basis; when the picture is on road times but the forecast is not, the map subtitle
+  says route forecasts currently allocate the catchment by straight-line distance.
+
+Forecasts unchanged. Switching the forecast to road time (AVIA_DRIVE_TIMES) is a separate,
+measured decision: side-by-side server on 8011, register diffed, John rules.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01Ai6fXfSs283Z67QSwHLSQs
