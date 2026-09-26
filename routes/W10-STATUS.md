@@ -1,6 +1,6 @@
 # W10 status: FINAL CALIBRATION TEST
 
-Written by W10 only, rewritten every session. Version 5, 26 September 2026, session 3, updated on John's pastes of blocks A, A2, B and C.
+Written by W10 only, rewritten every session. Version 6, 26 September 2026, session 3, all four blocks pasted; option 2 scored and rejected.
 Clone at e7eaf9d. Read this session: W10-RULINGS.md from "22 September 2026, evening" to the
 end (six sections); FACE-VALIDITY-REGISTER-25Sep2026.md v2 in full; the umbrella Status
 block and critical path of 26 Sep 03:00; bt2/bt2_build_v13.py; app/bt2_forecast.py load path.
@@ -24,7 +24,7 @@ carries the pair for the model that runs.
 | 1. Pickle stamp and its own pair | DONE 26 Sep | Stamp and in-sample pair measured and confirmed on the declared library |
 | 2. Outturn clause | Today, below | Done |
 | 3. Diagnosis: the two mechanisms against the record | DONE 26 Sep: code, block C (basis) and block B (the record's own figures) | Log lines W10-RECORD-MIX-RELAXED, -CANON |
-| 4. Fix options with scores beside 83.2/70.0, 91/85 and 73/56 | 30 Sep; options below now, one test run (block D) for the ceiling score | On track |
+| 4. Fix options with scores | DONE 26 Sep: option 2 scored by block D and rejected; the rest below | For John's ruling 30 Sep |
 
 ## Job 1: the model the app runs (DONE 26 Sep; log lines W10-PICKLE-STAMP, W10-PICKLE-INSAMPLE-PROVISIONAL, W10-PICKLE-INSAMPLE-CONFIRMED)
 
@@ -155,23 +155,30 @@ register.
    analyst's 43k (1.6x, from 3.2x); BLQ-JFK local at 7x falls from 112,543 to 56,272 each
    way and the 7x B77W no longer fills. W10 recommends this ships regardless of the rest;
    it is a defect, not a calibration choice.
-2. OPTIMISE ANCHOR. The sweep cannot use the model's own response to seats (elasticity
-   0.99). Anchor the local leg on the market instead: local_ceiling = share_p75 x
-   base_mkt, with share_p75 by class from the record (block B: EU-NA 1.91 relaxed / 1.15
-   canon; long-haul 25-80k markets 0.55; over 80k 0.29; AS-EU 1.47 / 0.84), applied as
-   min(model, ceiling) inside Optimise only; Run keeps the model's answer with the
-   INDICATIVE caveat. Score: block D measures what the ceiling does to the record, blind
-   and in-sample (expected: a small loss, because a p75 ceiling bites on a quarter of
-   launches by construction; W10 reports the number and John decides whether the Optimise
-   headline is worth it). Diff in cortex_app _cell_kw / api_optimise (W1's file); the class
-   table lives in bt2/ as a CSV the app reads through config.
+2. OPTIMISE ANCHOR, a market ceiling on the local leg: SCORED AND REJECTED (log lines
+   W10-CEILING-RELAXED, W10-CEILING-CANON). forecast = min(model, share_p75(class) x
+   base_mkt), table fitted on the training cohorts for the blind arm: blind route level
+   60.9 / 36.3 falls to 48.5 / 28.2 on 6,524 (53.8 / 30.0 to 45.8 / 24.1 on 2,915),
+   in-sample 74.1 / 56.6 to 58.5 / 42.8, a quarter of rows touched, the loss on every
+   segment including EU-NA long-haul. The record says a launch-over-existing-market ratio
+   has no usable upper tail (short-haul tiny markets p75 16.5x), so a cap either never
+   bites or bites the right answers with the wrong ones. Not shipped, not parked; a
+   different anchor is needed and W10 has none inside this record.
+   What that leaves for Optimise, for John to rule: (a) Optimise stops claiming to answer
+   "what would this route support" and becomes a schedule comparison at the visitor's
+   gauge, frequencies ranked by economics with the model's carried at each, labelled as
+   such; or (b) the local leg for Optimise comes from a demand anchor outside the model
+   (the QSI engine's catchment demand, which the register shows under-reads thin routes by
+   half and which is a second engine, against the one-model rule). W10's view: (a) before
+   Routes, with the limitation stated in the known-issues list; (b) is a programme, not a
+   fix. Either way the Run path and the record are untouched.
 3. FEED. Outside the record. The controller's shape (feed as a share of the route's own
    size by haul and hub) cannot be scored on this record and W10 says so rather than
    scoring it on the sector target, which grades a quantity nobody publishes. W1 builds it
    against the register rows (analyst connecting on the Knock and Edinburgh rows) as the
    test, with the controller.
-4. THE STAND PAIR. No code. John rules: 73 / 56 in-sample and 60.9 blind for the model
-   that runs, with the outturn clause; or rebuild the pickle on the published-rule
+4. THE STAND PAIR. No code. John rules: 73 / 56 in-sample and blind 61 / 36 (within
+   +-20 / +-10, route level, W10-CEILING-RELAXED raw arm) for the model that runs, with the outturn clause; or rebuild the pickle on the published-rule
    configuration (bt2_build_v13 writes the blind estimator at line 129; a one-line change
    writes the calibrated one) and carry 83.2 / 70.0 with the p25-p75 band then coming from
    a lightly regularised fit. W10 recommends the first.
@@ -215,8 +222,7 @@ cd C:\src\meridian\bt2
 py -3.12 -s probe_payload_keys.py E:\Avia\probe\BLQ-JFK-25Sep\opt_BLQ-JFK.json
 ```
 
-Block D, the ceiling score for option 2 (bt2/bt2_ceiling_test.py, new; after the
-workstation pulls). Prints the record with and without the cap, blind and in-sample.
+Block D, DONE 26 Sep (ceiling-relaxed-W10.log, ceiling-canon-W10.log). Kept for the record.
 
 **Workstation Actual**
 ```
@@ -240,7 +246,8 @@ as they appeared on screen, for the blind within +-10% figure.
 ## Log lines
 
 26 Sep: W10-PICKLE-STAMP, W10-PICKLE-INSAMPLE-PROVISIONAL, W10-BASIS-IN-THE-PAYLOAD,
-W10-PICKLE-INSAMPLE-CONFIRMED, W10-RECORD-MIX-RELAXED and W10-RECORD-MIX-CANON written to bt2/bt2_experiments.log
+W10-PICKLE-INSAMPLE-CONFIRMED, W10-RECORD-MIX-RELAXED, W10-RECORD-MIX-CANON, W10-CEILING-RELAXED
+and W10-CEILING-CANON written to bt2/bt2_experiments.log
 from John's block A paste. Items 2 and 3 ran on 25 Sep (claimset-W10-25Sep.log, mixed-W10-25Sep.log, John's pastes to
 the controller). W10 has not seen the pastes; the two log lines for bt2_experiments.log are
 written when they are pasted here, in the existing format, before either figure is quoted
@@ -264,5 +271,6 @@ since": correct as committed; v2 of 24 Sep was written and not committed, W10's 
 
 ## Calendar
 
-Jobs 1, 2 and 3 done 26 Sep. Job 4 options are above; block D's score by 28 Sep; John
-decides 30 Sep. Record v1 by 3 Oct holds.
+All four jobs done 26 Sep. John decides 30 Sep on: the stand pair; the sample; option 1
+(ship); the Optimise question (a) or (b). Outstanding for the record: John's pastes of the
+25 Sep claimset and mixed logs (build line and figures), then record v1 by 3 Oct.

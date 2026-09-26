@@ -1,6 +1,6 @@
 # Meridian calibration record 2026
 
-Written by W10 (final calibration test). Version 0.5, 26 September 2026, DRAFT. The
+Written by W10 (final calibration test). Version 0.6, 26 September 2026, DRAFT. The
 definitive version carries ONE figure set, ruled by John, and is what the product carries
 into Routes and republishes yearly. Every figure in this record quotes the line in
 bt2/bt2_experiments.log that produced it; a figure with no log line does not exist.
@@ -70,10 +70,24 @@ unregularised fit. "Mixed basis" for a client: US domestic launches are graded a
 DOT DB1B ticket data and all other launches against Sabre MIDT; it costs about half a
 point against Sabre throughout at this configuration. Log line to follow John's paste.
 
-## 6. Recommended figure set
+## 6. Recommended figure set (W10's recommendation, 26 September 2026; John rules)
 
-Not yet stated. Will be one line: within 20% X% of the time and within 10% Y% of the time,
-on N real launches, basis named, fit configuration named, environment named.
+For the model the product runs (bt2_model_v1_3.pkl, blind configuration, 21 features):
+on 6,524 real launches (2016-2019, 2024, 2025), scored against the local nonstop
+passengers each route carried in its launch year (Sabre MIDT; US DOT DB1B for US domestic
+launches to 2024): calibrated 73% within +-20% and 56% within +-10% (in-sample,
+W10-PICKLE-INSAMPLE-CONFIRMED); blind at route level 61% within +-20% and 36% within +-10%
+(leave-one-cohort-out, W10-CEILING-RELAXED raw arm; the blind within +-20% agrees with
+bt2_claimset to the decimal); blind portfolios of twenty 93% (claimset, log line 389). The
+actual falls inside the model's own p25-p75 band on 51% of launches. Environment: python
+3.12.10, sklearn 1.9.0, numpy 2.3.5, scipy 1.18.0, airportsdata 20260803. The
+alternative is to rebuild the artefact on the published-rule configuration and carry 83.2
+/ 70.0 for the estimator that then runs; that is a product change and W10 does not
+recommend it.
+
+A cap on the model's local leg at a share of the pair's existing market (fix option 2)
+was scored on 26 September and rejected: it costs 12 points blind and 16 in-sample on
+6,524 and loses on every segment (W10-CEILING-RELAXED, -CANON).
 
 ## 7. Yearly republication
 
