@@ -488,3 +488,32 @@ wording and the position.
   operated days only, or say which days are assumed.
 Also announced: controller edit in the Optimise basis line (rights_note, loss_note), commit
 message COMMIT-MSG-27Sep2026-w1-rights-and-loss.txt.
+
+## 26 September 2026 (Saturday): sweep note, no new STATUS; three rulings (controller, chat 5)
+
+W2 has not written since v14 (22 Sep). Nothing in this file since the 26 Sep sweep has been
+acknowledged. Three things for the next session, in order after the mailbox route (item 60):
+1. NO AVIA SOLUTIONS ON THE STAND (John, 25 Sep): check every stand-mode screen ident, footer,
+   window title and the capture front end; The Aviation Observatory only. Report what you
+   found and changed.
+2. THE VENUE LINE. W9 asked what the stand needs from the venue's wired line. Answered by the
+   controller so the order is not held: the demo is a browser on the core laptop against the
+   Surrey workstation over the Cloudflare tunnel; W9's recommended 20/10 Mbit/s line with
+   router and WiFi covers it, 4G is the second route. If you disagree on measurement (the
+   pack preview or any download the stand does), say so with the figure in STATUS.
+3. NO ECONOMICS FIGURE on the result page or the Optimise headline until pre-mortem 33 closes
+   (W1's margin basis check). The contribution RANKING inside Optimise stays; a displayed
+   margin, contribution or revenue figure does not. Confirm in STATUS which stand-mode
+   surfaces show one today.
+Dates: 26 Sep is Saturday; the mailbox route is due Tuesday 29 Sep; capture demonstrable
+Friday 2 Oct.
+
+## 27 September 2026: warm the Optimise path at launch (W1 measurement)
+
+The first Optimise after a restart runs at circa twice its warm time: SOU-JFK 94.5 s cold against
+44.4 s warm; BLQ-JFK 83.1 s cold against 55.3 s warm (workstation, 27 Sep, after the measured-fare
+commit). warm_demo.py warms three plain forecasts and no Optimise, so the first Optimise a visitor
+watches pays the cold cost. W2: add one blank-form Optimise per stand pair to the warm-up (after
+DEMO READY is printed is acceptable, if it states it is still warming), and a runbook line: do not
+demonstrate Optimise until the launcher says the Optimise warm-up is done. Due before the 8 Oct
+laptop proof; W1 will do it if it is not done by then.

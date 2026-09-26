@@ -70,3 +70,14 @@ stays open until a sourced tax table exists, after Routes. Taif slide 15 economi
 figures above, labelled "fares as sold, including taxes".
 Next (built, not yet committed): Optimise's aircraft sizing ranks on the measured cabin fares
 instead of the distance proxy (COMMIT-MSG-27Sep2026-w1-optimise-measured-fares.txt).
+
+## 27 September 2026: Optimise on measured fares, acceptance and timing
+
+Blank-form Optimise after the measured-fare commit: SOU-JFK UA B753 5x 102,658 (unchanged, runway
+unchecked note shown); BLQ-JFK AA B788 7x 143,298, 83.3%, margin 17.8% (was DL A339 145,802); SJC-TPE
+CI A359 3x 83,538 (unchanged); TIF-AUH EY A20N 3x 48,048, margin -17.3% on a premium fare from 24
+bookings (thin-sample note built, COMMIT-MSG-27Sep2026-w1-thin-fare-note.txt).
+Timing: cold 94.5 / 83.1 / 38.5 / 23.6 s; warm SOU-JFK 44.4 s, BLQ-JFK 55.3 s. The fare lookup costs
+nothing warm. Launch warm-up for Optimise referred to W2 (W2-RULINGS 27 Sep). Warm transatlantic
+Optimise is still 44-55 s against John's 30 s: next W1 job, measured breakdown first (stage 1 cells,
+stage 2 tasks, seasonal cells, carrier check, final forecast).
