@@ -72,6 +72,11 @@ xlrd>=2.0              # reads legacy .xls (MCT files, older Sabre extracts)
 # import. Build the venv first and install everything into it in one pass. check_env.py
 # looks for exactly that wreckage.
 numpy
+# the friction-raster read path (drive_times._libs_present). Without them the raster is present but
+# unread and the catchment silently runs on straight line (found 22 Sep 2026, again 26 Sep on Taif).
+# Install with numpy and scikit-learn held at their current versions (pip ... "numpy==<current>").
+rasterio
+scikit-image
 
 # --- the Observatory deck generator (Deck Generator/v4) ---
 # Not previously listed here, which is why these were installed by hand and took numpy
