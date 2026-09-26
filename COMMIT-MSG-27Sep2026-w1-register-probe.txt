@@ -1,0 +1,11 @@
+W1: tools/probe_register.ps1, the face-validity register as one command (feed options and margin check)
+
+Runs every register row (routes/FACE-VALIDITY-REGISTER-25Sep2026.md section A, plus BLQ-JFK and the
+SJC-TPE control) as a fixed-input Run on one or more servers and writes one CSV row per route and
+port to E:\Avia\probe: demand split, connecting share, ratio to the analyst figure, feed level, and
+the economics basis (fare, market fare, proxy flag, cabin load factors, seats, prorate, revenue and
+cost per turn, margin, contribution). Password by Read-Host, never stored. Used for the feed options
+(8010 V1 feed against 8011 AVIA_FEED_LEVEL=qsi) and the long-haul margin check.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01Ai6fXfSs283Z67QSwHLSQs
