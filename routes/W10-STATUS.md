@@ -215,8 +215,24 @@ cd C:\src\meridian\bt2
 py -3.12 -s probe_payload_keys.py E:\Avia\probe\BLQ-JFK-25Sep\opt_BLQ-JFK.json
 ```
 
-Block D, the ceiling score for option 2, follows once bt2/bt2_ceiling_test.py is written
-(W10's file); target 28 Sep.
+Block D, the ceiling score for option 2 (bt2/bt2_ceiling_test.py, new; after the
+workstation pulls). Prints the record with and without the cap, blind and in-sample.
+
+**Workstation Actual**
+```
+cd C:\src\meridian
+git pull
+cd C:\src\meridian\bt2
+$env:AVIA_LOCAL_CACHE = "E:\Avia"
+$env:AVIA_APP_DIR     = "C:\src\meridian\app"
+$env:AVIA_BT2_TARGET  = "nonstop"
+$env:AVIA_BT2_DIR     = "E:\Avia\bt2_relaxed"
+$env:AVIA_BT2_COHORTS = "2016,2017,2018,2019,2024,2025"
+py -3.12 -s bt2_ceiling_test.py 2>&1 | Tee-Object -FilePath E:\Avia\probe\ceiling-relaxed-W10.log
+$env:AVIA_BT2_DIR     = "E:\Avia\bt2"
+$env:AVIA_BT2_COHORTS = "2016,2017,2018,2019,2025"
+py -3.12 -s bt2_ceiling_test.py 2>&1 | Tee-Object -FilePath E:\Avia\probe\ceiling-canon-W10.log
+```
 
 Also wanted, no run: the four "within" lines of section 2 of E:\Avia\probe\mixed-W10-25Sep.log
 as they appeared on screen, for the blind within +-10% figure.
@@ -236,7 +252,7 @@ in the record. Until then the record quotes the controller's rulings file as the
 ```
 cd C:\AviaDev
 git pull
-git add routes/W10-STATUS.md routes/CALIBRATION-RECORD-2026.md bt2/bt2_experiments.log bt2/probe_payload_keys.py routes/COMMIT-MSG-26Sep2026-w10-pickle-stamp.txt
+git add routes/W10-STATUS.md routes/CALIBRATION-RECORD-2026.md bt2/bt2_experiments.log bt2/probe_payload_keys.py bt2/bt2_ceiling_test.py routes/COMMIT-MSG-26Sep2026-w10-pickle-stamp.txt
 git commit -F routes/COMMIT-MSG-26Sep2026-w10-pickle-stamp.txt
 git push
 ```

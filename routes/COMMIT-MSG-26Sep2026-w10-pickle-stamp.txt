@@ -9,3 +9,5 @@ routes/W10-STATUS.md v5: jobs 1-3 done with the figures; four fix options with s
 30 Sep; block D (ceiling score) to follow.
 routes/CALIBRATION-RECORD-2026.md v0.5: sections 8 and 9 carry the measured figures.
 bt2/probe_payload_keys.py: raw docstring (SyntaxWarning).
+bt2/bt2_ceiling_test.py: new, read-only; scores fix option 2 (market ceiling on the local leg)
+on the record, blind and in-sample, both samples.
