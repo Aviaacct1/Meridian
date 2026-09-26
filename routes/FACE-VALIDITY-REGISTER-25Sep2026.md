@@ -257,3 +257,13 @@ floor). An out-of-range A359 beat an in-range B789: fixed (in-range first). SOU-
 with a blank airfield note: the note now says when the runway check has not been made; the cause is
 being confirmed. BLQ-JFK is unchanged because its problem is the feed (80% connecting), not the
 schedule.
+
+
+## Second acceptance after 1f1efe, 27 Sep 2026 (small hours)
+
+SOU-JFK and BLQ-JFK unchanged (102,658; 145,802). SOU-JFK airfield note now reads that the B753
+has no runway performance data and has NOT been checked; the A21N rows are MARGINAL at SOU and the
+A21N caps above 85% at 3-5x, so the B753 5x is the only in-band row. SJC-TPE unchanged at CI A359
+3x, 83,538: the calibrated model answers it (the pair is above the 250 floor), so the floor fix
+does not apply; the S0 class admits 3x only. Referred to W10 (W10-RULINGS 27 Sep, Q1 and Q2).
+Source: workstation probe pasted by John. Seconds: 62.9, 55.0, 20.6.

@@ -276,3 +276,29 @@ accuracy record does not describe it."
 W10: measure how often a visitor will hit this path (the share of the register, of W2's route
 panel when it exists, and of the 6,524's own origin airports' unserved pairs), and state whether
 the 250 floor can be put to a visitor as one simple rule.
+
+## 27 September 2026 (26 Sep night): two measured questions on the schedule prior, from the first live acceptance
+
+The prior is wired (51a378c, fixes 1f1efe) and works as specified. Live, on the workstation:
+SJC-TPE keys level 1, S0 (the raw pair is above the 250 floor, calibrated model answers), n 286,
+seat range 233-297, frequency band holds only 3x; Optimise picks CI A359 3x (nearest; the
+in-range B789 caps above 85% at 3x), 83,538 two-way. John's control for this pair is circa 120k,
+and before the prior Optimise gave JX A359 5x, 134,116. The prior now binds hard on it.
+
+Q1, LEAKED PAIRS. SJC's raw pair is small because Bay Area Taipei demand books through SFO. Is
+the record's S0 long-haul class a class of genuinely thin markets, or does it hold secondary
+airports in large metros too? Measure: split S0 (and S1) long-haul launches by a leakage ratio
+(the metro or catchment market over the raw pair; use whatever the record can compute, and say
+which), and give frequency and gauge p25/med/p75 for the leaked and non-leaked halves, with n.
+If the leaked half launches materially higher, propose the key change and its blind score on
+the same test as W10-RETIME-FREQ. If not, say so: the 3x answer then stands as the record's
+answer and John rules on the control.
+
+Q2, THE BAND AS A BOUND. Optimise sweeps only whole frequencies inside p25-p75, so by
+construction a quarter of launches sit above the top of the sweep. Score, blind by cohort on the
+same 6,524: the share of flown frequencies inside p25-p75, p10-p90 and p25-p90, and for each the
+share of pairs where the band admits only one permitted frequency. Recommend one bound with the
+reason, measured, not assumed.
+
+Nothing here touches the model or the 88 / 78 claim. Deliver in W10-STATUS with a log line per
+figure; John rules.
