@@ -2429,6 +2429,37 @@ def _route_distance_km(origin, dest):
         return None
 
 
+def _schedule_prior_pair(origin, dest):
+    """What the schedule prior needs about the pair, measured once per Optimise: the two primary
+    airports, their countries, and base_mkt, the RAW two-way Sabre pair from route_context.market
+    (NOT market_build step 1; see schedule_prior.py). Every field that cannot be measured is None and
+    named in `gaps`, so the lookup falls to the level that does not need it and the payload says why."""
+    out = {"a": None, "b": None, "ctry_a": None, "ctry_b": None, "base_mkt": None, "year": None, "gaps": []}
+    try:
+        import route_engine as RE, geo_resolve as GEO   # noqa: F401
+        ctx = _live_ctx()
+        out["year"] = ctx.get("year")
+        om = GEO.resolve_metro(origin, served_index=ctx.get("served"), dump=DUMP, expand=False)
+        dm = GEO.resolve_metro(dest, served_index=ctx.get("served"), dump=DUMP, expand=True)
+        out["a"], out["b"] = om.get("primary"), dm.get("primary")
+    except Exception as e:                                   # noqa: BLE001
+        out["gaps"].append("airports not resolved (%s)" % e)
+        return out
+    import schedule_prior as _SP
+    out["ctry_a"], out["ctry_b"] = _SP.country(out["a"]), _SP.country(out["b"])
+    if not (out["ctry_a"] and out["ctry_b"]):
+        out["gaps"].append("airport country unknown (airportsdata), so scope and region are not keyed")
+    try:
+        import route_context as _RC
+        bm, _g, why = _RC.market(out["a"], out["b"], year=out["year"])
+        out["base_mkt"] = bm
+        if bm is None:
+            out["gaps"].append("pair market not measured (%s), so the market band is not keyed" % why)
+    except Exception as e:                                   # noqa: BLE001
+        out["gaps"].append("pair market not measured (%s), so the market band is not keyed" % e)
+    return out
+
+
 def _candidate_airlines(origin, dest, dist_km, limit=3):
     """Airlines that could plausibly fly this sector: the biggest carriers based at the destination and
     origin airports (OAG) whose KNOWN fleet includes a range-feasible aircraft. Destination-based
@@ -2689,7 +2720,10 @@ def _optimise_freq(t):
                         econ_share=es_i, econ_fare_ow=c["fare"], bus_fare_ow=c["bus_fare"],
                         airline_type=ct_i, weeks=sea_weeks,
                         airline_iata=(cand or None),
-                        fleet=([c["fixed_ac"]] if c["fixed_ac"] else None))   # honour a client-fixed gauge, else search
+                        fleet=([c["fixed_ac"]] if c["fixed_ac"] else None),   # honour a client-fixed gauge, else search
+                        # the schedule prior's gauge band and the contribution ranking (26 Sep 2026);
+                        # both absent when the prior is not loaded, which is the pre-prior path exactly
+                        seat_band=c.get("seat_band"), rank=c.get("rank", "profit"))
     except Exception:
         return None
     prof = ranked[0]["annual_profit"]; lf = ranked[0].get("total_lf") or 0.0
@@ -2702,6 +2736,8 @@ def _optimise_freq(t):
     carried = min(float(demand), _cap) if _cap else float(demand)
     return {"airline": cand, "aircraft": code, "freq": f, "ctype": ct_i,
             "season": sea_i, "annual_profit": prof, "demand": demand,
+            "contribution": ranked[0].get("annual_contribution"),
+            "gauge_bound": ranked[0].get("gauge_bound"),
             "carried": carried,
             "lf": float(lf),
             # The seat count the gauge was CHOSEN on, carried through so the
@@ -2919,6 +2955,41 @@ def api_optimise(origin: str, dest: str, airline: str = "", carrier_type: str = 
               "dist_nm": dist_nm, "plan_lf": plan_lf, "fare": fare, "bus_fare": bus_fare,
               "fixed_ac": _fixed_ac}
              for cand in cands for ct_i in _types for sea_i in _seasons]
+    # THE SCHEDULE PRIOR (John, 26 September 2026, option 2b; W10-STATUS v21 "W1 WIRING SPEC").
+    # Each cell is keyed on the pair and on ITS OWN carrier type (the record classes a carrier LCC by
+    # connection_builder.DEFAULT_LCC_LIST), looked up at levels 0 to 4, and its sweep is bounded to the
+    # class row's gauge p25-p75 (by seat count) and to the whole weekly frequencies inside its freq
+    # p25-p75 that the headline rule permits. Inside that set the candidates are ranked by
+    # contribution. A field the client fixed is honoured and not bounded. File absent: every cell runs
+    # exactly as before this change, ranked as before, and the payload says the prior is not loaded.
+    import schedule_prior as _SP
+    _sp_tab = _SP.load()
+    _sp_pair = _schedule_prior_pair(origin, dest) if _sp_tab else None
+    _haul = _SP.haul_band(dist_km)
+    try:
+        import route_context as _RCx
+        _lccs = _RCx._lcc_set()
+    except Exception:                                        # noqa: BLE001
+        _lccs = set()
+    for c in cells:
+        c["rank"] = "profit"
+        c["prior"] = None
+        if not _sp_tab:
+            continue
+        _ct_key = ("LCC" if (c["cand"] or "").upper() in _lccs else "FSC") if c["cand"] else c["ct_i"]
+        _k = _SP.key(_sp_pair["base_mkt"], dist_km, _ct_key, _sp_pair["ctry_a"], _sp_pair["ctry_b"])
+        _row = _SP.lookup(_k)
+        if not _row:
+            continue
+        c["rank"] = "contribution"
+        _pr = {"class": _row, "gauge_bound": "client fixed" if c["fixed_ac"] else "band",
+               "freq_bound": "client fixed" if (freq and int(freq) > 0) else None}
+        if not c["fixed_ac"] and _row.get("gauge_p25") is not None:
+            c["seat_band"] = (_row["gauge_p25"], _row["gauge_p75"])
+        if not (freq and int(freq) > 0):
+            c["freqs"], _pr["freq_bound"] = _SP.freqs_in_band(_row, _haul)
+        _pr["carrier"] = _SP.carrier_line(c["cand"], _k) if c["cand"] else None
+        c["prior"] = _pr
     import time
     _t_sweep = time.perf_counter()
     # Stage 1: one sizing forecast per cell (7x), in parallel. Stage 2: one task per cell per
@@ -2929,7 +3000,12 @@ def api_optimise(origin: str, dest: str, airline: str = "", carrier_type: str = 
     bases = list(_optimise_map(_optimise_base, cells))
     tasks = [{"cell": c, "freq": f, "es_i": b["es_i"], "demand_7": b["demand_7"]}
              for c, b in zip(cells, bases) if b is not None for f in c["freqs"]]
-    rows = [r for r in _optimise_map(_optimise_freq, tasks) if r is not None]
+    rows = []
+    for _t, _r in zip(tasks, _optimise_map(_optimise_freq, tasks)):
+        if _r is not None:
+            _r["rank"] = _t["cell"].get("rank", "profit")
+            _r["freq_bound"] = ((_t["cell"].get("prior") or {}).get("freq_bound"))
+            rows.append(_r)
     _sweep_s = round(time.perf_counter() - _t_sweep, 1)
     if not rows:
         return JSONResponse({"ok": False, "error": _explain_infeasible(origin, dest, dist_km, plan_lf)})
@@ -2997,6 +3073,14 @@ def api_optimise(origin: str, dest: str, airline: str = "", carrier_type: str = 
     _season_blank = season not in ("annual", "summer", "winter")
     _pool = [r for r in rows if r.get("season", "annual") == "annual"] if _season_blank else list(rows)
     _most_pax = lambda rs: max(rs, key=lambda r: (r.get("carried", r["demand"]), r["lf"], r["freq"]))
+    # RANK BY CONTRIBUTION inside the schedule prior (John, 26 Sep 2026): once the sweep is bounded to
+    # what airlines launch on pairs like this, the choice among those schedules is the one that
+    # contributes most to the airline, still only among rows in the presentable load factor band.
+    # Without the prior the 24 Sep rule (most passengers in the band) runs unchanged.
+    _by_contrib = any(r.get("rank") == "contribution" for r in rows)
+    if _by_contrib:
+        _most_pax = lambda rs: max(rs, key=lambda r: ((r.get("contribution") or 0), r.get("carried", r["demand"]),
+                                                      r["lf"], r["freq"]))
     band = [r for r in _pool if VIABLE_LF <= r["lf"] <= PRESENT_LF_CAP]
     viable = [r for r in _pool if r["lf"] >= VIABLE_LF]
     not_viable = None
@@ -3006,9 +3090,10 @@ def api_optimise(origin: str, dest: str, airline: str = "", carrier_type: str = 
         best = _most_pax(band)
     elif viable:
         best = _most_pax(viable)
-        selection_note = ("no schedule plans between %.0f%% and %.0f%%; the most passengers among "
+        selection_note = ("no schedule plans between %.0f%% and %.0f%%; the %s among "
                           "those clearing the floor is shown, planning at %.0f%%"
-                          % (VIABLE_LF * 100, PRESENT_LF_CAP * 100, best["lf"] * 100))
+                          % (VIABLE_LF * 100, PRESENT_LF_CAP * 100,
+                             "highest contribution" if _by_contrib else "most passengers", best["lf"] * 100))
     elif _season_blank and any(r["lf"] >= VIABLE_LF for r in rows):
         # No annual schedule is a proposition but a seasonal one is: show it and say why.
         _sea = [r for r in rows if r["lf"] >= VIABLE_LF]
@@ -3041,6 +3126,71 @@ def api_optimise(origin: str, dest: str, airline: str = "", carrier_type: str = 
                              "Optimise again to see it."
                              % (_sb["freq"], _sb["aircraft"], _sb["season"], _sb["lf"] * 100,
                                 best["lf"] * 100, _sb["season"].capitalize()))
+    # THE CARRIER CHECK (John, 26 Sep 2026: "a flag, not a veto"). The chosen airline's own launches
+    # on this haul band and scope: at 5 or more, the sweep for that airline is re-run inside the
+    # carrier's own gauge and frequency p25-p75 and its answer is shown beside the class answer. The
+    # headline stays the class answer. Below 5 the payload says "fewer than 5 comparable launches".
+    # Never the carrier's all-launches row (United's is its regional feed, median 76 seats).
+    _best_cell = next((c for c in cells if c["cand"] == best.get("airline") and c["ct_i"] == best.get("ctype")
+                       and c["sea_i"] == best.get("season")), None)
+    _prior_best = (_best_cell or {}).get("prior")
+    carrier_check = None
+    if _prior_best is not None and best.get("airline"):
+        _cl = _prior_best.get("carrier")
+        if not _cl:
+            carrier_check = {"carrier": best["airline"], "n": None,
+                             "note": "fewer than 5 comparable launches by %s on this haul band and scope"
+                                     % best["airline"]}
+        else:
+            carrier_check = {"carrier": best["airline"], "line": _cl, "result": None}
+            try:
+                _bi = cells.index(_best_cell)
+                _base = bases[_bi]
+                _cc = dict(_best_cell)
+                if not _cc["fixed_ac"] and _cl.get("gauge_p25") is not None:
+                    _cc["seat_band"] = (_cl["gauge_p25"], _cl["gauge_p75"])
+                _cfb = "client fixed"
+                if not (freq and int(freq) > 0):
+                    _cc["freqs"], _cfb = _SP.freqs_in_band(_cl, _haul)
+                _ctasks = [{"cell": _cc, "freq": f, "es_i": _base["es_i"], "demand_7": _base["demand_7"]}
+                           for f in _cc["freqs"]] if _base else []
+                _crows = [r for r in _optimise_map(_optimise_freq, _ctasks) if r is not None]
+                try:
+                    for _r in _crows:
+                        _r["airfield"] = _af_band(_r["aircraft"])
+                except Exception:                            # noqa: BLE001
+                    pass
+                _crows = [r for r in _crows if r.get("airfield") != "NOT_FEASIBLE"] or _crows
+                _cband = [r for r in _crows if VIABLE_LF <= r["lf"] <= PRESENT_LF_CAP]
+                _cviab = [r for r in _crows if r["lf"] >= VIABLE_LF]
+                _cb = _most_pax(_cband) if _cband else (_most_pax(_cviab) if _cviab else None)
+                if _cb:
+                    carrier_check["result"] = {
+                        "aircraft": _cb["aircraft"], "freq": _cb["freq"], "seats": _cb.get("seats"),
+                        "lf": round(float(_cb["lf"]), 3), "carried_each_way": round(_cb.get("carried", _cb["demand"])),
+                        "carried_two_way": round(2 * _cb.get("carried", _cb["demand"])),
+                        "gauge_bound": _cb.get("gauge_bound"), "freq_bound": _cfb,
+                        "in_band": bool(_cband)}
+                    carrier_check["agrees"] = (_cb["aircraft"] == best["aircraft"] and _cb["freq"] == best["freq"])
+                else:
+                    carrier_check["note"] = ("no schedule inside %s's own launch range reaches a %.0f%% planned load"
+                                             % (best["airline"], VIABLE_LF * 100))
+            except Exception as _e:                          # noqa: BLE001
+                carrier_check["note"] = "carrier check could not run (%s)" % _e
+    if _sp_tab:
+        schedule_prior = {"loaded": True, "file": os.path.basename(_sp_tab[0]),
+                          "pair": {k_: _sp_pair.get(k_) for k_ in ("a", "b", "ctry_a", "ctry_b", "base_mkt", "year")},
+                          "pair_gaps": _sp_pair.get("gaps") or [],
+                          "haul_band": _haul,
+                          "class": (_prior_best or {}).get("class"),
+                          "gauge_bound": best.get("gauge_bound") or ((_prior_best or {}).get("gauge_bound")),
+                          "freq_bound": best.get("freq_bound"),
+                          "freqs_swept": (_best_cell or {}).get("freqs"),
+                          "ranked_on": "contribution" if _by_contrib else "passengers",
+                          "carrier_check": carrier_check}
+    else:
+        schedule_prior = {"loaded": False, "note": "schedule prior not loaded: " + (_SP.reason() or "unknown"),
+                          "ranked_on": "passengers"}
     final = calibrated_forecast(origin, dest, airline=(best["airline"] or None), carrier_type=best.get("ctype", carrier_type),
                                 aircraft=best["aircraft"], freq=best["freq"],
                                 econ_share=(econ_share if (econ_share and econ_share > 0) else None),
@@ -3090,8 +3240,12 @@ def api_optimise(origin: str, dest: str, airline: str = "", carrier_type: str = 
                               # carrier does not fly and the store therefore cannot describe.
                               "seats": best.get("seats"), "seats_source": best.get("seats_source"),
                               # what it optimised FOR, so the output says which question it answered
-                              "objective": ("most passengers within the %.0f-%.0f%% planning band"
+                              "objective": (("highest contribution to the airline within the %.0f-%.0f%% "
+                                             "planning band, inside the schedules airlines launch on "
+                                             "comparable pairs" if _by_contrib else
+                                             "most passengers within the %.0f-%.0f%% planning band")
                                             % (VIABLE_LF * 100, PRESENT_LF_CAP * 100)),
+                              "schedule_prior": schedule_prior,
                               "target_lf": TARGET_LF, "viable_lf": VIABLE_LF,
                               "present_lf_cap": PRESENT_LF_CAP,
                               "selection_note": selection_note,
@@ -3104,6 +3258,8 @@ def api_optimise(origin: str, dest: str, airline: str = "", carrier_type: str = 
                                          "lf": round(float(r_["lf"]), 3), "demand": round(r_["demand"]),
                                          "carried": round(r_.get("carried", r_["demand"])),
                                          "seats": r_.get("seats"), "chosen": (r_ is best),
+                                         "contribution": r_.get("contribution"),
+                                         "gauge_bound": r_.get("gauge_bound"),
                                          "airfield": r_.get("airfield", "UNKNOWN")}
                                         for r_ in (sorted(_rows_all, key=lambda x: x.get("airfield") == "NOT_FEASIBLE"))],
                               "airfield_note": airfield_note,

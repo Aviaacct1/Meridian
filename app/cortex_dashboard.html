@@ -490,6 +490,10 @@
              route (under 250 passengers a year today, or none recorded), the market-share engine
              answers and the accuracy record does not describe it. Said first, before the basis. -->
         <div id="engineNote" style="display:none;margin:-6px 0 10px;padding:10px 12px;border:1px solid #b9770e;border-radius:6px;background:#fef5e7;color:#7e5109;font-size:13px"></div>
+        <!-- Schedule basis (26 Sep 2026, the schedule prior): what airlines launch on comparable
+             pairs bounds the Optimise sweep; said on the first screen, and said plainly when the
+             table is not loaded and Optimise has searched unbounded. -->
+        <div id="priorNote" style="display:none;margin:-6px 0 10px;padding:10px 12px;border:1px solid #9aa7b4;border-radius:6px;background:#f4f7fa;color:#2c3e50;font-size:13px"></div>
         <!-- Airfield and range first (John, 26 Sep 2026): a route the aircraft cannot operate
              is said before the numbers, not under them. -->
         <div id="airfield" class="banner ok hidden"></div>
@@ -1801,6 +1805,48 @@ function render(d){
     if(fe.local_leg && fe.local_leg!=="calibrated model"){ e.style.display="block";
       e.innerHTML="<b>This route is outside the range of the calibrated model</b> (fewer than 250 passengers a year fly it today, or none are recorded). The forecast uses Meridian's market-share engine, and the accuracy record does not describe it.";
     } else { e.style.display="none"; e.innerHTML=""; }
+  })();
+  (function(){ const e=$("#priorNote"); if(!e) return;
+    const sp=(d.optimised&&d.optimised.schedule_prior)||null;
+    if(!sp){ e.style.display="none"; e.innerHTML=""; return; }
+    e.style.display="block";
+    if(!sp.loaded){ e.style.borderColor="#b9770e"; e.style.background="#fef5e7"; e.style.color="#7e5109";
+      e.innerHTML="<b>Schedule prior not loaded.</b> Optimise has searched every aircraft in range at 3 to 7 a week without checking what airlines launch on comparable pairs, so the schedule shown may be larger than an airline would start with.";
+      return; }
+    e.style.borderColor="#9aa7b4"; e.style.background="#f4f7fa"; e.style.color="#2c3e50";
+    const c=sp.class||{}, k=c.key||{}, fmt=x=>(x==null?"?":Math.round(x).toLocaleString("en-GB"));
+    const f1=x=>(x==null?"?":(Math.round(x*10)/10).toString());
+    const HB={H0:"under 800 km",H1:"800-1,999 km",H2:"2,000-4,499 km",H3:"4,500 km and over"};
+    const MB={S0:"under 8,000",S1:"8,000-24,999",S2:"25,000-79,999",S3:"80,000 and over"};
+    const parts=[];
+    if(k.region_pair) parts.push(k.region_pair);
+    if(k.scope) parts.push(k.scope==="D"?"domestic":"international");
+    if(k.haul_band) parts.push(HB[k.haul_band]||k.haul_band);
+    if(k.carrier_type) parts.push(k.carrier_type==="LCC"?"low-cost carriers":"full-service carriers");
+    if(k.market_band) parts.push((MB[k.market_band]||k.market_band)+" passengers a year on the pair today (two-way)");
+    let h="<b>Schedule basis.</b> ";
+    if(c.n){
+      h+="Airlines launching on comparable pairs ("+parts.join(", ")+"; "+fmt(c.n)+" launches since 2016) mostly started with "
+        +fmt(c.gauge_p25)+"-"+fmt(c.gauge_p75)+" seats per departure at "+f1(c.freq_p25)+"-"+f1(c.freq_p75)+" a week each way. "
+        +"Optimise searched inside that range"+(sp.freqs_swept?" ("+sp.freqs_swept.join("x, ")+"x a week)":"")
+        +" and chose the schedule contributing most to the airline within a "
+        +Math.round((d.optimised.viable_lf||0.65)*100)+"-"+Math.round((d.optimised.present_lf_cap||0.85)*100)+"% planned load.";
+    } else { h+="No comparable-pair row applied to the chosen airline; its sweep was not bounded."; }
+    if(sp.gauge_bound==="nearest to band") h+=" No aircraft this airline flies lies inside the seat range, so the nearest was taken.";
+    if(sp.gauge_bound==="client fixed") h+=" The aircraft you fixed was used as given.";
+    if(sp.freq_bound==="nearest to band") h+=" No permitted frequency lies inside the range, so the nearest was taken.";
+    if(sp.freq_bound==="client fixed") h+=" The frequency you fixed was used as given.";
+    const cc=sp.carrier_check;
+    if(cc){
+      if(cc.line&&cc.result){ const r=cc.result;
+        h+="<br><b>Carrier check, "+cc.carrier+".</b> On "+fmt(cc.line.n)+" comparable launches of its own it started with "
+          +fmt(cc.line.gauge_p25)+"-"+fmt(cc.line.gauge_p75)+" seats at "+f1(cc.line.freq_p25)+"-"+f1(cc.line.freq_p75)+" a week. "
+          +(cc.agrees?"Inside that range Optimise reaches the same schedule."
+            :"Inside that range Optimise would choose "+r.aircraft+" "+r.freq+"x a week, carrying "+fmt(r.carried_two_way)+" passengers a year two-way at "+Math.round(r.lf*100)+"%. Shown for comparison; the headline stays on the comparable-pair range.");
+      } else if(cc.note){ h+="<br><b>Carrier check, "+cc.carrier+".</b> "+cc.note.charAt(0).toUpperCase()+cc.note.slice(1)+"."; }
+    }
+    if(sp.pair_gaps&&sp.pair_gaps.length) h+="<br>Not keyed: "+sp.pair_gaps.join("; ")+".";
+    e.innerHTML=h;
   })();
   // The email offer follows the run's state: a warned run is never emailed (the server
   // refuses too; this is the honest face of it), and an optimise sweep is not one run.

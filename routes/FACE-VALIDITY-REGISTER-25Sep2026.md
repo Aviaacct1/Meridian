@@ -222,3 +222,20 @@ Controller's reading, 26 Sep:
    a quarter of flynas on the same pair and gauge: a carrier effect in the model that needs
    explaining before the stand. For W10, owner of the record: one question, measured, not
    assumed.
+
+
+## Acceptance Optimise after the go-live and notices commit, 26 Sep 2026 evening
+
+| Pair | Optimise pick | Two-way carried | Local each way | Connecting each way | Airfield note |
+|---|---|---|---|---|---|
+| SOU-JFK | AA A21N 7x | 124,852 | 31,143 | 31,283 | blank |
+| BLQ-JFK | DL A333 7x | 146,028 | 14,702 | 58,312 | blank |
+| SJC-TPE | JX A359 5x | 134,116 | 30,144 | 36,915 | blank |
+
+Source: workstation Optimise run pasted by John, 26 Sep 2026.
+
+Controller's reading. SJC-TPE is now close to the circa 120k curfew pitch: acceptable. BLQ-JFK
+lands near the Avia 2025 figure but for the wrong reason: connecting is circa 80% of carried and
+a widebody still wins. Bologna Optimise is not demonstrated until the feed fix and the schedule
+prior land. The blank airfield note is not yet evidence either way: it may mean no type was
+NOT_FEASIBLE, or that the notices commit is not live. Check the per-row airfield field.

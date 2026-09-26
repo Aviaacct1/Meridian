@@ -1,0 +1,34 @@
+W1: schedule prior wired into Optimise (John 26 Sep, option 2b; W10-STATUS v21 W1 WIRING SPEC steps 1-7)
+
+- app/schedule_prior.py (new): loads schedule_prior.csv through the model file's resolver
+  (AVIA_SCHEDULE_PRIOR, then AVIA_LOCAL_CACHE, E:\Avia, C:\Avia; bt2_relaxed then bt2). Class key
+  market_band on route_context.market(a, b, year)[0] (the raw two-way Sabre pair, NOT market_build
+  step 1), haul_band, carrier_type (LCC by DEFAULT_LCC_LIST), scope, region_pair; levels 0-4, first
+  with n >= 20. v1 files (no region_pair) start at level 1. A field that cannot be measured skips
+  the levels that need it. Carrier line on carrier + haul band + scope only, never all-launches.
+  Frequencies: whole weekly frequencies inside freq p25-p75, intersected with the headline rule
+  (H3: 3, 4, 5, 7; shorter: 3-7); none inside takes the permitted one nearest the median, said so.
+- app/aircraft_select.py: evaluate() adds annual_contribution (profit before ownership and
+  insurance, the _ownership_view definition). select_aircraft() takes seat_band=(lo, hi) (types by
+  the carrier's own seat count where OAG knows it; none inside keeps the nearest, marked "nearest to
+  band") and rank="contribution". Defaults unchanged, so every other caller is unaffected.
+- app/cortex_app.py (api_optimise): each cell keyed on its own carrier type; sweep bounded to the
+  class gauge and frequency band unless the client fixed that field; ranked by contribution inside
+  the 65-85% band when the prior is loaded, by passengers as before when it is not. Carrier check:
+  at n >= 5 the chosen airline's cell is re-run inside its own p25-p75 and shown beside the class
+  answer (flag, not veto); below 5, "fewer than 5 comparable launches". optimised.schedule_prior
+  carries the file, pair inputs, class row with level/key/n, which constraint bound, frequencies
+  swept, ranked_on and the carrier check. Sweep rows carry contribution and gauge_bound.
+- app/cortex_dashboard.html: #priorNote on the first screen: the schedule basis in plain words and
+  the carrier check; amber "Schedule prior not loaded" when the file is absent (the DevPC).
+
+Model and accuracy claim untouched: the prior only chooses the schedule the model is asked about.
+If the notices/airfield change (COMMIT-MSG-26Sep2026-w1-notices-airfield.txt) was not yet
+committed, this commit carries it too.
+
+Acceptance (workstation, after pull and restart): blank Optimise on SOU-JFK, BLQ-JFK, SJC-TPE shows
+schedule_prior.loaded true, class level and n (BLQ-JFK level 0, EU-NA, n 69; freqs 3, 4, 5, 7;
+gauge 226-287), a chosen gauge inside the band or marked nearest, and a carrier check line.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01Ai6fXfSs283Z67QSwHLSQs

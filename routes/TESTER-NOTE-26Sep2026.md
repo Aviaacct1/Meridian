@@ -43,3 +43,15 @@ can break it. Tell me what confuses you, what looks wrong, and what you would be
 
 The same address and password as before (John sends them separately). Use Chrome. If the page
 says "Failed to fetch", do not retry repeatedly; message John.
+
+
+## Added 26 Sep night: the schedule basis box
+
+Optimise now first looks at what airlines launched on comparable pairs (same haul, region, carrier
+type and size of market, from the 6,524 launches since 2016), searches only inside that seat and
+frequency range, and picks the schedule that contributes most to the airline within a 65-85%
+planned load. A grey "Schedule basis" box on the first screen says which range applied and how many
+launches it rests on, and a "Carrier check" line says what the chosen airline itself has launched
+on similar routes. If the box is amber and says the schedule prior is not loaded, stop and tell the
+controller: that run is not the one being tested. Wait for John's go before testing; testing starts
+once the workstation acceptance has passed.

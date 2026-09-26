@@ -15,6 +15,18 @@ The detail lives in two companions and this document points at them rather than 
 
 ## Status
 
+Latest, 26 Sep 2026 evening: acceptance Optimise after the go-live (8bb87a3) and the notices
+commit. SJC-TPE JX A359 5x 134,116 two-way, close to the circa 120k curfew pitch. SOU-JFK AA
+A21N 7x 124,852. BLQ-JFK DL A333 7x 146,028, but connecting is circa 80% of carried: Bologna
+Optimise stays out of any demonstration until the feed fix and the schedule prior land. Airfield
+note blank on all three; whether the notices commit is live is being confirmed. Register table
+added to routes/FACE-VALIDITY-REGISTER-25Sep2026.md.
+
+26 Sep night: W10 closed the schedule prior (schedule_prior.csv v2 on the workstation; W10-STATUS
+v21). The controller, as W1, wired the whole of it in one go per John's ruling (no interim wiring):
+COMMIT-MSG-26Sep2026-w1-schedule-prior.txt. Testers stay off until the workstation acceptance on
+SOU-JFK, BLQ-JFK and SJC-TPE passes.
+
 Rewritten every session by the programme controller; John reads this on a phone. As at
 Friday 26 September 2026, 03:00 BST (John in the UAE): controller chat 4, day one, after the
 sweep of every STATUS file (W2 v14 of 22 Sep, W3 v2 and W4 v2 and W5 v4 and W6 v7 of 20-21

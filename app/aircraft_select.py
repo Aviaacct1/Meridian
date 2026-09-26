@@ -138,6 +138,11 @@ def evaluate(code, distance_nm, demand_each_way, freq, plan_lf=0.875, econ_share
             "pnl_load_factor": y.get("load_factor"),
             "served_each_way": round(served), "spilled_each_way": round(spilled),
             "margin": y.get("margin"), "annual_profit": round(ann_profit),
+            # CONTRIBUTION TO THE AIRLINE (John, 26 Sep 2026): profit before ownership and insurance,
+            # the same definition as cortex_app._ownership_view, because Avia cannot publish a lease
+            # rate and so must not rank on one. What Optimise ranks on when the schedule prior is loaded.
+            "annual_contribution": round(ann_profit + (annual.get("annual_ownership") or 0.0)
+                                         + (annual.get("annual_insurance") or 0.0)),
             "breakeven_lf": y.get("breakeven_lf")}
 
 
@@ -149,7 +154,7 @@ def _block_min_for(distance_nm):
 def select_aircraft(distance_nm, demand_each_way, freq, plan_lf=0.875, econ_share=0.85,
                     econ_fare_ow=360.0, bus_fare_ow=1300.0, airspace=None, airline_type="FSC",
                     aircraft_age=5, block_min=None, fuel_price_usd_kg=None,
-                    fleet=None, airline_iata=None, weeks=52.0):
+                    fleet=None, airline_iata=None, weeks=52.0, seat_band=None, rank="profit"):
     """Pick the range-feasible aircraft that maximises annual profit on this route+demand.
     Returns (best_code, ranked_list). Tie-break (within 2% profit): smaller spill, then gauge
     closest to demand. Raises if nothing in the pool can fly the range."""
@@ -173,7 +178,24 @@ def select_aircraft(distance_nm, demand_each_way, freq, plan_lf=0.875, econ_shar
                      weeks=weeks, seats_override=cfg.get(c))
             for c in pool]
     target_seats = demand_each_way / (freq * weeks * plan_lf) if (freq and plan_lf) else 0
-    rows.sort(key=lambda r: (-r["annual_profit"], r["spilled_each_way"], abs(r["seats"] - target_seats)))
+    # THE SCHEDULE PRIOR'S GAUGE BAND (26 Sep 2026). seat_band=(lo, hi) keeps only the types whose seat
+    # count, as THIS carrier configures them where OAG knows it, lies inside the band, so new types
+    # (A220, A321XLR) fall in by their seats rather than by name. When none lies inside, the type(s)
+    # nearest the band are kept and every row says so ("nearest to band"); nothing is silently widened.
+    bound = None
+    if seat_band and rows:
+        lo, hi = float(seat_band[0]), float(seat_band[1])
+        dist = lambda r: 0.0 if lo <= r["seats"] <= hi else min(abs(r["seats"] - lo), abs(r["seats"] - hi))
+        inside = [r for r in rows if dist(r) == 0.0]
+        if inside:
+            rows, bound = inside, "band"
+        else:
+            d0 = min(dist(r) for r in rows)
+            rows, bound = [r for r in rows if dist(r) == d0], "nearest to band"
+    for r in rows:
+        r["gauge_bound"] = bound
+    _obj = "annual_contribution" if rank == "contribution" else "annual_profit"
+    rows.sort(key=lambda r: (-r[_obj], r["spilled_each_way"], abs(r["seats"] - target_seats)))
     return rows[0]["aircraft"], rows
 
 
