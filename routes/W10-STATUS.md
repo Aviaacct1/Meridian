@@ -1,6 +1,6 @@
 # W10 status: FINAL CALIBRATION TEST
 
-Written by W10 only, rewritten every session. Version 6, 26 September 2026, session 3, all four blocks pasted; option 2 scored and rejected.
+Written by W10 only, rewritten every session. Version 7, 26 September 2026, session 3; option 2 rejected; John's Optimise design (the schedule prior) written up and its test handed over as block E.
 Clone at e7eaf9d. Read this session: W10-RULINGS.md from "22 September 2026, evening" to the
 end (six sections); FACE-VALIDITY-REGISTER-25Sep2026.md v2 in full; the umbrella Status
 block and critical path of 26 Sep 03:00; bt2/bt2_build_v13.py; app/bt2_forecast.py load path.
@@ -172,6 +172,29 @@ register.
    half and which is a second engine, against the one-model rule). W10's view: (a) before
    Routes, with the limitation stated in the known-issues list; (b) is a programme, not a
    fix. Either way the Run path and the record are untouched.
+2b. THE SCHEDULE PRIOR (John, 26 Sep, after the ceiling result; W10 agrees and this is
+   the recommended Optimise fix). The model is accurate given the schedule; what went
+   wrong at Bologna is that Optimise chose a schedule no airline would launch, because the
+   model rewards every seat added. So Optimise first asks what an airline would actually
+   launch on a pair like this, and the record holds 6,524 real answers: on a pair with
+   this existing O&D, haul and carrier type, airlines flew this gauge at this frequency.
+   The aircraft sweep is bounded to schedules the record says are credible for the pair
+   (capacity_frame.py, 9 Aug, already bounds the carrier half: the aircraft each credible
+   operator flies on comparable sectors), and contribution picks within that set; the
+   model then forecasts at the chosen schedule, where it is accurate. "Optimised for":
+   the most contribution among the schedules airlines have actually launched on markets
+   like this one. One model, one record, no second engine; Run and the accuracy sentence
+   untouched. John's two additions: (i) new types such as the A220 and A321XLR are not in
+   the history yet, so the prior is expressed in seats per departure and frequency, not
+   aircraft type, and the type table maps a new type onto the gauge band the record
+   already holds under older types; a user who selects a new type still runs it; over the
+   years the record catches up on its own. (ii) A carrier cross-check on every Optimise
+   result: the chosen carrier's own launches on comparable pairs (n, gauge, frequency),
+   printed beside the answer, with "fewer than N comparable launches" stated when that is
+   the case. Score: block E (bt2/bt2_schedule_prior.py) measures whether the record can
+   predict the schedule flown from pre-launch facts, blind by cohort, with and without
+   carrier identity; --lookup prints the check line for one pair. If the prior lands
+   within +-50% on most launches the sweep can stand on it; if not, W10 says so.
 3. FEED. Outside the record. The controller's shape (feed as a share of the route's own
    size by haul and hub) cannot be scored on this record and W10 says so rather than
    scoring it on the sector target, which grades a quantity nobody publishes. W1 builds it
@@ -224,6 +247,26 @@ py -3.12 -s probe_payload_keys.py E:\Avia\probe\BLQ-JFK-25Sep\opt_BLQ-JFK.json
 
 Block D, DONE 26 Sep (ceiling-relaxed-W10.log, ceiling-canon-W10.log). Kept for the record.
 
+Block E, the schedule prior test (bt2/bt2_schedule_prior.py, new; after the workstation
+pulls), plus the Bologna check line as an example.
+
+**Workstation Actual**
+```
+cd C:\src\meridian
+git pull
+cd C:\src\meridian\bt2
+$env:AVIA_LOCAL_CACHE = "E:\Avia"
+$env:AVIA_APP_DIR     = "C:\src\meridian\app"
+$env:AVIA_BT2_TARGET  = "nonstop"
+$env:AVIA_BT2_DIR     = "E:\Avia\bt2_relaxed"
+$env:AVIA_BT2_COHORTS = "2016,2017,2018,2019,2024,2025"
+py -3.12 -s bt2_schedule_prior.py 2>&1 | Tee-Object -FilePath E:\Avia\probe\schedprior-relaxed-W10.log
+py -3.12 -s bt2_schedule_prior.py --lookup base_mkt=55000 gcd=6600 intl typ=FSC carrier=UA 2>&1 | Tee-Object -FilePath E:\Avia\probe\schedprior-lookup-BLQ-W10.log
+```
+The lookup's base_mkt of 55,000 is a placeholder for Bologna-New York's existing pair O&D,
+which W10 does not hold; the payload's "current" field reads 25,582 and "natural" 203,142
+(catchment), so run it again with the raw pair figure if the controller has it.
+
 **Workstation Actual**
 ```
 cd C:\src\meridian
@@ -259,7 +302,7 @@ in the record. Until then the record quotes the controller's rulings file as the
 ```
 cd C:\AviaDev
 git pull
-git add routes/W10-STATUS.md routes/CALIBRATION-RECORD-2026.md bt2/bt2_experiments.log bt2/probe_payload_keys.py bt2/bt2_ceiling_test.py routes/COMMIT-MSG-26Sep2026-w10-pickle-stamp.txt
+git add routes/W10-STATUS.md routes/CALIBRATION-RECORD-2026.md bt2/bt2_experiments.log bt2/probe_payload_keys.py bt2/bt2_ceiling_test.py bt2/bt2_schedule_prior.py routes/COMMIT-MSG-26Sep2026-w10-pickle-stamp.txt
 git commit -F routes/COMMIT-MSG-26Sep2026-w10-pickle-stamp.txt
 git push
 ```
@@ -272,5 +315,5 @@ since": correct as committed; v2 of 24 Sep was written and not committed, W10's 
 ## Calendar
 
 All four jobs done 26 Sep. John decides 30 Sep on: the stand pair; the sample; option 1
-(ship); the Optimise question (a) or (b). Outstanding for the record: John's pastes of the
+(ship); option 2b on block E's score. Outstanding for the record: John's pastes of the
 25 Sep claimset and mixed logs (build line and figures), then record v1 by 3 Oct.

@@ -1,4 +1,4 @@
-W10 26 Sep: all four jobs closed on John's pastes; eight log lines; status v6; record v0.6
+W10 26 Sep: all four jobs closed on John's pastes; eight log lines; status v7; record v0.6
 
 bt2/bt2_experiments.log: W10-PICKLE-STAMP, W10-PICKLE-INSAMPLE-PROVISIONAL, W10-BASIS-IN-THE-
 PAYLOAD, W10-PICKLE-INSAMPLE-CONFIRMED (the app's estimator scores 73.4 / 56.0 in-sample,
@@ -13,3 +13,6 @@ W10's recommended figure set.
 bt2/probe_payload_keys.py: raw docstring (SyntaxWarning).
 bt2/bt2_ceiling_test.py: new, read-only; scores fix option 2 (market ceiling on the local leg)
 on the record, blind and in-sample, both samples.
+bt2/bt2_schedule_prior.py: new, read-only; tests John's Optimise design (the schedule prior:
+predict the schedule an airline would launch from pre-launch facts, blind by cohort, with and
+without carrier identity) and prints the carrier check line for one pair (--lookup).
