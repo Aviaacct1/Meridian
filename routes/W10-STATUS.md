@@ -1,8 +1,9 @@
 # W10 status: FINAL CALIBRATION TEST
 
-Written by W10 only, rewritten every session. Version 16, 26 September 2026, evening: the schedule prior table is built on the workstation
-and scored (W10-SCHEDULE-PRIOR-TABLE); gauge holds, frequency holds as a bound but not as a point, and the recommendation for W1 is below.
-v14 content further down stands. Clone at 5f32567. Every figure below has a log line in bt2/bt2_experiments.log (W10-* lines, 26 Sep).
+Written by W10 only, rewritten every session. Version 17, 26 September 2026, late evening. John's ruling tonight: no interim wiring
+of the class table for testers; W10 finishes the frequency range, then W1 wires gauge and frequency together once, and testers get
+access again after that. The frequency-range script is written and waiting for its workstation run (block F1). A leak in the boosted
+prior's features is found and stated below. Clone at 536c0f6. Every figure below has a log line in bt2/bt2_experiments.log.
 
 ## One line for John
 
@@ -83,10 +84,43 @@ from continuous pair size, growth, base strength and connecting competition. How
 it uses p25-p75 as the bound on its sweep, and as a bound both are calibrated: the flown schedule falls inside it on 54.0% and 48.7%
 of launches, against 50% by construction. The cost of the coarse frequency key is a wider band, not a biased one.
 
-**Recommendation.** W1 wires the table tonight as ruled (option 2b), gauge and frequency both as bounds. W10 then builds the
-frequency bound from the boosted prior (a small pickled quantile model beside the table, p25 and p75 on log frequency, features the app
-can compute pre-launch) and scores its interval the same way; it replaces the table's frequency columns only if its band is
-narrower at the same coverage. That is a data swap for W1, not a rewire, if W1 reads the bound through one function.
+**John's ruling, 26 Sep late evening.** No interim wiring tonight. W10 finishes the frequency range first; W1 wires the whole
+schedule prior (gauge from the table, frequency from whichever of table and boosted range wins below, carrier line, airfield demotion)
+in one go; testers get access again after that. The v16 recommendation to wire the table tonight is withdrawn.
+
+**A leak in the boosted prior, found while building the frequency range.** The boosted prior's feature capa is capture_L.csv
+cap_actual, which bt2_capture.py computes at the ACTUAL launch frequency (cap_from(..., f_act), f_act = wk_freq_dir). So the 70.9% on
+frequency in W10-SCHEDULE-PRIOR was predicted partly from the answer, and the 40.7 point gap in v16 overstates what the boosted
+prior can do. Optimise cannot know the frequency before it chooses one. The honest feature is cap_f5, the same capture at a standard
+five a week, which bt2_capture writes beside it and which route_context reproduces when called at freq=5. The table's gauge (69.5%)
+uses no capture feature at all, so it is clean; the boosted gauge figure it was compared with (71.1%) carried the same leak.
+
+**The frequency range: bt2/bt2_fit_freq_range.py.** Quantile gradient boosting at 0.25 / 0.50 / 0.75 on log weekly frequency per
+direction, blind configuration, blind by cohort. Three arms on the same launches: T the class table; L the boosted prior with capa as
+it was (leaky, to measure the leak); H the same features with cap_f5 in place of capa (the candidate). Scored on median within +-20%
+and +-50%, flown frequency inside p25-p75, and median band width p75 / p25, whole sample and by haul band.
+
+**Decision rule, set before the run.** H replaces the table's frequency columns if its p25-p75 holds the flown frequency on 45-55% of
+launches AND its median width is narrower than the table's on the same launches. Otherwise the table stays and the result is logged as
+a negative. Either way W1 gets one answer to wire.
+
+**What W1 will need if H wins.** The pickle E:\Avia\bt2_relaxed\schedule_prior_freq.pkl beside the model and the table, read by the
+same resolver. Features: route_context.build(a, b, carrier, aircraft_seats=any, freq=5, year=latest Sabre year), then the thirteen
+features in bt2_fit_freq_range.features_from_context, in that order; freq=5 is what makes ctx["capa"] equal cap_f5, and any other
+freq reintroduces the leak. The pickle carries five parity examples (features and expected p25 / median / p75) for W1 to assert before
+first use. Optimise then sweeps whole weekly frequencies inside the band, intersected with John's headline rule (new long-haul 3x,
+4x, 5x or 7x, never above daily); a band that holds no permitted frequency takes the nearest one and says so.
+
+**Block F1, Workstation Actual (RDP, sees E:).** Score first, write, then the three stand pairs through the live path.
+
+```
+cd C:\src\meridian
+git pull
+cd C:\src\meridian\bt2
+$env:AVIA_LOCAL_CACHE="E:\Avia"; $env:AVIA_APP_DIR="C:\src\meridian\app"; $env:AVIA_BT2_TARGET="nonstop"; $env:AVIA_BT2_DIR="E:\Avia\bt2_relaxed"; $env:AVIA_BT2_COHORTS="2016,2017,2018,2019,2024,2025"
+py -3.12 -s bt2_fit_freq_range.py --out E:\Avia\bt2_relaxed\schedule_prior_freq.pkl 2>&1 | Tee-Object -FilePath E:\Avia\probe\freqrange-fit-W10.log
+py -3.12 -s bt2_fit_freq_range.py --pair BLQ-JFK:UA GOA-JFK:UA SOU-JFK:UA 2>&1 | Tee-Object -FilePath E:\Avia\probe\freqrange-pairs-W10.log
+```
 
 **Bologna-New York on the Sabre pair** (base_mkt 37,814, 6,647 km, international, FSC): level 1, n=205; gauge 239 / 278 / 294 seats
 (p25 / median / p75), frequency 2.2 / 3.0 / 4.1 per week per direction. United line (long-haul international, n=25): gauge 176 / 214 /

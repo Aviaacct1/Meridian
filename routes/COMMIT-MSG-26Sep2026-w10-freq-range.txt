@@ -1,0 +1,16 @@
+W10 26 Sep late evening: frequency range script; leak in the boosted prior's capa stated
+
+bt2/bt2_fit_freq_range.py: quantile gradient boosting (0.25 / 0.50 / 0.75) on log weekly frequency
+per direction, blind by cohort, against the class table on the same launches: median within +-20%
+and +-50%, inside p25-p75, band width. Arm L reruns the boosted prior as it was, with capa computed
+at the FLOWN frequency (bt2_capture cap_actual), to measure that leak; arm H, the candidate, uses
+cap_f5. Decision rule set before the run: H replaces the table's frequency columns only at 45-55%
+coverage and a narrower band. --out writes E:\Avia\bt2_relaxed\schedule_prior_freq.pkl with the
+estimators, feature recipe and parity examples; --pair runs live pairs through route_context at
+freq=5. Not yet run.
+
+routes/W10-STATUS.md v17: John's ruling (no interim wiring; one wiring of the whole prior once the
+frequency range is settled, then testers back); the leak; the decision rule; what W1 needs; block F1.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_015NbinCPXuUWF3VuAEiSjFX
