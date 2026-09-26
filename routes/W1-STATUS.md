@@ -28,3 +28,21 @@ the user puts a large-hub carrier on more seats; on the analysts' BLQ-JFK schedu
 share is 54%. Open: on uncapped rows the calibrated local leg moves with the feed level (AHB-IST TK
 local 9,378 to 13,823); to be explained before any feed change.
 Source: E:\Avia\probe\register_feed_20260926-1634.csv, pasted by John.
+
+
+## 27 September 2026: fare basis measured (tools/fare_check.py, Sabre 2025, ND)
+
+USD per passenger as Sabre states them (one-way on the evidence: LHR-JFK economy total 536).
+| Pair | Premium share | All-cabin total (what the P&L uses for economy) | Economy total | Economy base | Premium total | Premium base |
+|---|---|---|---|---|---|---|
+| EDI-BOS | 14.0% | 784 | 535 | 247 | 2,317 | 1,468 |
+| EDI-JFK | 19.8% | 978 | 564 | 272 | 2,656 | 1,844 |
+| BLQ-JFK | 11.0% | 639 | 478 | 265 | 1,945 | 1,344 |
+| SJC-TPE | 16.7% | 861 | 600 | 449 | 2,161 | 1,991 |
+| SOU-JFK | 7.4% | 1,012 | 935 | 526 | 1,980 | 1,468 |
+| LHR-JFK | 32.7% | 1,269 | 536 | 267 | 2,777 | 2,027 |
+Finding: every economy seat is priced at the all-cabin fare, 1.1x to 2.4x the economy fare, while
+the premium cabin is priced at a fixed 1,400 (below every measured premium fare). Economy seats are
+most of the aircraft, so revenue and margin are overstated on long-haul. Taxes: total includes
+government taxes and carrier surcharges, base excludes both; true airline revenue lies between.
+Next: margin effect of cabin fares (total and base) via econ_fare/bus_fare overrides; then the fix.

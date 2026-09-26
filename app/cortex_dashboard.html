@@ -573,11 +573,20 @@
           <button class="btn ghost" onclick="window.print()">Print this page</button>
           <button class="btn ghost" id="demoBtn" onclick="demoToggle()" title="A demonstration copy of this forecast pack, emailed to a work address">Email me this forecast</button>
         </div>
+        <!-- THE SAME-DAY PACK, at the foot of the run (critical path 2A, 26 Sep 2026). The host
+             types the visitor's details against the forecast on the screen; the job carries this
+             run's own inputs, so the pack reproduces what was watched. Two speeds only: it goes
+             now, or it waits the hold so a reviewer can look first. -->
         <div id="demoBox" class="hidden" style="margin-top:10px;padding:12px 14px;border:1px solid var(--rule,#d8d3c4);border-radius:6px;max-width:560px">
-          <div style="font-family:var(--sans);font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;margin-bottom:8px">Email me this forecast</div>
-          <input id="demoEmail" type="email" placeholder="your work email address" style="width:100%;box-sizing:border-box;padding:9px 10px;font-size:14px;margin-bottom:8px">
-          <label style="display:block;font-size:12.5px;margin-bottom:10px"><input type="checkbox" id="demoConsent"> I agree The Aviation Observatory may contact me about Meridian.</label>
-          <button class="btn" id="demoSend" onclick="demoRequest()">Send the pack</button>
+          <div style="font-family:var(--sans);font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;margin-bottom:8px">Email this forecast</div>
+          <input id="demoEmail" type="email" placeholder="work email address" style="width:100%;box-sizing:border-box;padding:9px 10px;font-size:14px;margin-bottom:8px">
+          <div style="display:flex;gap:8px;margin-bottom:8px">
+            <input id="packName" type="text" placeholder="name (optional)" style="flex:1;box-sizing:border-box;padding:9px 10px;font-size:14px">
+            <input id="packCompany" type="text" placeholder="company (optional)" style="flex:1;box-sizing:border-box;padding:9px 10px;font-size:14px">
+          </div>
+          <label style="display:block;font-size:12.5px;margin-bottom:8px"><input type="checkbox" id="demoConsent"> I agree The Aviation Observatory may contact me about Meridian.</label>
+          <label style="display:block;font-size:12.5px;margin-bottom:10px"><input type="checkbox" id="packNow"> Send as soon as it is built (they need it today)</label>
+          <button class="btn" id="demoSend" onclick="packRequest()">Queue the pack</button>
           <div id="demoNote" style="font-family:var(--serif);font-size:12px;color:var(--muted);font-style:italic;margin-top:8px"></div>
         </div>
         <div class="foot-note">Indicative, for directional guidance. Each forecast is a calibrated central estimate: the model is calibrated on thousands of launched routes and graded against the traffic they went on to carry. Per-route precision varies; the <a href="/trackrecord">Track Record</a> page shows how forecasts have landed, at your airport and across the whole book. A route into a brand-new market, where no demand history exists to measure, is flagged on the run and leans more on judgement.</div>
@@ -840,7 +849,7 @@ function recomputeEcon(){
    +`<div class="pl tot"><span class="k">Contribution towards ownership per rotation</span><span class="vv" style="color:${t.contrib>=0?'var(--s3)':'var(--signal)'}">${money(t.contrib)}</span></div>`
    +`<div class="pl"><span class="k">Ownership (PLUG)</span><span class="vv">${money(-t.ownership)}</span></div>`
    +`<div class="pl tot"><span class="k">Operating profit per rotation, both plugs as set</span><span class="vv" style="color:${t.profit>=0?'var(--s3)':'var(--signal)'}">${money(t.profit)}</span></div>`
-   +`<div class="pl" style="opacity:.72"><span class="k" style="font-style:italic">Two inputs here are plugs, not measurements. Airport and handling charges are a generic placeholder rather than this airport pair, and on a short sector they are the largest line in the P&amp;L. Ownership rests on a lease rate that is not available publicly and which Avia does not publish. Slide both to what you actually pay: the contribution line above is unaffected by the ownership plug.</span><span class="vv"></span></div>`;
+   +`<div class="pl" style="opacity:.72"><span class="k" style="font-style:italic">Two inputs here are plugs, not measurements. Airport and handling charges are a generic placeholder rather than this airport pair, and on a short sector they are the largest line in the P&amp;L. Ownership rests on a lease rate that is not available publicly and which The Aviation Observatory does not publish. Slide both to what you actually pay: the contribution line above is unaffected by the ownership plug.</span><span class="vv"></span></div>`;
   renderSeason();
 }
 const SEASON={leisure:[0.6,0.6,0.7,0.85,1.05,1.3,1.5,1.5,1.2,0.95,0.7,1.05],
@@ -1283,7 +1292,13 @@ function drawTail(sc,d){
   const bh=((sc&&sc.block_min)||0)/60, tn=((sc&&sc.turn_min)||120)/60;
   if(!bh){ row.classList.add("hidden"); return; }
   const cyc=2*bh+2*tn, PERIOD=168;
-  const freq=(d&&(d.frequency||(d.capacity&&d.capacity.frequency)))||parseInt($("#freq").value)||7;
+  // THE KEY IS cap.freq, NOT cap.frequency. Reading a key the payload does not carry made every
+  // branch fall through to the literal 7, so an Optimise result at 3x drew a seven-day rotation
+  // and said "Pattern basis: daily" (John, TIF-AUH, 27 Sep). A frequency nobody stated is not a
+  // frequency: the diagram is withheld rather than drawn on an assumed one.
+  const _cap=(d&&d.capacity)||{};
+  const freq=(d&&d.frequency)||_cap.freq||_cap.frequency||parseInt($("#freq").value)||0;
+  if(!freq){ row.classList.add("hidden"); return; }
   const pat=tailPattern(Math.max(1,Math.min(7,freq)),d);
   const deps=pat.days.map(k=>k*24);
   const n=tailCountCirc(deps,cyc,PERIOD);
@@ -1762,6 +1777,27 @@ function splitNote(cs){
 // --- the demo pack flow: email me this forecast --------------------------------
 let DEMO_POLL=null;
 function demoToggle(){ const bx=$("#demoBox"); if(bx) bx.classList.toggle("hidden"); }
+// Queues a pack job against THIS run. The response says what will happen and when, because the
+// host repeats it to the visitor out loud and must not promise a delivery the queue is not making.
+async function packRequest(){
+  const note=$("#demoNote");
+  if(!STATE.lastQ){ note.textContent="Run a forecast first."; return; }
+  const em=($("#demoEmail").value||"").trim();
+  if(!em){ note.textContent="An email address is needed."; return; }
+  if(!$("#demoConsent").checked){ note.textContent="The consent box is needed before a pack can be emailed."; return; }
+  const btn=$("#demoSend"); btn.disabled=true; note.textContent="Queueing.";
+  try{
+    const r=await fetch("/api/pack/request",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({email:em,name:($("#packName").value||"").trim(),
+        company:($("#packCompany").value||"").trim(),
+        mode:$("#packNow").checked?"now":"hold",consent:true,params:STATE.lastQ})});
+    const d=await r.json();
+    note.textContent = d.ok ? d.message : (d.error||"The pack was not queued.");
+    if(d.ok){ $("#demoEmail").value=""; $("#packName").value=""; $("#packCompany").value=""; }
+  }catch(e){
+    note.textContent="The pack was not queued: the server did not answer.";
+  }finally{ btn.disabled=false; }
+}
 function demoRequest(){
   if(!STATE.lastQ){ $("#demoNote").textContent="Run an assessment first."; return; }
   const em=($("#demoEmail").value||"").trim();
@@ -1774,7 +1810,7 @@ function demoRequest(){
     body:JSON.stringify({email:em,consent:true,params:params})})
   .then(r=>r.json()).then(s=>{
     if(!s.ok){ btn.disabled=false; $("#demoNote").textContent=s.error||"the request failed"; return; }
-    if(s.state==="pending"){ btn.disabled=false; $("#demoNote").textContent=s.message||"Held for approval by the Avia team."; return; }
+    if(s.state==="pending"){ btn.disabled=false; $("#demoNote").textContent=s.message||"Held for approval by The Aviation Observatory."; return; }
     // building: the pack may take a while, so it is built in the background and SENT
     // when ready; the page polls and the terminal state is "sent".
     DEMO_POLL=setInterval(()=>{
@@ -1782,7 +1818,7 @@ function demoRequest(){
         const secs=Math.round((Date.now()-t0)/1000);
         if(st.state==="running"){ $("#demoNote").textContent=(st.stage||"working")+"… ("+secs+"s; the pack is emailed when ready, you need not wait)"; return; }
         clearInterval(DEMO_POLL); btn.disabled=false;
-        if(st.state==="sent"){ $("#demoNote").textContent="Sent to "+em+". One pack per route; further requests need a release by the Avia team."; }
+        if(st.state==="sent"){ $("#demoNote").textContent="Sent to "+em+". One pack per route; further requests need a release by The Aviation Observatory."; }
         else { $("#demoNote").textContent=st.error||"the pack could not be sent"; }
       }).catch(e=>{ clearInterval(DEMO_POLL); btn.disabled=false; $("#demoNote").textContent=String(e.message||e); });
     }, 3000);
@@ -1944,7 +1980,9 @@ function render(d){
     // number is that carrier's forecast, not the market's, so the card says whose.
     ["Total forecast", fmt(_tot*2),
       (d.airline?((d.airline_name||d.airline)+" · "):"")+
-      `Two way; each way ${fmt(_tot)}, incl. feed · `+
+      // "incl. feed" is a claim about the number. A point-to-point carrier has no feed in it,
+      // so saying so reads as a mistake to anyone who knows the route (John, TIF-AUH, 27 Sep).
+      `Two way; each way ${fmt(_tot)}${_cf>0?", incl. feed":""} · `+
       ((STATE.fy&&STATE.fy!==d.year)?`forecast ${STATE.fy}`:`${d.year} steady state`)+
       (((d.season&&d.season.mode)||"annual")!=="annual"?` · ${d.season.mode} season totals`:"")],
     ["Point-to-point", fmt(_ptp*2), `Two way; each way ${fmt(_ptp)} · captured from the ${fmt(dem.natural)} local market`],
@@ -1962,7 +2000,8 @@ function render(d){
     // source, so the client can see it and override from a stated number rather than a blank.
     if(cap.seats){ const _sb=$("#seats"); if(_sb && !_sb.value) _sb.placeholder = cap.seats + (cap.seats_source ? " · " + cap.seats_source : ""); }
   if(MODE!=="forecast" && d.economics_ok)
-    kpis.push(["Route margin", pct1(ec.margin), profitable?'<span class="tag up">Profitable</span> at these inputs':'<span class="tag dn">Loss</span> at these inputs']);
+    kpis.push(["Route margin", pct1(ec.margin), (profitable?'<span class="tag up">Profitable</span> at these inputs':'<span class="tag dn">Loss</span> at these inputs')
+      +(ec.fare_note?'<br><span style="font-size:11px;color:var(--muted)">'+ec.fare_note+'</span>':'')]);
   else
     kpis.push(["Capture share", pct1(dem.qsi_share), "of the catchment market"]);
   // Column count follows the cards, so the grid can never disagree with what is in it.
@@ -2286,6 +2325,18 @@ function dem_shares(d){
   const s=d.catchment.observed_share||{}, nm=d.catchment.names||{}, home=d.catchment.home;
   return Object.keys(s).map(c=>({n:nm[c]||c,v:s[c],home:c===home})).sort((a,b)=>b.v-a.v);
 }
+// PRE-MORTEM 33, open. No margin, contribution or revenue figure on the result page or in the
+// navigation while the cost basis behind them is being checked. The server sets the flag and says
+// on every start which way it is set; the page reads it and takes the three surfaces out rather
+// than leaving a control that answers with a figure nobody stands behind. The Optimise ranking is
+// ordinal and is untouched.
+(function(){
+  const f = (window.AVIA_FLAGS || {});
+  if (f.economics) return;
+  const nav = document.querySelector('.nav a[href="/economics"]'); if (nav) nav.remove();
+  const btn = document.querySelector('#mode button[data-m="econ"]'); if (btn) btn.remove();
+  const row = document.getElementById("econRow"); if (row) row.remove();
+})();
 </script>
 </body>
 </html>

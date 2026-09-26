@@ -112,6 +112,51 @@ def destination_market_split(db, airports, dest_airports, poo_country=None, year
     return split, total, avg_fare
 
 
+def cabin_fares(db, airports, dest_airports, year=None):
+    """Economy and premium one-way fares for the same market destination_market_split reads (origin
+    airports to destination airports, one direction), passenger-weighted, AS SOLD: Sabre's
+    avg_total_fare_usd, which includes government taxes and carrier charges. Premium = business,
+    first and premium economy. Returns {econ, prem, prem_share, econ_base, prem_base, pax} or None.
+
+    WHY (27 Sep 2026, the long-haul margin flag): the P&L priced every economy seat at the ALL-CABIN
+    fare and then the business cabin again at a fixed 1,400 USD, so premium revenue was counted twice
+    (EDI-BOS economy 535 against an all-cabin 784; LHR-JFK 536 against 1,269). Sabre gives base and
+    total only, with no split of government taxes from carrier charges, so the as-sold total is used
+    and labelled; removing taxes needs a sourced tax table and is scheduled after Routes."""
+    import duckdb
+    if not os.path.exists(db) or not airports or not dest_airports:
+        return None
+    prem = ("upper(cabin_class) LIKE '%BUSINESS%' OR upper(cabin_class) LIKE '%FIRST%' "
+            "OR upper(cabin_class) LIKE '%PREMIUM%'")
+    aph = ",".join("?" * len(airports)); dph = ",".join("?" * len(dest_airports))
+    where = [f"origin_airport IN ({aph})", f"destination_airport IN ({dph})"]
+    params = [*airports, *dest_airports]
+    if year is not None:
+        where.append("source_year = ?"); params.append(year)
+    sql = (f"SELECT SUM(passengers), SUM(CASE WHEN {prem} THEN passengers ELSE 0 END), "
+           f"SUM(CASE WHEN NOT ({prem}) THEN passengers*avg_total_fare_usd END), "
+           f"SUM(CASE WHEN NOT ({prem}) THEN passengers END), "
+           f"SUM(CASE WHEN {prem} THEN passengers*avg_total_fare_usd END), "
+           f"SUM(CASE WHEN NOT ({prem}) THEN passengers*avg_base_fare_usd END), "
+           f"SUM(CASE WHEN {prem} THEN passengers*avg_base_fare_usd END) "
+           f"FROM sabre WHERE {' AND '.join(where)}")
+    con = duckdb.connect(db, read_only=True)
+    try:
+        from db_registry import apply_limits; apply_limits(con)
+    except Exception:
+        pass
+    try:
+        r = con.execute(sql, params).fetchone()
+    finally:
+        con.close()
+    if not r or not r[0]:
+        return None
+    pax, ppax, e_rev, e_pax, p_rev, e_base, p_base = [float(x or 0) for x in r]
+    return {"pax": pax, "prem_share": (ppax / pax) if pax else 0.0,
+            "econ": (e_rev / e_pax) if e_pax else None, "prem": (p_rev / ppax) if ppax else None,
+            "econ_base": (e_base / e_pax) if e_pax else None, "prem_base": (p_base / ppax) if ppax else None}
+
+
 def nonstop_share(db, airports, dest_airports, year=None):
     """Forecast-time connecting-heaviness proxy: of the catchment's O&D to the destination, the fraction
     that flies NONSTOP today (connecting_airport1 empty). Low = the market routes mostly via connections,

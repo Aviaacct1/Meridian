@@ -338,12 +338,35 @@ def _load():
         print("[cortex] catchment radius and airport allocation are great-circle; a route whose "
               "drive is longer than the straight line will read a wider catchment than it has")
 
+    if SHOW_ECONOMICS:
+        print("[cortex] economics view: ON (margin, contribution and revenue are displayed)")
+    else:
+        print("[cortex] economics view: WITHHELD pending the margin basis check; "
+              "the Optimise contribution ranking is unaffected")
+
+
+# PRE-MORTEM 33, open: Optimise route margins of 27-53% on long haul are not credible (W1, 26 Sep),
+# and the umbrella rule is that no economics figure reaches any surface until the basis is checked
+# and the controller accepts it against a sourced benchmark. So the economics view is WITHHELD, not
+# deleted: one switch, default off, and the server states which way it is set on every start. It
+# goes back on when pre-mortem 33 closes, which is a ruling, not an edit.
+SHOW_ECONOMICS = os.environ.get("AVIA_SHOW_ECONOMICS", "").strip().lower() in ("1", "true", "yes", "on")
+
+
+def _page(path, fallback):
+    """Serve a dashboard page with the run-time flags the front end reads. The flags are injected
+    rather than written into the file so the same HTML serves a stand build and a working session."""
+    if not os.path.exists(path):
+        return fallback
+    html = open(path, encoding="utf-8").read()
+    flags = '<script>window.AVIA_FLAGS={economics:%s};</script>' % ("true" if SHOW_ECONOMICS else "false")
+    return html.replace("</head>", flags + "\n</head>", 1) if "</head>" in html else flags + html
+
 
 @app.get("/", response_class=HTMLResponse)
 def home():
-    if os.path.exists(DASH):
-        return open(DASH, encoding="utf-8").read()
-    return "<h1>The Observatory · Meridian</h1><p>cortex_dashboard.html not found.</p>"
+    return _page(DASH, "<h1>The Observatory · Meridian</h1><p>cortex_dashboard.html not found.</p>")
+
 
 
 @app.get("/api/assess")
@@ -1722,19 +1745,45 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
         if not (econ_fare and econ_fare > 0):
             econ_fare = _ifare
         bus_fare = min(bus_fare, _ifare * 1.6)   # induced LCC/ULCC are low-yield; cap the premium fare
+    # CABIN FARES, 27 Sep 2026 (John approved option A): economy seats at Sabre's measured ECONOMY fare
+    # and premium seats at its measured PREMIUM fare, both as sold (taxes and carrier charges
+    # included, and said so on the page). Before this every economy seat carried the ALL-CABIN fare
+    # and the business cabin was priced again at 1,400, counting premium revenue twice: margins read
+    # 38-53% on transatlantic routes. A fare the user sets still wins; 1,400 is the form's default
+    # business fare, so it is treated as "not set". The all-cabin average stays the fallback.
+    _fare_src = None
     if not (econ_fare and econ_fare > 0):
-        _mkt_fare = r.get("avg_fare")            # measured Sabre one-way O&D fare for this market
-        if _mkt_fare and _mkt_fare > 0:
-            econ_fare = round(float(_mkt_fare), 2)
+        if r.get("fare_econ"):
+            econ_fare = round(float(r["fare_econ"]), 2)
+            _fare_src = "cabin"
+        else:
+            _mkt_fare = r.get("avg_fare")            # measured Sabre one-way O&D fare for this market
+            if _mkt_fare and _mkt_fare > 0:
+                econ_fare = round(float(_mkt_fare), 2)
+                _fare_src = "all-cabin"
+    if (bus_fare is None or abs(float(bus_fare) - 1400.0) < 1e-6) and r.get("fare_prem") and not r.get("induced"):
+        bus_fare = round(float(r["fare_prem"]), 2)
+        _fare_src = (_fare_src or "user economy") + "+premium"
     if with_econ:
         out.update(_econ_block(carried_ew, aircraft, freq, home, dest_airport, gcd, econ_share,
                                plan_lf, econ_fare, bus_fare, fuel_price, ct, weeks=season_weeks,
                                p2p_share=r.get("p2p_share"), fixed_overrides=fixed_overrides,
                                charges_override=charges_override,
                                seats_override=(int(float(seats)) if seats else None)))
+        _ec = out.get("economics") or {}
+        if _ec:
+            _ec["fare_source"] = _fare_src
+            _ec["fare_note"] = {
+                "cabin+premium": "economy and premium fares measured by cabin from Sabre, as sold "
+                                 "(including taxes and carrier charges); the airline's net yield is lower",
+                "cabin": "economy fare measured from Sabre, as sold (including taxes and carrier charges); "
+                         "premium fare as entered",
+                "all-cabin": "all-cabin average fare from Sabre (no cabin split available), as sold",
+                "all-cabin+premium": "all-cabin average fare for economy (no economy split available) and "
+                                     "measured premium fare, as sold",
+            }.get(_fare_src or "", "fares as entered")
         # A proxy fare is a warning, not a footnote: every revenue figure downstream of it
         # is invented, and deck_from_cases refuses a warned run.
-        _ec = out.get("economics") or {}
         if _ec.get("fare_is_proxy"):
             out.setdefault("warnings", []).append(
                 "no measured fare reached the P&L; revenue, margin and breakeven run on a "
@@ -2279,16 +2328,17 @@ def api_briefing(airport: str, city: str = "", country: str = "", force: int = 0
 
 @app.get("/help", response_class=HTMLResponse)
 def help_page():
-    if os.path.exists(HELP):
-        return open(HELP, encoding="utf-8").read()
-    return "<h1>Help</h1><p>cortex_help.html not found.</p>"
+    return _page(HELP, "<h1>Help</h1><p>cortex_help.html not found.</p>")
 
 
 @app.get("/economics", response_class=HTMLResponse)
 def economics_page():
-    if os.path.exists(ECON):
-        return open(ECON, encoding="utf-8").read()
-    return "<h1>Economics</h1><p>cortex_economics.html not found.</p>"
+    if not SHOW_ECONOMICS:
+        # Says what is withheld and why, rather than 404 or a blank page. Nobody should wonder
+        # whether the view is broken.
+        return ("<h1>Route economics</h1><p>The economics view is withheld while the cost basis "
+                "behind it is checked. It returns once that check is accepted.</p>")
+    return _page(ECON, "<h1>Economics</h1><p>cortex_economics.html not found.</p>")
 
 
 def catchment_profile(q):
@@ -4454,3 +4504,266 @@ def api_refresh_state():
     if REFRESH_PAUSED.get("since"):
         out["paused_for_s"] = int(time.time() - REFRESH_PAUSED["since"])
     return JSONResponse(out)
+
+
+# ============================================================================================
+# THE SAME-DAY PACK (critical path 2A; controller rulings 26 September 2026)
+# ============================================================================================
+# The host types the visitor's email at the foot of the run they have just watched. That queues
+# a pack job carrying the run's own inputs, so what is built is the run on the screen (John's
+# download-fidelity ruling) and not a fresh forecast. The job then follows one of three states:
+# NOW sends on the build's own checks, HOLD waits the configured hold, PAUSED waits for a person.
+# The build itself is W3's generator and is called by the worker; these endpoints are the queue
+# around it. Nothing here sends: the sender records the provider's message id or the job does not
+# move.
+import pack_queue as PQ
+import lead_store as LSTORE
+
+
+def _route_key(params):
+    return LSTORE.route_key(params.get("origin"), params.get("dest"))
+
+
+def _pack_json(job):
+    """One job as the queue view reads it. Times as ISO strings; the countdown as seconds, so the
+    page can render it without knowing the server's clock."""
+    if not job:
+        return None
+    out = {}
+    for k, v in job.items():
+        out[k] = v.isoformat(sep=" ", timespec="seconds") if hasattr(v, "isoformat") else v
+    out["seconds_to_send"] = job.get("seconds_to_send", PQ.seconds_to_send(job))
+    return out
+
+
+@app.post("/api/pack/request")
+async def api_pack_request(request: Request):
+    """The email field at the foot of a run. Body: {email, name, company, mode, consent, params},
+    where params is the SAME query the forecast ran with."""
+    try:
+        data = await request.json()
+    except Exception:
+        return JSONResponse({"ok": False, "error": "the request body was not JSON"},
+                            status_code=400)
+    params = data.get("params") or {}
+    if not (params.get("origin") and params.get("dest")):
+        return JSONResponse({"ok": False, "error": "no run to send: run a forecast first"},
+                            status_code=422)
+    if not data.get("consent"):
+        return JSONResponse({"ok": False, "error":
+                             "the consent box is needed before a pack can be emailed"},
+                            status_code=422)
+    mode = (data.get("mode") or "hold").strip().lower()
+    try:
+        job_id = PQ.enqueue(
+            data.get("email"), mode=mode,
+            captured_by=(data.get("captured_by") or "stand"),
+            name=data.get("name"), company=data.get("company"),
+            route=_route_key(params), origin=params.get("origin"), dest=params.get("dest"),
+            airline=params.get("airline"), run_ref=DP.run_ref(params), inputs=params)
+    except PQ.PackQueueError as e:
+        return JSONResponse({"ok": False, "error": str(e)}, status_code=422)
+    held = 0 if mode == "now" else PQ.hold_minutes()
+    return {"ok": True, "job": job_id, "mode": mode, "hold_minutes": held,
+            "message": ("Queued. It sends as soon as the pack is built and checked."
+                        if mode == "now" else
+                        "Queued. It sends %d minutes after the pack is built, unless someone "
+                        "pauses it." % held)}
+
+
+
+@app.get("/api/pack/list")
+def api_pack_list(state: str = None, limit: int = 200):
+    return {"ok": True, "hold_minutes": PQ.hold_minutes(),
+            "jobs": [_pack_json(j) for j in PQ.listing(state=state, limit=limit)]}
+
+
+@app.get("/api/pack/job")
+def api_pack_job(id: str):
+    job = PQ.get(id)
+    if job is None:
+        return JSONResponse({"ok": False, "error": "no pack job %s" % id}, status_code=404)
+    return {"ok": True, "job": _pack_json(job), "events": [
+        {"occurred_at": e["occurred_at"].isoformat(sep=" ", timespec="seconds")
+         if hasattr(e["occurred_at"], "isoformat") else e["occurred_at"],
+         "event": e["event"], "detail": e["detail"]} for e in PQ.events_for(id)]}
+
+
+@app.post("/api/pack/action")
+async def api_pack_action(request: Request):
+    """The reviewer's two actions, plus release and a note. Every refusal comes back with the
+    store's own wording, because the reviewer is the person who has to act on it."""
+    try:
+        data = await request.json()
+    except Exception:
+        return JSONResponse({"ok": False, "error": "the request body was not JSON"},
+                            status_code=400)
+    job_id = (data.get("id") or "").strip()
+    action = (data.get("action") or "").strip().lower()
+    by = (data.get("by") or "reviewer").strip()
+    try:
+        if action == "pause":
+            PQ.pause(job_id, data.get("reason"), by=by)
+        elif action == "send_now":
+            PQ.send_now(job_id, by=by)
+        elif action == "release":
+            PQ.release(job_id)
+        elif action == "note":
+            PQ.note(job_id, data.get("note"))
+        else:
+            return JSONResponse({"ok": False, "error":
+                                 "action must be pause, send_now, release or note"},
+                                status_code=422)
+    except PQ.PackQueueError as e:
+        return JSONResponse({"ok": False, "error": str(e)}, status_code=422)
+    return {"ok": True, "job": _pack_json(PQ.get(job_id))}
+
+
+@app.get("/api/pack/hold")
+def api_pack_hold_get():
+    return {"ok": True, "hold_minutes": PQ.hold_minutes()}
+
+
+@app.post("/api/pack/hold")
+async def api_pack_hold_set(request: Request):
+    """The hold is a setting John changes without a restart (ruling, 26 September)."""
+    try:
+        data = await request.json()
+    except Exception:
+        return JSONResponse({"ok": False, "error": "the request body was not JSON"},
+                            status_code=400)
+    try:
+        m = PQ.set_hold_minutes(data.get("minutes"))
+    except PQ.PackQueueError as e:
+        return JSONResponse({"ok": False, "error": str(e)}, status_code=422)
+    return {"ok": True, "hold_minutes": m}
+
+
+@app.get("/api/pack/preview")
+def api_pack_preview(id: str):
+    """The one-page preview the reviewer glances at. W3's generator writes the file and the job
+    carries its path; until it does, this says so rather than returning a blank page."""
+    job = PQ.get(id)
+    if job is None:
+        return JSONResponse({"ok": False, "error": "no pack job %s" % id}, status_code=404)
+    path = job.get("preview_path")
+    if not path or not os.path.exists(path):
+        return JSONResponse({"ok": False, "error":
+                             "no preview yet for this job (the build writes it)"},
+                            status_code=404)
+    from fastapi.responses import FileResponse
+    return FileResponse(path, media_type="application/pdf")
+
+
+@app.get("/demo/queue", response_class=HTMLResponse)
+def pack_queue_page():
+    """The reviewer's list. One line a job, newest first, the countdown visible, two actions.
+    Read on a phone between conversations, so the targets are large and there is no table to
+    scroll sideways. The page polls, because a hold running out is the thing it exists to show."""
+    return """<!doctype html><html lang="en-GB"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Observatory &middot; Meridian - Pack queue</title>
+<style>
+ :root{--ink:#1B2A38;--paper:#FBF8F1;--line:#E2DCCC;--body:#4A5A68;--brass:#D4A249;
+       --red:#B03A2E;--green:#1E6F50;--amber:#B9770E}
+ *{box-sizing:border-box;margin:0;padding:0}
+ body{background:var(--paper);color:var(--ink);font-family:Georgia,"Times New Roman",serif;padding:18px}
+ h1{font-size:19px;font-weight:500;margin-bottom:3px}
+ .sub{font-family:Inter,system-ui,sans-serif;font-size:12px;color:var(--body);margin-bottom:16px}
+ .set{font-family:Inter,system-ui,sans-serif;font-size:12px;color:var(--body);
+      border:1px solid var(--line);border-radius:6px;padding:10px 12px;margin-bottom:16px;background:#fff}
+ .set input{width:70px;padding:6px 8px;border:1px solid var(--line);border-radius:4px;font:inherit}
+ .job{border:1px solid var(--line);border-radius:6px;background:#fff;padding:12px 14px;margin-bottom:10px}
+ .r1{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+ .who{font-size:16px}
+ .rt{font-family:"IBM Plex Mono",monospace;font-size:13px;color:var(--body)}
+ .st{font-family:Inter,system-ui,sans-serif;font-size:9.5px;letter-spacing:.12em;
+     text-transform:uppercase;font-weight:600;border:1px solid currentColor;border-radius:2px;padding:2px 7px}
+ .s-ready{color:var(--green)}.s-paused{color:var(--amber)}.s-failed{color:var(--red)}
+ .s-sent{color:var(--body)}.s-queued,.s-building,.s-sending{color:var(--body)}
+ .clock{margin-left:auto;font-family:"IBM Plex Mono",monospace;font-size:14px}
+ .over{color:var(--red)}
+ .why{font-size:13.5px;color:var(--body);margin-top:7px;line-height:1.5}
+ .acts{display:flex;gap:8px;margin-top:11px;flex-wrap:wrap}
+ button,a.btn{font-family:Inter,system-ui,sans-serif;font-size:11px;letter-spacing:.06em;
+   text-transform:uppercase;font-weight:600;padding:9px 14px;border-radius:4px;cursor:pointer;
+   border:1px solid var(--ink);background:#fff;color:var(--ink);text-decoration:none}
+ button.go{background:var(--ink);color:var(--paper)}
+ .empty{font-size:14px;color:var(--body);padding:22px 0}
+ .err{color:var(--red);font-size:13px;margin-top:8px}
+</style></head><body>
+<h1>Pack queue</h1>
+<div class="sub">Newest first. A job sends itself when its clock runs out; pausing stops it.
+ A build that fails its own checks is paused automatically and never sends.</div>
+<div class="set">Hold before a pack sends itself:
+ <input id="hold" type="number" min="0" step="1"> minutes
+ <button onclick="setHold()">Save</button>
+ <span id="holdmsg"></span>
+ <div style="margin-top:6px">Zero sends as soon as the build passes. The change reaches every
+  job whose build has not yet finished.</div></div>
+<div id="list"><div class="empty">Loading.</div></div>
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function clock(sec){
+  if(sec==null) return "";
+  const over=sec<0, s=Math.abs(Math.round(sec));
+  const m=Math.floor(s/60), r=s%60;
+  return `<span class="clock${over?" over":""}">${over?"overdue ":""}${m}:${String(r).padStart(2,"0")}</span>`;
+}
+async function load(){
+  let d;
+  try{ d=await (await fetch("/api/pack/list")).json(); }
+  catch(e){ $("#list").innerHTML='<div class="err">Cannot reach the server.</div>'; return; }
+  if(document.activeElement!==$("#hold")) $("#hold").value=d.hold_minutes;
+  const jobs=d.jobs||[];
+  if(!jobs.length){ $("#list").innerHTML='<div class="empty">No packs queued.</div>'; return; }
+  $("#list").innerHTML=jobs.map(j=>{
+    const why=[];
+    if(j.pause_reason) why.push("Paused: "+esc(j.pause_reason));
+    if(j.failed_check) why.push("Build check failed: "+esc(j.failed_check));
+    if(j.error) why.push("Failed: "+esc(j.error));
+    if(j.reviewer_note) why.push("Note: "+esc(j.reviewer_note));
+    if(j.provider_message_id) why.push("Provider id "+esc(j.provider_message_id));
+    if(j.holding_email_at) why.push("Holding email sent "+esc(j.holding_email_at));
+    const acts=[];
+    if(j.state==="ready"){
+      acts.push(`<button class="go" onclick="act('${j.id}','send_now')">Send now</button>`);
+      acts.push(`<button onclick="pause('${j.id}')">Pause</button>`);
+    } else if(j.state==="paused"){
+      acts.push(`<button class="go" onclick="act('${j.id}','release')">Release</button>`);
+    } else if(j.state==="queued"||j.state==="building"){
+      acts.push(`<button onclick="pause('${j.id}')">Pause</button>`);
+    }
+    if(j.preview_path) acts.push(`<a class="btn" href="/api/pack/preview?id=${j.id}" target="_blank">Preview</a>`);
+    return `<div class="job">
+      <div class="r1"><span class="who">${esc(j.name||j.email)}</span>
+        <span class="rt">${esc(j.route||"")}${j.airline?" &middot; "+esc(j.airline):""}</span>
+        <span class="st s-${esc(j.state)}">${esc(j.state)}${j.mode==="now"?" &middot; now":""}</span>
+        ${clock(j.seconds_to_send)}</div>
+      ${why.length?`<div class="why">${why.join("<br>")}</div>`:""}
+      <div class="acts">${acts.join("")}</div></div>`;
+  }).join("");
+}
+async function post(body){
+  const r=await fetch("/api/pack/action",{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify(body)});
+  const d=await r.json();
+  if(!d.ok) alert(d.error||"refused");
+  load();
+}
+function act(id,action){ post({id:id,action:action}); }
+function pause(id){
+  const reason=prompt("Why is this held? The reason shows in the queue.");
+  if(reason===null) return;
+  post({id:id,action:"pause",reason:reason});
+}
+async function setHold(){
+  const r=await fetch("/api/pack/hold",{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({minutes:$("#hold").value})});
+  const d=await r.json();
+  $("#holdmsg").textContent=d.ok?("saved: "+d.hold_minutes+" minutes"):(d.error||"refused");
+  load();
+}
+load(); setInterval(load,10000);
+</script></body></html>"""

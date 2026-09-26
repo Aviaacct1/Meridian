@@ -529,6 +529,12 @@ def forecast(sabre_db, oag_db, week, origin, dest_codes, competing_airports, *, 
     # O&D source selector (DB1B vs Sabre). Default AVIA_OD_SOURCE=sabre -> byte-identical to Sabre.
     split, market, avg_fare, od_src = od_source.market_split(sabre_db, competing_airports, dest_codes,
                                                              year=year)
+    # CABIN FARES for the P&L (27 Sep 2026): economy seats at the economy fare, premium at the premium
+    # fare, from the same Sabre market. None when not measurable; the caller then keeps avg_fare.
+    try:
+        _cab = SC.cabin_fares(sabre_db, competing_airports, dest_codes, year=year)
+    except Exception:                                        # noqa: BLE001
+        _cab = None
     market *= (1 + growth) ** growth_years
     current = float(split.get(origin, 0.0)) * ((1 + growth) ** growth_years)
     # SABRE COVERAGE GROSS-UP: the recorded market under-reads off-GDS bookings (LCC-country and
@@ -1013,6 +1019,9 @@ def forecast(sabre_db, oag_db, week, origin, dest_codes, competing_airports, *, 
         "origin": origin, "dest_metro": dest_codes, "competing_airports": len(competing_airports),
         "natural_market": round(natural), "current_via_origin": round(current),
         "leaked": round(leaked), "avg_fare": round(avg_fare, 2),
+        "fare_econ": (round(_cab["econ"], 2) if (_cab and _cab.get("econ")) else None),
+        "fare_prem": (round(_cab["prem"], 2) if (_cab and _cab.get("prem")) else None),
+        "fare_prem_share": (round(_cab["prem_share"], 4) if _cab else None),
         "qsi_share": round(share, 4), "dest_share": round(dshare, 4), "capture_rate": capture_rate,
         # The connection set, summarised. legs_n and the three connection-type sums are what BT2
         # needs and what bt2_capture used to recompute by calling build_connections a second time.

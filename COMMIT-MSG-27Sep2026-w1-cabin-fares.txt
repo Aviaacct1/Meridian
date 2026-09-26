@@ -1,0 +1,20 @@
+W1: P&L prices economy and premium seats at Sabre's measured cabin fares (John, 27 Sep, option A)
+
+- app/sabre_catchment.py: cabin_fares() - economy and premium one-way fares, passenger-weighted, as
+  sold (avg_total_fare_usd), for the same market destination_market_split reads.
+- app/route_forecast.py: returns fare_econ, fare_prem, fare_prem_share.
+- app/cortex_app.py: economy seats at the economy fare, premium seats at the premium fare; a
+  user-set fare still wins (1,400, the form's default business fare, counts as not set); the
+  all-cabin average stays the fallback. economics.fare_source and fare_note say which basis ran.
+- app/cortex_dashboard.html: the route margin carries the fare note ("as sold, including taxes and
+  carrier charges; the airline's net yield is lower").
+
+Why: every economy seat carried the all-cabin fare and the business cabin was priced again at
+1,400, counting premium revenue twice (EDI-BOS economy 535 against all-cabin 784; LHR-JFK 536
+against 1,269). Measured with fare overrides on 8010: margins EDI-BOS 46.5% to 30.8%, BLQ-JFK
+38.3% to 16.7%, SJC-TPE 16.3% to -4.9%, SOU-JFK 52.5% to 45.3%; two-way passengers identical.
+Removing government taxes needs a sourced tax table (Sabre gives base and total only): after Routes.
+Known next item: Optimise's aircraft sizing still ranks on the distance-proxy fare.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01Ai6fXfSs283Z67QSwHLSQs
