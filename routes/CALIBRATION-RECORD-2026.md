@@ -1,6 +1,6 @@
 # Meridian calibration record 2026
 
-Written by W10 (final calibration test). Version 0.6, 26 September 2026, DRAFT. The
+Written by W10 (final calibration test). Version 0.7, 26 September 2026, DRAFT. The
 definitive version carries ONE figure set, ruled by John, and is what the product carries
 into Routes and republishes yearly. Every figure in this record quotes the line in
 bt2/bt2_experiments.log that produced it; a figure with no log line does not exist.
@@ -156,3 +156,24 @@ The outturn clause, for a host: each forecast is scored against the passengers t
 actually carried in its launch year, from the month it started to December, for routes
 launched in 2016-2019, 2024 and 2025, from Sabre MIDT, or from US DOT DB1B ticket data
 for US domestic routes launched up to 2024.
+
+## 10. What the model says about a route Avia has forecast by hand (26 September 2026)
+
+Internal reference only; the client forecast is not quoted on any client-facing surface.
+Avia's December 2025 forecast for Aeroporto di Bologna (BLQ_ShortTermForecast(ADF).xlsx,
+sheet 2025:2031, Egnyte Archive/2025/Bologna - Traffic Forecast Update 2025/Forecast/
+ShortTerm) assumed a generic US full-service carrier daily to New York JFK from April 2028
+on a 155-seat A321XLR, with a 285-seat 787-9 for April to October from 2029: 85,250 seats
+in 2028 (nine months) and 168,790 a full year, at 74.5-77.8% load factor, so by arithmetic
+circa 65,600 two-way passengers in 2028 and circa 129,500 in a full year, local and
+connecting together. Meridian with the schedule prior (W10-PRIOR-PREVIEW-2): the record's
+comparable launches put the schedule at 226-287 seats and 2.9-5.1 a week, with United's
+own comparable launches at 213 seats near daily, so Avia's schedule is inside the prior's
+range; the model's local at the median schedule is 41,675 two-way in the 2025 base year
+(0.40 per two-way seat, the Europe-North America record median), circa 65-70k at Avia's
+full-year seats and circa 75k with growth to 2029; the current V1 feed adds circa 70k
+two-way, for a total of circa 145k against 129.5k. The two agree within 15% on the
+schedule an airline would fly and on the total; the residual is in the connecting feed,
+which the record has never scored. Thursday's 216,000 two-way local at a 77W daily was
+the same model asked about a schedule the record would not have offered, with the local
+leg doubled by the basis fault.
