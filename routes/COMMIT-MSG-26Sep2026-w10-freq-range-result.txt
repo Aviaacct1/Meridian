@@ -1,0 +1,15 @@
+W10 26 Sep late evening: frequency range fails its rule; class table final; W1 wiring spec
+
+bt2/bt2_experiments.log: W10-FREQ-RANGE. Blind by cohort, n=6,524, weekly frequency per direction:
+class table 30.2% within +-20%, inside p25-p75 48.7%, width x2.19; boosted with capture at the
+flown frequency (leaky) 71.3%, 53.2%, x1.22; boosted with capture at five a week 32.9%, 40.5%,
+x1.72. The leak accounts for the whole of the boosted prior's apparent frequency advantage;
+W10-SCHEDULE-PRIOR's frequency figures withdrawn. The candidate is narrower but holds the flown
+frequency on 40.5% against 50% in every haul band: rule NOT MET, the table stays.
+
+routes/W10-STATUS.md v18: the result and the complete W1 wiring spec for the schedule prior
+(table load and fallback, key, gauge and frequency bounds with the 3x-7x rule, contribution
+ranking, carrier line on haul and scope only, payload).
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_015NbinCPXuUWF3VuAEiSjFX
