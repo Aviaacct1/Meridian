@@ -1,0 +1,18 @@
+Go-live: rule B pair 88/78 on 6,524 on every stand surface, histogram rebuilt, one step with the restart
+
+John's rulings of 26 Sep (umbrella item 55 CLOSED; W10-STATUS v14, "The go-live step"): the
+model the app runs becomes the rule B calibrated estimator (built on the workstation, version
+1.4 26Sep2026 rule B sabre) and every surface states its pair in the same step.
+
+- app/accuracy_dist.json: rebuilt on rule B (W10-RULE-B-EVIDENCE-BUILT): 88.2 / 78.3, n 6,524,
+  Sabre throughout; the methodology chart and its label read it.
+- app/methodology_page.py: tiles and prose 88% / 78%; portfolios of twenty 94% stated as the
+  leave-one-year-out test; one ruler throughout (Sabre) with the DB1B cross-check; chart source.
+- app/track_record.py: portfolios 94%; Sabre throughout; column headers.
+- deck/spec_routes_stand.py: John's sentence on 6,524; the second-question answer in the notes.
+- deck/figures_observatory.py: chart label from the file, no hard-coded pair.
+- Controller files: umbrella, W3/W4/W5/W6/W10-RULINGS (announcements).
+The evidence CSV is data (E:\Avia, block K4), not repo. Goes live at the next server restart.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01Ai6fXfSs283Z67QSwHLSQs

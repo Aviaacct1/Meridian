@@ -281,8 +281,10 @@ def accuracy(path):
             linewidth=1.0, zorder=2)
     for x in (-20, 20):
         ax.axvline(x, color=SIGNAL_RED, lw=1.2, ls=(0, (4, 3)), zorder=3)
-    ax.text(0, ax.get_ylim()[1] * 0.92, "89% WITHIN 20%", ha="center",
-            fontsize=11, color=INK, fontdict=MONO)
+    # The label reads the file's own figure; no hard-coded pair (26 Sep 2026, rule B go-live).
+    if d.get("w20") is not None:
+        ax.text(0, ax.get_ylim()[1] * 0.92, "%.0f%% WITHIN 20%%" % d["w20"], ha="center",
+                fontsize=11, color=INK, fontdict=MONO)
     return _finish(fig, ax,
                    xlabel="Forecast error against actual first-year passengers (%)",
                    ylabel="Number of route launches", path=path)

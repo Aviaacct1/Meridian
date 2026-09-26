@@ -1244,6 +1244,16 @@ five contacts.
   when the local leg is right and only the feed remains; options with their register effect
   to John by Wed 1 Oct; a feed change before the freeze only if the register shows it is still
   the dominant error on hub routes after the local fix.
+- 26 Sep 2026, night (W10-STATUS v14, "The go-live step"): the rule B evidence CSV is built
+  on the workstation (E:\Avia\probe\ruleB-out, W10-RULE-B-EVIDENCE-BUILT, identical to the
+  decimal); app/accuracy_dist.json on the DevPC (88.2 / 78.3, n 6,524, rule B, checked against
+  its bins); block K4 copies the CSV to E:\Avia at the restart, keeping the 9 Aug file for
+  rollback. The controller made W10's text edits in W3's area itself (announced in W3-RULINGS)
+  so the go-live is one commit tonight: methodology_page.py, track_record.py,
+  spec_routes_stand.py, figures_observatory.py. The three August case generators (Genoa,
+  San Jose) are left for W3 and must not be re-run until updated. W4, W5 and W6 correct their
+  routes/ documents before anything is sent. THE FEED: owned by the controller as W1 (ruled
+  earlier tonight); W10's status line asking for an owner is answered.
 ## Waiting on John
 
 1. CLOSED 19 Sep: HEAD `11a4c3f` confirmed and pushed.

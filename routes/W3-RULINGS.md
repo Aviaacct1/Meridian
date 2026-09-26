@@ -406,3 +406,23 @@ York; Bordeaux short-haul; Boise (US domestic); a US-Latin America pair (a US se
 airport to Mexico, Colombia or the Dominican Republic; not Barranquilla); Australia; Caribbean
 or the Europe-US hub case, whichever the coverage check favours. Propose pairs and airlines
 with the two checks by 30 Sep, as above.
+
+## 26 September 2026, night: THE GO-LIVE EDITS WERE MADE BY THE CONTROLLER IN W3's AREA (announced)
+
+John's ruling 2 (pickle and pair text in one step) could not wait for a W3 session, so the
+controller made W10's table of text edits itself, text only, no logic, on the DevPC clone,
+for the go-live commit: app/methodology_page.py (tiles 88% / 78%; prose 78% / 88%; the
+across-COVID paragraph restated as the leave-one-year-out test with portfolios of twenty at
+94%, which is the test W10-CALIB-GRID measured; the grading paragraph now "One ruler
+throughout", Sabre, with the DB1B cross-check as a two-to-four-point statement; chart source
+label; sub-heading 78% / 88%; docstring); app/track_record.py (docstring; portfolios 94% in
+three places; the DB1B sentences replaced by Sabre throughout; the two column headers lose
+"(US DB1B)"); deck/spec_routes_stand.py (SRC_CALIB on 6,524, Sabre throughout, rule B;
+ACCURACY is John's sentence with 88 / 78 on 6,524; NOTE_25B replaced by the second-question
+answer); deck/figures_observatory.py (the chart label reads the file's own w20, no hard-coded
+figure). Read them on your next session and say in W3-STATUS if any wording is wrong; change
+it in your own commit. NOT CHANGED, and not to be re-run until you update them against the
+rule B evidence (their claims depend on the data, not just the text): deck/spec_goa_nyc.py,
+deck/build_goa_nyc.py, deck/build_ba_sjc.py (2,915, 89 / 82, "18 San Jose launches in the
+2016-2019 and 2025 cohorts", the grey curve). The pitch page, the pack and the stand deck
+carry only John's sentence and the 6,524 from here on.

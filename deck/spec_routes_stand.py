@@ -28,10 +28,9 @@ SRC_PRICING = ("Source: Meridian pricing and the commercial offer, "
                "PRICING-DECISION-2026.md v1.0, FINAL, 20 September 2026.")
 SRC_METHOD = ("Source: Meridian forecasting methodology, The Aviation Observatory, "
               "23 August 2026.")
-SRC_CALIB = ("Source: Meridian calibration record, 2,915 real route launches, "
-             "2016-2019 and 2025; the pandemic years 2020-2023 are excluded. Outturn is "
-             "US DOT DB1B for United States domestic routes and Sabre Global Demand Data "
-             "elsewhere.")
+SRC_CALIB = ("Source: Meridian calibration record, 6,524 real route launches, "
+             "2016-2019, 2024 and 2025; the pandemic years 2020-2023 are excluded. Outturn is "
+             "Sabre Global Demand Data throughout; calibration rule B, 26 September 2026.")
 
 # --- PLACEHOLDERS, swapped on 25 September ---------------------------------
 # Verbatim from ROUTES-CONTROLLER-QUEUE-19Sep2026.md section B, marked DRAFT there.
@@ -44,19 +43,17 @@ P_SUB_1 = "The best time of day to fly it, not just how many will fly it."
 P_SUB_2 = "A researched pack with your numbers, emailed the same day."
 P_SUB_3 = "Independent and senior: no network to sell you, no house view."
 
-# The accuracy line, verbatim and only this (W3-RULINGS v2). Umbrella item 25 is open on
-# WHAT it describes; the controller's fallback wording in 25(b) is carried in the speaker
-# notes rather than on the slide, because two wordings of the same figures on one surface
-# would breach "no other accuracy figure anywhere". Controller to rule which is the slide.
-ACCURACY = ("Calibrated leads are within 20% of the outcome 89% of the time and within "
-            "10% 82% of the time, on 2,915 real launches. Blind results are reported as "
-            "portfolios, never as a single route.")
+# The accuracy sentence, John's wording of 25 September and his figures of 26 September
+# (umbrella item 55, CLOSED: calibration rule B, Sabre throughout, 6,524 launches). One model,
+# one record, one pair; nothing else on the slide states a figure.
+ACCURACY = ("When this model was used to forecast the new routes that launched since 2016, "
+            "88% of its forecasts were within 20% of what the route went on to carry and "
+            "78% within 10%, across 6,524 launches. The past does not predict the future, "
+            "but that is the record.")
 
-NOTE_25B = ("Umbrella item 25, fallback wording (b), pending John by 26 September: "
-            "\"Meridian builds the forecast step by step from measured demand. The "
-            "calibration record behind it, 2,915 real launches, is within 20% 89% of the "
-            "time and within 10% 82% of the time; every forecast carries its own "
-            "calibrated range.\" If (b) lands, it replaces the slide text above.")
+NOTE_25B = ("If asked what calibrated means: the model is fitted on the full history of "
+            "6,524 launches and graded on the same launches. On launches it never saw, a "
+            "portfolio of twenty routes lands within 20% of the actual total 94% of the time.")
 
 
 def build():

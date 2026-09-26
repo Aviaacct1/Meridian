@@ -307,3 +307,18 @@ fallback are all in the host's words, not hers. John names the second host (item
 the UK reviewer; this is a stand role); Stefan is the candidate on record. Suzanna's session
 on the current build (item 46) is booked for the week of 29 Sep by video; the 16 Oct trial
 stands; the rota (W9, pre-mortem 27) assumes one host may be absent for a whole day.
+
+## 26 September 2026, night: THE PAIR IS 88 / 78 ON 6,524 (controller)
+
+Umbrella item 55 is CLOSED (John, 26 Sep): calibration rule B, Sabre throughout, 6,524
+launches, 88% within 20% and 78% within 10%; blind portfolios of twenty 94%. John's
+sentence, verbatim, is the only accuracy statement on any surface: "When this model was used
+to forecast the new routes that launched since 2016, 88% of its forecasts were within 20% of
+what the route went on to carry and 78% within 10%, across 6,524 launches. The past does not
+predict the future, but that is the record." Spoken: "about six and a half thousand". The
+second-question answer: "calibrated means fitted on the full history of 6,524 launches and
+graded on the same launches; on launches it never saw, a portfolio of twenty routes lands
+within 20% of the actual total 94% of the time." Every file of yours that carries 89 / 82,
+92 / 86, 2,915 or the DB1B grading sentence (W10-STATUS v14 lists: STAND-HOST-MANUAL.md) is corrected in your
+next session and before anything is sent or printed. The product goes live on 88 / 78 at the
+next server restart.
