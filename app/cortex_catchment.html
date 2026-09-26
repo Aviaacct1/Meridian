@@ -81,6 +81,7 @@
   .grid{display:grid;grid-template-columns:1.7fr 1fr;gap:16px}
   #map{height:540px;width:100%;z-index:1;filter:saturate(.8) contrast(.98)}
   .legend{background:var(--paper);padding:10px 12px;border:1px solid var(--line);border-radius:2px;font-family:var(--sans);font-size:10px;letter-spacing:.05em;text-transform:uppercase;line-height:1.9;color:var(--body)}
+  .leaflet-tooltip.aplabel{background:#fff;border:1px solid #7A8794;box-shadow:none;padding:1px 5px;font-family:var(--sans);font-size:11px;font-weight:600;color:#0F1B28}
   .legend .sw{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:7px;vertical-align:-1px}
   .brow{display:flex;align-items:center;gap:12px;margin:12px 0}
   .brow .bl{width:108px;font-family:var(--sans);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--body);flex:0 0 auto;display:flex;align-items:center;gap:8px}
@@ -170,7 +171,7 @@
       <div id="results" class="hidden">
         <div class="kpis">
           <div class="kpi"><div class="l">Catchment population</div><div class="v" id="k_total">-</div><div class="s" id="k_total_s">within 220 km</div></div>
-          <div class="kpi"><div class="l">Within 120-min drive</div><div class="v" id="k_reach">-</div><div class="s">the practical catchment</div></div>
+          <div class="kpi"><div class="l" id="k_reach_l">Within 120-min drive</div><div class="v" id="k_reach">-</div><div class="s" id="k_reach_s">the practical catchment</div></div>
           <div class="kpi"><div class="l">Assumed capture rate</div><div class="v capbig" id="k_cap">-</div><div class="s" id="k_cap_s">share taken with own nonstop</div></div>
           <div class="kpi"><div class="l">Populated places</div><div class="v" id="k_places">-</div><div class="s">towns and cities in reach</div></div>
         </div>
@@ -181,7 +182,7 @@
             <div id="map"></div>
           </div>
           <div class="card">
-            <div class="ch"><div><h3>Population by drive time</h3><div class="sub">each band, and its share of the catchment</div></div></div>
+            <div class="ch"><div><h3 id="bandTitle">Population by drive time</h3><div class="sub">each band, and its share of the catchment</div></div></div>
             <div class="cb">
               <div id="bands"></div>
               <div class="fnote" id="capNote"></div>
@@ -208,7 +209,11 @@
 const $=s=>document.querySelector(s);
 // drive-time bands mapped to the brass intensity ramp (nearest darkest), plus grey beyond the practical catchment
 const BANDCOL={30:'#A97C33',60:'#D4A249',90:'#E4C489',120:'#F1E6CD',999:'#C4CDD6'};
-const BANDLBL={30:'0-30 min',60:'30-60 min',90:'60-90 min',120:'90-120 min',999:'120 min +'};
+const BANDLBL_MIN={30:'0-30 min',60:'30-60 min',90:'60-90 min',120:'90-120 min',999:'120 min +'};
+// Straight-line fallback (27 Sep 2026, the Taif catchment): the bands are DISTANCE bands, so they are
+// labelled in km. Labelling km bands as minutes is what made a straight-line picture read as drive time.
+const BANDLBL_KM={30:'0-35 km',60:'35-75 km',90:'75-120 km',120:'120-175 km',999:'175 km +'};
+let BANDLBL=BANDLBL_MIN;
 function fmtM(n){ if(n>=1e6) return (n/1e6).toFixed(n>=1e7?0:1)+'m'; if(n>=1e3) return Math.round(n/1e3)+'k'; return String(Math.round(n)); }
 function fmtN(n){ return Math.round(n).toLocaleString('en-GB'); }
 function hav(la1,lo1,la2,lo2){const R=6371,r=Math.PI/180;const dp=(la2-la1)*r,dl=(lo2-lo1)*r;
@@ -216,17 +221,20 @@ function hav(la1,lo1,la2,lo2){const R=6371,r=Math.PI/180;const dp=(la2-la1)*r,dl
 // distance-band fallback (km) if the drive raster is unavailable
 function distBand(km){ return km<=35?30:km<=75?60:km<=120?90:km<=175?120:999; }
 
-let MAP=null, LAYER=null;
+let MAP=null, LAYER=null, LEGEND=null;
+function legendHtml(){
+  return [30,60,90,120,999].map(b=>`<div><span class="sw" style="background:${BANDCOL[b]}"></span>${BANDLBL[b]}</div>`).join('')
+    +`<div style="margin-top:4px"><span class="sw" style="background:#D4A249;border:1px solid #fff;border-radius:50%"></span>town or city, sized by population</div>`
+    +`<div><span class="sw" style="background:#fff;border:2px solid #0F1B28;border-radius:50%"></span>this airport</div>`
+    +`<div><span class="sw" style="background:#fff;border:2px solid #7A8794;border-radius:50%"></span>other airport with scheduled service</div>`;
+}
 function ensureMap(lat,lon){
   if(!MAP){
     MAP=L.map('map',{scrollWheelZoom:true}).setView([lat,lon],8);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
       {maxZoom:12,attribution:'&copy; OpenStreetMap'}).addTo(MAP);
     const lg=L.control({position:'bottomright'});
-    lg.onAdd=function(){const d=L.DomUtil.create('div','legend');
-      d.innerHTML=[30,60,90,120,999].map(b=>`<div><span class="sw" style="background:${BANDCOL[b]}"></span>${BANDLBL[b]}</div>`).join('')
-        +`<div style="margin-top:4px"><span class="sw" style="background:#fff;border:2px solid #0F1B28;border-radius:50%"></span>airport</div>`;
-      return d;};
+    lg.onAdd=function(){const d=L.DomUtil.create('div','legend'); LEGEND=d; d.innerHTML=legendHtml(); return d;};
     lg.addTo(MAP);
   }
   if(LAYER){ MAP.removeLayer(LAYER); }
@@ -249,6 +257,8 @@ function draw(d){
   const a=d.airport;
   ensureMap(a.lat,a.lon);
   const raster=d.drive_available;
+  BANDLBL = raster ? BANDLBL_MIN : BANDLBL_KM;
+  if(LEGEND) LEGEND.innerHTML=legendHtml();
   // assign an effective band to each locale (drive if we have it, else distance fallback)
   const locs=d.locales.map(l=>{
     let band=999, drv=l.drive;
@@ -273,14 +283,26 @@ function draw(d){
     L.circleMarker([l.lat,l.lon],{radius:rad,color:'#fff',weight:1,fillColor:BANDCOL[l.band],fillOpacity:.85})
       .bindTooltip(`<b>${l.name||''}</b><br>pop ${fmtN(l.pop)} · ${dtxt}`,{direction:'top'}).addTo(LAYER);
   });
+  // the other airports with scheduled service inside the radius, labelled, so the competition is visible
+  (d.other_airports||[]).forEach(o=>{
+    L.marker([o.lat,o.lon],{icon:L.divIcon({className:'',html:
+      `<div style="width:12px;height:12px;background:#fff;border:2px solid #7A8794;border-radius:50%"></div>`,
+      iconSize:[12,12],iconAnchor:[6,6]})})
+      .bindTooltip(`<b>${o.code}</b>`,{permanent:true,direction:'right',className:'aplabel'})
+      .addTo(LAYER);
+  });
   // airport marker on top
   L.marker([a.lat,a.lon],{icon:L.divIcon({className:'',html:
     `<div style="width:16px;height:16px;background:#fff;border:3px solid #0F1B28;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,.4)"></div>`,
-    iconSize:[16,16],iconAnchor:[8,8]})}).bindTooltip(`<b>${a.code}</b> ${a.city||''}`,{permanent:false,direction:'right'}).addTo(LAYER);
+    iconSize:[16,16],iconAnchor:[8,8]})}).bindTooltip(`<b>${a.code}</b>`,{permanent:true,direction:'right',className:'aplabel'}).addTo(LAYER);
 
-  $('#mapTitle').textContent=`${a.code} drive-time catchment`;
+  $('#mapTitle').textContent = raster ? `${a.code} drive-time catchment` : `${a.code} catchment by distance`;
   $('#mapSub').textContent=(a.city?a.city+(a.country?', '+a.country:''):'')+
-    (raster?' · least-cost road drive time':' · straight-line distance (drive raster not loaded)');
+    (raster?' · road drive time; circles are towns and cities sized by population'
+           :' · straight-line distance; circles are towns and cities sized by population');
+  $('#bandTitle').textContent = raster ? 'Population by drive time' : 'Population by distance';
+  $('#k_reach_l').textContent = raster ? 'Within 120-min drive' : 'Within 175 km';
+  $('#k_reach_s').textContent = raster ? 'road drive time' : 'straight line';
 
   // KPIs
   $('#k_total').textContent=fmtM(d.total_pop);
@@ -296,8 +318,22 @@ function draw(d){
   } else {
     $('#k_cap').textContent='per route';
     $('#k_cap_s').textContent='modelled, not yet measured';
-    $('#capNote').innerHTML=`No measured capture is held for <b>${a.code}</b> yet, so Meridian models the share per route `+
-      `from drive time and competing service. Where we have survey or mobility data (as for SJC at 32%), that measured share replaces the model.`;
+    // No named airport here (27 Sep 2026): the old line cited another airport's measured share, and
+    // this page is shown to third parties and on the stand.
+    $('#capNote').innerHTML=`No measured capture is held for <b>${a.code}</b>, so Meridian models the share it takes `+
+      `route by route, against the service offered at each competing airport. Where survey or mobility data is held for an airport, that measured share replaces the model.`;
+  }
+  // WHO LIVES NEARER ANOTHER AIRPORT (27 Sep 2026, Taif: 65% of the 120-minute catchment was the
+  // Jeddah-Makkah conurbation). Said on the page, so a headline population is never read as a claim
+  // that this airport serves it.
+  if(d.pop_nearer_other && d.total_pop){
+    const nearer=d.locales.filter(l=>l.nearer_airport);
+    const codes=[...new Set(nearer.map(l=>l.nearer_airport))];
+    const top=nearer.slice(0,3).map(l=>l.name?`${l.name} (${l.nearer_airport})`:l.nearer_airport).join(', ');
+    $('#capNote').innerHTML += `<br><br><b>${fmtM(d.pop_nearer_other)}</b> of this catchment's `+
+      `${fmtM(d.total_pop)} people (${Math.round(d.pop_nearer_other/d.total_pop*100)}%) live nearer ${codes.join(', ')} `+
+      `than ${a.code} in a straight line`+(top?`, including ${top}`:'')+`. The forecast does not assume ${a.code} serves them; `+
+      `the share it takes is modelled route by route.`;
   }
 
   // band breakdown (from server bands, plus fallback recompute if raster absent)

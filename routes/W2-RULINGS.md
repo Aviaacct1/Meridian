@@ -467,3 +467,15 @@ forecast_engine.local_leg is not "calibrated model"; the airfield and range bann
 the basis line; optimised.airfield_note appended to the Optimise basis. Commit
 COMMIT-MSG-26Sep2026-w1-notices-airfield.txt. Read them next session; restyle freely, keep the
 wording and the position.
+
+## 27 September 2026: controller edit in W2's area, announced
+
+- app/cortex_catchment.html and catchment_profile in app/cortex_app.py, commit message
+  COMMIT-MSG-27Sep2026-catchment-page-taif.txt. John found on the Taif catchment (for a proposal)
+  that the page labelled straight-line bands as drive minutes, marked no other airports, left the
+  circles unexplained, and named SJC's measured 32% capture on every airport without measured
+  capture. That last one is a client figure on a page shown to third parties and on the stand. All
+  four fixed; forecasts unchanged. W2: check the page on the stand build and add a runbook line:
+  the catchment picture may show road times while forecasts run on straight line, and the page
+  says so. W3: the pack's catchment page is drawn from the same catchment_profile; check it for
+  minute labels on a straight-line run and for any client airport named in its notes.

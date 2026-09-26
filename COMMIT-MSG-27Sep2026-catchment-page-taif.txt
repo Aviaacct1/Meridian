@@ -1,0 +1,23 @@
+Catchment page: honest distance labels, other airports marked, nearer-airport note, client reference removed (John, Taif proposal, 26 Sep)
+
+- app/cortex_catchment.html:
+  - The client-airport sentence ("as for SJC at 32%") is removed from the no-capture note. It
+    showed on every airport without measured capture, on a page shown to third parties and on
+    the stand.
+  - Without road times the bands are labelled in km (0-35, 35-75, 75-120, 120-175, 175+), the
+    title reads "catchment by distance", and the KPI reads "Within 175 km, straight line".
+    Before, straight-line bands were labelled as drive minutes.
+  - The map and legend say the circles are towns and cities sized by population.
+  - Other airports with scheduled service inside the radius are marked and labelled; this
+    airport's code is labelled.
+  - A note states how much of the catchment lives nearer another airport than this one, naming
+    the largest places, and that the forecast does not assume this airport serves them.
+- app/cortex_app.py (catchment_profile): reads the friction raster for the catchment PICTURE when
+  the raster is present, even with AVIA_DRIVE_TIMES off (forecasts unchanged; the payload's
+  forecast_distance says which measure the forecast uses). AVIA_CATCHMENT_ROAD_DISPLAY=0 turns
+  this off. Adds other_airports, per-locale km and nearer_airport, and pop_nearer_other.
+
+The forecast engine and every forecast number are unchanged.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01Ai6fXfSs283Z67QSwHLSQs

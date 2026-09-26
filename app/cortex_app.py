@@ -2322,10 +2322,43 @@ def catchment_profile(q):
     times = None
     try:
         dt = RF._drive_engine()
+        if dt is None and os.environ.get("AVIA_CATCHMENT_ROAD_DISPLAY", "1").strip().lower() in ("1", "true", "yes", "on"):
+            # DISPLAY-ONLY ROAD TIMES (27 Sep 2026, the Taif proposal). Road times are OFF for the
+            # forecast because they move every number (calibration-affecting; route_forecast.py). The
+            # catchment PICTURE is not a forecast, so it reads the raster when it is present and says
+            # which measure the forecast itself uses (forecast_distance), so the two are never confused.
+            # AVIA_CATCHMENT_ROAD_DISPLAY=0 turns this off.
+            try:
+                from drive_times import DriveTimes
+                _dd = DriveTimes(RF.FRICTION_PATH) if RF.FRICTION_PATH else None
+                dt = _dd if (_dd is not None and _dd.available()) else None
+            except Exception:                                # noqa: BLE001
+                dt = None
         if dt is not None:
             times = dt.times_from(home, olat, olon, pts)
     except Exception:
         times = None
+    # THE OTHER AIRPORTS (27 Sep 2026, John on the Taif catchment: "Jeddah and Medina are not shown, so
+    # the competitive point the slide is meant to make is invisible"). Every airport with scheduled
+    # service in the current OAG index inside the radius, with its straight-line distance, so the page
+    # can mark them and say how much of the catchment lives nearer one of them than to this airport.
+    others = []
+    try:
+        _served = set(ctx.get("served_codes") or [])
+        for _c in _served:
+            if _c == home:
+                continue
+            _a = ap.get(_c)
+            if not _a or _a.get("lat") is None:
+                continue
+            _km = RE.gc_km(olat, olon, float(_a["lat"]), float(_a["lon"]))
+            if _km <= radius:
+                others.append({"code": _c, "name": _a.get("name") or "", "city": _a.get("city") or "",
+                               "lat": round(float(_a["lat"]), 4), "lon": round(float(_a["lon"]), 4),
+                               "km": round(_km)})
+        others.sort(key=lambda r: r["km"])
+    except Exception:                                        # noqa: BLE001
+        others = []
     BANDS = [30, 60, 90, 120]
     band_pop = {30: 0.0, 60: 0.0, 90: 0.0, 120: 0.0, 999: 0.0}
     out = []; total = 0.0
@@ -2342,8 +2375,16 @@ def catchment_profile(q):
                 b = bb; break
         pop = float(l.population or 0)
         total += pop; band_pop[b] += pop
+        _km_home = RE.gc_km(olat, olon, float(l.lat), float(l.lon))
+        _near = None
+        for _o in others:
+            _k = RE.gc_km(_o["lat"], _o["lon"], float(l.lat), float(l.lon))
+            if _k < _km_home and (_near is None or _k < _near[1]):
+                _near = (_o["code"], _k)
         out.append({"lat": round(float(l.lat), 4), "lon": round(float(l.lon), 4),
                     "pop": int(pop), "drive": (round(drive) if drive is not None else None),
+                    "km": round(_km_home),
+                    "nearer_airport": (_near[0] if _near else None),
                     "name": getattr(l, "name", "") or ""})
     out.sort(key=lambda r: -r["pop"])
     cap = ACAP.capture_for(home)
@@ -2354,7 +2395,11 @@ def catchment_profile(q):
             "radius_km": radius, "total_pop": int(total), "reach_120_pop": int(reach120),
             "bands": {str(k): int(v) for k, v in band_pop.items()},
             "capture": (round(float(cap), 3) if cap is not None else None),
-            "drive_available": bool(times), "locales": out[:500]}
+            "drive_available": bool(times),
+            "forecast_distance": ("road time" if RF._drive_engine() is not None else "straight line"),
+            "other_airports": others,
+            "pop_nearer_other": int(sum(r["pop"] for r in out if r.get("nearer_airport"))),
+            "locales": out[:500]}
 
 
 @app.get("/api/catchment")
