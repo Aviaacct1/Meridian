@@ -1,0 +1,14 @@
+W10 26 Sep night: re-measured frequency table wins (region level); gauge-at-level-0 check
+
+bt2/bt2_experiments.log: W10-RETIME-FREQ. Frequency re-measured as the launching carrier's first
+full month; blind by cohort, the refitted table with a region pair level 0 wins its rule: 34.2%
+within +-20% against 31.6%, band x2.00 against x2.19, inside p25-p75 50.7%. Written to
+E:\Avia\bt2_relaxed\schedule_prior.csv, v1 kept. Bologna-New York now 3.0 / 4.1 / 7.0 a week.
+
+bt2/bt2_gauge_level0_check.py: the region level re-keys gauge too, unscored; this scores it blind
+and, if its rule set before the run fails, rewrites level 0 gauge from the level 1 parent.
+
+routes/W10-STATUS.md v20: the result table, the open gauge check, block G1.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_015NbinCPXuUWF3VuAEiSjFX

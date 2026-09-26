@@ -1,9 +1,8 @@
 # W10 status: FINAL CALIBRATION TEST
 
-Written by W10 only, rewritten every session. Version 19, 26 September 2026, night. The class table is the wired design (v18
-spec, amended at step 2 below for a level 0). John asked for one further improvement: frequency re-measured as the timetable flew it,
-script bt2/bt2_retime_freq.py, waiting for its workstation run (block R1). If it wins, it replaces the table file; no rewire.
-Clone at b110b87. Every figure below has a log line in bt2/bt2_experiments.log.
+Written by W10 only, rewritten every session. Version 20, 26 September 2026, night. The re-measured table won its rule
+(W10-RETIME-FREQ) and is written at E:\Avia\bt2_relaxed\schedule_prior.csv, v1 kept beside it; one check remains before W1 relies
+on it: the region level re-keys gauge too, unscored (block G1). Clone at dba090d. Every figure below has a log line.
 
 ## One line for John
 
@@ -130,14 +129,33 @@ on it, T2R T2 plus a region pair level 0. Decision rule set before the run: T2 w
 within +-20% than T1; T2R wins over T2 if also 45-55%, at least 5% narrower, and no worse within +-20%. --out writes only for a
 winner and keeps the current file as schedule_prior_v1.csv. Gauge is unchanged.
 
-**Block R1, Workstation Actual (RDP, sees E:).**
+**Result (W10-RETIME-FREQ): T2R wins.** Blind by cohort against the first-full-month frequency, n=6,524:
+
+| | Median within +-20% | Inside p25-p75 | Width p75/p25 | Median within 0.25 of a whole frequency |
+|---|---|---|---|---|
+| T1 current table | 31.6% | 49.8% | x2.19 | 77.5% |
+| T2 refitted | 31.6% | 52.2% | x2.26 | 90.1% |
+| T2R refitted + region level 0 | 34.2% | 50.7% | x2.00 | 85.6% |
+
+The refit alone is a tie; the gain is the region level: +2.6 points, a band 9% narrower, calibrated at 50.7%, and holding 50-53% in
+every haul band. The new measure is stable (first full month within +-20% of the carrier's later months on 87.3%) and sits on whole
+frequencies (86.7% against 62.6% for the averaged measure). Bologna-New York now looks up level 0 (EU-NA, n=69): frequency 3.0 / 4.1
+/ 7.0, so Optimise sweeps 3x, 4x, 5x and 7x; the same shape at S0 (Genoa, Southend) 2.8 / 3.8 / 5.0, so 3x, 4x, 5x. United's
+long-haul international line: 3.0 / 7.0 / 7.0, n=25.
+
+**Open: gauge at level 0.** The region level also re-keys the gauge band (Bologna 226 / 266 / 287 at level 0 against 239 / 278 / 294
+at level 1), and that was not scored. bt2/bt2_gauge_level0_check.py scores it blind. Rule set before the run: the level 0 gauge
+stands if it holds the flown gauge on 45-55% and loses no more than 1.0 point within +-20% against levels 1-4; otherwise --fix
+rewrites every level 0 row's gauge from its level 1 parent, frequency untouched. Either way W1's lookup is unchanged.
+
+**Block G1, Workstation Actual (RDP, sees E:).**
 
 ```
 cd C:\src\meridian
 git pull
 cd C:\src\meridian\bt2
 $env:AVIA_LOCAL_CACHE="E:\Avia"; $env:AVIA_APP_DIR="C:\src\meridian\app"; $env:AVIA_BT2_TARGET="nonstop"; $env:AVIA_BT2_DIR="E:\Avia\bt2_relaxed"; $env:AVIA_BT2_COHORTS="2016,2017,2018,2019,2024,2025"
-py -3.12 -s bt2_retime_freq.py --out E:\Avia\bt2_relaxed\schedule_prior.csv 2>&1 | Tee-Object -FilePath E:\Avia\probe\retime-W10.log
+py -3.12 -s bt2_gauge_level0_check.py --fix E:\Avia\bt2_relaxed\schedule_prior.csv 2>&1 | Tee-Object -FilePath E:\Avia\probe\gauge-level0-W10.log
 ```
 
 **Bologna-New York on the Sabre pair** (base_mkt 37,814, 6,647 km, international, FSC): level 1, n=205; gauge 239 / 278 / 294 seats
