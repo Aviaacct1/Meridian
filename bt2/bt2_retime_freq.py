@@ -93,8 +93,8 @@ def measure(rows):
         with open("%s/pair_months_%d.csv" % (B.BT2, L)) as f:
             for x in csv.DictReader(f):
                 mon = x["mon"]
-                if len(mon) != 7 or mon[4] != "-":
-                    continue                     # monthly labels only (the spine rule)
+                if len(mon) != 7 or mon[4] != "-" or not mon[5:7].isdigit():
+                    continue                     # monthly labels only (the spine rule); 2018-H1 half-years are not months
                 ser[(x["a"], x["b"])][mon][x["carrier"]] += int(float(x["ops"] or 0))
         for r in rs:
             s = ser.get((r["a"], r["b"]), {})

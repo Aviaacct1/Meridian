@@ -1,0 +1,7 @@
+W10 26 Sep night: bt2_retime_freq reads monthly labels only (half-year labels such as 2018-H1 excluded)
+
+The spine filter let seven-character half-year labels through (Africa and Middle East 2015-2017
+arrive as half-years); wk() then failed on 'H1'. Monthly labels only now, as bt2_profile does.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_015NbinCPXuUWF3VuAEiSjFX
