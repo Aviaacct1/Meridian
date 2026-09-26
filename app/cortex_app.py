@@ -1786,6 +1786,17 @@ def calibrated_forecast(origin, dest, airline=None, carrier_type="FSC", aircraft
                 "all-cabin+premium": "all-cabin average fare for economy (no economy split available) and "
                                      "measured premium fare, as sold",
             }.get(_fare_src or "", "fares as entered")
+            # THIN SAMPLES ARE SAID (27 Sep 2026, TIF-AUH: 306 passengers a year, 24 in premium, so a
+            # premium fare of 356 USD rests on two dozen bookings). Flag rather than fill: the measured
+            # fare stands and the note says how few bookings it rests on.
+            _thin = []
+            if _fare_src and "cabin" in _fare_src and (r.get("fare_econ_pax") or 0) < 1000:
+                _thin.append("economy fare from %s bookings" % format(int(r.get("fare_econ_pax") or 0), ","))
+            if _fare_src and "premium" in _fare_src and (r.get("fare_prem_pax") or 0) < 200:
+                _thin.append("premium fare from %s bookings" % format(int(r.get("fare_prem_pax") or 0), ","))
+            if _thin:
+                _ec["fare_note"] += "; thin sample: " + " and ".join(_thin) + ", so treat the margin as indicative"
+                _ec["fare_thin_sample"] = True
         # A proxy fare is a warning, not a footnote: every revenue figure downstream of it
         # is invented, and deck_from_cases refuses a warned run.
         if _ec.get("fare_is_proxy"):

@@ -1022,6 +1022,8 @@ def forecast(sabre_db, oag_db, week, origin, dest_codes, competing_airports, *, 
         "fare_econ": (round(_cab["econ"], 2) if (_cab and _cab.get("econ")) else None),
         "fare_prem": (round(_cab["prem"], 2) if (_cab and _cab.get("prem")) else None),
         "fare_prem_share": (round(_cab["prem_share"], 4) if _cab else None),
+        "fare_econ_pax": (round(_cab.get("econ_pax") or 0) if _cab else None),
+        "fare_prem_pax": (round(_cab.get("prem_pax") or 0) if _cab else None),
         "qsi_share": round(share, 4), "dest_share": round(dshare, 4), "capture_rate": capture_rate,
         # The connection set, summarised. legs_n and the three connection-type sums are what BT2
         # needs and what bt2_capture used to recompute by calling build_connections a second time.

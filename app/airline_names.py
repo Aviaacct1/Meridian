@@ -29,6 +29,7 @@ AIRLINES = {
     "HA": "Hawaiian Airlines", "MX": "Breeze Airways",
     # Middle East
     "EK": "Emirates", "EY": "Etihad Airways", "QR": "Qatar Airways", "SV": "Saudia",
+    "PK": "Pakistan International Airlines",
     "GF": "Gulf Air", "WY": "Oman Air", "RJ": "Royal Jordanian", "ME": "Middle East Airlines",
     "MS": "EgyptAir", "XY": "flynas", "J9": "Jazeera Airways", "FZ": "flydubai", "KU": "Kuwait Airways",
     "6E": "IndiGo", "IX": "Air India Express",

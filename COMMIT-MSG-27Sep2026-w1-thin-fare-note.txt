@@ -1,0 +1,15 @@
+W1: thin fare samples said on the margin; PK named
+
+- app/sabre_catchment.py, app/route_forecast.py: cabin fares carry their booking counts.
+- app/cortex_app.py: under 1,000 economy or 200 premium bookings the fare note says how few
+  bookings the fare rests on and that the margin is indicative. The measured fare stands (flag
+  rather than fill). Found on TIF-AUH: 306 bookings a year, 24 in premium, premium fare 356 USD,
+  margin -17.3% at EY A20N 3x.
+- app/airline_names.py: PK named; the rights note printed "PK (PK)".
+
+Optimise acceptance on measured fares (27 Sep): SOU-JFK UA B753 5x unchanged; BLQ-JFK now AA B788
+7x 143,298 (was DL A339 145,802); SJC-TPE CI A359 3x unchanged; TIF-AUH EY A20N 3x, margin -17.3%.
+Sweep times rose to 94.5 / 83.1 / 38.5 / 23.6 s; cold-start check pending.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01Ai6fXfSs283Z67QSwHLSQs

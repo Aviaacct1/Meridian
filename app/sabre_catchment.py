@@ -155,7 +155,8 @@ def cabin_fares(db, airports, dest_airports, year=None):
     if not r or not r[0]:
         return None
     pax, ppax, e_rev, e_pax, p_rev, e_base, p_base = [float(x or 0) for x in r]
-    _CABIN_CACHE[_key] = res = {"pax": pax, "prem_share": (ppax / pax) if pax else 0.0,
+    _CABIN_CACHE[_key] = res = {"pax": pax, "prem_pax": ppax, "econ_pax": e_pax,
+            "prem_share": (ppax / pax) if pax else 0.0,
             "econ": (e_rev / e_pax) if e_pax else None, "prem": (p_rev / ppax) if ppax else None,
             "econ_base": (e_base / e_pax) if e_pax else None, "prem_base": (p_base / ppax) if ppax else None}
     return res
