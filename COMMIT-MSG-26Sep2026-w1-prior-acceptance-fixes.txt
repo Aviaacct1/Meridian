@@ -1,0 +1,18 @@
+W1: schedule prior, three fixes from the first workstation acceptance (26 Sep night)
+
+- Below-floor pairs not keyed on market size. SJC-TPE's own pair records 212 passengers a year
+  (the market books through SFO), under the 250 floor of every launch in the record
+  (bt2_forecast.TRAIN_MIN_BASE). It was classed S0 and bounded to 3x only (CI A359 3x, 83,538).
+  The market band is now left unkeyed under the floor, the lookup falls to the haul-only row, and
+  the payload says why in schedule_prior.pair_gaps.
+- In-range gauge first. When the prior is loaded and any in-range row plans inside the load
+  factor band, out-of-range ("nearest to band") rows are not eligible for the headline. Before
+  this, CI's A359 at 306 seats (nearest) beat an in-range B789 at 278 on contribution alone.
+- Unchecked runway said. When the chosen type's airfield band is UNKNOWN, airfield_note says the
+  runway check has not been made, rather than staying blank (SOU-JFK, UA B753).
+
+Acceptance: pull, restart, the same three-pair probe; SJC-TPE shows level 4 and a pair_gaps line;
+SOU-JFK shows a non-blank airfield note if the B753 is UNKNOWN.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01Ai6fXfSs283Z67QSwHLSQs

@@ -2453,8 +2453,25 @@ def _schedule_prior_pair(origin, dest):
         import route_context as _RC
         bm, _g, why = _RC.market(out["a"], out["b"], year=out["year"])
         out["base_mkt"] = bm
+        out["base_mkt_keyed"] = bm
         if bm is None:
             out["gaps"].append("pair market not measured (%s), so the market band is not keyed" % why)
+        else:
+            # BELOW THE RECORD'S FLOOR (26 Sep 2026, SJC-TPE): every launch the table was fitted on had
+            # at least 250 passengers a year on its own pair (bt2_forecast.TRAIN_MIN_BASE, the discovery
+            # rule). A pair under that is a market measured in the wrong place (San Jose to Taipei 212 a
+            # year against 283,412 from San Francisco), not a thin market, so its size class is outside
+            # the record exactly as it is for the model. Not keyed: the lookup falls to the haul-only row.
+            try:
+                import bt2_forecast as _BFx
+                _floor = float(_BFx.TRAIN_MIN_BASE)
+            except Exception:                                # noqa: BLE001
+                _floor = 250.0
+            if bm < _floor:
+                out["base_mkt_keyed"] = None
+                out["gaps"].append("the pair records %s passengers a year, below the %s floor of every launch "
+                                   "in the record (the market books through a larger airport nearby), so "
+                                   "market size is not keyed" % (format(int(bm), ","), format(int(_floor), ",")))
     except Exception as e:                                   # noqa: BLE001
         out["gaps"].append("pair market not measured (%s), so the market band is not keyed" % e)
     return out
@@ -2977,7 +2994,7 @@ def api_optimise(origin: str, dest: str, airline: str = "", carrier_type: str = 
         if not _sp_tab:
             continue
         _ct_key = ("LCC" if (c["cand"] or "").upper() in _lccs else "FSC") if c["cand"] else c["ct_i"]
-        _k = _SP.key(_sp_pair["base_mkt"], dist_km, _ct_key, _sp_pair["ctry_a"], _sp_pair["ctry_b"])
+        _k = _SP.key(_sp_pair.get("base_mkt_keyed"), dist_km, _ct_key, _sp_pair["ctry_a"], _sp_pair["ctry_b"])
         _row = _SP.lookup(_k)
         if not _row:
             continue
@@ -3081,6 +3098,14 @@ def api_optimise(origin: str, dest: str, airline: str = "", carrier_type: str = 
     if _by_contrib:
         _most_pax = lambda rs: max(rs, key=lambda r: ((r.get("contribution") or 0), r.get("carried", r["demand"]),
                                                       r["lf"], r["freq"]))
+    # IN-BAND GAUGE FIRST (26 Sep 2026, SJC-TPE acceptance): a carrier with no type inside the seat range
+    # keeps its nearest type, marked, but that row must not beat another carrier's in-range row on
+    # contribution alone, or the bound is a bound in name only (China Airlines A359 at 306 seats beat an
+    # in-range B789 at 278). Out-of-range rows are chosen only when no in-range row plans in the band.
+    if _by_contrib and any(r.get("gauge_bound") == "band" for r in _pool):
+        _inr = [r for r in _pool if r.get("gauge_bound") == "band"]
+        if any(VIABLE_LF <= r["lf"] <= PRESENT_LF_CAP for r in _inr):
+            _pool = _inr
     band = [r for r in _pool if VIABLE_LF <= r["lf"] <= PRESENT_LF_CAP]
     viable = [r for r in _pool if r["lf"] >= VIABLE_LF]
     not_viable = None
@@ -3126,6 +3151,13 @@ def api_optimise(origin: str, dest: str, airline: str = "", carrier_type: str = 
                              "Optimise again to see it."
                              % (_sb["freq"], _sb["aircraft"], _sb["season"], _sb["lf"] * 100,
                                 best["lf"] * 100, _sb["season"].capitalize()))
+    # AN UNCHECKED RUNWAY IS SAID, NOT SILENT (26 Sep 2026, SOU-JFK acceptance). UNKNOWN is never
+    # demoted (flag rather than fill), but when the CHOSEN type has no runway verdict the first screen
+    # must say the check has not been made, or a blank note reads as "the runways are fine".
+    if best.get("airfield") == "UNKNOWN":
+        _unk = ("no runway performance data for the %s, so whether it can operate from %s and %s at "
+                "this range has NOT been checked" % (best["aircraft"], origin, dest))
+        airfield_note = (airfield_note + "; " + _unk) if airfield_note else _unk
     # THE CARRIER CHECK (John, 26 Sep 2026: "a flag, not a veto"). The chosen airline's own launches
     # on this haul band and scope: at 5 or more, the sweep for that airline is re-run inside the
     # carrier's own gauge and frequency p25-p75 and its answer is shown beside the class answer. The

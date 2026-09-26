@@ -239,3 +239,21 @@ lands near the Avia 2025 figure but for the wrong reason: connecting is circa 80
 a widebody still wins. Bologna Optimise is not demonstrated until the feed fix and the schedule
 prior land. The blank airfield note is not yet evidence either way: it may mean no type was
 NOT_FEASIBLE, or that the notices commit is not live. Check the per-row airfield field.
+
+
+## First acceptance with the schedule prior wired (51a378c), 26 Sep 2026 night
+
+| Pair | Class used | Seat range | Frequencies | Pick | Two-way | Local / connecting each way | Carrier check |
+|---|---|---|---|---|---|---|---|
+| SOU-JFK | level 0, EU-NA S0, n 31 | 176-277 | 3, 4, 5 | UA B753 5x, 81.5% | 102,658 | 30,904 / 20,425 | UA n 25: B753 7x, 129,796 |
+| BLQ-JFK | level 0, EU-NA S2, n 69 | 226-287 | 3, 4, 5, 7 | DL A339 7x, 78.1% | 145,802 | 14,589 / 58,312 | DL n 28: agrees |
+| SJC-TPE | level 1, S0, n 286 | 233-297 | 3 | CI A359 3x (nearest), 78.2% | 83,538 | 17,066 / 24,703 | CI fewer than 5 |
+
+Source: workstation probe pasted by John, 26 Sep 2026. Seconds per Optimise: 61, 53, 19.
+
+Controller's reading. The mechanism works. SJC-TPE was keyed on a pair of 212 passengers a year,
+outside the record's 250 floor, so it was bounded to 3x: fixed (market size not keyed under the
+floor). An out-of-range A359 beat an in-range B789: fixed (in-range first). SOU-JFK picked a B753
+with a blank airfield note: the note now says when the runway check has not been made; the cause is
+being confirmed. BLQ-JFK is unchanged because its problem is the feed (80% connecting), not the
+schedule.
