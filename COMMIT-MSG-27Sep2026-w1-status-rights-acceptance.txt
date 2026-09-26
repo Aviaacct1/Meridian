@@ -1,0 +1,8 @@
+W1 status 27 Sep: rights-and-loss acceptance passed on four pairs; long-haul margin flag raised
+
+routes/W1-STATUS.md: TIF-AUH no longer picks a fifth-freedom carrier (EY A20N 3x, 6E/GF/IX/J9 set
+aside, loss note correct); SOU-JFK, BLQ-JFK, SJC-TPE unchanged. Route margins of 27-53% on
+long-haul are not credible; economics basis to be checked before any economics screen is shown.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01Ai6fXfSs283Z67QSwHLSQs
