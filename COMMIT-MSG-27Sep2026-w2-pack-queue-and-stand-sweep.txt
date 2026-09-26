@@ -1,0 +1,93 @@
+W2: the same-day pack queue, the stand-surface sweep, and two slips from John's TIF-AUH run
+
+REPAIRS A BROKEN MAIN. Commit b478b97 (W1, 27 Sep) swept W2's uncommitted app/cortex_app.py and
+app/cortex_dashboard.html into a W1 subject and pushed them. cortex_app.py on origin/main
+therefore carries "import pack_queue as PQ" while app/pack_queue.py is not in the repository, so a
+pull and restart on the workstation fails at import and the server does not start. This commit
+adds the missing module and its tests. Nothing else is wrong with b478b97 and it is not reverted.
+Second occurrence: 30e3e78 on 22 September did the same to the catchment-distance work. The cause
+is a commit that stages the whole tree rather than the files it owns; the README's ownership table
+cannot prevent it and the controller may want to rule on it.
+
+Five days of rulings acted on in one session. W2-STATUS v15 carries the detail; this is what
+changed in code.
+
+THE SAME-DAY PACK (critical path 2A, controller rulings 26 September)
+
+app/pack_queue.py, new, on the same DuckDB store as the lead record. The lead is the person and
+exists from the moment the host captures it; the job is one pack for one run. Three states, as
+ruled: NOW sends on the build's own checks, HOLD (default) waits the configured hold and sends
+itself, PAUSED waits for a person and states why.
+
+Two properties are held by tests rather than by intention:
+
+  a build that fails any check goes to PAUSED and never to send. There is no code path from a
+  failed check to a delivered pack, and the test asserts it for a job a day past its clock;
+
+  a send is not recorded without the provider's own message id. The 21 September SMTP discard is
+  the reason.
+
+The hold is a SETTING in minutes, stored, changed on the queue page with no restart, read when
+each build passes. Zero means send on pass and is held apart from unset. A paused job appears once
+on the holding-email list so the visitor is told the same day, and once only.
+
+  app/pack_queue.py           the store, the states, the settings, the event log
+  app/test_pack_queue.py      60 checks, 0 failed
+  app/cortex_app.py           /api/pack/request|list|job|action|hold|preview and /demo/queue
+  app/cortex_dashboard.html   the email field at the foot of the run, on Run and Optimise
+
+The queue view is newest first, one line a job with the countdown visible, two actions, and a
+preview button that appears once a build has written a file. Built to be read on a phone.
+
+Not done and next: W3's generator called from the queue, and the sender. Nothing leaves yet.
+
+NO ECONOMICS FIGURE UNTIL PRE-MORTEM 33 CLOSES
+
+Three surfaces were showing one: the Economics navigation entry and the page behind it, the
+"+ Economics" output button, and #econRow on the result page, whose headline states an annual
+contribution and whose table states revenue. All three are now withheld behind
+AVIA_SHOW_ECONOMICS, default off. The elements are removed rather than hidden, /economics returns
+a short page saying the view is withheld while the cost basis is checked, and the server states
+which way the switch is set on every start. The Optimise contribution ranking is ordinal and is
+untouched.
+
+NO AVIA SOLUTIONS ON A STAND SCREEN (John, 25 September)
+
+Four places named Avia to a visitor, all now The Aviation Observatory: two in the pack request
+wording, one in the economics panel's note on lease rates, one in cortex_help.html. The last is
+outside W2's named files and has no owner in README's table; it is in the dashboard's own
+navigation, so it was fixed and is announced in W2-STATUS.
+
+TWO PRESENTATION SLIPS (John, TIF-AUH, 27 September)
+
+"incl. feed" now prints only when the connecting figure is above zero.
+
+The rotation diagram drew seven days for a 3x schedule. Not a drawing fault: drawTail read
+d.capacity.frequency and the payload's key is cap.freq, so every branch fell through to a literal
+7 and an Optimise result at 3x, where the visitor has typed no frequency, silently drew a daily
+rotation and printed "Pattern basis: daily". Fixed to the right key, and where no frequency can be
+established the diagram is withheld rather than drawn on an assumed one. Same shape as the MCT and
+friction faults: a lookup that misses, a neutral default substituted in silence.
+
+THE FRICTION RASTER, ON A NEW WORKSTATION
+
+The launcher sets AVIA_DRIVE_TIMES=1 and echoes "road drive times on", but nothing in it points at
+the raster, and config resolved it from the cache and the Egnyte root, neither of which holds it.
+config.FRICTION_RASTER now resolves from AVIA_ROOT first, the variable the launcher sets and the
+one a cloned product drive carries, so road times work on a new machine with nothing set by hand.
+Whether AVIA_FRICTION is currently set at machine scope on donatello is unconfirmed; the startup
+line answers it on the next restart and the runbook makes it a stop condition.
+
+DOCUMENTS
+
+routes/STAND-RUNBOOK.md, new. Every binding runbook line from the rulings since 24 September in
+one operator's document: the start procedure, the five console lines that must be right before the
+stand opens, the incident and log rules, the same-day pack, the named-route handover and the
+10-23 October store freeze.
+
+routes/W2-STATUS.md v15, including John's TAO mailbox route with a forwardable paragraph, the
+Postmark plan and cost from the provider's own page, Amazon SES named as the fallback, and why the
+catchment before-and-after needs a workstation run.
+
+Tests on the Dev PC: pack queue 60, lead store 47, friction 28, MCT 14, demo flow 89. All 0 failed.
+The dashboard's script block parses.

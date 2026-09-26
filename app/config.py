@@ -209,7 +209,22 @@ AIRCRAFT_ECON_TABLE = _env_path("AVIA_AIRCRAFT_ECON_TABLE",
 # while the raster sat on the data drive and every catchment reverted to great
 # circle without saying so. Proven on donatello 22 September 2026. Resolved here
 # now, like every other path in the tool.
+# AVIA_ROOT is what the launcher sets (E:\Avia on donatello, D:\Avia as its fallback) and is the
+# one variable a second workstation gets for free by cloning the drive. The raster lives beside the
+# stores, so resolving from it means road times work on a new machine with nothing set by hand.
+_PRODUCT_ROOT = Path(os.environ["AVIA_ROOT"]).expanduser() if os.environ.get("AVIA_ROOT") else None
+_FRICTION_NAMES = ("2020_motorized_friction_surface.geotiff",
+                   "2020_motorized_friction_surface.tif",
+                   "friction_2019.tif", "friction_2019.geotiff")
+_FRICTION_CANDIDATES = []
+for _r in (_PRODUCT_ROOT, LOCAL_CACHE, DATA_ROOT, Path("C:/Avia")):
+    if _r is not None:
+        _FRICTION_CANDIDATES.extend(_r / _n for _n in _FRICTION_NAMES)
+
 FRICTION_RASTER = _env_store(
+    "AVIA_FRICTION",
+    *_FRICTION_CANDIDATES
+) if _FRICTION_CANDIDATES else _env_store(
     "AVIA_FRICTION",
     LOCAL_CACHE / "2020_motorized_friction_surface.geotiff",
     LOCAL_CACHE / "2020_motorized_friction_surface.tif",

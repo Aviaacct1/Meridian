@@ -1,401 +1,310 @@
 # W2 stand flow: status
 
-Version 14, 22 September 2026. Written by the W2 build chat for the controller; rewritten each
-session, never appended. routes/README.md v1 read and followed: facts about other workstreams
-are taken from their STATUS files and quoted with the version, never from memory of a chat.
-W2-RULINGS.md v1 read and acted on. Restructured this version at the controller's request: live
-state and asks on the first screen, history below. Out of scope and untouched: engine demand
-logic, and W1's preagg, caches and pre-warm.
+Version 15, 27 September 2026. Written by the W2 build chat for the controller; rewritten each
+session, never appended. routes/README.md v1 read and followed. W2-RULINGS.md read from the 22
+September entries to the end, including all nine sections written since v14, and acted on below.
+Umbrella Status block, critical path 2A and pre-mortem 32-33 read. Dates here follow the rulings
+file and the commit log; this session's own clock reads 26 September, which the controller has
+already noted as a one-day discrepancy in the weekday labels.
+
+W2 did not write for five days. Nothing in this file assumes the controller remembers v14.
 
 ## Live state
 
-Nothing blocks W2's own build. The mail half waits on Postmark; everything else is W2's to do.
-
 | Item | State | Next |
 |---|---|---|
-| 1 Laptop build | Plan A closed, Plan B waiting on two spec blocks from John | Load procedure once the SSD and the spec arrive |
-| 2 Stand mode | Not built | Next session, then a commit block |
-| 3 Lead flow | Store built and tested, app not rewired | Rewire cortex_app, migrate the JSONL, nightly Excel export |
-| 4 Queue view | Exists as an approval page | Running / sent / failed, newest first, reason visible |
-| 5 Progressive Optimise | Proposed for deferral to after Routes | Controller's ruling |
-| 6 Stand capture layer | Store built for all four record types, 47 checks | Three capture buttons after the rewire |
-| 7 Pre-mortem 15, city names | Not started | Trace the dashboard entry paths |
+| TAO mailbox route (item 60) | ANSWERED below, due Tue 29 Sep | John chooses; one of the two routes needs nobody's permission |
+| Same-day pack (2A) | Queue, three states, hold setting, reviewer view and email field BUILT and tested | W3's build step wired to the queue; a real send on the 11-12 Oct trial |
+| Old-engine first-screen line | Controller's #engineNote checked, correct wording and position | Carry the same line into the pack cover (with W3) |
+| Two presentation slips (27 Sep) | BOTH FIXED | Nothing |
+| No Avia Solutions on stand screens | FOUR found, four fixed | Reported below; one was outside W2's named files |
+| No economics figure (pre-mortem 33) | Three surfaces were showing one; all three now withheld behind a switch that defaults off | Returns when the controller accepts the basis |
+| Catchment radius under R6 (W10 item 1) | NOT STARTED, and it needs a workstation run | The before-and-after the ruling asks for cannot be produced from the Dev PC; see below |
+| Stand mode | NOT BUILT. It exists only as the MCT refusal in cortex_app | After the pack, or it does not land |
+| Lead-store rewire, capture buttons | Store built 21 Sep; the app still writes the JSONL | 2 Oct |
+| Laptop build | Waiting on John's two spec blocks | 8 Oct, and John is away 6-9 Oct |
+| Progressive Optimise (item 5) | Deferred to after Routes, accepted | Nothing |
 
-Delivery is proven end to end: one real message through the Postmark API on 21 Sep, MessageID
-8283ccb0-72f6-42c2-ab93-cd1da557c215, John confirmed arrival. The Observatory domain's own
-deliverability is NOT proven and cannot be until the account clears review, because a pending
-account restricts the recipient to the From domain.
+## 1. John's TAO mailbox: the answer
 
-## Owed to the controller today
+**Recommendation: a Microsoft 365 Business Basic subscription bought in the name of The Aviation
+Observatory Ltd, on its own tenant, with John as its administrator.** Achievable on Monday without
+asking anyone, because John buys it himself and administers it himself. £5.40 per user per month
+billed annually, £6.48 monthly (Microsoft's UK page, read 27 September). It gives
+john@aviationobservatory.com as a real mailbox, sending and receiving, and it appears in Outlook
+beside his Avia account rather than replacing it. Setup is a domain verification TXT record and an
+MX record, both of which W2 adds; Postmark's DKIM and Return-Path records are untouched, because
+Postmark aligns through the Return-Path rather than through MX or SPF.
 
-A commit block is with John and not yet run: the catchment distance report
-(COMMIT-MSG-22Sep2026-w2-catchment-distance.txt). Everything else W2 has produced is on main at
-ef6de65.
+Three reasons beyond speed. TAO is a separate company and will need its own mail whatever happens
+after Routes, so this is not a workaround. It keeps the Observatory's mail out of Avia's tenant,
+which is the position the entity was formed to hold. And it removes the IT firm from the critical
+path permanently, rather than for this one request.
 
-## Needed from John
+**The alternative, if John would rather not run a second tenant: a mailbox on the domain from
+Fasthosts,** who already hold the registration, added to Outlook as an ordinary IMAP account. Same
+effect for sending and receiving, one supplier, no tenant to administer. Slightly worse in that
+the mailbox is then tied to the registrar.
 
-1. The two spec blocks: DevPC C:\Avia store inventory with sizes and dates, and the core laptop's
-   make, RAM, architecture, free disk and Python. These gate the 8 Oct laptop proof.
-2. Approval to send Suzanna the four questions (below). They shape what stand mode defaults to.
-3. A view on watchpoint 4, one email rather than two, and watchpoint 5, the public pack URL.
-4. Which of the three DMARC reporting routes in watchpoint 3.
-5. Which tablet for the capture front end, and how it reaches the form under Plan B.
-6. The 40-60 route panel, early October.
+**What does NOT work, stated so it is not attempted:** Cloudflare Email Routing alone. It forwards
+inbound mail and does not send, so it cannot be John's sending address. It is still worth having
+for the domain's other inboxes and the DMARC reports, and it comes with the zone move (item 20),
+but it is not an answer to this question. Postmark is the product's transactional sender and is
+not John's personal address; using it for his own mail would mix the reputation we are about to
+warm with the invitations.
 
-## Waiting on, in the order it bites
+**The route through Avia's tenant is achievable only through the IT firm and W2 does not recommend
+it**, for the entity reason above. If John wants it anyway, this is the paragraph to forward, and
+nothing in it can be done by an ordinary user account:
 
-1. POSTMARK APPROVAL. Account in review since 19 Sep. Gates the email half of item 3 and all
-   domain warming. Chase on 1 October.
-2. The two spec blocks above.
-3. Not blocking: the DMARC reporting route, which tablet, and the route panel.
+> Please could you add the domain aviationobservatory.com to our Microsoft 365 tenant and create a
+> licensed mailbox john@aviationobservatory.com for John Carter, with send-as permission from his
+> existing account. The domain already carries live DNS records for a transactional email provider:
+> a DKIM TXT record at 20260919185744pm._domainkey and a CNAME pm-bounces pointing to pm.mtasv.net.
+> Please do not remove or overwrite either, and if you publish an SPF record for the domain please
+> include Microsoft only; the provider aligns through its own return path and does not need to be
+> in SPF. We need this by Tuesday 29 September for a product launch at a conference in October.
 
-The next restart of the portal, whenever it happens, does three jobs at once: it makes the MCT
-line speak for the first time, it makes the new catchment distance line speak, and it picks up
-the Postmark variables. Nothing needs restarting for its own sake while the account is in review.
+**Until one of these exists, John sends no invitations from an Avia address.** That is the
+controller's ruling and W2 has nothing to add to it except that the choice is a purchase decision
+rather than a technical one, and both options work.
 
-## The catchment finding, 22 September, for W10
+## 2. The same-day pack: built this session
 
-Found while tracing Jol item 33, Birmingham inside a London catchment. It is reported here
-because it bears on W10's calibration record, not because W2 has changed any engine behaviour.
+`app/pack_queue.py`, 395 lines, on the same DuckDB store as the lead record. `app/test_pack_queue.py`
+holds 60 checks, 0 failed. The lead is the person and the job is one pack for one run, so a visitor
+who comes back for a second route gets a second job and one record.
 
-The catchment allocates population to airports by road time where the friction raster is present
-and by great circle where it is not, and it chose between the two in silence. Proven on
-donatello: C:\Avia absent, FRICTION_PATH resolving to C:\Avia\friction_2019.tif which does not
-exist, drive engine None, and the raster present the whole time at
-E:\Avia\2020_motorized_friction_surface.geotiff. Every catchment run has been great circle. A
-second layer sat under it: DriveTimes.available() tested only that the file existed, never that
-rasterio, numpy and scikit-image were installed, so a machine without the read libraries would
-report ready and then return great-circle times for every route.
+WHAT THE THREE STATES DO, each a check rather than an intention:
 
-Fixed as a REPORT, with no behaviour change. config.py resolves FRICTION_RASTER and publishes it
-in ALL_PATHS; route_forecast.friction_report() opens the raster for its band count and names each
-failure separately; drive_times.available() now means usable; cortex_app states on every start
-whether the catchment is measuring in road time or straight lines. Road times stay off behind
-AVIA_DRIVE_TIMES, defaulting off, because switching them on moves every forecast and that is
-W10's call, not a variable set the week before Routes. Not a silent default-off switch: the
-server says which setting is in force every time it starts. test_friction_report.py, 28 checks,
-0 failed; MCT 14, lead store 47, demo flow 89, all unchanged.
+- NOW is the host's tick on the email field. The job sends when the build passes its own checks,
+  with no hold and no human step.
+- HOLD is the default. The build runs at once, then the job waits the configured hold and sends
+  itself unless a reviewer pauses it. The countdown is on the queue page.
+- PAUSED stops it, with a one-line reason the queue shows, and it is released by hand.
 
-THE LINE W10 NEEDS. The friction raster is an undeclared environment dependency of the same class
-as the airportsdata version already tracked in CALIBRATION-RECORD-2026.md section 2. The engine's
-catchment measurement changed when C:\Avia stopped existing, with no code change and no log
-entry, so runs from either side of that moment are not one comparable series. It belongs in the
-environment rows and in the yearly republication in section 7. It does not move the claim
-figures: no file in the BT2 training chain (bt2_claimset, bt2_capture, bt2_base, bt2_build_v13,
-bt2_gbm) references the catchment or drive times, which agrees with the controller's own finding
-in section 4. It does move the live product: the market built over the competing airports, the
-catchment the user sees, and any run on the QSI engine.
+A BUILD THAT FAILS ANY CHECK GOES TO PAUSED AND NEVER TO SEND. There is no code path from a failed
+check to a delivered pack; the test asserts it for a job a day past its clock. A SEND IS NOT
+RECORDED WITHOUT THE PROVIDER'S OWN MESSAGE ID, for the 21 September reason. A released job
+restarts its clock rather than firing the moment it is released.
 
-BIRMINGHAM ITSELF STAYS for Routes, on John's ruling of 22 September that he would rather live
-with the oddity than change catchment for every airport. His preferred route is a per-airport
-catchment override, the same mechanism an airport would use to supply its own measured
-catchment, set at the start of a client's use rather than after they have a baseline to compare
-against. W2 notes that app/airport_capture.py already holds the capture half of that design
-(AIRPORT_CAPTURE, one entry, SJC 0.32, sourced) and that the catchment half does not exist.
-Design and ruling belong to W10.
+THE HOLD IS A SETTING in minutes, stored, changed at the top of the queue page with no restart, and
+read at the moment each build passes. Zero is a real value and means send on pass; it is held
+apart from unset, so an unconfigured store still defaults to 30 rather than to zero.
 
-## The four questions for Suzanna, ready to send as they stand
+THE HOLDING EMAIL: a paused job appears once on `needs_holding_email()` and is recorded against its
+own provider id when sent, so the visitor is told the same day and told once.
 
-> Suzanna, four questions before I finish the stand version of the screen. Answer from how you
-> have actually been using it, not how you think it should work.
-> 1. On a route you have not run before, what do you open first, and in what order after that?
-> 2. What have you had to look up, or work out again, more than once?
-> 3. What would you not put in front of a visitor, and why?
-> 4. What did you expect to find and could not?
-> One line each is plenty. Anything that annoyed you is useful.
+ENDPOINTS: `POST /api/pack/request` (the email field), `GET /api/pack/list`, `GET /api/pack/job`,
+`POST /api/pack/action` (pause, send_now, release, note), `GET|POST /api/pack/hold`,
+`GET /api/pack/preview`.
 
-Ask about speed separately and only after her next session: W1 step 1 (1012c29) took Run from 42s
-to 9s and Optimise from 196s to 35s, so anything she says about speed before that is out of date.
+THE REVIEWER'S VIEW is `/demo/queue`: newest first, one line a job with visitor, route, state,
+countdown and reviewer note, two actions only, and a preview button that appears once the build has
+written a file. It polls every ten seconds, because a hold running out is the thing it exists to
+show. It is built to be read on a phone between conversations.
 
-## Dates
+THE EMAIL FIELD is at the foot of the result page inside the existing report row, so it is on both
+Run and Optimise. It carries name and company, the consent tick, and one tick for "send as soon as
+it is built". It sends `STATE.lastQ`, which is the run on the screen, so the pack reproduces what
+the visitor watched.
 
-Ruling 17: 1 Oct hardware go/no-go, 8 Oct laptop proof, show machine loaded by 10 Oct, freeze
-10 Oct, hard stop 15 Oct. W2 adds: capture front end demonstrable 2 Oct; pack URL rule to W6 by
-3 Oct; scheduled-task restart scoped 8 Oct; Postmark approval checked 1 Oct.
+WHAT IS NOT DONE. The build step is W3's generator and is not yet called: a job sits at `queued`
+until something marks it built. The sender is not written either, so nothing leaves yet. Both are
+small against what is now in place, and both are next. The one-page preview is a hook that says
+plainly there is no preview yet rather than returning a blank page.
 
-## Commits landed
+W3 SUPPLIES THE BUILD CHECKS. W2's side is ready for them: `mark_built(job, ok=False,
+failed_check="...")` is the whole interface, and the text W3 passes is what the reviewer reads.
 
-- **2cab1b2**, 19 Sep. Ruling 16's MCT reporter, the startup line and the stand-mode refusal; the
-  .gitignore secrets patterns.
-- **3406f0a**, 21 Sep. The API transport, after SMTP reported success for three messages Postmark
-  never received. 89 checks, 0 failed.
-- **ef6de65**, 21 Sep. app/lead_store.py and app/test_lead_store.py, the store for all four record
-  types. 47 checks, 0 failed against duckdb 1.5.5.
-- OWED, block with John: the catchment distance report. 28 new checks, 0 failed.
+## 3. The stand-surface audit (no Avia Solutions, no economics)
 
----
+FOUR PLACES NAMED AVIA ON A SCREEN. All four fixed to The Aviation Observatory:
 
-Everything below is the record behind the state above. The controller need not read it to act.
+1. `cortex_dashboard.html`, the pack request: "Held for approval by the Avia team."
+2. `cortex_dashboard.html`, after a send: "further requests need a release by the Avia team."
+3. `cortex_dashboard.html`, the economics panel: "a lease rate ... which Avia does not publish."
+4. `cortex_help.html`: "send it to the Avia team."
 
-## Scope items
+The fourth is OUTSIDE W2'S NAMED FILES. `cortex_help.html` has no owner in README's table and it
+is in the dashboard's own navigation, so leaving a known breach in place seemed worse than editing
+it. Announced here; the controller can move it to another workstream and W2 will stop touching it.
+Nothing else in W2's files names Avia on a screen: the page titles, the launcher window title and
+the footers all read The Observatory already, and the remaining matches are code comments and the
+copyright line in docstrings.
 
-**1. Laptop build. IN PROGRESS.** Ruling 14: 1TB external NVMe over USB-C on John's core x86
-laptop, not the DevPC, ordered before 28 Sep. Plan A CLOSED: Meridian runs through the portal on
-the MateBook. The MateBook is not the Plan B machine (HarmonyOS host, Windows 11 Pro ARM64 in a
-StratoVirt VM). AVIA_QSI_BUILD=laptop moves DATA_ROOT only and drops all nine reference paths;
-LOCAL_CACHE is independent of it. Sabre store circa 91GB (qsi-duckdb-run-rules, 24 Jul); OAG
-still unmeasured. Next: the two spec blocks, then the load procedure.
+THREE SURFACES SHOWED AN ECONOMICS FIGURE, which is what the controller asked W2 to report:
 
-**2. Stand mode. IN PROGRESS.** ?stand=1 with AVIA_STAND_MODE as the machine default, query flag
-winning, so Suzanna practises in it from her own browser. Season defaults to year-round, request
-form surfaced, panel one click away, Expert stays in the nav, and a visible marker names which
-build is answering. Correction to handover 3.4: the 9x narrowing assumes no airline is named;
-the stand flow names one at step 1, so the real saving is 3x from the season alone. Evidence:
-api_optimise _seasons / _freqs / cands; cortex_dashboard.html lines 314, 730, 1571. W1 step 1
-has already met the speed targets warm, so this switch is now about what the host sees rather
-than about speed. Next: build, then a commit block.
+1. The Economics entry in the left navigation, and the `/economics` page behind it, which states a
+   route P&L.
+2. The "+ Economics" button in the Output control on the result page.
+3. `#econRow` on the result page itself, whose headline is "Annual contribution towards ownership"
+   and whose table states Revenue and a full cost breakdown.
 
-**3. Lead flow. IN PROGRESS.** Ruling 15 as amended: extend 33c902f, migrate the JSONL to a
-DuckDB `leads` table under LOCAL_CACHE with section D's stand fields, nightly Excel export to
-Egnyte, sender through Postmark, two emails per visitor, the hosted pack linking back to the
-site's main pages. Next: the store and the migration, which have no external dependency, then
-demo_mail.py.
+All three are now WITHHELD behind `AVIA_SHOW_ECONOMICS`, which defaults OFF. The navigation entry,
+the button and the row are removed from the page rather than hidden, so nothing answers with a
+figure; `/economics` returns a short page saying the view is withheld while the cost basis is
+checked, rather than a 404 or a blank. The server prints which way the switch is set on every
+start. The Optimise contribution ranking is ordinal and is untouched, per the ruling.
 
-**4. Queue view. IN PROGRESS.** /demo/leads exists as an approval page for quota-held requests.
-Postmark now also gives delivery, bounce and complaint data, which is what the stand needs to
-show a failed pack rather than guess at one. Next: check against running / sent / failed,
-newest first, failure reason visible.
+This is a suppression with a named condition, not a sixth default-off switch: it is stated on every
+server start and it comes back when the controller accepts the basis. W2 would rather the
+controller ruled the switch away entirely once pre-mortem 33 closes than leave it in the code.
 
-**5. Progressive Optimise display. PROPOSED FOR DEFERRAL to after Routes; see the
-proposal above.** Display change only; the background job and
-cancel path already exist. After stand mode.
+## 4. The old engine, and the two presentation slips
 
-**6. Stand capture layer. IN PROGRESS. The store is built and tested.**
-app/lead_store.py: one DuckDB table for all four record types, an append-only lead_events
-log beside it, and lead_files for card photographs, voice notes and packs. app/
-test_lead_store.py holds the seven properties that are load-bearing: 47 checks, 0 failed,
-run against duckdb 1.5.5, the version donatello pins. The other suites are unaffected:
-test_demo_flow.py 89, test_mct_report.py 14, both 0 failed.
-WHAT THE DESIGN COMMITS TO, and each is a check rather than an intention: the record exists
-from the moment the host captures it and does not depend on any pack; it stays editable
-afterwards, because the useful detail arrives once the visitor has gone; notes append rather
-than replace; the event log is append-only, so what happened stays answerable after a record
-is corrected; the PROVIDER is the authority on whether a pack went, through
-provider_message_id, provider_status and reconcile(); John's 16 August quota ruling is carried
-across unchanged, first pack free, the rest held, a failed send still free; and migrate_jsonl
-counts unreadable lines rather than dropping them, because a migration that loses records in
-silence is worse than one that refuses.
-NOT YET DONE: cortex_app is NOT rewired to it. The JSONL store is still what the running app
-uses, deliberately, so there is a working system at every point before the freeze. Rewiring,
-the nightly Excel export and the three capture buttons are next, in that order.
+THE FIRST-SCREEN LINE IS CORRECT AS THE CONTROLLER LEFT IT. `#engineNote` renders before the basis
+whenever `forecast_engine.local_leg` is anything other than "calibrated model", and the wording is
+the ruled sentence verbatim. W2 changed nothing and will carry the same sentence into the pack
+cover with W3 rather than write a second version of it.
 
-**6a. Superseded note, scope widened by John 21 Sep.** Four record types,
-three buttons, list view, local-first, editable after the moment. See the proposal above.
-Next: the DuckDB leads table, which all four record types sit on, starts now.
+SLIP ONE, "incl. feed" on a point-to-point carrier. Fixed: the phrase now appears only when the
+connecting figure is above zero.
 
-**7. Pre-mortem 15: a city name the workstation cannot resolve. NOT STARTED.** Newly W2's per
-W2-RULINGS.md. Confirm which dashboard entry paths need the GeoNames dump, then either install
-it on the workstation or make the failure a visible refusal naming what it could not resolve,
-never a silent empty result. Test on the 11-12 October trial. Next: trace the entry paths.
+SLIP TWO, the rotation diagram drawing seven days for a 3x schedule. This was not a drawing
+problem. `drawTail` read `d.capacity.frequency`; the payload's key is `cap.freq`. Every branch fell
+through to a literal 7, so an Optimise result at 3x, where the visitor has typed nothing in the
+frequency box, silently drew a daily rotation and printed "Pattern basis: daily". Fixed to read the
+right key, and where no frequency can be established from the run the diagram is WITHHELD rather
+than drawn on an assumed one. The pattern function itself was already right: at 3x it draws three
+days and states in full that consecutive days are a working assumption and day-of-week allocation
+is not modelled.
 
-## Done 21 September
+This is the same shape as the MCT and friction faults: a lookup that misses, a neutral default
+substituted in silence. Fourth and fifth instances. The remedy is the same each time.
 
-**THE FIRST END-TO-END SEND IS OWED, AND IT WOULD HAVE FAILED.** The controller asked for
-one real pack email through demo_mail.py. Reading it before running it found that it cannot
-send under Postmark at all: SmtpTransport set `self.sender = self.cfg["user"]` and send_pack
-puts that in the From header. Under M365 the username IS the mailbox so the two coincided;
-under Postmark the username is a 36-character Server API token, and a token in a From header
-is not a deliverable message.
+## 5. The friction raster, and a risk the launcher carries
 
-WHY 58 PASSING CHECKS MISSED IT, which is the part worth carrying forward: the mail fixture
-injects a FakeTransport that carries its own `sender` attribute, so the suite never reached
-the one line that resolves the real sender. The first live send would have been the test.
+Logged: the catchment-distance commit went in under the controller's subject at 30e3e78.
 
-FIXED in app/demo_mail.py: AVIA_SMTP_FROM names the sending address, falling back to
-AVIA_SMTP_USER only when that looks like an address, so M365 behaviour is unchanged.
-AVIA_SMTP_HOST is now required with no default, which closes watchpoint 2 in the same edit:
-it defaulted to smtp.office365.com and an unset variable would have sent the server at the
-wrong supplier and failed naming Microsoft. app/test_demo_flow.py gains nine checks covering
-both, including that a token never reaches a From header: 67 checks, 0 failed, run here.
+The launcher now sets `AVIA_DRIVE_TIMES=1` and echoes "road drive times on", and W1 measured the
+effect properly (identical on the calibrated model, -3.2% to +4.1% on the market-share engine).
+But NOTHING IN THE LAUNCHER POINTS AT THE RASTER, and `config` resolved it from the cache and the
+Egnyte root, neither of which holds it. If `AVIA_FRICTION` is not set at machine scope on
+donatello, the switch is on, the raster is not found, and the console says STRAIGHT LINE while the
+launcher's own echo says road times. W2 has not been able to confirm which it is.
 
-**CORRECTION TO VERSION 9, WHICH RECORDED A FALSE PASS.** Version 9 of this file said the
-first end-to-end send was PROVEN on the evidence of the script printing SENT. It was not.
-Nothing had been delivered, and nothing had even reached Postmark. The claim is withdrawn and
-replaced by what follows. W2 put that in the record and the controller could have relied on it.
+FIXED so the question cannot arise again: `config.FRICTION_RASTER` now resolves from `AVIA_ROOT`
+first, which is the variable the launcher sets and the one a cloned product drive carries. Road
+times then work on a new workstation with nothing set by hand, which is the direction John stated
+on 24 September. The console line is in the runbook's start checklist as a stop condition.
 
-**SMTP REPORTED SUCCESS THREE TIMES FOR MESSAGES POSTMARK NEVER RECEIVED.** The sequence,
-because the conclusion matters more than the fault:
+## 6. Postmark: the plan, the cost and the fallback
 
-- Three sends from donatello printed SENT. smtplib raised nothing.
-- Postmark's own API, queried with the same token, returned `TotalCount 0`. No messages, on
-  any stream, ever.
-- The token was confirmed to match the server's own (John compared it; neither value was
-  written down). The API authenticated with it. So the credential was never the problem.
-- The SMTP banner on port 587 from donatello was read directly and is genuinely Postmark
-  (`p-pm-outboundg02c-aws-euwest1c.smtpservice.postmarkapp.com`), so nothing was intercepting.
-- The identical message posted to Postmark's HTTP API returned, in one call:
-  `ErrorCode 412: While your account is pending approval, all recipient addresses must share
-  the same domain as the 'From' address. The domain of the 'From' address is
-  'aviationobservatory.com', but you are attempting to send email to the following domain(s):
-  'aviasolutions.com'.`
+From Postmark's own pricing page, read 27 September: the free developer plan is 100 emails a month;
+BASIC is $15.00 a month for 10,000, PRO $16.50, PLATFORM $18.00, all with the same 10,000 included
+and differing on features, custom domains and user seats.
 
-So Postmark's SMTP endpoint accepted, acknowledged and discarded three messages that its own
-policy forbade, while its API refused the same message and said why. Three hours went into a
-fault the API would have named immediately.
+W2 RECOMMENDS BASIC at $15.00 a month. 10,000 covers the stand many times over; the difference to
+Pro is overage pricing and features the stand does not use. WAITING ON JOHN to approve the upgrade.
+Under his ruling it is bought only after every test send from aviationobservatory.com is delivered
+with a message id and lands in the inbox at both a Microsoft 365 address and a Gmail address.
 
-**TRANSPORT CHANGED TO THE API, on that evidence rather than on preference.** app/demo_mail.py
-gains ApiTransport and a selector; the API is the default, SMTP stays available behind
-AVIA_MAIL_TRANSPORT=smtp. Both build the same EmailMessage, so the two cannot drift. A refusal
-now raises carrying Postmark's own wording, and acceptance returns a MessageID, which is also
-exactly what the queue view needs to show a pack as accepted by the provider rather than merely
-handed to a socket. app/test_demo_flow.py locks the 412 case as a regression: 67 checks became
-89, 0 failed.
+THE FALLBACK PROVIDER, named now so a switch on 3 October costs a day: **Amazon SES**. Reasons: an
+HTTP API and an SMTP endpoint, both with explicit per-message identifiers; DKIM by CNAME records of
+the same shape we already publish, so the DNS work is an addition rather than a rebuild; and no
+approval queue of the kind that cost us three hours on 21 September, beyond the standard sandbox
+removal. The transport already sits behind one module with an injectable poster, so the change is
+a new `Transport` class and a selector value, not a rebuild. W2 has not written it and will not
+until it is needed.
 
-**app/send_first_pack.py no longer claims what it cannot show.** It reported SENT because
-nothing raised, and this file repeated it. It now refuses to call a send successful without a
-provider identifier, and says so plainly when it has none.
+DECISION DATE 3 OCTOBER stands: Postmark upgraded or replaced.
 
-**DELIVERY IS NOW PROVEN, 21 September 14:01Z.** Sent through the API from
-john.carter@aviasolutions.com to the same address, since while the account is pending approval
-the recipient domain must match the From domain. Postmark returned
-MessageID 8283ccb0-72f6-42c2-ab93-cd1da557c215 and John confirmed arrival in his inbox, headers
-showing the message as sent. WHAT IS STILL NOT PROVEN: the Observatory domain's own
-deliverability, because that test had to send as aviasolutions.com without our DKIM. That waits
-on approval, which Postmark quotes at 24 hours with weekend requests answered on the Monday.
+NOT YET DONE and owed before any invitation: the zone move to Cloudflare (item 20), the four
+records recreated and re-verified there, and delivery re-proven from the Observatory domain with a
+message id. The zone move is also what W6's site launch waits on, so it should not sit behind the
+pack build; W2 will take it next session unless the controller would rather it went first.
 
-**The aviasolutions.com signature has now earned its keep twice** and still stays. While the
-account is pending, it is the only From and the only recipient that any test can use. It goes
-once approval lands, not before.
+## 7. The catchment radius under R6: why there is no before-and-after yet
 
-**Four machine and account faults surfaced getting there, and they are the carry-forward.**
-They cost most of the day and none of them was a code fault.
-1. Blocks labelled "Workstation Actual" were running on the DEV PC. whoami returned
-   desktop-3r7oqvj\carte. The Dev PC carries a second clone at C:\src\meridian alongside
-   C:\AviaDev, so the path looks identical on both machines and the prompt does not
-   distinguish them. The Avia tool standard's first two rules exist to stop exactly this.
-   What that second clone is for, and whether it should exist, is John's call; W2 has touched
-   nothing.
-2. A pull's summary line was read as a commit's. "4 files changed, 164 insertions(+)" was
-   git pull reporting the controller's ce0e3a6, and W2 took it for John's commit, so W2
-   believed work was pushed that was still sitting uncommitted. Every W2 block now ends with
-   git log --oneline -1, which names the commit rather than only its hash.
-3. setx writes to the SETTING account's User scope. HOST, PORT, USER and PASS were set on
-   donatello under aviaremote1; FROM was set on the Dev PC under carte, so donatello never had
-   it. All five are now at MACHINE scope on donatello, which is what an unmanned box needs: a
-   scheduled task at boot runs as neither account and would see neither User hive. Ruling 18's
-   8 October scheduled-task work can now assume they are there.
-4. A Machine-scope write does not reach a shell already running, the same trap as setx one
-   level up. The reload loop is in the block for that reason.
+The ruling asks for the before and after on the London, Milan and New York competing sets. That
+cannot be produced from the Dev PC: the competing set is built from the OAG served index, which
+needs `oag.duckdb` on the workstation. W2 can write the change and a script that prints the three
+sets both ways, but John has to run it, and he runs one workstation session a day.
 
-**app/send_first_pack.py, written and now run.** It sends one real message through
-demo_mail.send_pack, prints the resolved host, from and credential LENGTH only, warns if the
-sender and the credential are identical, and names the three things to check in Postmark
-afterwards. Its attachment is a plainly labelled transport test, not a forecast pack, because
-a pack with invented numbers should not leave the building even once; the pack rides the same
-transport through /api/demo/request once the lead store exists. Verified here only to the
-extent of compiling and refusing cleanly with no configuration. THE SEND ITSELF IS OWED and
-needs, in order: the DevPC commit and push, a workstation pull, setx AVIA_SMTP_FROM, a new
-window, then the run.
+W2's view on the design, unchanged by anything since: the radius is the wrong instrument for the
+Birmingham case, because the distance is measured from the origin AIRPORT and not from the city, so
+Heathrow to Birmingham is 140 km while Luton to Birmingham is 114 km, and one radius gives two
+different London catchments depending on which airport the visitor typed. The classification in
+`app/airport_catchment_geo.csv` already marks BHX and LHR as primary and the London secondaries as
+secondary, and no code reads it. John's banded starting values can be implemented as ruled; W2 asks
+only that the primary-airport rule is measured alongside them in the same run, since the script
+costs nothing extra and the ruling's own principle is that separate primary-metro markets must not
+merge. If the answer is not in hand by 6 October it does not land before 10 October and W2 will say
+so rather than rush it.
 
-**The aviasolutions.com sender signature: DO NOT REMOVE IT YET.** The controller asked for it
-to be removed so the unauthenticated-domain banner stops slowing the review, with the caveat
-"if we need it for test sends, keep it until the first send is proven". That caveat is the
-branch that applies. While the account is in test mode Postmark restricts recipients to
-confirmed sender signatures, and john.carter@aviasolutions.com is the only one on the account,
-so it is the only address the first send can go to. Removing it first would leave no valid
-recipient and block the send it is meant to unblock. Order: send, prove, then remove the
-signature and check whether the aviasolutions.com domain row goes with it. W2 could not reach
-the Postmark tab this session to read the signature list; the browser did not respond.
+## 8. The venue line
 
-## Done 19 September
+No disagreement, and no figure that changes the order. The demo is a browser on the core laptop
+against the Surrey workstation over the Cloudflare tunnel, which moves JSON, not files. The one
+thing that is not small is a pack preview or a download the stand pulls, and those are single-digit
+megabytes. W9's 20/10 Mbit/s line with router and WiFi covers it and 4G is a sound second route.
+The measurement W2 would rather have is latency than bandwidth, because the visitor watches a
+progress line; that is a reason to keep the wired line rather than rely on the hall's WiFi, which
+W9 has already recommended.
 
-**Ruling 16, the MCT master, BUILT AND TESTED; it speaks at the next restart.**
-connection_builder.mct_report() resolves through config exactly as the live callers do and
-returns path, exists, rows and error. cortex_app's startup event prints "MCT master: N rows from
-<path>", or names the reason it did not load and states the consequence, and stand mode raises
-rather than start, so the stand never demonstrates a silent difference from the live tool.
-app/test_mct_report.py holds missing, unusable and loaded apart, because they are three
-different faults: 14 checks, 0 failed.
-THE QUESTION IT ANSWERS: Z: is per logon and invisible in ssh sessions, and
-config._resolve_egnyte_root falls back to the nominal Z: path when it finds no marker folder, so
-a server started over ssh resolves MCT_MASTER to a path that does not exist, load_mct_data
-returns an empty dict in silence, and every airport cascades to a flat 90 minutes through
-route_qsi into route_forecast.dest_metro_share, which moves the forecast on any multi-airport
-metro. Whether the live portal has ever been started that way is not knowable from a code read.
-The next restart answers it, and it is the same restart that picks up the Postmark variables.
-VERIFICATION AND ITS LIMIT: both modules compile and the 14 checks pass against a workbook
-written for the test. The four inline startup lines cannot run without the server's own
-dependencies, so they are proven by compile and by reading. The first restart is their real test.
+## 9. Delivered this session
 
-**The sender.** Set up and verified, as recorded under question 2 above.
+- `routes/STAND-RUNBOOK.md` v1, which did not exist. It collects every binding runbook line from
+  the rulings since 24 September: the start procedure, the five console lines that must be right
+  before the stand opens, the incident and log rules, the same-day pack operation, the named-route
+  handover, and the 10-23 October store freeze. W4's host manual stays the host's document; this
+  is the operator's.
 
-## Watchpoints
+## 10. Needed from John
 
-1. POSTMARK IS REVIEWING. Request in, account state "reviewing" as at 21 Sep. Sending stays
-   restricted to confirmed sender signatures until it clears, and domain warming cannot start,
-   so this is still the longest lead time in the mail chain. Not cleared by 1 Oct, chase it.
-2. CLOSED 21 Sep. AVIA_SMTP_HOST no longer defaults to smtp.office365.com; it is required and
-   says so. Fixed alongside the sender-identity fault above, since both came from the same
-   assumption that the supplier would always be Microsoft.
-3. DMARC HAS NO REPORTING ADDRESS. p=none is published and changes no delivery, but reports need
-   somewhere to land and the domain cannot receive mail. Fasthosts routes inbound to a paid
-   add-on, which W2 did not buy. Three routes for John: buy Fasthosts email on the domain; move
-   the domain's DNS to Cloudflare and use Email Routing, free, which would also answer the pack
-   hosting question; or Postmark's DMARC Digests. W2 favours Cloudflare, but not before the
-   laptop proof, because moving nameservers now means recreating records just verified. Tighten
-   past p=none only after reports show clean alignment, which is after Routes.
-4. TWO EMAILS. W2 still recommends one, PDF attached and the pack link inside it. If the ruling
-   stands, the queue view must show both sends separately or a half-delivered visitor reads as
-   delivered.
-5. THE PUBLIC PACK URL. An unguessable link is obscurity, not access control. Before a pack with
-   a named airline's route economics sits on a public host it needs checking against the Sabre
-   position (attribution constant, fares as bands only, no single-route blind figures), plus an
-   expiry, a noindex header, and no personal data in the file.
-6. CROSS-WORKSTREAM DEPENDENCIES, now dated from the sibling files rather than assumed.
-   W3-STATUS.md (session 1, 19 Sep): the PDF render is "Not started, and now unblocked"; the
-   workstation check passed 19 Sep with Chrome, pikepdf 10.10.0 and pillow 12.3.0 present, so
-   nothing needs installing; proven end to end 22-25 Sep; and John pulled the pack, the PDF and
-   the imagery forward from 8 October to 3 October. The email therefore has a PDF to attach well
-   before the freeze, and W2's watchpoint on it is closed.
-   W6-STATUS.md (v2, 19 Sep 22:10) asks W2 for two things: "the pack URL rule and hosting
-   controls so W6 can place the files by 16 Oct", and "the mail records on the launch domain,
-   which the web cutover must not disturb". Both are now W2 deliverables and are dated below.
-7. RULING 18, THE UNMANNED WORKSTATION. Taken and understood: remote desktop over Tailscale,
-   sign in, run both launchers, disconnect, never sign out, with Stop-Process first because
-   Meridian-run.bat re-warms a running server rather than replacing it. W2 will write it in
-   those words into the runbook and hand W4 the same words for the host manual, and rehearse one
-   deliberate restart in the 11-12 October trial. W2 agrees the scheduled-task answer is better
-   and will scope it for 8 October, including the check that the Cloudflare tunnel runs as a
-   service. Worth stating plainly: an unmanned box makes the MCT startup line above the only
-   thing that will ever tell anyone the master did not load.
+1. WHICH MAILBOX ROUTE, by Tuesday. A purchase decision, not a technical one.
+2. THE TWO SPEC BLOCKS: the DevPC `C:\Avia` store inventory with sizes and dates, and the core
+   laptop's make, RAM, architecture, free disk and Python. The 8 October laptop proof needs them
+   before 6 October, because John is away 6-9 October. If they cannot come by 5 October, W2 needs
+   a named person who can run the block instead.
+3. APPROVAL to buy Postmark Basic at $15.00 a month, conditional on the test sends passing.
+4. THE NAMED REVIEWER for the pack queue and their hours for 21-23 October (umbrella item 62).
+   The queue is built and nobody is assigned to it.
+5. WHICH TABLET the capture front end runs on, and how it reaches the form under Plan B.
+6. One workstation run for the catchment before-and-after, once W2 has written the script.
 
-## Conflicts seen
+## 11. Conflicts seen
 
-Raised here for the controller's sweep to resolve, per README.md. W2 has changed nothing on
-either account.
+1. `cortex_help.html` has no owner in README's table and W2 has edited it, for the reason in
+   section 3. It needs an owner.
+2. The critical path puts stand mode after the pack and the laptop build, and W2 agrees, but stand
+   mode is the thing that makes "no Avia Solutions on a stand screen" and "no economics figure"
+   enforceable as a mode rather than as a global setting. Applied globally, as they are now, they
+   also apply to John's own working sessions and to the Taif proposal work. W2 has taken the
+   conservative reading. If John needs economics for Taif before pre-mortem 33 closes, that is a
+   ruling, and the switch exists for it.
 
-1. **The hosted pack may have nowhere to live.** Ruling 15 requires two emails, the second
-   carrying a link to the HTML pack "hosted on the launched site". W6-STATUS.md v2 records that
-   the domain is still owed from John by 22 September and that "silence past 29 Sep and the
-   14 Oct cutover is not holdable, so the fallback landing page becomes the plan". A landing
-   page has no place to put per-visitor packs. So on W6's own stated fallback, half of ruling
-   15's email design has no delivery path, and nobody has yet designed how a pack travels from
-   the workstation to a public host in any case. W2's view, offered rather than taken: the
-   single email with the PDF attached, which W2 has recommended twice on deliverability grounds,
-   also removes this dependency entirely. If the controller holds the two-email design, the
-   pack host needs an owner and a date that does not sit behind the domain decision.
-2. **The web cutover could break the mail records.** W6 names "the mail records on the launch
-   domain, which the web cutover must not disturb" as a W2 dependency. Stated precisely so it is
-   not lost: aviationobservatory.com now carries a DKIM TXT at 20260919185744pm._domainkey, a
-   CNAME pm-bounces to pm.mtasv.net, and a DMARC TXT at _dmarc. If the launch domain turns out
-   to be this one, then a nameserver move, a host migration, or the "Restore Default DNS
-   Records" control in the Fasthosts panel would remove all three and sending would stop
-   silently, with the first symptom being packs not arriving at Routes. W2 asks that no
-   nameserver or DNS change is made on aviationobservatory.com without W2 reproducing those
-   three records at the new host first and verifying them in Postmark afterwards.
+## 12. Dates
 
-## What other workstreams are waiting on from W2
+Mailbox route Tue 29 Sep. Capture buttons and the lead-store rewire Fri 2 Oct. Postmark decision
+3 Oct. Catchment answer 6 Oct or not at all. Laptop proof 8 Oct, John away 6-9 Oct. Freeze 10 Oct.
+Trials 11-12 Oct. Suzanna 16 Oct.
 
-- **W6, by 16 October**: the pack URL rule and the hosting controls. W2 will deliver the rule by
-  3 October, to sit alongside W3's pack and PDF which John pulled to the same date. It will
-  cover the unguessable path, an expiry, a noindex header, no personal data in the file, and the
-  Sabre position (attribution constant, fares as bands only, no single-route blind figures).
-  W3-STATUS.md draws the same line from the other side: a public URL is a published use while
-  the emailed PDF is confidential, so the same photograph can be right in one and wrong in the
-  other. The rule has to be written once and used by both.
-- **W4**: the restart words verbatim for the host manual, which W2 will lift unchanged from
-  ruling 18 (remote desktop over Tailscale, sign in, run both launchers, disconnect, never sign
-  out, with Stop-Process first because Meridian-run.bat re-warms a running server rather than
-  replacing it); the request form and queue view design, which W4 has already written sections
-  3.5, 5.5 and 6.1 against; the tablet answer; and the Postmark approval date, which W2 chases
-  on 1 October. W4-STATUS.md confirms it has read this file at v6.
+## 13. A broken main, and how it happened again
+
+While this session was working, commit **b478b97** (W1, 27 Sep) staged and pushed W2's
+uncommitted `app/cortex_app.py` and `app/cortex_dashboard.html` under a W1 subject. The pushed
+`cortex_app.py` therefore carries `import pack_queue as PQ` while `app/pack_queue.py` is not in
+the repository. A pull and restart on the workstation fails at import and the server does not
+start. W2's block adds the missing module and closes it; b478b97 is otherwise sound and is not
+reverted.
+
+THE WORKSTATION SHOULD NOT PULL AND RESTART UNTIL THAT BLOCK HAS LANDED.
+
+This is the second time: **30e3e78** on 22 September swept the catchment-distance work the same
+way. The cause is a commit that stages the whole working tree rather than the files its
+workstream owns, and the README's ownership table cannot prevent it because the two chats share
+one clone. W2 is not asking for anyone to be told off; it is asking the controller to rule that
+every commit names its files, because the failure mode is a main that does not start and nobody
+finds out until a restart.
+
+## 14. Commits
+
+- **30e3e78**, 22 Sep, under the controller's subject: the catchment distance report.
+- OWED, block with John: this session. `pack_queue.py`, `test_pack_queue.py`, the queue endpoints
+  and view, the email field, the economics switch, the two presentation slips, the Avia naming,
+  the `AVIA_ROOT` raster resolution, `STAND-RUNBOOK.md` and this file.
+
+Tests on the Dev PC before the commit: pack queue 60, lead store 47, friction 28, MCT 14, demo flow
+89. All 0 failed. The dashboard's script block parses.
