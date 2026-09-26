@@ -1,0 +1,14 @@
+W10 26 Sep evening: schedule prior table built and scored; recommendation for W1
+
+bt2/bt2_experiments.log: W10-SCHEDULE-PRIOR-TABLE. Table at E:\Avia\bt2_relaxed\schedule_prior.csv
+(107 class rows, 628 carrier rows). Blind by cohort, n=6,524: gauge 69.5% within +-20% (boosted
+prior 71.1), frequency 30.2% (boosted prior 70.9); as a p25-p75 bound both calibrated, flown
+schedule inside on 54.0% and 48.7%. Bologna-New York on the Sabre pair: n=205, gauge 239-294,
+frequency 2.2-4.1 per week per direction; United long-haul line n=25, gauge 176-242, 2.9-5.5.
+
+routes/W10-STATUS.md v16: results, the reading, and the recommendation: W1 wires the table as
+ruled tonight; W10 follows with a boosted-prior frequency bound, swapped in as data only if it is
+narrower at the same coverage. Carrier check uses the haul-and-scope line, never the all-launches row.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_015NbinCPXuUWF3VuAEiSjFX

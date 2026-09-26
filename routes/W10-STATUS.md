@@ -1,9 +1,8 @@
 # W10 status: FINAL CALIBRATION TEST
 
-Written by W10 only, rewritten every session. Version 15, 26 September 2026, evening: the schedule prior table (John's ruling 4, GO)
-is written as a fitting script, bt2/bt2_fit_schedule_prior.py, for W1 to wire into Optimise; the table itself is built on the workstation
-and has not yet run, so no figure from it is quoted here. v14 content below stands. Clone at 156de6e (origin after 8bb87a3). Every figure
-below has a log line in bt2/bt2_experiments.log (W10-* lines, 26 Sep) or is quoted from the controller's rulings file pending John's paste.
+Written by W10 only, rewritten every session. Version 16, 26 September 2026, evening: the schedule prior table is built on the workstation
+and scored (W10-SCHEDULE-PRIOR-TABLE); gauge holds, frequency holds as a bound but not as a point, and the recommendation for W1 is below.
+v14 content further down stands. Clone at 5f32567. Every figure below has a log line in bt2/bt2_experiments.log (W10-* lines, 26 Sep).
 
 ## One line for John
 
@@ -68,21 +67,33 @@ year for a candidate = gauge x frequency x 2 x 52, two-way, the calibrated model
 the A220 and A321XLR fall in by their seats) and frequency p25-p75; rank by contribution inside that set; forecast at the winner.
 NOT_FEASIBLE types stay set aside as W1 has them (156de6e).
 
-**Still to run (block S1, below).** The fit, its blind score and the Bologna lookup. Nothing from the table is quoted until John's paste
-is logged as W10-SCHEDULE-PRIOR-TABLE. The gradient-boosted prior scored gauge 71.1% and frequency 70.9% within +-20%
-(W10-SCHEDULE-PRIOR); a lookup table is coarser and may score below that. If it scores more than 5 points below on either, W10 will say
-so in v16 and the controller decides whether W1 wires the table or the gradient-boosted prior.
+**Built and scored (W10-SCHEDULE-PRIOR-TABLE).** E:\Avia\bt2_relaxed\schedule_prior.csv and .meta.txt on the workstation: 107
+class rows, 628 carrier rows. Blind by cohort on 6,524 launches:
 
-**Block S1, Workstation Actual (RDP, sees E:).**
+| | Table median within +-20% | within +-50% | Flown inside table p25-p75 | Boosted prior within +-20% |
+|---|---|---|---|---|
+| Gauge (seats per departure) | 69.5% | 86.7% | 54.0% | 71.1% |
+| Frequency (per week per direction) | 30.2% | 61.8% | 48.7% | 70.9% |
 
-```
-cd C:\src\meridian
-git pull
-cd C:\src\meridian\bt2
-$env:AVIA_LOCAL_CACHE="E:\Avia"; $env:AVIA_APP_DIR="C:\src\meridian\app"; $env:AVIA_BT2_TARGET="nonstop"; $env:AVIA_BT2_DIR="E:\Avia\bt2_relaxed"; $env:AVIA_BT2_COHORTS="2016,2017,2018,2019,2024,2025"
-py -3.12 -s bt2_fit_schedule_prior.py --out E:\Avia\bt2_relaxed\schedule_prior.csv 2>&1 | Tee-Object -FilePath E:\Avia\probe\schedprior-fit-W10.log
-py -3.12 -s bt2_fit_schedule_prior.py --lookup base_mkt=37814 gcd_km=6647 scope=I carrier_type=FSC carrier=UA 2>&1 | Tee-Object -FilePath E:\Avia\probe\schedprior-lookup-W10.log
-```
+Level 1 served 6,331 of 6,524 lookups (then 91, 79, 23 at levels 2-4).
+
+**Reading.** Gauge holds: 1.6 points below the boosted prior. Frequency does not hold as a point forecast: 40.7 points below, which is
+past the 5 point test set in v15, so this is the controller's call. The four market bands cannot carry what the boosted prior reads
+from continuous pair size, growth, base strength and connecting competition. However, Optimise does not use the median as a forecast;
+it uses p25-p75 as the bound on its sweep, and as a bound both are calibrated: the flown schedule falls inside it on 54.0% and 48.7%
+of launches, against 50% by construction. The cost of the coarse frequency key is a wider band, not a biased one.
+
+**Recommendation.** W1 wires the table tonight as ruled (option 2b), gauge and frequency both as bounds. W10 then builds the
+frequency bound from the boosted prior (a small pickled quantile model beside the table, p25 and p75 on log frequency, features the app
+can compute pre-launch) and scores its interval the same way; it replaces the table's frequency columns only if its band is
+narrower at the same coverage. That is a data swap for W1, not a rewire, if W1 reads the bound through one function.
+
+**Bologna-New York on the Sabre pair** (base_mkt 37,814, 6,647 km, international, FSC): level 1, n=205; gauge 239 / 278 / 294 seats
+(p25 / median / p75), frequency 2.2 / 3.0 / 4.1 per week per direction. United line (long-haul international, n=25): gauge 176 / 214 /
+242, frequency 2.9 / 4.8 / 5.5. So Optimise sweeps a widebody of circa 240-295 seats two to four times a week, and the carrier check
+re-runs at 176-242 seats three to five and a half times a week and shows both. United's all-launches line (n=114, gauge median 76) is
+its regional feed and must not be used for a long-haul pair; W1 should take the carrier line matching haul band and scope, and fall to
+"fewer than 5 comparable launches" rather than to the all-launches row.
 
 ## State of the four jobs (W10-RULINGS, 25 Sep)
 
